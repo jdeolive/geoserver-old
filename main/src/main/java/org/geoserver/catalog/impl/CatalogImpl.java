@@ -4,30 +4,20 @@
  */
 package org.geoserver.catalog.impl;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.net.URI;
-import java.rmi.server.UID;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.commons.collections.MultiHashMap;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.CatalogException;
 import org.geoserver.catalog.CatalogFactory;
 import org.geoserver.catalog.CatalogInfo;
 import org.geoserver.catalog.CatalogVisitor;
-import org.geoserver.catalog.CoverageDimensionInfo;
 import org.geoserver.catalog.CoverageInfo;
 import org.geoserver.catalog.CoverageStoreInfo;
 import org.geoserver.catalog.DataStoreInfo;
@@ -35,7 +25,6 @@ import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerGroupInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.MapInfo;
-import org.geoserver.catalog.MetadataMap;
 import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.ResourcePool;
@@ -53,8 +42,6 @@ import org.geoserver.catalog.event.impl.CatalogAddEventImpl;
 import org.geoserver.catalog.event.impl.CatalogModifyEventImpl;
 import org.geoserver.catalog.event.impl.CatalogPostModifyEventImpl;
 import org.geoserver.catalog.event.impl.CatalogRemoveEventImpl;
-import org.geoserver.ows.util.ClassProperties;
-import org.geoserver.ows.util.OwsUtils;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.type.Name;
@@ -93,6 +80,7 @@ public class CatalogImpl implements Catalog {
     protected GeoServerResourceLoader resourceLoader;
 
     public CatalogImpl() {
+        dao = new DefaultCatalogDAO(this);
         resourcePool = new ResourcePool(this);
     }
     
@@ -113,6 +101,7 @@ public class CatalogImpl implements Catalog {
 
         validate(store, true);
         
+        //TODO: remove synchronized block, need transactions
         synchronized (dao) {
             dao.add(store);
             
@@ -145,7 +134,24 @@ public class CatalogImpl implements Catalog {
             throw new IllegalArgumentException( "Unable to delete non-empty store.");
         }
         
-        dao.remove(store);
+        //TODO: remove synchronized block, need transactions
+        synchronized(dao) {
+            dao.remove(store);
+            
+            WorkspaceInfo workspace = store.getWorkspace();
+            DataStoreInfo defaultStore = getDefaultDataStore(workspace);
+            if (store.equals(defaultStore)) {
+                //TODO: this will fire multiple events, we want to fire only one
+                setDefaultDataStore(workspace, null);
+                
+                // default removed, choose another store to become default if possible
+                List dstores = getStoresByWorkspace(workspace, DataStoreInfo.class);
+                if (!dstores.isEmpty()) {
+                    setDefaultDataStore(workspace, (DataStoreInfo) dstores.get(0));
+                }
+            }
+        }
+        
         removed(store);
     }
 
@@ -159,19 +165,30 @@ public class CatalogImpl implements Catalog {
     }
 
     public <T extends StoreInfo> T getStoreByName(String name, Class<T> clazz) {
-       return dao.getStore(name, clazz);
+        return getStoreByName((WorkspaceInfo) null, name, clazz);
     }
 
     public <T extends StoreInfo> T getStoreByName(WorkspaceInfo workspace,
             String name, Class<T> clazz) {
         
-        return dao.getStoreByName(workspace, name, clazz);
+        T store = dao.getStoreByName(workspace, name, clazz);
+        if (store == null && workspace == null) {
+            store = dao.getStoreByName(DefaultCatalogDAO.ANY_WORKSPACE, name, clazz);
+        }
+        return store;
     }
 
     public <T extends StoreInfo> T getStoreByName(String workspaceName,
            String name, Class<T> clazz) {
-        return getStoreByName(
-            workspaceName != null ? getWorkspaceByName(workspaceName) : null, name, clazz);
+        if (workspaceName == null) {
+            return getStoreByName((WorkspaceInfo)null, name, clazz);
+        }
+        
+        WorkspaceInfo workspace = getWorkspaceByName(workspaceName);
+        if (workspace != null) {
+            return getStoreByName(workspace, name, clazz);
+        }
+        return null;
     }
     
     public <T extends StoreInfo> List<T> getStoresByWorkspace(
@@ -232,17 +249,18 @@ public class CatalogImpl implements Catalog {
     }
     
     public void setDefaultDataStore(WorkspaceInfo workspace, DataStoreInfo store) {
-        // basic sanity check
-        if (store.getWorkspace() == null) {
-            throw new IllegalArgumentException("The store has not been assigned a workspace");
+        if (store != null) {
+            // basic sanity check
+            if (store.getWorkspace() == null) {
+                throw new IllegalArgumentException("The store has not been assigned a workspace");
+            }
+    
+            if (!store.getWorkspace().equals(workspace)) {
+                throw new IllegalArgumentException("Trying to mark as default " + "for workspace "
+                        + workspace.getName() + " a store that " + "is contained in "
+                        + store.getWorkspace().getName());
+            }
         }
-
-        if (!store.getWorkspace().equals(workspace)) {
-            throw new IllegalArgumentException("Trying to mark as default " + "for workspace "
-                    + workspace.getName() + " a store that " + "is contained in "
-                    + store.getWorkspace().getName());
-        }
-        
         dao.setDefaultDataStore(workspace, store);
     }
 
@@ -337,12 +355,34 @@ public class CatalogImpl implements Catalog {
     }
 
     public <T extends ResourceInfo> T getResourceByName(String ns, String name, Class<T> clazz) {
-        return dao.getResourceByName(ns, name, clazz); 
+        if ("".equals( ns ) ) {
+              ns = null;
+        }
+
+        if (ns != null) {
+            NamespaceInfo namespace = getNamespaceByPrefix(ns);
+            if (namespace == null) {
+                namespace = getNamespaceByURI(ns); 
+            }
+            
+            if (namespace != null) {
+                return getResourceByName(namespace, name, clazz);
+            }
+            
+            return null;
+        }
+
+        return getResourceByName((NamespaceInfo) null, name, clazz);
+
     }
     
     public <T extends ResourceInfo> T getResourceByName(NamespaceInfo ns,
             String name, Class<T> clazz) {
-        return getResourceByName( ns != null ? ns.getPrefix() : null , name, clazz);
+        T resource = dao.getResourceByName(ns, name, clazz);
+        if (resource == null && ns == null) {
+            resource = dao.getResourceByName(DefaultCatalogDAO.ANY_NAMESPACE, name, clazz);
+        }
+        return resource;
     }
 
     public <T extends ResourceInfo> T getResourceByName(Name name, Class<T> clazz) {
@@ -534,6 +574,13 @@ public class CatalogImpl implements Catalog {
     }
    
     public void remove(LayerInfo layer) {
+        //ensure no references to the layer
+        for ( LayerGroupInfo lg : dao.getLayerGroups() ) {
+            if ( lg.getLayers().contains( layer ) ) {
+                String msg = "Unable to delete layer referenced by layer group '"+lg.getName()+"'";
+                throw new IllegalArgumentException( msg );
+            }
+        }
         dao.remove(layer);
         removed(layer);
     }
@@ -560,7 +607,29 @@ public class CatalogImpl implements Catalog {
     }
     
     public LayerInfo getLayerByName(String name) {
-        return dao.getLayerByName(name);
+        String prefix = null;
+        String resource = null;
+        
+        int colon = name.indexOf( ':' );
+        if ( colon != -1 ) {
+            //search by resource name
+            prefix = name.substring( 0, colon );
+            resource = name.substring( colon + 1 );
+            
+            ResourceInfo r = getResourceByName(prefix, resource, ResourceInfo.class);
+            if (r != null) {
+                List<LayerInfo> layers = getLayers(r);
+                if (layers.size() == 1) {
+                    return layers.get(0);
+                }
+                
+            }
+            return null;
+        }
+        else {
+            return dao.getLayerByName(name);
+        }
+
     }
 
     public List<LayerInfo> getLayers(ResourceInfo resource) {
@@ -590,18 +659,17 @@ public class CatalogImpl implements Catalog {
 
     public void add(LayerGroupInfo layerGroup) {
         validate(layerGroup,true);
+
+        layerGroup = dao.add(layerGroup);
+        added( layerGroup );
         
-        //TODO: this will fail because the layer group is not resolved,
-        // figure this out
         if ( layerGroup.getStyles().isEmpty() ) {
             for ( LayerInfo l : layerGroup.getLayers() ) {
                 // default style
                 layerGroup.getStyles().add(null);
-            }    
+            }
+            dao.save(layerGroup);
         }
-        
-        dao.add(layerGroup);
-        added( layerGroup );
     }
     
     void validate( LayerGroupInfo layerGroup, boolean isNew ) {
@@ -631,7 +699,7 @@ public class CatalogImpl implements Catalog {
     
     public void save(LayerGroupInfo layerGroup) {
         validate(layerGroup,false);
-        dao.remove(layerGroup);
+        dao.save(layerGroup);
     }
     
     public List<LayerGroupInfo> getLayerGroups() {
@@ -741,6 +809,10 @@ public class CatalogImpl implements Catalog {
     }
 
     public void setDefaultNamespace(NamespaceInfo defaultNamespace) {
+        NamespaceInfo ns = getNamespaceByPrefix( defaultNamespace.getPrefix() );
+        if ( ns == null ) {
+            throw new IllegalArgumentException( "No such namespace: '" + defaultNamespace.getPrefix() + "'" );
+        }
         dao.setDefaultNamespace(defaultNamespace);
     }
 
@@ -788,8 +860,24 @@ public class CatalogImpl implements Catalog {
         if ( !getStoresByWorkspace( workspace, StoreInfo.class).isEmpty() ) {
             throw new IllegalArgumentException( "Cannot delete non-empty workspace.");
         }
-        
-        dao.remove(workspace);
+       
+        //TODO: remove synchronized block, need transactions
+        synchronized(dao) {
+            dao.remove(workspace);
+         
+            WorkspaceInfo defaultWorkspace = getDefaultWorkspace();
+            if (workspace.equals(defaultWorkspace) || defaultWorkspace == null) {
+                List<WorkspaceInfo> workspaces = dao.getWorkspaces(); 
+                
+                defaultWorkspace = null;
+                if (!workspaces.isEmpty()) {
+                    defaultWorkspace = workspaces.get(0);
+                }
+                
+                setDefaultWorkspace(defaultWorkspace);
+            }
+        }
+
         removed( workspace );
     }
     
@@ -804,6 +892,9 @@ public class CatalogImpl implements Catalog {
     }
     
     public void setDefaultWorkspace(WorkspaceInfo workspace) {
+        if (workspace != null && dao.getWorkspaceByName(workspace.getName()) == null) {
+            dao.add(workspace);
+        }
         dao.setDefaultWorkspace(workspace);
     }
     
@@ -853,6 +944,13 @@ public class CatalogImpl implements Catalog {
     }
     
     public void remove(StyleInfo style) {
+        //ensure no references to the style
+        for ( LayerInfo l : dao.getLayers() ) {
+            if ( style.equals( l.getDefaultStyle() ) || l.getStyles().contains( style )) {
+                throw new IllegalArgumentException( "Unable to delete style referenced by '"+ l.getName()+"'");
+            }
+        }
+
         dao.remove(style);
         removed(style);
     }
@@ -967,10 +1065,15 @@ public class CatalogImpl implements Catalog {
         }
     }
     
+    public static Object unwrap(Object obj) {
+        return obj;
+    }
+    
     /**
      * Implementation method for resolving all {@link ResolvingProxy} instances.
      */
     public void resolve() {
+        dao.setCatalog(this);
         dao.resolve();
         
         if ( listeners == null ) {

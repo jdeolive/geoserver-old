@@ -47,6 +47,7 @@ import org.geoserver.catalog.impl.CoverageDimensionImpl;
 import org.geoserver.catalog.impl.CoverageInfoImpl;
 import org.geoserver.catalog.impl.CoverageStoreInfoImpl;
 import org.geoserver.catalog.impl.DataStoreInfoImpl;
+import org.geoserver.catalog.impl.DefaultCatalogDAO;
 import org.geoserver.catalog.impl.FeatureTypeInfoImpl;
 import org.geoserver.catalog.impl.LayerGroupInfoImpl;
 import org.geoserver.catalog.impl.LayerInfoImpl;
@@ -216,9 +217,9 @@ public class XStreamPersister {
         
         //control the order in which fields are sorted
         SortableFieldKeySorter sorter = new SortableFieldKeySorter();
-        sorter.registerFieldOrder( CatalogImpl.class, new String[]{ "workspaces", "namespaces", "stores", "styles", 
+        //sorter.registerFieldOrder( DefaultCatalogDAO.class, new String[]{ "workspaces", "namespaces", "stores", "styles", 
             /* these we actually omit, but the sorter needs them specified */
-            "layerGroups", "resources", "maps", "defaultStores", "listeners", "layers",  "resourcePool", "resourceLoader", "LOGGER" } ); 
+        //    "layerGroups", "resources", "maps", "defaultStores", "listeners", "layers",  "resourcePool", "resourceLoader", "LOGGER" } ); 
         
         ReflectionProvider reflectionProvider = new CustomReflectionProvider( new FieldDictionary( sorter ) ); 
             //new Sun14ReflectionProvider( new FieldDictionary( sorter  ) ); 
@@ -275,17 +276,20 @@ public class XStreamPersister {
         // Catalog
         xs.omitField(impl(Catalog.class), "resourcePool");
         xs.omitField(impl(Catalog.class), "resourceLoader");
-        xs.omitField(impl(Catalog.class), "resources");
         xs.omitField(impl(Catalog.class), "listeners");
-        xs.omitField(impl(Catalog.class), "layers");
-        xs.omitField(impl(Catalog.class), "maps");
-        xs.omitField(impl(Catalog.class), "layerGroups");
         xs.omitField(impl(Catalog.class), "LOGGER");
-        xs.registerLocalConverter(impl(Catalog.class), "stores",
+        
+        xs.omitField(impl(DefaultCatalogDAO.class), "catalog");
+        xs.omitField(impl(DefaultCatalogDAO.class), "resources");
+        xs.omitField(impl(DefaultCatalogDAO.class), "layers");
+        xs.omitField(impl(DefaultCatalogDAO.class), "maps");
+        xs.omitField(impl(DefaultCatalogDAO.class), "layerGroups");
+        
+        xs.registerLocalConverter(DefaultCatalogDAO.class, "stores",
                 new StoreMultiHashMapConverter());
-        xs.registerLocalConverter(impl(Catalog.class), "namespaces",
+        xs.registerLocalConverter(DefaultCatalogDAO.class, "namespaces",
                 new SpaceMapConverter("namespace"));
-        xs.registerLocalConverter(impl(Catalog.class), "workspaces",
+        xs.registerLocalConverter(DefaultCatalogDAO.class, "workspaces",
                 new SpaceMapConverter("workspace"));
         
         

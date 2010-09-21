@@ -307,7 +307,8 @@ public class CatalogImplTest extends TestCase {
     }
     
     public void testRemoveDefaultWorkspace() {
-        catalog.add( ws );        
+        catalog.add( ws );
+        assertNotNull(catalog.getDefaultWorkspace());
         catalog.remove( ws );
         assertNull(catalog.getDefaultWorkspace());
     }

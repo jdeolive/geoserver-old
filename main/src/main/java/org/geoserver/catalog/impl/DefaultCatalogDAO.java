@@ -1,5 +1,6 @@
 package org.geoserver.catalog.impl;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.rmi.server.UID;
@@ -41,7 +42,30 @@ import org.geoserver.ows.util.OwsUtils;
  * TODO: look for any exceptions, move them back to catlaog as they indicate logic
  */
 public class DefaultCatalogDAO {
-
+    
+    public static WorkspaceInfo ANY_WORKSPACE = any(WorkspaceInfo.class);
+    
+    public static NamespaceInfo ANY_NAMESPACE = any(NamespaceInfo.class);
+    
+    @SuppressWarnings("unchecked")
+    static <T extends CatalogInfo>  T any(Class<T> clazz) {
+        
+        Class proxyClass = Proxy.getProxyClass(clazz.getClassLoader(), clazz);
+        try {
+            return (T) proxyClass.getConstructor(
+                new Class[] { InvocationHandler.class }).newInstance(new Object[] {
+                    new InvocationHandler() {
+                        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                            return null;
+                        }
+                    }
+                } );
+        }
+        catch( Exception e ) {
+            throw new RuntimeException( e );
+        }
+    }
+    
     /**
      * Contains the stores keyed by implementation class
      */
@@ -92,31 +116,30 @@ public class DefaultCatalogDAO {
      */
     private CatalogImpl catalog;
     
+    public DefaultCatalogDAO(CatalogImpl catalog) {
+        this.catalog = catalog;
+    }
+    
+    public void setCatalog(CatalogImpl catalog) {
+        this.catalog = catalog;
+    }
+    
     //
     // Stores
     //
-    public void add(StoreInfo store) {
-        stores.put(store.getClass(), store);
+    public StoreInfo add(StoreInfo store) {
+        resolve(store);
+        synchronized(stores) {
+            stores.put(store.getClass(), store);
+        }
+        return ModificationProxy.create(store, StoreInfo.class);
     }
     
     public void remove(StoreInfo store) {
         store = unwrap(store);
-        
-        
+
         synchronized(stores) {
             stores.remove(store.getClass(),store);
-            
-            WorkspaceInfo workspace = store.getWorkspace();
-            DataStoreInfo defaultStore = getDefaultDataStore(workspace);
-            if (store.equals(defaultStore)) {
-                defaultStores.remove(workspace.getId());
-                
-                // default removed, choose another store to become default if possible
-                List dstores = getStoresByWorkspace(workspace, DataStoreInfo.class);
-                if (!dstores.isEmpty()) {
-                    setDefaultDataStore(workspace, (DataStoreInfo) dstores.get(0));
-                }
-            }
         }
     }
     
@@ -136,36 +159,12 @@ public class DefaultCatalogDAO {
             StoreInfo store = (StoreInfo) i.next();
             if (id.equals(store.getId())) {
                 return ModificationProxy.create( (T) store, clazz );
-                //return store;
             }
         }
 
         return null;
     }
 
-    public <T extends StoreInfo> T getStoreByName(String name, Class<T> clazz) {
-        T store = getStoreByName( (WorkspaceInfo) null, name, clazz );
-        if ( store != null ) {
-            return store;
-        }
-        
-        //look for secondary match
-        List l = lookup(clazz, stores);
-        ArrayList matches = new ArrayList();
-        for (Iterator i = l.iterator(); i.hasNext();) {
-            store = (T) i.next();
-            if ( name.equals( store.getName() ) ) {
-                matches.add( store );
-            }
-        }
-        
-        if ( matches.size() == 1 ) {
-            return ModificationProxy.create( (T) matches.get( 0 ), clazz);
-        }
-        
-        return null;
-    }
-    
     public <T extends StoreInfo> T getStoreByName(WorkspaceInfo workspace,
             String name, Class<T> clazz) {
         
@@ -178,19 +177,37 @@ public class DefaultCatalogDAO {
         }
         
         List l = lookup(clazz, stores);
-        for (Iterator i = l.iterator(); i.hasNext();) {
-            StoreInfo store = (StoreInfo) i.next();
-            if (name.equals(store.getName()) && store.getWorkspace().equals( workspace )) {
-                return ModificationProxy.create( (T) store, clazz );
+        if (workspace == ANY_WORKSPACE) {
+            //do an exhaustive search through all workspaces
+            ArrayList matches = new ArrayList();
+            for (Iterator i = l.iterator(); i.hasNext();) {
+                T store = (T) i.next();
+                if ( name.equals( store.getName() ) ) {
+                    matches.add( store );
+                }
+            }
+            
+            if ( matches.size() == 1 ) {
+                return ModificationProxy.create( (T) matches.get( 0 ), clazz);
             }
         }
-        
+        else {
+            
+            for (Iterator i = l.iterator(); i.hasNext();) {
+                StoreInfo store = (StoreInfo) i.next();
+                if (name.equals(store.getName()) && store.getWorkspace().equals( workspace )) {
+                    return ModificationProxy.create( (T) store, clazz );
+                }
+            }
+        }
         return null;
     }
     
     public <T extends StoreInfo> List<T> getStoresByWorkspace(
             WorkspaceInfo workspace, Class<T> clazz) {
 
+        //TODO: support ANY_WORKSPACE?
+        
         if ( workspace == null ) {
             workspace = getDefaultWorkspace();
         }
@@ -223,7 +240,14 @@ public class DefaultCatalogDAO {
     
     public void setDefaultDataStore(WorkspaceInfo workspace, DataStoreInfo store) {
         DataStoreInfo old = defaultStores.get(workspace.getId());
-        defaultStores.put(workspace.getId(), store);
+        synchronized(defaultStores) {
+            if (store != null) {
+                defaultStores.put(workspace.getId(), store);    
+            }
+            else {
+                defaultStores.remove(workspace.getId());
+            }
+        }
         
         //fire change event
         catalog.fireModified(catalog, 
@@ -233,8 +257,19 @@ public class DefaultCatalogDAO {
     //
     // Resources
     //
-    public void add(ResourceInfo resource) {
-        resources.put(resource.getClass(), resource);
+    public ResourceInfo add(ResourceInfo resource) {
+        resolve(resource);
+        synchronized(resources) {
+            resources.put(resource.getClass(), resource);
+        }
+        return ModificationProxy.create(resource, ResourceInfo.class);
+    }
+    
+    public void remove(ResourceInfo resource) {
+        resource = unwrap(resource);
+        synchronized(resources) {
+            resources.remove(resource.getClass(), resource);
+        }
     }
     
     public void save(ResourceInfo resource) {
@@ -253,39 +288,14 @@ public class DefaultCatalogDAO {
         return null;
     }
     
-    public <T extends ResourceInfo> T getResourceByName(String ns, String name, Class<T> clazz) {
-        NamespaceInfo namespace = null;
-        if ("".equals( ns ) ) {
-            ns = null;
-        }
-        if ( ns == null ) {
-            //if namespace was null, try the default namespace
-            if ( getDefaultNamespace() != null ) {
-                namespace = getDefaultNamespace();
-            }
-        }
-        else {
-            namespace = getNamespaceByPrefix( ns );
-            if ( namespace == null ) {
-                namespace = getNamespaceByURI( ns );
-            }
-        }
+    public <T extends ResourceInfo> T getResourceByName(NamespaceInfo namespace, String name, Class<T> clazz) {
         
         List l = lookup(clazz, resources);
-        if ( namespace != null ) {
-            for (Iterator i = l.iterator(); i.hasNext();) {
-                ResourceInfo resource = (ResourceInfo) i.next();
-                if (name.equals(resource.getName())) {
-                    NamespaceInfo namespace1 = resource.getNamespace();
-                    if (namespace1 != null && namespace1.equals( namespace )) {
-                            return ModificationProxy.create( (T) resource, clazz );
-                    }
-                }
-            }
+        if (namespace == null) {
+            namespace = getDefaultNamespace();
         }
-
-        if ( ns == null ) {
-            // no namespace was specified, so do an exhaustive lookup
+        if (namespace == ANY_NAMESPACE) {
+            //do an exhaustive lookup
             List matches = new ArrayList();
             for (Iterator i = l.iterator(); i.hasNext();) {
                 ResourceInfo resource = (ResourceInfo) i.next();
@@ -298,6 +308,18 @@ public class DefaultCatalogDAO {
                 return ModificationProxy.create( (T) matches.get( 0 ), clazz );
             }
         }
+        else {
+            for (Iterator i = l.iterator(); i.hasNext();) {
+                ResourceInfo resource = (ResourceInfo) i.next();
+                if (name.equals(resource.getName())) {
+                    NamespaceInfo namespace1 = resource.getNamespace();
+                    if (namespace1 != null && namespace1.equals( namespace )) {
+                            return ModificationProxy.create( (T) resource, clazz );
+                    }
+                }
+            }
+        }
+
         return null;
     }
     
@@ -306,6 +328,8 @@ public class DefaultCatalogDAO {
     }
     
     public List getResourcesByNamespace(NamespaceInfo namespace, Class clazz) {
+        //TODO: support ANY_NAMESPACE?
+        
         List all = lookup(clazz, resources);
         List matches = new ArrayList();
 
@@ -336,7 +360,6 @@ public class DefaultCatalogDAO {
             if ( name.equals( resource.getName() ) && store.equals( resource.getStore() ) ) {
                 return ModificationProxy.create((T)resource, clazz);
             }
-                
         }
         
         return null;
@@ -360,19 +383,19 @@ public class DefaultCatalogDAO {
     //
     // Layers
     //
-    public void add(LayerInfo layer) {
-        layers.add(layer);
+    public LayerInfo add(LayerInfo layer) {
+        resolve(layer);
+        synchronized(layers) {
+            layers.add(layer);
+        }
+        
+        return ModificationProxy.create(layer, LayerInfo.class);
     }
     
     public void remove(LayerInfo layer) {
-        //ensure no references to the layer
-        for ( LayerGroupInfo lg : layerGroups ) {
-            if ( lg.getLayers().contains( layer ) ) {
-                String msg = "Unable to delete layer referenced by layer group '"+lg.getName()+"'";
-                throw new IllegalArgumentException( msg );
-            }
+        synchronized(layers) {
+            layers.remove(unwrap(layer));
         }
-        layers.remove(unwrap(layer));
     }
     
     public void save(LayerInfo layer) {
@@ -391,34 +414,14 @@ public class DefaultCatalogDAO {
     }
     
     public LayerInfo getLayerByName(String name) {
-        String prefix = null;
-        String resource = null;
-        
-        int colon = name.indexOf( ':' );
-        if ( colon != -1 ) {
-            //search by resource name
-            prefix = name.substring( 0, colon );
-            resource = name.substring( colon + 1 );
-            
-            for (Iterator l = layers.iterator(); l.hasNext();) {
-                LayerInfo layer = (LayerInfo) l.next();
-                ResourceInfo r = layer.getResource();
-                
-                if ( prefix.equals( r.getNamespace().getPrefix() ) && resource.equals( r.getName() ) ) {
-                    return ModificationProxy.create( layer, LayerInfo.class );
-                }
+      
+        for (Iterator l = layers.iterator(); l.hasNext();) {
+            LayerInfo layer = (LayerInfo) l.next();
+            if ( name.equals( layer.getName() ) ) {
+                return ModificationProxy.create( layer, LayerInfo.class );
             }
         }
-        else {
-            //search by layer name
-            for (Iterator l = layers.iterator(); l.hasNext();) {
-                LayerInfo layer = (LayerInfo) l.next();
-                if ( name.equals( layer.getName() ) ) {
-                    return ModificationProxy.create( layer, LayerInfo.class );
-                }
-            }
-        }
-    
+      
         return null;
     }
     
@@ -446,19 +449,26 @@ public class DefaultCatalogDAO {
         return ModificationProxy.createList(matches,LayerInfo.class);
     }
     
-    public List getLayers() {
+    public List<LayerInfo> getLayers() {
         return ModificationProxy.createList( new ArrayList(layers), LayerInfo.class );
     }
     
     //
     // Maps
     //
-    public void add(MapInfo map) {
-        maps.add(map);
+    public MapInfo add(MapInfo map) {
+        resolve(map);
+        synchronized(maps) {
+            maps.add(map);
+        }
+        
+        return ModificationProxy.create(map, MapInfo.class);
     }
 
     public void remove(MapInfo map) {
-        maps.remove(unwrap(map));
+        synchronized(maps) {
+            maps.remove(unwrap(map));
+        }
     }
 
     public void save(MapInfo map) {
@@ -492,12 +502,18 @@ public class DefaultCatalogDAO {
     //
     // Layer groups
     //
-    public void add (LayerGroupInfo layerGroup) {
-        layerGroups.add( layerGroup );
+    public LayerGroupInfo add (LayerGroupInfo layerGroup) {
+        resolve(layerGroup);
+        synchronized(layerGroups) {
+            layerGroups.add( layerGroup );
+        }
+        return ModificationProxy.create(layerGroup, LayerGroupInfo.class);
     }
     
     public void remove(LayerGroupInfo layerGroup) {
-        layerGroups.remove( unwrap(layerGroup) );
+        synchronized(layerGroups) {
+            layerGroups.remove( unwrap(layerGroup) );
+        }
     }
     
     public void save(LayerGroupInfo layerGroup) {
@@ -531,19 +547,25 @@ public class DefaultCatalogDAO {
     //
     // Namespaces
     //
-    public void add(NamespaceInfo namespace) {
-        namespaces.put(namespace.getPrefix(),namespace);
+    public NamespaceInfo add(NamespaceInfo namespace) {
+        resolve(namespace);
+        synchronized(namespaces) {
+            namespaces.put(namespace.getPrefix(),namespace);
+        }
+        
+        return ModificationProxy.create(namespace, NamespaceInfo.class);
     }
     
     public void remove(NamespaceInfo namespace) {
-   
-        NamespaceInfo defaultNamespace = getDefaultNamespace();
-        if (namespace.equals(defaultNamespace)) {
-            namespaces.remove(null);
-            namespaces.remove(Catalog.DEFAULT);
+        synchronized(namespaces) {
+            NamespaceInfo defaultNamespace = getDefaultNamespace();
+            if (namespace.equals(defaultNamespace)) {
+                namespaces.remove(null);
+                namespaces.remove(Catalog.DEFAULT);
+            }
+            
+            namespaces.remove(namespace.getPrefix());
         }
-        
-        namespaces.remove(namespace.getPrefix());
     }
 
     public void save(NamespaceInfo namespace) {
@@ -567,11 +589,7 @@ public class DefaultCatalogDAO {
     }
 
     public void setDefaultNamespace(NamespaceInfo defaultNamespace) {
-        NamespaceInfo ns = namespaces.get( defaultNamespace.getPrefix() );
-        if ( ns == null ) {
-            throw new IllegalArgumentException( "No such namespace: '" + defaultNamespace.getPrefix() + "'" );
-        }
-        
+        NamespaceInfo ns = namespaces.get(defaultNamespace.getPrefix());
         NamespaceInfo old = namespaces.get(null);
         namespaces.put( null, ns );
         namespaces.put( Catalog.DEFAULT, ns );
@@ -622,30 +640,18 @@ public class DefaultCatalogDAO {
     // Workspaces
     //
     // Workspace methods
-    public void add(WorkspaceInfo workspace) {
+    public WorkspaceInfo add(WorkspaceInfo workspace) {
+        resolve(workspace);
         synchronized (workspaces) {
             workspaces.put( workspace.getName(), workspace );
-            // if there is no default workspace use this one as the default
-            if ( workspaces.get( null ) == null ) {
-                setDefaultWorkspace(workspace);
-            }
         }
+        return ModificationProxy.create(workspace, WorkspaceInfo.class);
     }
     
     public void remove(WorkspaceInfo workspace) {
-        workspaces.remove( workspace.getName() );
-        
-        WorkspaceInfo defaultWorkspace = getDefaultWorkspace();
-        if (workspace.equals(defaultWorkspace)) {
-            workspaces.remove(null);
-            workspaces.remove(Catalog.DEFAULT);
-            
-            //default removed, choose another workspace to become default
-            if (!workspaces.isEmpty()) {
-                setDefaultWorkspace(workspaces.values().iterator().next());
-            }
+        synchronized(workspaces) {
+            workspaces.remove( workspace.getName() );
         }
-        
     }
     
     public void save(WorkspaceInfo workspace) {
@@ -670,8 +676,19 @@ public class DefaultCatalogDAO {
     
     public void setDefaultWorkspace(WorkspaceInfo workspace) {
         WorkspaceInfo old = workspaces.get(null);
-        workspaces.put( null, workspace );
-        workspaces.put( "default", workspace );
+        
+        synchronized(workspaces) {
+            if (workspace != null) {
+                WorkspaceInfo ws = workspaces.get(workspace.getName());
+                workspaces.put( null, ws );
+                workspaces.put( "default", ws );
+            }
+            else {
+                workspaces.remove(null);
+                workspaces.remove("default");
+            }
+            
+        }
         
         //fire change event
         catalog.fireModified(catalog, 
@@ -711,18 +728,18 @@ public class DefaultCatalogDAO {
     //
     // Styles
     //
-    public void add(StyleInfo style) {
-        styles.add(style);
+    public StyleInfo add(StyleInfo style) {
+        resolve(style);
+        synchronized(styles) {
+            styles.add(style);
+        }
+        return ModificationProxy.create(style, StyleInfo.class);
     }
 
     public void remove(StyleInfo style) {
-        //ensure no references to the style
-        for ( LayerInfo l : layers ) {
-            if ( style.equals( l.getDefaultStyle() ) || l.getStyles().contains( style )) {
-                throw new IllegalArgumentException( "Unable to delete style referenced by '"+ l.getName()+"'");
-            }
+        synchronized(styles) {
+            styles.remove(unwrap(style));
         }
-        styles.remove(unwrap(style));
     }
 
     public void save(StyleInfo style) {
@@ -758,11 +775,6 @@ public class DefaultCatalogDAO {
     //
     // Utilities
     //
-    public void remove(ResourceInfo resource) {
-        resource = unwrap(resource);
-        resources.remove(resource.getClass(), resource);
-    }
-    
     public static <T> T unwrap(T obj) {
         return ModificationProxy.unwrap(obj);
     }
