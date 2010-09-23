@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.CatalogDAO;
 import org.geoserver.catalog.CatalogException;
 import org.geoserver.catalog.CatalogFactory;
 import org.geoserver.catalog.CatalogInfo;
@@ -66,7 +67,7 @@ public class CatalogImpl implements Catalog {
     /**
      * dao
      */
-    protected DefaultCatalogDAO dao;
+    protected CatalogDAO dao;
     
     /**
      * listeners

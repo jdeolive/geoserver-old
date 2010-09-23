@@ -14,6 +14,8 @@ import org.geoserver.catalog.MetadataMap;
 import org.geoserver.catalog.StyleInfo;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 
+import static org.geoserver.catalog.impl.CatalogImplUtil.envelopeEquals;
+
 public class LayerGroupInfoImpl implements LayerGroupInfo {
 
     protected String id;
@@ -109,11 +111,9 @@ public class LayerGroupInfoImpl implements LayerGroupInfo {
         if (!( obj instanceof LayerGroupInfo) ) 
             return false;
         LayerGroupInfo other = (LayerGroupInfo) obj;
-        if (bounds == null) {
-            if (other.getBounds() != null)
-                return false;
-        } else if (!bounds.equals(other.getBounds()))
+        if (!envelopeEquals(bounds, other.getBounds())) {
             return false;
+        }
         if (id == null) {
             if (other.getId() != null)
                 return false;

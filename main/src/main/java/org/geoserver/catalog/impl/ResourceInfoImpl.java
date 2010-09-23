@@ -21,6 +21,8 @@ import org.geotools.referencing.CRS;
 import org.opengis.feature.type.Name;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import static org.geoserver.catalog.impl.CatalogImplUtil.envelopeEquals;
+
 /**
  * Default implementation of {@link ResourceInfo}.
  * 
@@ -384,11 +386,9 @@ public abstract class ResourceInfoImpl implements ResourceInfo {
                 return false;
         } else if (!keywords.equals(other.getKeywords()))
             return false;
-        if (latLonBoundingBox == null) {
-            if (other.getLatLonBoundingBox() != null)
-                return false;
-        } else if (!latLonBoundingBox.equals(other.getLatLonBoundingBox()))
+        if(!envelopeEquals(latLonBoundingBox, other.getLatLonBoundingBox())) {
             return false;
+        }
         if (metadataLinks == null) {
             if (other.getMetadataLinks() != null)
                 return false;
@@ -404,11 +404,9 @@ public abstract class ResourceInfoImpl implements ResourceInfo {
                 return false;
         } else if (!namespace.equals(other.getNamespace()))
             return false;
-        if (nativeBoundingBox == null) {
-            if (other.getNativeBoundingBox() != null)
-                return false;
-        } else if (!nativeBoundingBox.equals(other.getNativeBoundingBox()))
+        if (!envelopeEquals(nativeBoundingBox, other.getNativeBoundingBox())) {
             return false;
+        }
         if (nativeCRS == null) {
             if (other.getNativeCRS() != null)
                 return false;

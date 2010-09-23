@@ -16,6 +16,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.MultiHashMap;
 import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.CatalogDAO;
 import org.geoserver.catalog.CatalogInfo;
 import org.geoserver.catalog.CoverageDimensionInfo;
 import org.geoserver.catalog.CoverageInfo;
@@ -41,7 +42,7 @@ import org.geoserver.ows.util.OwsUtils;
  *
  * TODO: look for any exceptions, move them back to catlaog as they indicate logic
  */
-public class DefaultCatalogDAO {
+public class DefaultCatalogDAO implements CatalogDAO {
     
     public static WorkspaceInfo ANY_WORKSPACE = any(WorkspaceInfo.class);
     
@@ -116,12 +117,16 @@ public class DefaultCatalogDAO {
      */
     private CatalogImpl catalog;
     
-    public DefaultCatalogDAO(CatalogImpl catalog) {
-        this.catalog = catalog;
+    public DefaultCatalogDAO(Catalog catalog) {
+        setCatalog(catalog);
     }
     
-    public void setCatalog(CatalogImpl catalog) {
-        this.catalog = catalog;
+    public void setCatalog(Catalog catalog) {
+        this.catalog = (CatalogImpl) catalog;
+    }
+    
+    public Catalog getCatalog() {
+        return null;
     }
     
     //
@@ -272,6 +277,7 @@ public class DefaultCatalogDAO {
         }
     }
     
+   
     public void save(ResourceInfo resource) {
         saved(resource);
     }
@@ -322,7 +328,7 @@ public class DefaultCatalogDAO {
 
         return null;
     }
-    
+ 
     public List getResources(Class clazz) {
         return ModificationProxy.createList( lookup(clazz,resources), clazz );
     }
@@ -510,12 +516,18 @@ public class DefaultCatalogDAO {
         return ModificationProxy.create(layerGroup, LayerGroupInfo.class);
     }
     
+    /* (non-Javadoc)
+     * @see org.geoserver.catalog.impl.CatalogDAO#remove(org.geoserver.catalog.LayerGroupInfo)
+     */
     public void remove(LayerGroupInfo layerGroup) {
         synchronized(layerGroups) {
             layerGroups.remove( unwrap(layerGroup) );
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.geoserver.catalog.impl.CatalogDAO#save(org.geoserver.catalog.LayerGroupInfo)
+     */
     public void save(LayerGroupInfo layerGroup) {
         saved(layerGroup);
     }
@@ -1075,7 +1087,10 @@ public class DefaultCatalogDAO {
         }
     }
     
-    public void sync(DefaultCatalogDAO other) {
+    public void sync(CatalogDAO dao) {
+        if (!(dao instanceof DefaultCatalogDAO)) return;
+
+        DefaultCatalogDAO other = (DefaultCatalogDAO) dao;
         stores = other.stores;
         defaultStores = other.defaultStores;
         resources = other.resources;
