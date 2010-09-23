@@ -11,6 +11,8 @@ import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
+import org.geoserver.catalog.WMSLayerInfo;
+import org.geoserver.catalog.WMSStoreInfo;
 import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.catalog.impl.CoverageInfoImpl;
 import org.geoserver.catalog.impl.CoverageStoreInfoImpl;
@@ -23,6 +25,8 @@ import org.geoserver.catalog.impl.NamespaceInfoImpl;
 import org.geoserver.catalog.impl.ResourceInfoImpl;
 import org.geoserver.catalog.impl.StoreInfoImpl;
 import org.geoserver.catalog.impl.StyleInfoImpl;
+import org.geoserver.catalog.impl.WMSLayerInfoImpl;
+import org.geoserver.catalog.impl.WMSStoreInfoImpl;
 import org.geoserver.catalog.impl.WorkspaceInfoImpl;
 
 public enum ClassMappings {
@@ -45,6 +49,10 @@ public enum ClassMappings {
         @Override public Class getInterface() { return CoverageStoreInfo.class; }
         @Override public Class getImpl() { return CoverageStoreInfoImpl.class; };
     },
+    WMSSTORE {
+        @Override public Class getInterface() { return WMSStoreInfo.class; }
+        @Override public Class getImpl() { return WMSStoreInfoImpl.class; };
+    },
     STORE {
         @Override public Class getInterface() { return StoreInfo.class; }
         @Override public Class getImpl() { return StoreInfoImpl.class; };
@@ -58,6 +66,10 @@ public enum ClassMappings {
     COVERAGE {
         @Override public Class getInterface() { return CoverageInfo.class; }
         @Override public Class getImpl() { return CoverageInfoImpl.class; };
+    },
+    WMSLAYER {
+        @Override public Class getInterface() { return WMSLayerInfo.class; }
+        @Override public Class getImpl() { return WMSLayerInfoImpl.class; };
     },
     RESOURCE {
         @Override public Class getInterface() { return ResourceInfo.class; }

@@ -14,7 +14,9 @@ import org.acegisecurity.Authentication;
 import org.acegisecurity.InsufficientAuthenticationException;
 import org.acegisecurity.context.SecurityContextHolder;
 import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.CatalogDAO;
 import org.geoserver.catalog.CatalogFactory;
+import org.geoserver.catalog.CatalogInfo;
 import org.geoserver.catalog.CatalogVisitor;
 import org.geoserver.catalog.CoverageInfo;
 import org.geoserver.catalog.CoverageStoreInfo;
@@ -883,6 +885,10 @@ public class SecureCatalogImpl extends AbstractDecorator<Catalog> implements Cat
         delegate.dispose();
     }
 
+    public CatalogDAO getDAO() {
+        return delegate.getDAO();
+    }
+    
     public CatalogFactory getFactory() {
         return delegate.getFactory();
     }
@@ -891,6 +897,23 @@ public class SecureCatalogImpl extends AbstractDecorator<Catalog> implements Cat
         return delegate.getListeners();
     }
 
+    public void fireAdded(CatalogInfo object) {
+        delegate.fireAdded(object);
+    }
+    
+    public void fireModified(CatalogInfo object, List<String> propertyNames, List oldValues,
+            List newValues) {
+        delegate.fireModified(object, propertyNames, oldValues, newValues);
+    }
+    
+    public void firePostModified(CatalogInfo object) {
+        delegate.firePostModified(object);
+    }
+    
+    public void fireRemoved(CatalogInfo object) {
+        delegate.fireRemoved(object);
+    }
+    
     // TODO: why is resource pool being exposed???
     public ResourcePool getResourcePool() {
         return delegate.getResourcePool();

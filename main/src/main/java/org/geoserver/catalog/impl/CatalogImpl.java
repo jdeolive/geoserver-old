@@ -85,6 +85,15 @@ public class CatalogImpl implements Catalog {
         resourcePool = new ResourcePool(this);
     }
     
+    public CatalogDAO getDAO() {
+        return dao;
+    }
+    
+    public void setDAO(CatalogDAO dao) {
+        this.dao = dao;
+        dao.setCatalog(this);
+    }
+    
     public String getId() {
         return "catalog";
     }
@@ -172,7 +181,16 @@ public class CatalogImpl implements Catalog {
     public <T extends StoreInfo> T getStoreByName(WorkspaceInfo workspace,
             String name, Class<T> clazz) {
         
-        T store = dao.getStoreByName(workspace, name, clazz);
+        WorkspaceInfo ws = workspace;
+        if (ws == null) {
+            ws = getDefaultWorkspace();
+        }
+        
+        if(DataStoreInfo.class == clazz && (name == null || name.equals(Catalog.DEFAULT))) {
+            return (T) getDefaultDataStore(workspace);
+        }
+        
+        T store = dao.getStoreByName(ws, name, clazz);
         if (store == null && workspace == null) {
             store = dao.getStoreByName(DefaultCatalogDAO.ANY_WORKSPACE, name, clazz);
         }
@@ -303,7 +321,9 @@ public class CatalogImpl implements Catalog {
             //default to default namespace
             resource.setNamespace( getDefaultNamespace() );
         }
-        
+        if ( resource.getNativeName() == null ) {
+            resource.setNativeName(resource.getName());
+        }
         validate(resource,true);
         
         dao.add(resource);
@@ -313,6 +333,9 @@ public class CatalogImpl implements Catalog {
     void validate(ResourceInfo resource, boolean isNew) {
         if ( isNull(resource.getName()) ) {
             throw new NullPointerException( "Resource name must not be null");
+        }
+        if ( isNull(resource.getNativeName())) {
+            throw new NullPointerException( "Resource native name must not be null");
         }
         if ( resource.getStore() == null ) {
             throw new IllegalArgumentException( "Resource must be part of a store");
@@ -379,7 +402,12 @@ public class CatalogImpl implements Catalog {
     
     public <T extends ResourceInfo> T getResourceByName(NamespaceInfo ns,
             String name, Class<T> clazz) {
-        T resource = dao.getResourceByName(ns, name, clazz);
+        
+        NamespaceInfo namespace = ns;
+        if (namespace == null) {
+            namespace = getDefaultNamespace();
+        }
+        T resource = dao.getResourceByName(namespace, name, clazz);
         if (resource == null && ns == null) {
             resource = dao.getResourceByName(DefaultCatalogDAO.ANY_NAMESPACE, name, clazz);
         }
@@ -735,6 +763,13 @@ public class CatalogImpl implements Catalog {
     }
 
     public NamespaceInfo getNamespaceByPrefix(String prefix) {
+        if (prefix == null || Catalog.DEFAULT.equals(prefix)) {
+            NamespaceInfo ns = getDefaultNamespace();
+            if (ns != null) {
+                prefix = ns.getPrefix();
+            }
+        }
+        
         return dao.getNamespaceByPrefix(prefix);
     }
 
@@ -908,6 +943,12 @@ public class CatalogImpl implements Catalog {
     }
     
     public WorkspaceInfo getWorkspaceByName(String name) {
+        if (name == null || Catalog.DEFAULT.equals(name)) {
+            WorkspaceInfo ws = getDefaultWorkspace();
+            if (ws != null) {
+                name = ws.getName();
+            }
+        }
         return dao.getWorkspaceByName(name);
     }
     
@@ -1004,14 +1045,18 @@ public class CatalogImpl implements Catalog {
         fireAdded( object );
     }
     
-    protected void fireAdded(CatalogInfo object) {
+    protected void removed(CatalogInfo object) {
+        fireRemoved( object );
+    }
+    
+    public void fireAdded(CatalogInfo object) {
         CatalogAddEventImpl event = new CatalogAddEventImpl();
         event.setSource(object);
 
         event(event);
     }
     
-    protected void fireModified(CatalogInfo object, List propertyNames, List oldValues,
+    public void fireModified(CatalogInfo object, List propertyNames, List oldValues,
             List newValues) {
         CatalogModifyEventImpl event = new CatalogModifyEventImpl();
 
@@ -1023,13 +1068,14 @@ public class CatalogImpl implements Catalog {
         event(event);
     }
 
-    protected void firePostModified(CatalogInfo object) {
+    public void firePostModified(CatalogInfo object) {
         CatalogPostModifyEventImpl event = new CatalogPostModifyEventImpl();
         event.setSource( object);
         
         event(event);
     }
-    protected void removed(CatalogInfo object) {
+    
+    public void fireRemoved(CatalogInfo object) {
         CatalogRemoveEventImpl event = new CatalogRemoveEventImpl();
         event.setSource(object);
 

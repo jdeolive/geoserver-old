@@ -8,6 +8,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.geoserver.catalog.event.CatalogListener;
+import org.geoserver.catalog.event.impl.CatalogAddEventImpl;
+import org.geoserver.catalog.event.impl.CatalogModifyEventImpl;
+import org.geoserver.catalog.event.impl.CatalogPostModifyEventImpl;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.opengis.feature.type.Name;
 
@@ -131,6 +134,11 @@ public interface Catalog extends CatalogInfo {
      */
     public static String DEFAULT = "default";
 
+    /**
+     * The dao used for data access.
+     */
+    CatalogDAO getDAO();
+    
     /**
      * The factory used to create catalog objects.
      * 
@@ -1294,6 +1302,43 @@ public interface Catalog extends CatalogInfo {
      */
     void removeListener(CatalogListener listener);
 
+    /**
+     * Fires the event for an object being added to the catalog.
+     * <p>
+     * This method should not be called by client code. It is meant to be called
+     * interally by the catalog subsystem.
+     * </p>
+     */
+    void fireAdded(CatalogInfo object);
+    
+    /**
+     * Fires the event for an object being modified in the catalog.
+     * <p>
+     * This method should not be called by client code. It is meant to be called
+     * interally by the catalog subsystem.
+     * </p>
+     */
+    void fireModified(CatalogInfo object, List<String> propertyNames, List oldValues,
+            List newValues);
+
+    /**
+     * Fires the event for an object that was modified in the catalog.
+     * <p>
+     * This method should not be called by client code. It is meant to be called
+     * interally by the catalog subsystem.
+     * </p>
+     */
+    void firePostModified(CatalogInfo object);
+    
+    /**
+     * Fires the event for an object being removed from the catalog.
+     * <p>
+     * This method should not be called by client code. It is meant to be called
+     * interally by the catalog subsystem.
+     * </p>
+     */
+    void fireRemoved(CatalogInfo object);
+    
     /**
      * Returns the pool or cache for resources.
      * <p>

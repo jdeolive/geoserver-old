@@ -1,10 +1,5 @@
 package org.geoserver.catalog.hib;
 
-import java.sql.Connection;
-import java.sql.Statement;
-
-import javax.sql.DataSource;
-
 import org.geoserver.catalog.CatalogDAO;
 import org.geoserver.catalog.CoverageInfo;
 import org.geoserver.catalog.CoverageStoreInfo;
@@ -18,7 +13,6 @@ import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WorkspaceInfo;
 import org.h2.tools.DeleteDbFiles;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -257,6 +251,28 @@ public class HibCatalogDAOTest {
         
         assertNull(dao.getStoreByName( ws, "widgets", DataStoreInfo.class ));
         assertEquals(0, dao.getStores(DataStoreInfo.class).size());
+    }
+    
+    @Test
+    public void testDefaultDataStore() throws Exception {
+        testAddDataStore();
+        
+        WorkspaceInfo ws = dao.getWorkspaceByName("acme");
+        DataStoreInfo ds = dao.getStoreByName(ws, "widgets", DataStoreInfo.class);
+        dao.setDefaultDataStore(ws, ds);
+        
+        DataStoreInfo ds1 = dao.getDefaultDataStore(ws);
+        
+        assertEquals(ds, ds1);
+        
+        DataStoreInfo ds2 = dao.getCatalog().getFactory().createDataStore();
+        ds2.setWorkspace(ws);
+        ds2.setName("things");
+        dao.add(ds2);
+        dao.setDefaultDataStore(ws, ds2);
+        
+        assertEquals(dao.getStoreByName(ws, "things", DataStoreInfo.class), ds2);
+        
     }
     
     @Test

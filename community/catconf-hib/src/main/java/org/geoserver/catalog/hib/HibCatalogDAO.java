@@ -1,5 +1,7 @@
 package org.geoserver.catalog.hib;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,6 +22,7 @@ import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WorkspaceInfo;
+import org.geoserver.catalog.impl.DataStoreInfoImpl;
 import org.geoserver.catalog.impl.DefaultCatalogDAO;
 import org.geoserver.catalog.impl.NamespaceInfoImpl;
 import org.geoserver.catalog.impl.WorkspaceInfoImpl;
@@ -96,17 +99,21 @@ public class HibCatalogDAO implements CatalogDAO {
 
     public void setDefaultWorkspace(WorkspaceInfo workspace) {
         //TODO: remove the cast to WorkspaceInfoImpl
-        WorkspaceInfo oldDefault = getDefaultWorkspace();
+        WorkspaceInfo old = getDefaultWorkspace();
 
-        if (oldDefault != null) {
-            ((WorkspaceInfoImpl)oldDefault).setDefault(false);
-            save(oldDefault);
+        if (old != null) {
+            ((WorkspaceInfoImpl)old).setDefault(false);
+            save(old);
         }
         
         if (workspace != null) {
             ((WorkspaceInfoImpl)workspace).setDefault(true);
             save(workspace);
         }
+        
+        //fire change event
+        catalog.fireModified(catalog, 
+            Arrays.asList("defaultWorkspace"), Arrays.asList(old), Arrays.asList(workspace));
     }
     
     //
@@ -150,17 +157,21 @@ public class HibCatalogDAO implements CatalogDAO {
     
     public void setDefaultNamespace(NamespaceInfo namespace) {
         //TODO: remove the cast to NamespaceInfoImpl
-        NamespaceInfo oldDefault = getDefaultNamespace();
+        NamespaceInfo old = getDefaultNamespace();
 
-        if (oldDefault != null) {
-            ((NamespaceInfoImpl)oldDefault).setDefault(false);
-            save(oldDefault);
+        if (old != null) {
+            ((NamespaceInfoImpl)old).setDefault(false);
+            save(old);
         }
         
         if (namespace != null) {
             ((NamespaceInfoImpl)namespace).setDefault(true);
             save(namespace);
         }
+        
+        //fire change event
+        catalog.fireModified(catalog, 
+            Arrays.asList("defaultNamespace"), Arrays.asList(old), Arrays.asList(namespace));
     }
     
     
@@ -185,8 +196,15 @@ public class HibCatalogDAO implements CatalogDAO {
 
     public <T extends StoreInfo> T getStoreByName(WorkspaceInfo workspace, String name,
             Class<T> clazz) {
-        Query query = query("from ", clazz, " where name = ", param(name),
-                " and workspace = ", param(workspace));
+        Query query = null;
+        if (workspace == DefaultCatalogDAO.ANY_WORKSPACE) {
+            query = query("from ", clazz, " where name = ", param(name));
+        }
+        else {
+            query = query("from ", clazz, " where name = ", param(name), " and workspace = ", param(workspace));
+        }
+            
+            
         return (T) first(query);
     }
 
@@ -198,6 +216,33 @@ public class HibCatalogDAO implements CatalogDAO {
             Class<T> clazz) {
         return query("from ", clazz, " where workspace = ", param(workspace)).getResultList();
     }
+
+    public DataStoreInfo getDefaultDataStore(WorkspaceInfo workspace) {
+        Query query = 
+            query("from ", DataStoreInfoImpl.class, " where workspace = ", param(workspace), 
+                 " and default = ", param(Boolean.TRUE));
+        return (DataStoreInfo) first(query);
+    }
+
+    public void setDefaultDataStore(WorkspaceInfo workspace, DataStoreInfo store) {
+        //TODO: remove the cast to DataStoreInfoImpl
+        DataStoreInfo old = getDefaultDataStore(workspace);
+
+        if (old != null) {
+            ((DataStoreInfoImpl)old).setDefault(false);
+            save(old);
+        }
+        
+        if (store != null) {
+            ((DataStoreInfoImpl)store).setDefault(true);
+            save(store);
+        }
+        
+        //fire change event
+        catalog.fireModified(catalog, 
+            Arrays.asList("defaultDataStore"), Arrays.asList(old), Arrays.asList(store));
+    }
+
     
     //
     // resources
@@ -444,10 +489,15 @@ public class HibCatalogDAO implements CatalogDAO {
             return null;
         } 
         else {
-            if (doWarn && result.size() > 1) {
-                LOGGER.log(Level.WARNING, "Found too many items in result", new RuntimeException(
-                        "Trace: Found too many items in query"));
+            //TODO: add a flag to control exception
+            if (result.size() > 1) {
+                throw new RuntimeException("Expected 1 result from " + query + " but got " + result.size());
+                
             }
+//            if (doWarn && result.size() > 1) {
+//                LOGGER.log(Level.WARNING, "Found too many items in result", new RuntimeException(
+//                        "Trace: Found too many items in query"));
+//            }
 
             Object ret = result.get(0);
             if (ret instanceof HibernateProxy) {
@@ -479,7 +529,7 @@ public class HibCatalogDAO implements CatalogDAO {
         Query query = query("from ", clazz);
         query.setHint("org.hibernate.cacheable", true);
         List<?> result = query.getResultList();
-        return (List<T>) result;
+        return Collections.unmodifiableList((List<T>) result);
     }
     
    
@@ -495,12 +545,6 @@ public class HibCatalogDAO implements CatalogDAO {
 
     public void dispose() {
     }
-
-    public DataStoreInfo getDefaultDataStore(WorkspaceInfo workspace) {
-        return null;
-    }
-
-   
 
     public MapInfo getMap(String id) {
         return null;
@@ -527,13 +571,6 @@ public class HibCatalogDAO implements CatalogDAO {
     
 
     public void save(MapInfo map) {
-    }
-
-    
-
-
-
-    public void setDefaultDataStore(WorkspaceInfo workspace, DataStoreInfo store) {
     }
 
     public void sync(CatalogDAO other) {

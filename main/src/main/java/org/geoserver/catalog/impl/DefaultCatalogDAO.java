@@ -173,14 +173,6 @@ public class DefaultCatalogDAO implements CatalogDAO {
     public <T extends StoreInfo> T getStoreByName(WorkspaceInfo workspace,
             String name, Class<T> clazz) {
         
-        if ( workspace == null ) {
-            workspace = getDefaultWorkspace();
-        }
-        
-        if(name == null || name.equals(Catalog.DEFAULT)) {
-            return (T) getDefaultDataStore(workspace);
-        }
-        
         List l = lookup(clazz, stores);
         if (workspace == ANY_WORKSPACE) {
             //do an exhaustive search through all workspaces
@@ -297,9 +289,7 @@ public class DefaultCatalogDAO implements CatalogDAO {
     public <T extends ResourceInfo> T getResourceByName(NamespaceInfo namespace, String name, Class<T> clazz) {
         
         List l = lookup(clazz, resources);
-        if (namespace == null) {
-            namespace = getDefaultNamespace();
-        }
+        
         if (namespace == ANY_NAMESPACE) {
             //do an exhaustive lookup
             List matches = new ArrayList();

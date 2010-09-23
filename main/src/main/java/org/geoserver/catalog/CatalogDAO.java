@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.geoserver.catalog.impl.DefaultCatalogDAO;
 
+//TODO: document this inteface
+//  -> which methods throw which events?
 public interface CatalogDAO {
 
     Catalog getCatalog();
