@@ -158,7 +158,33 @@ public class GeoServerImpl implements GeoServer {
             }
         }
     }
+    
+    public void fireGlobalModified(GeoServerInfo global, List<String> changed, List oldValues, 
+        List newValues) {
+        
+        for ( ConfigurationListener l : getListeners() ) {
+            try {
+                l.handleGlobalChange( global, changed, oldValues, newValues);
+            }
+            catch( Exception e ) {
+                //log this
+            }
+        }
+    }
 
+    public void fireLoggingModified(LoggingInfo logging, List<String> changed, List oldValues, 
+            List newValues) {
+            
+        for ( ConfigurationListener l : getListeners() ) {
+            try {
+                l.handleLoggingChange( logging, changed, oldValues, newValues);
+            }
+            catch( Exception e ) {
+                //log this
+            }
+        }
+    }
+    
     void fireLoggingPostModified() {
         for ( ConfigurationListener l : listeners ) {
             try {
@@ -177,6 +203,19 @@ public class GeoServerImpl implements GeoServer {
         firePostServiceModified(service);
     }
 
+    public void fireServiceModified(ServiceInfo service, List<String> changed, List oldValues, 
+            List newValues) {
+            
+        for ( ConfigurationListener l : getListeners() ) {
+            try {
+                l.handleServiceChange( service, changed, oldValues, newValues);
+            }
+            catch( Exception e ) {
+                //log this
+            }
+        }
+    }
+    
     void firePostServiceModified(ServiceInfo service) {
         for ( ConfigurationListener l : listeners ) {
             try {

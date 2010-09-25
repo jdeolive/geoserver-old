@@ -7,7 +7,7 @@
     <property name="DAO" ref="hibCatalogDAO"/>
   </bean>
   
-  <bean id="config" class="org.geoserver.config.impl.GeoServerImpl">
+  <bean id="geoServer" class="org.geoserver.config.impl.GeoServerImpl">
     <property name="DAO" ref="hibGeoServerDAO"/>
   </bean>
   

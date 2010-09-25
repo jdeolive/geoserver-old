@@ -2,14 +2,20 @@ package org.geoserver.catalog.hib;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.CatalogInfo;
+import org.geoserver.catalog.Info;
 import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.WorkspaceInfo;
+import org.geoserver.config.GeoServer;
+import org.geoserver.config.GeoServerInfo;
+import org.geoserver.config.LoggingInfo;
+import org.geoserver.config.ServiceInfo;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geotools.util.Utilities;
 import org.geotools.util.logging.Logging;
@@ -39,6 +45,11 @@ public class HibCatalogInterceptor extends EmptyInterceptor implements Applicati
      * catalog
      */
     Catalog catalog;
+    
+    /**
+     * config
+     */
+    GeoServer geoServer;
 
     public HibCatalogInterceptor() {
     }
@@ -58,6 +69,17 @@ public class HibCatalogInterceptor extends EmptyInterceptor implements Applicati
         return catalog;
     }
 
+    protected GeoServer geoServer() {
+        if (geoServer == null) {
+            synchronized (this) {
+                if (geoServer == null) {
+                    geoServer = GeoServerExtensions.bean(GeoServer.class, appContext);
+                }
+            }
+        }
+        return geoServer;
+    }
+    
     public void afterTransactionCompletion(Transaction tx) {
         if (!tx.wasRolledBack()) {
             //TODO: fire post modified... maybe via thread local?
@@ -67,9 +89,6 @@ public class HibCatalogInterceptor extends EmptyInterceptor implements Applicati
     @Override
     public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState,
             Object[] previousState, String[] propertyNames, Type[] types) {
-        if (!(entity instanceof CatalogInfo)) {
-            return false;
-        }
         
         List<String> propertyNamesChanged = new ArrayList<String>();
         List<Object> oldValues = new ArrayList<Object>();
@@ -91,8 +110,24 @@ public class HibCatalogInterceptor extends EmptyInterceptor implements Applicati
                 propertyNamesChanged.add(propertyNames[i]);
             }
         }
-        if (!filterEvent((CatalogInfo)entity, propertyNamesChanged, oldValues, newValues)) {
-            catalog().fireModified((CatalogInfo)entity, propertyNamesChanged, oldValues, newValues);    
+        
+        Info info = (Info) entity;
+        
+        if (!filterEvent(info, propertyNamesChanged, oldValues, newValues)) {
+            if (info instanceof CatalogInfo) {
+                catalog().fireModified((CatalogInfo)info, propertyNamesChanged, oldValues, newValues);    
+            }
+            else {
+                if (info instanceof GeoServerInfo) {
+                    geoServer().fireGlobalModified((GeoServerInfo)info, propertyNamesChanged, oldValues, newValues);
+                }
+                else if (info instanceof LoggingInfo) {
+                    geoServer().fireLoggingModified((LoggingInfo)info, propertyNamesChanged, oldValues, newValues);
+                }
+                else if (info instanceof ServiceInfo) {
+                    geoServer().fireServiceModified((ServiceInfo)info, propertyNamesChanged, oldValues, newValues);
+                }
+            }
         }
         
         return false;
@@ -102,7 +137,7 @@ public class HibCatalogInterceptor extends EmptyInterceptor implements Applicati
      * method to filter out situations in which we don;t want to throw an event
      */
     protected boolean filterEvent(
-        CatalogInfo entity, List<String> propertyNamesChanged, List oldValues, List newValues) {
+        Info entity, List<String> propertyNamesChanged, List oldValues, List newValues) {
         
         //handle default namespace/workspace changing or default datastore
         if ((entity instanceof WorkspaceInfo || entity instanceof NamespaceInfo || entity instanceof StoreInfo) && 

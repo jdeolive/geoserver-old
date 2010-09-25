@@ -49,14 +49,7 @@ public class DefaultGeoServerDAO implements GeoServerDAO {
         List oldValues = proxy.getOldValues();
         List newValues = proxy.getNewValues();
         
-        for ( ConfigurationListener l : geoServer.getListeners() ) {
-            try {
-                l.handleGlobalChange( global, propertyNames, oldValues, newValues);
-            }
-            catch( Exception e ) {
-                //log this
-            }
-        }
+        geoServer.fireGlobalModified(global, propertyNames, oldValues, newValues);
         
         proxy.commit();
     }
@@ -81,15 +74,8 @@ public class DefaultGeoServerDAO implements GeoServerDAO {
         List oldValues = proxy.getOldValues();
         List newValues = proxy.getNewValues();
         
-        for ( ConfigurationListener l : geoServer.getListeners() ) {
-            try {
-                l.handleLoggingChange( logging, propertyNames, oldValues, newValues);
-            }
-            catch( Exception e ) {
-                //log this
-            }
-        }
-        
+        geoServer.fireLoggingModified(logging, propertyNames, oldValues, newValues);
+
         proxy.commit();
     }
     
@@ -108,15 +94,8 @@ public class DefaultGeoServerDAO implements GeoServerDAO {
         List oldValues = proxy.getOldValues();
         List newValues = proxy.getNewValues();
         
-        for ( ConfigurationListener l : geoServer.getListeners() ) {
-            try {
-                l.handleServiceChange( service, propertyNames, oldValues, newValues);
-            }
-            catch( Exception e ) {
-                //log this
-            }
-        }
-        
+        geoServer.fireServiceModified(service, propertyNames, oldValues, newValues);
+
         proxy.commit();
     }
     
