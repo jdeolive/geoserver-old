@@ -1,4 +1,4 @@
-package org.geoserver.catalog.hib;
+package org.geoserver.hibernate;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -32,9 +32,9 @@ import org.springframework.context.ApplicationContextAware;
  * @author Justin Deoliveira, The Open Planning Project
  * 
  */
-public class HibCatalogInterceptor extends EmptyInterceptor implements ApplicationContextAware {
+public class HibPropertyChangeInterceptor extends EmptyInterceptor implements ApplicationContextAware {
 
-    private final static Logger LOGGER = Logging.getLogger(HibCatalogInterceptor.class);
+    private final static Logger LOGGER = Logging.getLogger(HibPropertyChangeInterceptor.class);
 
     /**
      * spring app context
@@ -51,7 +51,7 @@ public class HibCatalogInterceptor extends EmptyInterceptor implements Applicati
      */
     GeoServer geoServer;
 
-    public HibCatalogInterceptor() {
+    public HibPropertyChangeInterceptor() {
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

@@ -24,8 +24,8 @@
         <property name="persistenceProvider">
             <bean class="org.geoserver.hibernate.ConfigurableHibernatePersistence">
                 <property name="interceptor">
-                    <!-- can't inject catalog direcetory because it causes a cycle -->
-                    <bean class="org.geoserver.catalog.hib.HibCatalogInterceptor"/>
+                    <!-- can't inject catalog/config directly because it causes a cycle -->
+                    <bean class="org.geoserver.catalog.hib.HibPropertyChangeInterceptor"/>
                 </property>
             </bean>
         </property>
