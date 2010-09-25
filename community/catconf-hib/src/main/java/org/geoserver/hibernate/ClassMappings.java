@@ -1,4 +1,4 @@
-package org.geoserver.catalog.hib;
+package org.geoserver.hibernate;
 
 import org.geoserver.catalog.CoverageInfo;
 import org.geoserver.catalog.CoverageStoreInfo;
@@ -28,9 +28,24 @@ import org.geoserver.catalog.impl.StyleInfoImpl;
 import org.geoserver.catalog.impl.WMSLayerInfoImpl;
 import org.geoserver.catalog.impl.WMSStoreInfoImpl;
 import org.geoserver.catalog.impl.WorkspaceInfoImpl;
+import org.geoserver.config.GeoServerInfo;
+import org.geoserver.config.LoggingInfo;
+import org.geoserver.config.ServiceInfo;
+import org.geoserver.config.impl.GeoServerInfoImpl;
+import org.geoserver.config.impl.LoggingInfoImpl;
+import org.geoserver.config.impl.ServiceInfoImpl;
+import org.geoserver.wcs.WCSInfo;
+import org.geoserver.wcs.WCSInfoImpl;
+import org.geoserver.wfs.WFSInfo;
+import org.geoserver.wfs.WFSInfoImpl;
+import org.geoserver.wms.WMSInfo;
+import org.geoserver.wms.WMSInfoImpl;
 
 public enum ClassMappings {
     
+    //
+    // catalog
+    //
     WORKSPACE {
         @Override public Class getInterface() { return WorkspaceInfo.class; }
         @Override public Class getImpl() { return WorkspaceInfoImpl.class; };
@@ -91,8 +106,43 @@ public enum ClassMappings {
     STYLE {
         @Override public Class getInterface() { return StyleInfo.class; }
         @Override public Class getImpl() { return StyleInfoImpl.class; };
+    },
+    
+    //
+    // config
+    //
+    GLOBAL {
+        @Override public Class getInterface() { return GeoServerInfo.class; }
+        @Override public Class getImpl() { return GeoServerInfoImpl.class; };
+    }, 
+    
+    LOGGING {
+        @Override public Class getInterface() { return LoggingInfo.class; }
+        @Override public Class getImpl() { return LoggingInfoImpl.class; }; 
+    },
+    
+    // services, order matters
+    WMS {
+        @Override public Class getInterface() { return WMSInfo.class; }
+        @Override public Class getImpl() { return WMSInfoImpl.class; };
+    }, 
+    
+    WFS {
+        @Override public Class getInterface() { return WFSInfo.class; }
+        @Override public Class getImpl() { return WFSInfoImpl.class; };
+    }, 
+    
+    WCS {
+        @Override public Class getInterface() { return WCSInfo.class; }
+        @Override public Class getImpl() { return WCSInfoImpl.class; }; 
+    }, 
+    
+    SERVICE {
+        @Override public Class getInterface() { return ServiceInfo.class; }
+        @Override public Class getImpl() { return ServiceInfoImpl.class; };  
     };
-
+    
+    
     public abstract Class getInterface();
 
     public abstract Class getImpl();

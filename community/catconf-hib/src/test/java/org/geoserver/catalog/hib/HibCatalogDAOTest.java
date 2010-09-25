@@ -1,5 +1,9 @@
 package org.geoserver.catalog.hib;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import org.geoserver.catalog.CatalogDAO;
 import org.geoserver.catalog.CoverageInfo;
 import org.geoserver.catalog.CoverageStoreInfo;
@@ -12,32 +16,19 @@ import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.StoreInfo;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WorkspaceInfo;
+import org.geoserver.hibernate.HibTestSupport;
 import org.h2.tools.DeleteDbFiles;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.springframework.web.context.support.XmlWebApplicationContext;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+public class HibCatalogDAOTest extends HibTestSupport {
 
-public class HibCatalogDAOTest {
-
-    static XmlWebApplicationContext ctx;
     static CatalogDAO dao;
     
     @BeforeClass
     public static void init() throws Exception {
-        ctx = new XmlWebApplicationContext() {
-            public String[] getConfigLocations() {
-                return new String[]{
-                    "file:src/main/resources/applicationContext.xml", 
-                    "file:src/test/resources/applicationContext-test.xml"};
-            }
-        };
-        ctx.refresh();
         dao = (CatalogDAO) ctx.getBean("hibCatalogDAO");
     }
     

@@ -87,5 +87,7 @@
     <bean id="hibCatalogDAO" class="org.geoserver.catalog.hib.HibCatalogDAO">
        <!--property name="catalog" ref="catalog"/-->
     </bean>
+    <bean id="hibGeoServerDAO" class="org.geoserver.config.hib.HibGeoServerDAO">
+    </bean>
 
 </beans>

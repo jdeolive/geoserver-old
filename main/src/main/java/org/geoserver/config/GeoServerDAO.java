@@ -4,6 +4,10 @@ import java.util.Collection;
 
 public interface GeoServerDAO {
 
+    GeoServer getGeoServer();
+    
+    void setGeoServer(GeoServer geoServer);
+    
     /**
      * The global geoserver configuration.
      */

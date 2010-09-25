@@ -67,6 +67,10 @@ public class HibCatalogInterceptor extends EmptyInterceptor implements Applicati
     @Override
     public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState,
             Object[] previousState, String[] propertyNames, Type[] types) {
+        if (!(entity instanceof CatalogInfo)) {
+            return false;
+        }
+        
         List<String> propertyNamesChanged = new ArrayList<String>();
         List<Object> oldValues = new ArrayList<Object>();
         List<Object> newValues = new ArrayList<Object>();

@@ -21,6 +21,14 @@ public class DefaultGeoServerDAO implements GeoServerDAO {
         this.logging = geoServer.getFactory().createLogging();
     }
     
+    public GeoServer getGeoServer() {
+        return geoServer;
+    }
+    
+    public void setGeoServer(GeoServer geoServer) {
+        this.geoServer = geoServer;
+    }
+    
     public GeoServerInfo getGlobal() {
         if ( global == null ) {
             return null;

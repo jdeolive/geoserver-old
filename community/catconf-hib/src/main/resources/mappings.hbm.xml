@@ -4,9 +4,14 @@
   <!-- 
       type defintions 
    -->
-  <typedef class="org.geoserver.catalog.hib.types.FilterType" name="filter"/>
-  <typedef class="org.geoserver.catalog.hib.types.BoundingBoxType" name="boundingBox"/>
-  <typedef class="org.geoserver.catalog.hib.types.NumberRangeType" name="numberRange"/>
+  <typedef class="org.geoserver.catalog.hib.types.FilterType" name="Filter"/>
+  <typedef class="org.geoserver.catalog.hib.types.BoundingBoxType" name="BoundingBox"/>
+  <typedef class="org.geoserver.catalog.hib.types.NumberRangeType" name="NumberRange"/>
+  <typedef class="org.geoserver.config.hib.types.GMLInfoType" name="GmlInfo"/>
+  <typedef class="org.geoserver.config.hib.types.WFSVersionType" name="WfsVersion"/>
+  <typedef class="org.geoserver.config.hib.types.WFSServiceLevelType" name="WfsServiceLevel"/>
+  <typedef class="org.geoserver.config.hib.types.WMSWatermarkType" name="WmsWatermarkType"/>
+  
   
   <!-- ===================================================================== -->
   <!-- MetadataMap -->
@@ -97,7 +102,7 @@
     <property column="NAME" name="name"/>
     <property column="DESCRIPTION" name="description"/>
     <!--property column="RANGE" name="range" type="org.geotools.util.NumberRange"/-->
-    <property lazy="false" name="range" type="numberRange">
+    <property lazy="false" name="range" type="NumberRange">
       <column name="min"/>
       <column name="max"/>
     </property>
@@ -189,14 +194,14 @@
       <list-index column="RESOURCE_METADATA_LINK_INDEX"/>
       <many-to-many class="org.geoserver.catalog.impl.MetadataLinkInfoImpl" lazy="false"/>
     </list>
-    <property lazy="false" name="nativeBoundingBox" type="boundingBox">
+    <property lazy="false" name="nativeBoundingBox" type="BoundingBox">
       <column name="MINX"/>
       <column name="MINY"/>
       <column name="MAXX"/>
       <column name="MAXY"/>
       <column name="CRS"/>
     </property>
-    <property lazy="false" name="latLonBoundingBox" type="boundingBox">
+    <property lazy="false" name="latLonBoundingBox" type="BoundingBox">
       <column name="LL_MINX"/>
       <column name="LL_MINY"/>
       <column name="LL_MAXX"/>
@@ -217,7 +222,7 @@
   <joined-subclass extends="org.geoserver.catalog.impl.ResourceInfoImpl" name="org.geoserver.catalog.impl.FeatureTypeInfoImpl" table="FEATURETYPES">
     <key column="RESOURCE_ID"/>
     <many-to-one class="org.geoserver.catalog.impl.DataStoreInfoImpl" column="STORE" foreign-key="fk_featuretype_store" lazy="false" name="store"/>
-    <property column="FILTER" name="filter" type="filter"/>
+    <property column="FILTER" name="filter" type="Filter"/>
     <list cascade="all" lazy="false" name="attributes" table="FEATURETYPE_ATTR">
       <!--cache usage="read-write"/-->
       <key column="featuretype" foreign-key="fk_featuretype_attr"/>
@@ -415,7 +420,7 @@
       </many-to-many>
     </list>
 
-    <property lazy="false" name="bounds" type="boundingBox">
+    <property lazy="false" name="bounds" type="BoundingBox">
       <column name="MINX"/>
       <column name="MINY"/>
       <column name="MAXX"/>
@@ -424,5 +429,155 @@
     </property>
     <many-to-one cascade="all" class="org.geoserver.catalog.MetadataMap" column="METADATA" foreign-key="fk_layergroup_metadata" lazy="false" name="metadata"/>
   </class>
+  
+  <!--
+   confgifuration mappings
+   -->
+   
+  <!-- ===================================================================== -->
+  <!-- GeoServerInfo -->
+  <!-- ===================================================================== -->
+  <class name="org.geoserver.config.impl.GeoServerInfoImpl" table="GLOBAL">
+    <!--cache usage="read-write"/-->
+    <id column="ID" name="id" type="string">
+      <generator class="native"/>
+    </id>
+    <property column="CHARSET" name="charset"/>
+    <property column="TITLE" name="title"/>
+    <property column="ADMIN_USERNAME" name="adminUsername"/>
+    <property column="ADMIN_PASSWORD" name="adminPassword"/>
+    <property column="NUM_DECIMALS" name="numDecimals"/>
+    <property column="ONLINE_RESOURCE" name="onlineResource"/>
+    <property column="SCHEMA_BASE_URL" name="schemaBaseUrl"/>
+    <property column="PROXY_BASE_URL" name="proxyBaseUrl"/>
+    <property column="VERBOSE_FLAG" name="verbose"/>
+    <property column="VERBOSE_EXCEPTIONS" name="verboseExceptions"/>
+    <property column="UPDATE_SEQUENCE" name="updateSequence"/>
+    <many-to-one cascade="all" class="org.geoserver.catalog.MetadataMap" column="METADATA" foreign-key="fk_geoserver_metadata" lazy="false" name="metadata"/>
+    <component class="org.geoserver.config.impl.JAIInfoImpl" lazy="false" name="JAI">
+      <property column="JAI_ALLOWINTERPOLATION" name="allowInterpolation" not-null="true"/>
+      <property column="JAI_RECYCLING" name="recycling" not-null="true"/>
+      <property column="JAI_TILEPRIORITY" name="tilePriority" not-null="true"/>
+      <property column="JAI_TILETHREADS" name="tileThreads" not-null="true"/>
+      <property column="JAI_MEMORYCAPACITY" name="memoryCapacity" not-null="true"/>
+      <property column="JAI_MEMORYTHRESHOLD" name="memoryThreshold" not-null="true"/>
+      <property column="JAI_IMAGEIOCACHE" name="imageIOCache" not-null="true"/>
+      <property column="JAI_PNGACCELERATION" name="pngAcceleration" not-null="true"/>
+      <property column="JAI_JPEGACCELERATION" name="jpegAcceleration" not-null="true"/>
+      <property column="JAI_ALLOWNATIVEMOSAIC" name="allowNativeMosaic" not-null="true"/>
+    </component>
+    <component class="org.geoserver.config.impl.ContactInfoImpl" lazy="false" name="contact">
+      <property column="CONTACT_ID" name="id"/>
+      <property column="CONTACT_ADDRESS" name="address"/>
+      <property column="CONTACT_CITY" name="addressCity"/>
+      <property column="CONTACT_COUNTRY" name="addressCountry"/>
+      <property column="CONTACT_POSTAL_CODE" name="addressPostalCode"/>
+      <property column="CONTACT_STATE" name="addressState"/>
+      <property column="CONTACT_TYPE" name="addressType"/>
+      <property column="CONTACT_EMAIL" name="contactEmail"/>
+      <property column="CONTACT_FACSIMILE" name="contactFacsimile"/>
+      <property column="CONTACT_ORGANIZATION" name="contactOrganization"/>
+      <property column="CONTACT_PERSON" name="contactPerson"/>
+      <property column="CONTACT_POSITION" name="contactPosition"/>
+      <property column="CONTACT_VOICE" name="contactVoice"/>
+      <property column="CONTACT_ONLINERESOURCE" name="onlineResource"/>
+    </component>
+  </class>
+  
+  <!-- ===================================================================== -->
+  <!-- LoggingInfo -->
+  <!-- ===================================================================== -->  
+  <class name="org.geoserver.config.impl.LoggingInfoImpl" table="LOGGING">
+      <id column="ID" name="id" type="string">
+        <generator class="native"/>
+      </id>
+      <property column="LEVEL" name="level"/>
+      <property column="LOCATION" name="location"/>
+      <property column="STD_OUT_LOGGING" name="stdOutLogging"/>
+  </class>
+  
+  <!-- ===================================================================== -->
+  <!-- ServiceInfo -->
+  <!-- ===================================================================== -->
+  <class name="org.geoserver.config.impl.ServiceInfoImpl" table="SERVICES">
+    <!--cache usage="read-write"/-->
+    <id column="ID" name="id"/>
+    <property column="ENABLED" name="enabled"/>
+    <property column="NAME" name="name" not-null="true" unique="true"/>
+    <property column="TITLE" name="title"/>
+    <property column="MAINTAINER" name="maintainer"/>
+    <property column="ACCESS_CONSTRAINTS" name="accessConstraints"/>
+    <property column="FEES" name="fees"/>
+    <one-to-one cascade="persist,all" class="org.geoserver.catalog.impl.MetadataLinkInfoImpl" lazy="false" name="metadataLink" foreign-key="fk_service_mdlink"/>
+    
+    <property column="CITE_COMPLIANT" name="citeCompliant"/>
+    <property column="ONLINE_RESOURCE" name="onlineResource"/>
+    <many-to-one cascade="all" class="org.geoserver.catalog.MetadataMap" column="METADATA" foreign-key="fk_service_metadata" lazy="false" name="metadata"/>
+    <property column="ABSTRACT" name="abstract"/>
+    <list cascade="all" lazy="false" name="keywords" table="SERVICE_KEYWORDS">
+      <!--cache usage="read-write"/-->
+      <key column="ID"/>
+      <list-index column="SERVICE_KEYWORD_INDEX"/>
+      <element type="java.lang.String"/>
+    </list>
+    <list cascade="all" lazy="false" name="versions" table="SERVICE_VERSIONS">
+      <!--cache usage="read-write"/-->
+      <key column="ID"/>
+      <list-index column="SERVICE_VERSION_INDEX"/>
+      <element type="org.geotools.util.Version"/>
+    </list>
+    <list cascade="all" lazy="false" name="exceptionFormats" table="SERVICE_EXCEPTION_FORMATS">
+      <!--cache usage="read-write"/-->
+      <key column="ID"/>
+      <list-index column="SERVICE_EXCEPTION_FORMAT_INDEX"/>
+      <element type="java.lang.String"/>
+    </list>
+  </class>
+  
+  <!-- ===================================================================== -->
+  <!-- WMSInfoImpl -->
+  <!-- ===================================================================== -->
+  <joined-subclass extends="org.geoserver.config.impl.ServiceInfoImpl" name="org.geoserver.wms.WMSInfoImpl" table="WMS_SERVICE">
+    <key column="ID"/>
+    <property column="INTERPOLATION" name="interpolation"/>
+
+    <property lazy="false" name="watermark" type="WmsWatermarkType">
+      <column name="wmarkEnabled"/>
+      <column name="wmarkPos"/>
+      <column name="wmarkTransp"/>
+      <column name="wmarkUrl"/>
+    </property>
+
+    <list cascade="all" lazy="false" name="SRS" table="WMS_SRS">
+      <!--cache usage="read-write"/-->
+      <key column="ID" foreign-key="srs_wms_listfk"/>
+      <list-index column="WMS_SRS_INDEX"/>
+      <element type="java.lang.String"/>
+    </list>
+  </joined-subclass>
+  
+  <!-- ===================================================================== -->
+  <!-- WFSInfoImpl -->
+  <!-- ===================================================================== -->
+  <joined-subclass extends="org.geoserver.config.impl.ServiceInfoImpl" name="org.geoserver.wfs.WFSInfoImpl" table="WFS_SERVICE">
+    <key column="ID"/>
+    <property column="SERVICE_LEVEL" name="serviceLevel" type="WfsServiceLevel"/>
+    <map cascade="all" lazy="false" name="GML" table="WFS_GML">
+      <!--cache usage="read-write"/-->
+      <key column="service_id" foreign-key="gml_wfs_mapfk"/>
+      <map-key column="WFSVERSION" type="WfsVersion"/>
+      <element length="32" type="GmlInfo">
+        <column name="SRS_STYLE"/>
+      </element>
+    </map>
+  </joined-subclass>
+  
+  <!-- ===================================================================== -->
+  <!-- WCSInfoImpl -->
+  <!-- ===================================================================== -->
+  <joined-subclass extends="org.geoserver.config.impl.ServiceInfoImpl" name="org.geoserver.wcs.WCSInfoImpl" table="WCS_SERVICE">
+    <key column="ID"/>
+  </joined-subclass>
+  
   
 </hibernate-mapping>

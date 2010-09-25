@@ -58,6 +58,7 @@ public class GeoServerImpl implements GeoServer {
     
     public void setDAO(GeoServerDAO dao) {
         this.dao = dao;
+        dao.setGeoServer(this);
     }
     
     public GeoServerFactory getFactory() {
