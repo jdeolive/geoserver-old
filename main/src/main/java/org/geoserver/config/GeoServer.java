@@ -23,6 +23,11 @@ public interface GeoServer {
     public static final Object CONFIGURATION_LOCK = new Object(); 
 
     /**
+     * The configuration dao access object.
+     */
+    GeoServerDAO getDAO();
+    
+    /**
      * The global geoserver configuration.
      * 
      * @uml.property name="configuration"
