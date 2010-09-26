@@ -3,9 +3,13 @@ package org.geoserver.config;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
+import org.geoserver.catalog.MetadataMap;
 import org.geoserver.catalog.impl.ModificationProxy;
+import org.geoserver.config.impl.CoverageAccessInfoImpl;
+import org.geoserver.config.impl.GeoServerInfoImpl;
 
 public class DefaultGeoServerDAO implements GeoServerDAO {
 
@@ -38,6 +42,7 @@ public class DefaultGeoServerDAO implements GeoServerDAO {
     }
     
     public void setGlobal(GeoServerInfo global) {
+        resolve(global);
         this.global = global;
     }
     
@@ -144,5 +149,18 @@ public class DefaultGeoServerDAO implements GeoServerDAO {
     
     public static <T> T unwrap(T obj) {
         return ModificationProxy.unwrap(obj);
+    }
+    
+    protected void resolve(GeoServerInfo info) {
+        GeoServerInfoImpl global = (GeoServerInfoImpl) info;
+        if(global.getMetadata() == null) {
+            global.setMetadata(new MetadataMap());
+        }
+        if(global.getClientProperties() == null) {
+            global.setClientProperties(new HashMap<Object, Object>());
+        }
+        if (global.getCoverageAccess() == null) {
+            global.setCoverageAccess(new CoverageAccessInfoImpl());
+        }
     }
 }

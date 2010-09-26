@@ -1137,7 +1137,7 @@ public class CatalogImpl implements Catalog {
     }
     
     public void sync( CatalogImpl other ) {
-        dao.sync(other.dao);
+        other.dao.syncTo(dao);
         listeners = other.listeners;
         
         if ( resourcePool != other.resourcePool ) {

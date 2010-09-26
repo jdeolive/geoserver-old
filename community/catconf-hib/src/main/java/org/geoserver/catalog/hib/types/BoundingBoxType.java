@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import java.util.Properties;
 import java.util.logging.Logger;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -14,8 +15,10 @@ import org.geotools.util.Utilities;
 import org.geotools.util.logging.Logging;
 import org.hibernate.Hibernate;
 import org.hibernate.HibernateException;
+import org.hibernate.usertype.ParameterizedType;
 import org.hibernate.usertype.UserType;
 import org.opengis.geometry.BoundingBox;
+import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
@@ -24,10 +27,18 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Justin Deoliveira, The Open Planing Project
  * 
  */
-public class BoundingBoxType implements UserType {
+public class BoundingBoxType implements UserType, ParameterizedType {
 
     private static final Logger LOGGER = Logging.getLogger(BoundingBoxType.class);
 
+    boolean storeCRSAsWKT = false;
+    
+    public void setParameterValues(Properties parameters) {
+        if (parameters != null) {
+            storeCRSAsWKT = "true".equals(parameters.getProperty("storeCRSAsWKT"));
+        }
+    }
+    
     public Object assemble(Serializable cached, Object owner) throws HibernateException {
 
         // String os = owner == null ? "null" : owner.getClass().getSimpleName();
@@ -69,21 +80,35 @@ public class BoundingBoxType implements UserType {
         double miny = rs.getDouble(names[1]);
         double maxx = rs.getDouble(names[2]);
         double maxy = rs.getDouble(names[3]);
-
-        Blob blob = rs.getBlob(names[4]);
-        if (blob != null) {
-            String wkt = new String(blob.getBytes(1, (int) blob.length()));
-            CoordinateReferenceSystem crs;
+        String s = rs.getString(names[4]);
+        
+        //Blob blob = rs.getBlob(names[4]);
+        //if (blob != null) {
+        CoordinateReferenceSystem crs = null;
+        if (s != null) {
             try {
-                crs = CRS.parseWKT(wkt);
-            } catch (Exception e) {
-                String msg = "Unable to create crs from wkt: " + wkt;
+                if (storeCRSAsWKT) {
+                    crs = CRS.parseWKT(s);
+                }
+                else {
+                    crs = CRS.decode(s);
+                }
+            }
+            catch(Exception e) {
+                String msg = "Unable to create crs from wkt: " + s;
                 throw new HibernateException(msg, e);
             }
-            return new ReferencedEnvelope(minx, maxx, miny, maxy, crs);
-        } else {
-            return new ReferencedEnvelope(minx, maxx, miny, maxy, null);
+            //String wkt = new String(blob.getBytes(1, (int) blob.length()));
+            
+            try {
+                //crs = CRS.parseWKT(wkt);
+            } catch (Exception e) {
+                
+                
+            }
         }
+            
+        return new ReferencedEnvelope(minx, maxx, miny, maxy, crs);
     }
 
     public void nullSafeSet(PreparedStatement st, Object value, int index)
@@ -95,7 +120,8 @@ public class BoundingBoxType implements UserType {
             st.setDouble(index + 1, Double.NaN);
             st.setDouble(index + 2, Double.NaN);
             st.setDouble(index + 3, Double.NaN);
-            st.setBlob(index + 4, (Blob) null);
+            st.setNull(index + 4, Types.VARCHAR);
+            //st.setBlob(index + 4, (Blob) null);
             return;
         }
 
@@ -106,9 +132,21 @@ public class BoundingBoxType implements UserType {
 
         if (box.getCoordinateReferenceSystem() != null) {
             CoordinateReferenceSystem crs = box.getCoordinateReferenceSystem();
-            st.setBlob(index + 4, Hibernate.createBlob(crs.toWKT().getBytes()));
+            if (storeCRSAsWKT) {
+                st.setString(index+4, crs.toWKT());
+            }
+            else {
+                try {
+                    st.setString(index+4, "EPSG:"+ CRS.lookupEpsgCode(crs, true));
+                } 
+                catch (FactoryException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            //st.setBlob(index + 4, Hibernate.createBlob(crs.toWKT().getBytes()));
         } else {
-            st.setBlob(index + 4, (Blob) null);
+            st.setNull(index+4, Types.VARCHAR);
+            //st.setBlob(index + 4, (Blob) null);
         }
     }
 
@@ -120,7 +158,7 @@ public class BoundingBoxType implements UserType {
         return BoundingBox.class;
     }
 
-    private static final int[] SQLTYPES = new int[] { Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.BLOB };
+    private static final int[] SQLTYPES = new int[] { Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.DOUBLE, Types.VARCHAR };
     public int[] sqlTypes() {
         return SQLTYPES;
     }

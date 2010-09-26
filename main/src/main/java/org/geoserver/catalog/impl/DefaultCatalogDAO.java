@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -917,7 +918,8 @@ public class DefaultCatalogDAO implements CatalogDAO {
         //resolve the workspace
         WorkspaceInfo resolved = ResolvingProxy.resolve( catalog, s.getWorkspace());
         if ( resolved != null ) {
-            s.setWorkspace(  resolved );    
+            resolved = unwrap(resolved);
+            s.setWorkspace( resolved );
         }
         else {
             //this means the workspace has not yet been added to the catalog, keep the proxy around
@@ -932,9 +934,17 @@ public class DefaultCatalogDAO implements CatalogDAO {
         ResourceInfoImpl r = (ResourceInfoImpl) resource;
         
         //resolve the store
-        StoreInfo resolved = ResolvingProxy.resolve( catalog, r.getStore() );
-        if ( resolved != null ) {
-            r.setStore( resolved );
+        StoreInfo store = ResolvingProxy.resolve( catalog, r.getStore() );
+        if ( store != null ) {
+            store = unwrap(store);
+            r.setStore(store);
+        }
+        
+        //resolve the namespace
+        NamespaceInfo namespace = ResolvingProxy.resolve( catalog, r.getNamespace() );
+        if (namespace != null) {
+            namespace = unwrap(namespace);
+            r.setNamespace(namespace);
         }
         
         if ( resource instanceof FeatureTypeInfo ) {
@@ -979,10 +989,31 @@ public class DefaultCatalogDAO implements CatalogDAO {
 
     protected void resolve(LayerInfo layer) {
         setId(layer);
+        
+        ResourceInfo resource = ResolvingProxy.resolve(catalog, layer.getResource());
+        if (resource != null) {
+            resource = unwrap(resource);
+            layer.setResource(resource);
+        }
+        
         if (layer.getAttribution() == null) {
             layer.setAttribution(catalog.getFactory().createAttribution());
         }
         resolveCollections(layer);
+        
+        StyleInfo style = ResolvingProxy.resolve(catalog, layer.getDefaultStyle());
+        if (style != null) {
+            style = unwrap(style);
+            layer.setDefaultStyle(style);
+        }
+        
+        LinkedHashSet<StyleInfo> styles = new LinkedHashSet();
+        for (StyleInfo s : layer.getStyles()) {
+            s = ResolvingProxy.resolve(catalog, s);
+            s = unwrap(s);
+            styles.add(s);
+        }
+        ((LayerInfoImpl)layer).setStyles(styles);
     }
     
     protected void resolve(LayerGroupInfo layerGroup) {
@@ -992,14 +1023,14 @@ public class DefaultCatalogDAO implements CatalogDAO {
         
         for ( int i = 0; i < lg.getLayers().size(); i++ ) {
             LayerInfo l = lg.getLayers().get( i );
-            LayerInfo resolved = ResolvingProxy.resolve( catalog, l );
+            LayerInfo resolved = unwrap(ResolvingProxy.resolve( catalog, l ));
             lg.getLayers().set( i, resolved );
         }
         
         for ( int i = 0; i < lg.getStyles().size(); i++ ) {
             StyleInfo s = lg.getStyles().get( i );
             if(s != null) {
-                StyleInfo resolved = ResolvingProxy.resolve( catalog, s );
+                StyleInfo resolved = unwrap(ResolvingProxy.resolve( catalog, s ));
                 lg.getStyles().set( i, resolved );
             }
         }
@@ -1077,19 +1108,68 @@ public class DefaultCatalogDAO implements CatalogDAO {
         }
     }
     
-    public void sync(CatalogDAO dao) {
-        if (!(dao instanceof DefaultCatalogDAO)) return;
-
-        DefaultCatalogDAO other = (DefaultCatalogDAO) dao;
-        stores = other.stores;
-        defaultStores = other.defaultStores;
-        resources = other.resources;
-        namespaces = other.namespaces;
-        workspaces = other.workspaces;
-        layers = other.layers;
-        maps = other.maps;
-        layerGroups = other.layerGroups;
-        styles = other.styles;
+    public void syncTo(CatalogDAO dao) {
+        if (dao instanceof DefaultCatalogDAO) {
+            //do an optimized sync
+            DefaultCatalogDAO other = (DefaultCatalogDAO) dao;
+            
+            stores = other.stores;
+            defaultStores = other.defaultStores;
+            resources = other.resources;
+            namespaces = other.namespaces;
+            workspaces = other.workspaces;
+            layers = other.layers;
+            maps = other.maps;
+            layerGroups = other.layerGroups;
+            styles = other.styles;
+        }
+        else {
+            //do a manual import
+            for (Map.Entry<String,WorkspaceInfo> e : workspaces.entrySet()) {
+                if (e.getKey() != null && !"default".equals(e.getKey())) {
+                    dao.add(e.getValue());
+                }
+            }
+            for (Map.Entry<String,NamespaceInfo> e : namespaces.entrySet()) {
+                if (e.getKey() != null && !"default".equals(e.getKey())) {
+                    dao.add(e.getValue());
+                }
+            }
+            
+            for (Iterator k = stores.keySet().iterator(); k.hasNext();) {
+                Class key = (Class) k.next();
+                Collection<StoreInfo> val = stores.getCollection(key);
+                for (StoreInfo s : val) {
+                    dao.add(s);
+                }
+            }
+            
+            for (Iterator k = resources.keySet().iterator(); k.hasNext();) {
+                Class key = (Class) k.next();
+                Collection<ResourceInfo> val = resources.getCollection(key);
+                for (ResourceInfo r : val) {
+                    dao.add(r);
+                }
+            }
+            
+            for (StyleInfo s : styles) { dao.add(s); }
+            for (LayerInfo l : layers) { dao.add(l); }
+            for (LayerGroupInfo lg : layerGroups) { dao.add(lg); }
+            for (MapInfo m : maps) { dao.add(m); }
+            
+            if (workspaces.containsKey(null)) {
+                dao.setDefaultWorkspace(workspaces.get(null));
+            }
+            if (namespaces.containsKey(null)) {
+                dao.setDefaultNamespace(namespaces.get(null));
+            }
+            
+            for (Map.Entry<String, DataStoreInfo> e : defaultStores.entrySet()) {
+                WorkspaceInfo ws = workspaces.get(e.getKey());
+                dao.setDefaultDataStore(ws, e.getValue());
+            }
+        }
+        
     }
 }
 

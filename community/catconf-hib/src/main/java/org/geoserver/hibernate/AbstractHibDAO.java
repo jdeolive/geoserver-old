@@ -10,6 +10,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.geoserver.catalog.Info;
+import org.geoserver.catalog.MetadataMap;
+import org.geoserver.ows.util.OwsUtils;
 import org.geotools.util.logging.Logging;
 import org.hibernate.proxy.HibernateProxy;
 import org.springframework.stereotype.Repository;
@@ -137,6 +139,26 @@ public class AbstractHibDAO {
     }
     
     protected <T extends Info> T persist(T entity) {
+        return persist(entity, true);
+    }
+    
+    protected <T extends Info> T persist(T entity, boolean clearId) {
+        if (clearId) {
+            //hack, clear out id if we are adding a new object
+            Object id = OwsUtils.get(entity, "id");
+            if (id != null) {
+                OwsUtils.set(entity, "id", null);
+            }
+        }
+        try {
+            MetadataMap md = (MetadataMap) OwsUtils.get(entity, "metadata");
+            if (md != null) {
+                md.setId(null);
+            }
+        }
+        catch(IllegalArgumentException e1) {}
+        catch(ClassCastException e2) {}
+        
         entityManager.persist(entity);
         return entity;
     }

@@ -73,7 +73,8 @@ public class HibGeoServerDAO extends AbstractHibDAO implements GeoServerDAO {
     // services
     //
     public void add(ServiceInfo service) {
-        persist(service);
+        //service id's are assigned by the application, so we don't clear them when persisting
+        persist(service, false);
     }
     
     public void save(ServiceInfo service) {

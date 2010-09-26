@@ -168,5 +168,5 @@ public interface CatalogDAO {
 
     void resolve();
 
-    void sync(CatalogDAO other);
+    void syncTo(CatalogDAO other);
 }

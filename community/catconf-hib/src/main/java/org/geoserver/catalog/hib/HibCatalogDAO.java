@@ -19,6 +19,8 @@ import org.geoserver.catalog.WorkspaceInfo;
 import org.geoserver.catalog.impl.DataStoreInfoImpl;
 import org.geoserver.catalog.impl.DefaultCatalogDAO;
 import org.geoserver.catalog.impl.NamespaceInfoImpl;
+import org.geoserver.catalog.impl.ResourceInfoImpl;
+import org.geoserver.catalog.impl.StoreInfoImpl;
 import org.geoserver.catalog.impl.WorkspaceInfoImpl;
 import org.geoserver.hibernate.AbstractHibDAO;
 import org.springframework.stereotype.Repository;
@@ -393,13 +395,16 @@ public class HibCatalogDAO extends AbstractHibDAO implements CatalogDAO {
     }
     
     //
-    // Utilities
+    // maps
     //
     public MapInfo add(MapInfo map) {
         return null;
     }
+    
+    public void save(MapInfo map) {
+    }
 
-    public void dispose() {
+    public void remove(MapInfo map) {
     }
 
     public MapInfo getMap(String id) {
@@ -414,23 +419,30 @@ public class HibCatalogDAO extends AbstractHibDAO implements CatalogDAO {
         return null;
     }
 
-
+    //
+    // Utilities
+    //
+    protected <T extends StoreInfo> T setCatalog(T store) {
+        if (store != null) {
+            ((StoreInfoImpl)store).setCatalog(catalog);
+        }
+        return store;
+    }
     
-
-    public void remove(MapInfo map) {
+    protected <T extends ResourceInfo> T setCatalog(T resource) {
+        if (resource != null) {
+            ((ResourceInfoImpl)resource).setCatalog(catalog);
+        }
+        return resource;
+    }
+    public void dispose() {
     }
 
-   
     public void resolve() {
     }
 
-    
-
-    public void save(MapInfo map) {
-    }
-
-    public void sync(CatalogDAO other) {
-        
+    public void syncTo(CatalogDAO other) {
+        throw new UnsupportedOperationException();
     }
     
 }

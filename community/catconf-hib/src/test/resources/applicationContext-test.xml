@@ -3,6 +3,14 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
+  <bean id="resourceLoader" class="org.geoserver.platform.GeoServerResourceLoader">
+    <constructor-arg>
+          <bean id="file" class="java.io.File">
+             <constructor-arg value="target"/>
+          </bean>
+        </constructor-arg>
+  </bean>
+  
   <bean id="catalog" class="org.geoserver.catalog.impl.CatalogImpl">
     <property name="DAO" ref="hibCatalogDAO"/>
   </bean>

@@ -1,5 +1,8 @@
 package org.geoserver.hibernate;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManagerFactory;
@@ -9,6 +12,8 @@ import org.hibernate.EmptyInterceptor;
 import org.hibernate.Interceptor;
 import org.hibernate.ejb.Ejb3Configuration;
 import org.hibernate.ejb.HibernatePersistence;
+import org.hibernate.event.EventListeners;
+import org.hibernate.event.PostLoadEventListener;
 
 /**
  * Custom HibernatePersistence implementation that allows for setting an intercetor that is 
@@ -20,6 +25,7 @@ import org.hibernate.ejb.HibernatePersistence;
  */
 public class ConfigurableHibernatePersistence extends HibernatePersistence {
     private Interceptor interceptor;
+    private List<PostLoadEventListener> postLoadEventListeners;
 
     public Interceptor getInterceptor() {
         return interceptor;
@@ -27,6 +33,10 @@ public class ConfigurableHibernatePersistence extends HibernatePersistence {
 
     public void setInterceptor(Interceptor interceptor) {
         this.interceptor = interceptor;
+    }
+    
+    public void setPostLoadEventListeners(List<PostLoadEventListener> postLoadEventListeners) {
+        this.postLoadEventListeners = postLoadEventListeners;
     }
 
     @SuppressWarnings("unchecked")
@@ -51,6 +61,12 @@ public class ConfigurableHibernatePersistence extends HibernatePersistence {
                     "Hibernate interceptor already set in persistence.xml ("
                                 + configured.getInterceptor() + ")");
             }
+        }
+        if (this.postLoadEventListeners != null) {
+            EventListeners el = configured.getEventListeners();
+            List<PostLoadEventListener> listeners = new LinkedList(Arrays.asList(el.getPostLoadEventListeners()));
+            listeners.addAll(this.postLoadEventListeners);
+            el.setPostLoadEventListeners(listeners.toArray(new PostLoadEventListener[listeners.size()]));
         }
     }
 }
