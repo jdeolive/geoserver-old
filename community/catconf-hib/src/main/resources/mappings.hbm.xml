@@ -26,12 +26,12 @@
   <!-- MetadataMap -->
   <!-- ===================================================================== -->
   <class lazy="false" name="org.geoserver.catalog.MetadataMap" table="METADATA">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="METADATA_ID" name="id">
       <generator class="native"/>
     </id>
     <map cascade="all" lazy="false" name="map" table="METADATA_CONTENT">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
       <key column="METADATA_ID"/>
       <map-key column="key" type="java.lang.String"/>
       <element column="value" length="100000" type="java.io.Serializable"/>
@@ -46,7 +46,7 @@
   <!-- WorkspaceInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.WorkspaceInfoImpl" table="WORKSPACES">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="WORKSPACE_ID" name="id">
       <generator class="native"/>
     </id>
@@ -59,7 +59,7 @@
   <!-- NamespaceInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.NamespaceInfoImpl" table="NAMESPACES">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="NS_ID" name="id">
       <generator class="native"/>
     </id>
@@ -73,7 +73,7 @@
   <!-- AttributeTypeInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.AttributeTypeInfoImpl" table="ATTRIBUTETYPE">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="ATTRIBUTE_ID" name="id">
       <generator class="native"/>
     </id>
@@ -90,7 +90,7 @@
   <!-- MetadataLinkInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.MetadataLinkInfoImpl" table="METADATA_LINKS">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="ID" name="id">
       <generator class="native"/>
     </id>
@@ -104,7 +104,7 @@
   <!-- CoverageDimension -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.CoverageDimensionImpl" table="COVERAGE_DIMENSIONS">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="ID" name="id">
       <generator class="native"/>
     </id>
@@ -116,7 +116,7 @@
       <column name="max"/>
     </property>
     <list cascade="all" lazy="false" name="nullValues" table="COVERAGE_DIM_NULL_VALUES">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="ID"/>
       <list-index column="COV_DIM_NULLS_INDEX"/>
       <element type="java.lang.Double"/>
@@ -127,7 +127,7 @@
   <!-- StoreInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.StoreInfoImpl" table="STORES">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="STORE_ID" name="id">
       <generator class="native"/>
     </id>
@@ -139,7 +139,7 @@
     <many-to-one class="org.geoserver.catalog.impl.WorkspaceInfoImpl" column="WORKSPACE" foreign-key="fk_store_workspace" lazy="false" name="workspace"/>
     <many-to-one cascade="all" class="org.geoserver.catalog.MetadataMap" column="METADATA" foreign-key="fk_store_metadata" name="metadata" lazy="false"/>
     <map cascade="all-delete-orphan" lazy="false" name="connectionParameters" table="STORE_CX_PARAMS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="STORE_ID" foreign-key="fk_store_cx_param"/>
       <map-key column="key" type="java.lang.String"/>
       <element column="value" length="100000" type="java.io.Serializable"/>
@@ -173,7 +173,7 @@
   <!-- ResourceInfo -->
   <!-- ===================================================================== -->
   <class abstract="true" name="org.geoserver.catalog.impl.ResourceInfoImpl" table="RESOURCES">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="RESOURCE_ID" name="id">
       <generator class="native"/>
     </id>
@@ -186,19 +186,19 @@
     <property column="DESCRIPTION" name="description"/>
     <property column="ENABLED" name="enabled"/>
     <list cascade="all" lazy="false" name="alias" table="RESOURCE_ALIASES">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="RESOURCE_ID"/>
       <list-index column="RESOURCE_ALIAS_INDEX"/>
       <element type="java.lang.String"/>
     </list>
     <list cascade="all" lazy="false" name="keywords" table="RESOURCE_KEYWORDS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="RESOURCE_ID"/>
       <list-index column="RES_KW_INDEX"/>
       <element type="java.lang.String"/>
     </list>
     <list cascade="all" lazy="false" name="metadataLinks" table="RESOURCE_METADATA_LINK">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="RESOURCE_ID"/>
       <list-index column="RESOURCE_METADATA_LINK_INDEX"/>
       <many-to-many class="org.geoserver.catalog.impl.MetadataLinkInfoImpl" lazy="false"/>
@@ -233,7 +233,7 @@
     <many-to-one class="org.geoserver.catalog.impl.DataStoreInfoImpl" column="STORE" foreign-key="fk_featuretype_store" lazy="false" name="store"/>
     <property column="FILTER" name="filter" type="Filter"/>
     <list cascade="all" lazy="false" name="attributes" table="FEATURETYPE_ATTR">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="featuretype" foreign-key="fk_featuretype_attr"/>
       <list-index column="FEATURETYPE_ATTR_IDX"/>
       <one-to-many class="org.geoserver.catalog.impl.AttributeTypeInfoImpl"/>
@@ -250,38 +250,38 @@
     <property column="GRID_GEOMETRY" length="100000" name="grid" type="java.io.Serializable"/>
     <!--property name="fields" column="FIELDS" type="org.geotools.coverage.io.impl.range.DefaultRangeType"/ -->
     <list cascade="all" lazy="false" name="supportedFormats" table="COVERAGE_SUPPORTED_FORMATS">
-      <cache usage="read-write"/>    
+      <!--cache usage="read-write"/-->    
       <key column="COVERAGE_ID" foreign-key="fk_coverage_supp_formats"/>
       <list-index column="CV_FORMAT_INDEX"/>
       <element column="format" type="java.lang.String"/>
     </list>
     <list cascade="all" lazy="false" name="requestSRS" table="COVERAGE_REQUEST_SRS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="COVERAGE_ID" foreign-key="fk_coverage_req_srs"/>
       <list-index column="idx"/>
       <element column="srs" type="java.lang.String"/>
     </list>
     <list cascade="all" lazy="false" name="responseSRS" table="COVERAGE_RESPONSE_SRS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="COVERAGE_ID" foreign-key="fk_coverage_res_srs"/>
       <list-index column="idx"/>
       <element column="srs" type="java.lang.String"/>
     </list>
     <property column="DEFAULT_INTERPOLATION_METHOD" name="defaultInterpolationMethod"/>
     <list cascade="all" lazy="false" name="interpolationMethods" table="COVERAGE_INTERPOLATION_METHODS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="COVERAGE_ID" foreign-key="fk_coverage_interp"/>
       <list-index column="idx"/>
       <element column="interpolation" type="java.lang.String"/>
     </list>
     <list cascade="all" lazy="false" name="dimensions" table="RESOURCE_COV_DIMENSION">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="RESOURCE_ID" foreign-key="fk_coverage_dim"/>
       <list-index column="idx"/>
       <many-to-many class="org.geoserver.catalog.impl.CoverageDimensionImpl" lazy="false"/>
     </list>
     <map cascade="all" lazy="false" name="parameters" table="COVERAGE_PARAMETERS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="COVERAGE_ID" foreign-key="fk_coverage_params"/>
       <map-key column="paramname" type="java.lang.String"/>
       <element column="paramvalue" type="java.lang.String"/>
@@ -314,7 +314,7 @@
   <!-- StyleInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.StyleInfoImpl" table="STYLES">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="STYLE_ID" name="id">
       <generator class="native"/>
     </id>
@@ -326,7 +326,7 @@
   <!-- AttributionInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.AttributionInfoImpl" table="ATTRIBUTION">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="ATTRIBUTION_ID" name="id">
       <generator class="native"/>
     </id>
@@ -342,7 +342,7 @@
   <!-- LegendInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.LegendInfoImpl" table="LEGENDS">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="LEGEND_ID" name="id">
       <generator class="native"/>
     </id>
@@ -356,7 +356,7 @@
   <!-- LayerInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.catalog.impl.LayerInfoImpl" table="LAYERS">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="LAYER_ID" name="id">
       <generator class="native"/>
     </id>
@@ -368,7 +368,7 @@
 
     <many-to-one cascade="persist" class="org.geoserver.catalog.impl.StyleInfoImpl" column="DEFAULT_STYLE" foreign-key="fk_layer_defstyle" lazy="false" name="defaultStyle" fetch="select"/>
     <set lazy="false" name="styles" table="LAYER_STYLES">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="LAYER_ID" foreign-key="fk_layer_styles_layer"/>
       <many-to-many class="org.geoserver.catalog.impl.StyleInfoImpl" lazy="false" foreign-key="fk_layer_styles_styles"/>
     </set>
@@ -383,21 +383,8 @@
   <!-- ===================================================================== -->
   <!-- LayerGroup -->
   <!-- ===================================================================== -->
-  <!--class name="org.geoserver.catalog.hibernate.beans.GroupedLayerHb" table="GROUPEDLAYERS">
-    <id column="ID" name="id">
-      <generator class="native"/>
-    </id>
-    <version column="LOCKVER" name="version" access="field" insert="true"/>
-    <many-to-one class="org.geoserver.catalog.hibernate.beans.LayerInfoImplHb" name="layer" lazy="false" foreign-key="fk_groupedlayer_layer">
-      <column name="layer_id" not-null="true"/>
-    </many-to-one>
-    <many-to-one class="org.geoserver.catalog.impl.StyleInfoImpl" name="style" lazy="false" foreign-key="fk_groupedlayer_style">
-      <column name="style_id" not-null="false"/>
-    </many-to-one>
-  </class-->
-  
   <class name="org.geoserver.catalog.impl.LayerGroupInfoImpl" table="LAYER_GROUPS">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="LAYER_GROUP_ID" name="id">
       <generator class="native"/>
     </id>
@@ -405,13 +392,6 @@
     <property column="NAME" name="name" not-null="true" unique="true"/>
     <property column="PATH" name="path"/>
     
-    <!--list cascade="all,persist,delete,delete-orphan" lazy="false" name="groupedLayers" table="LAYER_GROUPS_LAYERS">
-      <cache usage="read-write"/>
-      <key column="LAYER_GROUP_ID" foreign-key="fk_layergroup_layer" not-null="true"/>
-      <list-index column="LAYER_INDEX"/>
-      <one-to-many class="org.geoserver.catalog.hibernate.beans.GroupedLayerHb"/>
-    </list-->
-
     <list name="layers" lazy="false" table="LAYER_GROUP_LAYERS">
       <key column="LAYER_GROUP_ID" foreign-key="fk_layergroup_style"/>
       <list-index column="LAYER_GROUP_LAYER_INDEX"/>
@@ -447,7 +427,7 @@
   <!-- GeoServerInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.config.impl.GeoServerInfoImpl" table="GLOBAL">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="ID" name="id" type="string">
       <generator class="native"/>
     </id>
@@ -509,7 +489,7 @@
   <!-- ServiceInfo -->
   <!-- ===================================================================== -->
   <class name="org.geoserver.config.impl.ServiceInfoImpl" table="SERVICES">
-    <cache usage="read-write"/>
+    <!--cache usage="read-write"/-->
     <id column="ID" name="id"/>
     <property column="ENABLED" name="enabled"/>
     <property column="NAME" name="name" not-null="true" unique="true"/>
@@ -524,19 +504,19 @@
     <many-to-one cascade="all" class="org.geoserver.catalog.MetadataMap" column="METADATA" foreign-key="fk_service_metadata" lazy="false" name="metadata"/>
     <property column="ABSTRACT" name="abstract"/>
     <list cascade="all" lazy="false" name="keywords" table="SERVICE_KEYWORDS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="ID"/>
       <list-index column="SERVICE_KEYWORD_INDEX"/>
       <element type="java.lang.String"/>
     </list>
     <list cascade="all" lazy="false" name="versions" table="SERVICE_VERSIONS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="ID"/>
       <list-index column="SERVICE_VERSION_INDEX"/>
       <element type="org.geotools.util.Version"/>
     </list>
     <list cascade="all" lazy="false" name="exceptionFormats" table="SERVICE_EXCEPTION_FORMATS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="ID"/>
       <list-index column="SERVICE_EXCEPTION_FORMAT_INDEX"/>
       <element type="java.lang.String"/>
@@ -558,7 +538,7 @@
     </property>
 
     <list cascade="all" lazy="false" name="SRS" table="WMS_SRS">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="ID" foreign-key="srs_wms_listfk"/>
       <list-index column="WMS_SRS_INDEX"/>
       <element type="java.lang.String"/>
@@ -572,7 +552,7 @@
     <key column="ID"/>
     <property column="SERVICE_LEVEL" name="serviceLevel" type="WfsServiceLevel"/>
     <map cascade="all" lazy="false" name="GML" table="WFS_GML">
-      <cache usage="read-write"/>
+      <!--cache usage="read-write"/-->
       <key column="service_id" foreign-key="gml_wfs_mapfk"/>
       <map-key column="WFSVERSION" type="WfsVersion"/>
       <element length="32" type="GmlInfo">

@@ -24,6 +24,6 @@ public class HibTestSupport {
     @AfterClass
     public static void destroy() throws Exception {
         ctx.close();
-        DeleteDbFiles.execute(".", "catalog", false);
+        DeleteDbFiles.execute(".", "geoserver", false);
     }
 }

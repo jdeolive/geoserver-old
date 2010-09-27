@@ -25,7 +25,7 @@ public class HibGeoServerImplTest extends GeoServerImplTest {
     
     @Override
     protected void setUp() throws Exception {
-        DeleteDbFiles.execute(".", "catalog", true);
+        DeleteDbFiles.execute(".", "geoserver", true);
         super.setUp();
         
         GeoServerDAO dao = geoServer.getDAO();

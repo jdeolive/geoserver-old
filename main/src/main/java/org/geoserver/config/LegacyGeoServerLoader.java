@@ -19,13 +19,14 @@ import org.geoserver.platform.GeoServerResourceLoader;
  * @author Justin Deoliveira, OpenGEO
  *
  */
-public class LegacyGeoServerLoader extends GeoServerLoader {
+public class LegacyGeoServerLoader extends DefaultGeoServerLoader {
 
     public LegacyGeoServerLoader(GeoServerResourceLoader resourceLoader) {
         super(resourceLoader);
     }
     
-    protected void loadCatalog(Catalog catalog, XStreamPersister xp) throws Exception {
+    @Override
+    protected void readCatalog(Catalog catalog, XStreamPersister xp) throws Exception {
         catalog.setResourceLoader( resourceLoader );
         
         //look for legacy catalog.xml
@@ -42,7 +43,8 @@ public class LegacyGeoServerLoader extends GeoServerLoader {
         }
     }
     
-    protected void loadGeoServer(GeoServer geoServer, XStreamPersister xp) throws Exception {
+    @Override
+    protected void readConfiguration(GeoServer geoServer, XStreamPersister xp) throws Exception {
       //look for legacy services.xml
       File f = resourceLoader.find( "services.xml" );
       if ( f != null ) {

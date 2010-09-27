@@ -24,7 +24,7 @@ public class GeoServerLoaderProxy implements BeanPostProcessor, DisposableBean, 
     /**
      * resource loader
      */
-    GeoServerResourceLoader resourceLoader;
+    protected GeoServerResourceLoader resourceLoader;
     
     /**
      * the actual loader
@@ -56,13 +56,18 @@ public class GeoServerLoaderProxy implements BeanPostProcessor, DisposableBean, 
         return bean;
     }
 
+    public void reload() throws Exception {
+        if (loader != null) {
+            loader.reload();
+        }
+    }
     public void destroy() throws Exception {
         if (loader != null) {
             loader.destroy();
         }
     }
     
-    GeoServerLoader lookupGeoServerLoader(ApplicationContext appContext) {
+    protected GeoServerLoader lookupGeoServerLoader(ApplicationContext appContext) {
         GeoServerLoader loader = GeoServerExtensions.bean(GeoServerLoader.class, appContext);
         if (loader == null) {
             loader = new DefaultGeoServerLoader(resourceLoader);
