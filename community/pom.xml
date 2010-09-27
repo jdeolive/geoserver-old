@@ -125,9 +125,9 @@
       </modules>
     </profile>
     <profile>
-      <id>catconf-hib</id>
+      <id>dbconfig</id>
       <modules>
-        <module>catconf-hib</module>
+        <module>dbconfig</module>
       </modules>
     </profile>
     <profile>

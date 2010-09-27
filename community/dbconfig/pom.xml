@@ -9,7 +9,7 @@
  </parent>
 
  <groupId>org.geoserver.community</groupId>
- <artifactId>catconf-hib</artifactId>
+ <artifactId>dbconfig</artifactId>
  <packaging>jar</packaging>
  <version>2.1-SNAPSHOT</version>
  <name>Hibernate Catalog/Configuration Module</name>

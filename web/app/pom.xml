@@ -592,7 +592,7 @@
       <dependencies>
         <dependency>
           <groupId>org.geoserver.community</groupId>
-          <artifactId>catconf-hib</artifactId>
+          <artifactId>dbconfig</artifactId>
           <version>${project.version}</version>
         </dependency>
       </dependencies>
