@@ -11,13 +11,19 @@
      spring/hibernate config
      -->
 
-    <bean id="hibConfigDataSource" class="org.apache.commons.dbcp.BasicDataSource">
-        <property name="driverClassName" value="org.h2.Driver"/>
-        <property name="url"             value="jdbc:h2:file:geoserver"/>
-        <property name="username"        value=""/>
-        <property name="password"        value=""/>
+   <bean id="hibConfigDataSource" class="org.geoserver.data.GeoServerDataSource">
+        <property name="dataDirectory" ref="dataDirectory"/>
+        <property name="file" value="geoserver.db.properties"/>
+        <property name="defaultParameters">
+          <props>
+            <prop key="driver">org.h2.Driver</prop>
+            <prop key="url">jdbc:h2:file:${GEOSERVER_DATA_DIR}/geoserver</prop>
+            <prop key="username"></prop>
+            <prop key="password"></prop>
+          </props>
+        </property>
     </bean>
-    
+
     <bean id="hibPostLoadEventListener" class="org.geoserver.catalog.hib.HibPostLoadEventListener"/>
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="dataSource" ref="hibConfigDataSource"/>
