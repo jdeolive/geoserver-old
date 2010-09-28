@@ -3,6 +3,7 @@ package org.geoserver.catalog.hib;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.impl.ResourceInfoImpl;
 import org.geoserver.catalog.impl.StoreInfoImpl;
+import org.geoserver.catalog.impl.StyleInfoImpl;
 import org.geoserver.config.GeoServer;
 import org.geoserver.config.GeoServerInitializer;
 import org.geoserver.platform.GeoServerExtensions;
@@ -43,6 +44,9 @@ public class HibPostLoadEventListener implements PostLoadEventListener, Applicat
         }
         else if (entity instanceof ResourceInfoImpl) {
             ((ResourceInfoImpl)entity).setCatalog(catalog);
+        }
+        else if (entity instanceof StyleInfoImpl) {
+            ((StyleInfoImpl)entity).setCatalog(catalog);
         }
     }
 
