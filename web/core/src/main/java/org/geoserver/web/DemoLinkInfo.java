@@ -1,10 +1,8 @@
 package org.geoserver.web;
 
 /**
- * Extension hook for pages to add themselves to the Demo Links Section of the user interface.
- * @author David Winslow <dwinslow@opengeo.org>
+ * @deprecated use {@link ToolLinkInfo}.
  */
-@SuppressWarnings("serial")
-public class DemoLinkInfo extends ComponentInfo<GeoServerBasePage> {
-    // inherit everything from ComponentInfo
+public class DemoLinkInfo extends ToolLinkInfo {
+
 }

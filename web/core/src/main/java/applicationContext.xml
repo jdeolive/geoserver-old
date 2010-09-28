@@ -178,9 +178,9 @@
    Demo menu item
    -->
   <bean id="demoMenuPage" class="org.geoserver.web.MenuPageInfo">
-    <property name="id" value="demos"/>
-    <property name="titleKey" value="demo.title"/>
-    <property name="descriptionKey" value="demo.description"/>
+    <property name="id" value="tools"/>
+    <property name="titleKey" value="tools.title"/>
+    <property name="descriptionKey" value="tools.description"/>
     <property name="componentClass" value="org.geoserver.web.DemoPage"/>
   </bean>
   
