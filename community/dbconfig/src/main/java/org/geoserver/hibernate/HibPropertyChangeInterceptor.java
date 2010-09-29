@@ -2,7 +2,6 @@ package org.geoserver.hibernate;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -34,6 +33,14 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class HibPropertyChangeInterceptor extends EmptyInterceptor implements ApplicationContextAware {
 
+    
+    /**
+     * A thread local used to prevent the propagation of the same event over and over which will
+     * happen if an event listener makes another query against hibernate
+     */
+    static ThreadLocal<List> events = new ThreadLocal();
+    //TODO: a post request hook to clean up this thread local
+    
     private final static Logger LOGGER = Logging.getLogger(HibPropertyChangeInterceptor.class);
 
     /**
@@ -52,6 +59,7 @@ public class HibPropertyChangeInterceptor extends EmptyInterceptor implements Ap
     GeoServer geoServer;
 
     public HibPropertyChangeInterceptor() {
+        
     }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -62,7 +70,7 @@ public class HibPropertyChangeInterceptor extends EmptyInterceptor implements Ap
         if (catalog == null) {
             synchronized (this) {
                 if (catalog == null) {
-                    catalog = GeoServerExtensions.bean(Catalog.class, appContext);
+                    catalog = (Catalog) GeoServerExtensions.bean("catalog", appContext);
                 }
             }
         }
@@ -112,22 +120,37 @@ public class HibPropertyChangeInterceptor extends EmptyInterceptor implements Ap
         }
         
         Info info = (Info) entity;
+        Event e = new Event(info, propertyNamesChanged);
         
-        if (!filterEvent(info, propertyNamesChanged, oldValues, newValues)) {
-            if (info instanceof CatalogInfo) {
-                catalog().fireModified((CatalogInfo)info, propertyNamesChanged, oldValues, newValues);    
+        if (events.get() == null) {
+            events.set(new ArrayList());
+        }
+        
+        if (events.get().contains(e)) {
+            return false;
+        }
+        
+        events.get().add(e);
+        try {
+            if (!filterEvent(info, propertyNamesChanged, oldValues, newValues)) {
+                if (info instanceof CatalogInfo) {
+                    catalog().fireModified((CatalogInfo)info, propertyNamesChanged, oldValues, newValues);    
+                }
+                else {
+                    if (info instanceof GeoServerInfo) {
+                        geoServer().fireGlobalModified((GeoServerInfo)info, propertyNamesChanged, oldValues, newValues);
+                    }
+                    else if (info instanceof LoggingInfo) {
+                        geoServer().fireLoggingModified((LoggingInfo)info, propertyNamesChanged, oldValues, newValues);
+                    }
+                    else if (info instanceof ServiceInfo) {
+                        geoServer().fireServiceModified((ServiceInfo)info, propertyNamesChanged, oldValues, newValues);
+                    }
+                }
             }
-            else {
-                if (info instanceof GeoServerInfo) {
-                    geoServer().fireGlobalModified((GeoServerInfo)info, propertyNamesChanged, oldValues, newValues);
-                }
-                else if (info instanceof LoggingInfo) {
-                    geoServer().fireLoggingModified((LoggingInfo)info, propertyNamesChanged, oldValues, newValues);
-                }
-                else if (info instanceof ServiceInfo) {
-                    geoServer().fireServiceModified((ServiceInfo)info, propertyNamesChanged, oldValues, newValues);
-                }
-            }
+        } 
+        finally {
+            events.get().remove(e);
         }
         
         return false;
@@ -146,5 +169,47 @@ public class HibPropertyChangeInterceptor extends EmptyInterceptor implements Ap
         }
         
         return false;
+    }
+    
+    static class Event {
+        Info info;
+        List<String> changed;
+        
+        Event(Info info, List<String> changed) {
+            this.info = info;
+            this.changed = changed;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((changed == null) ? 0 : changed.hashCode());
+            result = prime * result + ((info == null) ? 0 : info.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Event other = (Event) obj;
+            if (changed == null) {
+                if (other.changed != null)
+                    return false;
+            } else if (!changed.equals(other.changed))
+                return false;
+            if (info == null) {
+                if (other.info != null)
+                    return false;
+            } else if (!info.equals(other.info))
+                return false;
+            return true;
+        }
+        
     }
 }

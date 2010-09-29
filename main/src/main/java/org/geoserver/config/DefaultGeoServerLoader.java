@@ -36,9 +36,6 @@ public class DefaultGeoServerLoader extends GeoServerLoader {
 
         readCatalog(catalog, xp);
         
-        //initialize styles
-        initializeStyles(catalog, xp);
-        
         if ( !legacy ) {
             //add the listener which will persist changes
             catalog.addListener( new GeoServerPersister( resourceLoader, xp ) );

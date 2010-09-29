@@ -903,12 +903,10 @@ public class DefaultCatalogDAO implements CatalogDAO {
     
     protected void resolve(WorkspaceInfo workspace) {
         setId(workspace);
-        resolveCollections(workspace);
     }
     
     protected void resolve(NamespaceInfo namespace) {
         setId(namespace);
-        resolveCollections(namespace);
     }
     
     protected void resolve(StoreInfo store) {
@@ -924,9 +922,6 @@ public class DefaultCatalogDAO implements CatalogDAO {
         else {
             //this means the workspace has not yet been added to the catalog, keep the proxy around
         }
-        resolveCollections(s);
-        
-        s.setCatalog( catalog );
     }
 
     protected void resolve(ResourceInfo resource) {
@@ -946,45 +941,6 @@ public class DefaultCatalogDAO implements CatalogDAO {
             namespace = unwrap(namespace);
             r.setNamespace(namespace);
         }
-        
-        if ( resource instanceof FeatureTypeInfo ) {
-            resolve( (FeatureTypeInfo) resource );
-        }
-        if(r instanceof CoverageInfo){
-            resolve((CoverageInfo) resource);
-        }
-        if(r instanceof WMSLayerInfo){
-            resolve((WMSLayerInfo) resource);
-        }
-        r.setCatalog(catalog);
-    }
-
-    private void resolve(CoverageInfo r) {
-        CoverageInfoImpl c = (CoverageInfoImpl)r;
-        if(c.getDimensions() == null) {
-            c.setDimensions(new ArrayList<CoverageDimensionInfo>());
-        } else {
-            for (CoverageDimensionInfo dim : c.getDimensions()) {
-                if(dim.getNullValues() == null)
-                    ((CoverageDimensionImpl) dim).setNullValues(new ArrayList<Double>());
-            }
-        }
-        resolveCollections(r);
-    }
-    
-    /**
-     * We don't want the world to be able and call this without 
-     * going trough {@link #resolve(ResourceInfo)}
-     * @param featureType
-     */
-    private void resolve(FeatureTypeInfo featureType) {
-        FeatureTypeInfoImpl ft = (FeatureTypeInfoImpl) featureType;
-        resolveCollections(ft);
-    }
-    
-    private void resolve(WMSLayerInfo wmsLayer) {
-        WMSLayerInfoImpl impl = (WMSLayerInfoImpl) wmsLayer;
-        resolveCollections(impl);
     }
 
     protected void resolve(LayerInfo layer) {
@@ -995,11 +951,6 @@ public class DefaultCatalogDAO implements CatalogDAO {
             resource = unwrap(resource);
             layer.setResource(resource);
         }
-        
-        if (layer.getAttribution() == null) {
-            layer.setAttribution(catalog.getFactory().createAttribution());
-        }
-        resolveCollections(layer);
         
         StyleInfo style = ResolvingProxy.resolve(catalog, layer.getDefaultStyle());
         if (style != null) {
@@ -1018,7 +969,7 @@ public class DefaultCatalogDAO implements CatalogDAO {
     
     protected void resolve(LayerGroupInfo layerGroup) {
         setId(layerGroup);
-        resolveCollections(layerGroup);
+        
         LayerGroupInfoImpl lg = (LayerGroupInfoImpl) layerGroup;
         
         for ( int i = 0; i < lg.getLayers().size(); i++ ) {
@@ -1039,66 +990,10 @@ public class DefaultCatalogDAO implements CatalogDAO {
     
     protected void resolve(StyleInfo style) {
         setId(style);
-        ((StyleInfoImpl)style).setCatalog( catalog );
     }
     
     protected void resolve(MapInfo map) {
         setId(map);
-    }
-    
-    /**
-     * Method which reflectively sets all collections when they are null.
-     */
-    protected void resolveCollections(Object object) {
-        ClassProperties properties = OwsUtils.getClassProperties( object.getClass() );
-        for ( String property : properties.properties() ) {
-            Method g = properties.getter( property, null );
-            if ( g == null ) {
-                continue;
-            }
-            
-            Class type = g.getReturnType();
-            //only continue if this is a collection or a map
-            if (  !(Map.class.isAssignableFrom( type ) || Collection.class.isAssignableFrom( type ) ) ) {
-                continue;
-            }
-            
-            //only continue if there is also a setter as well
-            Method s = properties.setter( property, null );
-            if ( s == null ) {
-                continue;
-            }
-            
-            //if the getter returns null, call the setter
-            try {
-                Object value = g.invoke( object, null );
-                if ( value == null ) {
-                    if ( Map.class.isAssignableFrom( type ) ) {
-                        if ( MetadataMap.class.isAssignableFrom( type ) ) {
-                            value = new MetadataMap();
-                        }
-                        else {
-                            value = new HashMap();
-                        }
-                    }
-                    else if ( List.class.isAssignableFrom( type ) ) {
-                        value = new ArrayList();
-                    }
-                    else if ( Set.class.isAssignableFrom( type ) ) {
-                        value = new HashSet();
-                    }
-                    else {
-                        throw new RuntimeException( "Unknown collection type:" + type.getName() );
-                    }
-                  
-                    //initialize
-                    s.invoke( object, value );
-                }
-            } 
-            catch (Exception e) {
-                throw new RuntimeException( e );
-            }
-        }
     }
     
     protected void setId( Object o ) {

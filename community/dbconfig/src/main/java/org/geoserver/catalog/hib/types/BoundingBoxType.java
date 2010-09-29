@@ -108,7 +108,12 @@ public class BoundingBoxType implements UserType, ParameterizedType {
             }
         }
             
-        return new ReferencedEnvelope(minx, maxx, miny, maxy, crs);
+        ReferencedEnvelope re = new ReferencedEnvelope(minx, maxx, miny, maxy, crs);
+        if (minx > maxx) {
+            return null;
+            //re.setToNull();
+        }
+        return re;
     }
 
     public void nullSafeSet(PreparedStatement st, Object value, int index)
@@ -116,10 +121,11 @@ public class BoundingBoxType implements UserType, ParameterizedType {
 
         BoundingBox box = (BoundingBox) value;
         if (box == null) {
-            st.setDouble(index, Double.NaN);
-            st.setDouble(index + 1, Double.NaN);
-            st.setDouble(index + 2, Double.NaN);
-            st.setDouble(index + 3, Double.NaN);
+            //set to null
+            st.setDouble(index, 1);
+            st.setDouble(index + 1, 1);
+            st.setDouble(index + 2, -1);
+            st.setDouble(index + 3, -1);
             st.setNull(index + 4, Types.VARCHAR);
             //st.setBlob(index + 4, (Blob) null);
             return;

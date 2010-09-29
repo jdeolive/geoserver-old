@@ -321,11 +321,18 @@ public class XStreamPersister {
         xs.registerLocalConverter( impl(ResourceInfo.class), "store", new ReferenceConverter(StoreInfo.class));
         xs.registerLocalConverter( impl(ResourceInfo.class), "namespace", new ReferenceConverter(NamespaceInfo.class));
         xs.registerLocalConverter( impl(ResourceInfo.class), "metadata", new MetadataMapConverter() );
+        xs.registerLocalConverter( impl(ResourceInfo.class), "keywords", new LaxCollectionConverter(xs.getMapper()));
         
         // FeatureTypeInfo
         
         // CoverageInfo
-
+        xs.registerLocalConverter( impl(CoverageInfo.class), "supportedFormats", new LaxCollectionConverter(xs.getMapper()));
+        xs.registerLocalConverter( impl(CoverageInfo.class), "requestSRS", new LaxCollectionConverter(xs.getMapper()));
+        xs.registerLocalConverter( impl(CoverageInfo.class), "responseSRS", new LaxCollectionConverter(xs.getMapper()));
+        xs.registerLocalConverter( impl(CoverageInfo.class), "interpolationMethods", new LaxCollectionConverter(xs.getMapper()));
+        xs.registerLocalConverter( impl(CoverageInfo.class), "dimensions", new LaxCollectionConverter(xs.getMapper()));
+        
+        
         // CoverageDimensionInfo
         xs.registerLocalConverter( impl(CoverageDimensionInfo.class), "range", new NumberRangeConverter());
         
@@ -605,6 +612,11 @@ public class XStreamPersister {
         }
         
         @Override
+        public boolean canConvert(Class type) {
+            //handle all types of maps
+            return Map.class.isAssignableFrom(type);
+        }
+        @Override
         public void marshal(Object source, HierarchicalStreamWriter writer,
                 MarshallingContext context) {
         
@@ -794,6 +806,7 @@ public class XStreamPersister {
             return map;
         }
     }
+    
     /**
      * Converters which encodes an object by a reference, or its id.
      */
@@ -859,13 +872,13 @@ public class XStreamPersister {
             return CatalogImpl.unwrap( resolved );
         }
     }
-    class ReferenceCollectionConverter extends CollectionConverter {
+    class ReferenceCollectionConverter extends LaxCollectionConverter {
         Class clazz;
         public ReferenceCollectionConverter(Class clazz) {
             super( getXStream().getMapper() );
             this.clazz = clazz;
         }
-        
+
         @Override
         protected void writeItem(Object item, MarshallingContext context,
                 HierarchicalStreamWriter writer) {

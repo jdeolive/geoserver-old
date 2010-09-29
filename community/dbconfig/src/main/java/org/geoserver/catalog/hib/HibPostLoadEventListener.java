@@ -1,11 +1,15 @@
 package org.geoserver.catalog.hib;
 
 import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.LayerInfo;
+import org.geoserver.catalog.Wrapper;
+import org.geoserver.catalog.impl.LayerGroupInfoImpl;
 import org.geoserver.catalog.impl.ResourceInfoImpl;
 import org.geoserver.catalog.impl.StoreInfoImpl;
 import org.geoserver.catalog.impl.StyleInfoImpl;
 import org.geoserver.config.GeoServer;
 import org.geoserver.config.GeoServerInitializer;
+import org.geoserver.config.impl.ServiceInfoImpl;
 import org.geoserver.platform.GeoServerExtensions;
 import org.hibernate.event.PostLoadEvent;
 import org.hibernate.event.PostLoadEventListener;
@@ -23,7 +27,9 @@ public class HibPostLoadEventListener implements PostLoadEventListener, Applicat
     GeoServerInitializer {
 
     ApplicationContext appContext;
+    GeoServer geoServer;
     Catalog catalog;
+    
     boolean active = false;
     
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -31,7 +37,14 @@ public class HibPostLoadEventListener implements PostLoadEventListener, Applicat
     }
     
     public void initialize(GeoServer geoServer) throws Exception {
-        catalog = geoServer.getCatalog();
+        this.geoServer = geoServer;
+        
+        //we need the original catalog, not a wrapper
+        Catalog catalog = geoServer.getCatalog();
+        if (catalog instanceof Wrapper) {
+            catalog = ((Wrapper)catalog).unwrap(Catalog.class);
+        }
+        this.catalog = catalog;
         active = true;
     }
     
@@ -39,6 +52,7 @@ public class HibPostLoadEventListener implements PostLoadEventListener, Applicat
         if (!active) return;
         
         Object entity = event.getEntity();
+        
         if (entity instanceof StoreInfoImpl) {
             ((StoreInfoImpl)entity).setCatalog(catalog);
         }
@@ -48,6 +62,18 @@ public class HibPostLoadEventListener implements PostLoadEventListener, Applicat
         else if (entity instanceof StyleInfoImpl) {
             ((StyleInfoImpl)entity).setCatalog(catalog);
         }
+        else if (entity instanceof LayerGroupInfoImpl) {
+            //hack to get around default styles being represented by null
+            //TODO: see if we can coax the hibernate mappings into doing this for us
+            LayerGroupInfoImpl lg = (LayerGroupInfoImpl) entity;
+            if (lg.getStyles().isEmpty()) {
+                for (LayerInfo l : lg.getLayers()) {
+                    lg.getStyles().add(null);
+                }
+            }
+        }
+        else if (entity instanceof ServiceInfoImpl) {
+            ((ServiceInfoImpl)entity).setGeoServer(geoServer);
+        }
     }
-
 }

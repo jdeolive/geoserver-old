@@ -1,6 +1,7 @@
 package org.geoserver.catalog.hib;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.Query;
@@ -89,6 +90,7 @@ public class HibCatalogDAO extends AbstractHibDAO implements CatalogDAO {
         }
         
         if (workspace != null) {
+            workspace = resolve(workspace);
             ((WorkspaceInfoImpl)workspace).setDefault(true);
             save(workspace);
         }
@@ -147,6 +149,7 @@ public class HibCatalogDAO extends AbstractHibDAO implements CatalogDAO {
         }
         
         if (namespace != null) {
+            namespace = resolve(namespace);
             ((NamespaceInfoImpl)namespace).setDefault(true);
             save(namespace);
         }
@@ -185,8 +188,6 @@ public class HibCatalogDAO extends AbstractHibDAO implements CatalogDAO {
         else {
             query = query("from ", clazz, " where name = ", param(name), " and workspace = ", param(workspace));
         }
-            
-            
         return (T) first(query);
     }
 
@@ -196,7 +197,8 @@ public class HibCatalogDAO extends AbstractHibDAO implements CatalogDAO {
 
     public <T extends StoreInfo> List<T> getStoresByWorkspace(WorkspaceInfo workspace,
             Class<T> clazz) {
-        return query("from ", clazz, " where workspace = ", param(workspace)).getResultList();
+        return Collections.unmodifiableList(
+            query("from ", clazz, " where workspace = ", param(workspace)).getResultList());
     }
 
     public DataStoreInfo getDefaultDataStore(WorkspaceInfo workspace) {
@@ -247,8 +249,15 @@ public class HibCatalogDAO extends AbstractHibDAO implements CatalogDAO {
 
     public <T extends ResourceInfo> T getResourceByName(NamespaceInfo namespace, String name,
             Class<T> clazz) {
-        Query query = query("from ", clazz, " r where name = ", param(name),
-            " and r.namespace.prefix = ", param(namespace.getPrefix()));
+        Query query = null;
+        if (namespace == DefaultCatalogDAO.ANY_NAMESPACE) {
+            query = query("from ", clazz, " where name = ", param(name));
+        }
+        else {
+            query = query("from ", clazz, " where name = ", param(name), 
+                " and namespace.prefix = ", param(namespace.getPrefix()));
+        }
+        
         return (T) first(query);
     }
 
@@ -422,19 +431,27 @@ public class HibCatalogDAO extends AbstractHibDAO implements CatalogDAO {
     //
     // Utilities
     //
-    protected <T extends StoreInfo> T setCatalog(T store) {
-        if (store != null) {
-            ((StoreInfoImpl)store).setCatalog(catalog);
+    WorkspaceInfo resolve(WorkspaceInfo ws) {
+        if (ws.getId() == null) {
+            WorkspaceInfo resolved = getWorkspaceByName(ws.getName());
+            if (resolved != null) {
+                return resolved;
+            }
         }
-        return store;
+        return ws;
     }
     
-    protected <T extends ResourceInfo> T setCatalog(T resource) {
-        if (resource != null) {
-            ((ResourceInfoImpl)resource).setCatalog(catalog);
+    NamespaceInfo resolve(NamespaceInfo ns) {
+        if (ns.getId() == null) {
+            NamespaceInfo resolved = getNamespaceByPrefix(ns.getPrefix());
+            if (resolved != null) {
+                return resolved;
+            }
         }
-        return resource;
+        
+        return ns;
     }
+    
     public void dispose() {
     }
 

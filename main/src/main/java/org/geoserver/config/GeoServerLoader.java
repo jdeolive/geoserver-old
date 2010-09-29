@@ -114,6 +114,9 @@ public abstract class GeoServerLoader {
                 XStreamPersister xp = xpf.createXMLPersister();
                 xp.setCatalog( catalog );
                 loadCatalog( catalog, xp );
+                
+                //initialize styles
+                initializeStyles(catalog, xp);
             } 
             catch (Exception e) {
                 throw new RuntimeException( e );
@@ -181,7 +184,7 @@ public abstract class GeoServerLoader {
         
         //copy the file out to the data directory if necessary
         if ( resourceLoader.find( "styles", sld ) == null ) {
-            FileUtils.copyURLToFile(getClass().getResource(sld), 
+            FileUtils.copyURLToFile(GeoServerLoader.class.getResource(sld), 
                 new File( resourceLoader.findOrCreateDirectory("styles" ), sld) );
         }
         

@@ -232,6 +232,8 @@
     <key column="RESOURCE_ID"/>
     <many-to-one class="org.geoserver.catalog.impl.DataStoreInfoImpl" column="STORE" foreign-key="fk_featuretype_store" lazy="false" name="store"/>
     <property column="FILTER" name="filter" type="Filter"/>
+    <property column="NUM_DECIMALS" name="numDecimals"/>
+    <property column="MAX_FEATURES" name="maxFeatures"/>
     <list cascade="all" lazy="false" name="attributes" table="FEATURETYPE_ATTR">
       <!--cache usage="read-write"/-->
       <key column="featuretype" foreign-key="fk_featuretype_attr"/>
@@ -393,7 +395,7 @@
     <property column="PATH" name="path"/>
     
     <list name="layers" lazy="false" table="LAYER_GROUP_LAYERS">
-      <key column="LAYER_GROUP_ID" foreign-key="fk_layergroup_style"/>
+      <key column="LAYER_GROUP_ID" foreign-key="fk_layergroup_layer"/>
       <list-index column="LAYER_GROUP_LAYER_INDEX"/>
       <many-to-many class="org.geoserver.catalog.impl.LayerInfoImpl">
           <column name="LAYER_ID"/>
@@ -539,7 +541,7 @@
 
     <list cascade="all" lazy="false" name="SRS" table="WMS_SRS">
       <!--cache usage="read-write"/-->
-      <key column="ID" foreign-key="srs_wms_listfk"/>
+      <key column="ID" foreign-key="fk_wms_srs"/>
       <list-index column="WMS_SRS_INDEX"/>
       <element type="java.lang.String"/>
     </list>
@@ -551,9 +553,14 @@
   <joined-subclass extends="org.geoserver.config.impl.ServiceInfoImpl" name="org.geoserver.wfs.WFSInfoImpl" table="WFS_SERVICE">
     <key column="ID"/>
     <property column="SERVICE_LEVEL" name="serviceLevel" type="WfsServiceLevel"/>
+    <property column="MAX_FEATURES" name="maxFeatures"/>
+    <property column="FEATURE_BOUNDING" name="featureBounding"/>
+    <property column="CANONICAL_SCHEMA" name="canonicalSchemaLocation"/>
+    <property column="ENCODE_FEATURE_MEMBER" name="encodeFeatureMember"/>
+    
     <map cascade="all" lazy="false" name="GML" table="WFS_GML">
       <!--cache usage="read-write"/-->
-      <key column="service_id" foreign-key="gml_wfs_mapfk"/>
+      <key column="service_id" foreign-key="fk_wfs_gml"/>
       <map-key column="WFSVERSION" type="WfsVersion"/>
       <element length="32" type="GmlInfo">
         <column name="SRS_STYLE"/>

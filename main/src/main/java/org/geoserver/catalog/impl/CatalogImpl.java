@@ -4,12 +4,18 @@
  */
 package org.geoserver.catalog.impl;
 
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +25,7 @@ import org.geoserver.catalog.CatalogException;
 import org.geoserver.catalog.CatalogFactory;
 import org.geoserver.catalog.CatalogInfo;
 import org.geoserver.catalog.CatalogVisitor;
+import org.geoserver.catalog.CoverageDimensionInfo;
 import org.geoserver.catalog.CoverageInfo;
 import org.geoserver.catalog.CoverageStoreInfo;
 import org.geoserver.catalog.DataStoreInfo;
@@ -26,6 +33,7 @@ import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.LayerGroupInfo;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.MapInfo;
+import org.geoserver.catalog.MetadataMap;
 import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.catalog.ResourceInfo;
 import org.geoserver.catalog.ResourcePool;
@@ -43,6 +51,8 @@ import org.geoserver.catalog.event.impl.CatalogAddEventImpl;
 import org.geoserver.catalog.event.impl.CatalogModifyEventImpl;
 import org.geoserver.catalog.event.impl.CatalogPostModifyEventImpl;
 import org.geoserver.catalog.event.impl.CatalogRemoveEventImpl;
+import org.geoserver.ows.util.ClassProperties;
+import org.geoserver.ows.util.OwsUtils;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.type.Name;
@@ -113,7 +123,7 @@ public class CatalogImpl implements Catalog {
         
         //TODO: remove synchronized block, need transactions
         synchronized (dao) {
-            dao.add(store);
+            dao.add(resolve(store));
             
             // if there is no default store use this one as the default
             if(getDefaultDataStore(store.getWorkspace()) == null && store instanceof DataStoreInfo) {
@@ -168,6 +178,7 @@ public class CatalogImpl implements Catalog {
     public void save(StoreInfo store) {
         validate(store, false);
         dao.save(store);
+        saved(store);
     }
 
     public <T extends StoreInfo> T getStore(String id, Class<T> clazz) {
@@ -326,7 +337,7 @@ public class CatalogImpl implements Catalog {
         }
         validate(resource,true);
         
-        dao.add(resource);
+        dao.add(resolve(resource));
         added(resource);
     }
 
@@ -372,6 +383,7 @@ public class CatalogImpl implements Catalog {
     public void save(ResourceInfo resource) {
         validate(resource,false);
         dao.save(resource);
+        saved(resource);
     }
 
     public <T extends ResourceInfo> T getResource(String id, Class<T> clazz) {
@@ -573,7 +585,7 @@ public class CatalogImpl implements Catalog {
             }
         }
         
-        dao.add(layer);
+        dao.add(resolve(layer));
         added(layer);
     }
 
@@ -617,6 +629,7 @@ public class CatalogImpl implements Catalog {
     public void save(LayerInfo layer) {
         validate( layer, false );
         dao.save(layer);
+        saved(layer);
     }
 
     public LayerInfo getLayer(String id) {
@@ -688,17 +701,17 @@ public class CatalogImpl implements Catalog {
 
     public void add(LayerGroupInfo layerGroup) {
         validate(layerGroup,true);
-
-        layerGroup = dao.add(layerGroup);
-        added( layerGroup );
+        resolve(layerGroup);
         
         if ( layerGroup.getStyles().isEmpty() ) {
             for ( LayerInfo l : layerGroup.getLayers() ) {
                 // default style
                 layerGroup.getStyles().add(null);
             }
-            dao.save(layerGroup);
         }
+        
+        layerGroup = dao.add(layerGroup);
+        added( layerGroup );
     }
     
     void validate( LayerGroupInfo layerGroup, boolean isNew ) {
@@ -729,6 +742,7 @@ public class CatalogImpl implements Catalog {
     public void save(LayerGroupInfo layerGroup) {
         validate(layerGroup,false);
         dao.save(layerGroup);
+        saved(layerGroup);
     }
     
     public List<LayerGroupInfo> getLayerGroups() {
@@ -744,7 +758,7 @@ public class CatalogImpl implements Catalog {
     }
     
     public void add(MapInfo map) {
-        dao.add(map);
+        dao.add(resolve(map));
         added(map);
     }
 
@@ -755,6 +769,7 @@ public class CatalogImpl implements Catalog {
 
     public void save(MapInfo map) {
         dao.save(map);
+        saved(map);
     }
     
     // Namespace methods
@@ -785,7 +800,7 @@ public class CatalogImpl implements Catalog {
         validate(namespace,true);
         
         synchronized (dao) {
-            dao.add(namespace);
+            dao.add(resolve(namespace));
             if ( getDefaultNamespace() == null ) {
                 setDefaultNamespace(namespace);
             }
@@ -838,6 +853,7 @@ public class CatalogImpl implements Catalog {
         validate(namespace,false);
         
         dao.save(namespace);
+        saved(namespace);
     }
 
     public NamespaceInfo getDefaultNamespace() {
@@ -861,7 +877,7 @@ public class CatalogImpl implements Catalog {
         }
         
         synchronized (dao) {
-            dao.add(workspace);
+            dao.add(resolve(workspace));
             // if there is no default workspace use this one as the default
             if ( getDefaultWorkspace() == null ) {
                 setDefaultWorkspace(workspace);
@@ -921,6 +937,7 @@ public class CatalogImpl implements Catalog {
         validate(workspace,false);
         
         dao.save(workspace);
+        saved(workspace);
     }
     
     public WorkspaceInfo getDefaultWorkspace() {
@@ -967,7 +984,7 @@ public class CatalogImpl implements Catalog {
 
     public void add(StyleInfo style) {
         validate(style,true);
-        dao.add(style);
+        dao.add(resolve(style));
         added(style);
     }
 
@@ -1000,6 +1017,7 @@ public class CatalogImpl implements Catalog {
     public void save(StyleInfo style) {
         validate(style,false);
         dao.save(style);
+        saved(style);
     }
 
     // Event methods
@@ -1112,6 +1130,10 @@ public class CatalogImpl implements Catalog {
         }
     }
     
+    protected void saved(CatalogInfo info) {
+        firePostModified(info);
+    }
+    
     public static Object unwrap(Object obj) {
         return obj;
     }
@@ -1129,6 +1151,151 @@ public class CatalogImpl implements Catalog {
         
         if ( resourcePool == null ) {
             resourcePool = new ResourcePool(this);
+        }
+    }
+    
+    protected WorkspaceInfo resolve(WorkspaceInfo workspace) {
+        resolveCollections(workspace);
+        return workspace;
+    }
+    
+    protected NamespaceInfo resolve(NamespaceInfo namespace) {
+        resolveCollections(namespace);
+        return namespace;
+    }
+    
+    protected StoreInfo resolve(StoreInfo store) {
+        resolveCollections(store);
+        
+        StoreInfoImpl s = (StoreInfoImpl) store;
+        s.setCatalog( this );
+        
+        return store;
+    }
+
+    protected ResourceInfo resolve(ResourceInfo resource) {
+        
+        ResourceInfoImpl r = (ResourceInfoImpl) resource;
+        r.setCatalog(this);
+        
+        if ( resource instanceof FeatureTypeInfo ) {
+            resolve( (FeatureTypeInfo) resource );
+        }
+        if(r instanceof CoverageInfo){
+            resolve((CoverageInfo) resource);
+        }
+        if(r instanceof WMSLayerInfo){
+            resolve((WMSLayerInfo) resource);
+        }
+        
+        return resource;
+    }
+
+    private CoverageInfo resolve(CoverageInfo r) {
+        CoverageInfoImpl c = (CoverageInfoImpl)r;
+        if(c.getDimensions() != null) {
+            for (CoverageDimensionInfo dim : c.getDimensions()) {
+                if(dim.getNullValues() == null) {
+                    ((CoverageDimensionImpl) dim).setNullValues(new ArrayList<Double>());
+                }
+            }
+        }
+        resolveCollections(r);
+        return r;
+    }
+    
+    /**
+     * We don't want the world to be able and call this without 
+     * going trough {@link #resolve(ResourceInfo)}
+     * @param featureType
+     */
+    private FeatureTypeInfo resolve(FeatureTypeInfo featureType) {
+        FeatureTypeInfoImpl ft = (FeatureTypeInfoImpl) featureType;
+        resolveCollections(ft);
+        return ft;
+    }
+    
+    private WMSLayerInfo resolve(WMSLayerInfo wmsLayer) {
+        WMSLayerInfoImpl impl = (WMSLayerInfoImpl) wmsLayer;
+        resolveCollections(impl);
+        return wmsLayer;
+    }
+
+    protected LayerInfo resolve(LayerInfo layer) {
+        if (layer.getAttribution() == null) {
+            layer.setAttribution(getFactory().createAttribution());
+        }
+        resolveCollections(layer);
+        return layer;
+    }
+    
+    protected LayerGroupInfo resolve(LayerGroupInfo layerGroup) {
+        resolveCollections(layerGroup);
+        return layerGroup; 
+    }
+    
+    protected StyleInfo resolve(StyleInfo style) {
+        ((StyleInfoImpl)style).setCatalog( this );
+        return style;
+    }
+    
+    protected MapInfo resolve(MapInfo map) {
+        resolveCollections(map);
+        return map;
+    }
+    
+    /**
+     * Method which reflectively sets all collections when they are null.
+     */
+    protected void resolveCollections(Object object) {
+        ClassProperties properties = OwsUtils.getClassProperties( object.getClass() );
+        for ( String property : properties.properties() ) {
+            Method g = properties.getter( property, null );
+            if ( g == null ) {
+                continue;
+            }
+            
+            Class type = g.getReturnType();
+            //only continue if this is a collection or a map
+            if (  !(Map.class.isAssignableFrom( type ) || Collection.class.isAssignableFrom( type ) ) ) {
+                continue;
+            }
+            
+            //only continue if there is also a setter as well
+            Method s = properties.setter( property, null );
+            if ( s == null ) {
+                continue;
+            }
+            
+            //if the getter returns null, call the setter
+            try {
+                Object value = g.invoke( object, null );
+                if ( value == null ) {
+                    if ( Map.class.isAssignableFrom( type ) ) {
+                        if ( MetadataMap.class.isAssignableFrom( type ) ) {
+                            value = new MetadataMap();
+                        }
+                        else {
+                            value = new HashMap();
+                        }
+                    }
+                    else if ( List.class.isAssignableFrom( type ) ) {
+                        value = new ArrayList();
+                    }
+                    else if ( Set.class.isAssignableFrom( type ) ) {
+                        value = new HashSet();
+                    }
+                    else {
+                        throw new RuntimeException( "Unknown collection type:" + type.getName() );
+                    }
+                  
+                    //initialize
+                    s.invoke( object, value );
+                }
+            } 
+            catch (Exception e) {
+                throw new RuntimeException( e );
+            }
         }
     }
     
