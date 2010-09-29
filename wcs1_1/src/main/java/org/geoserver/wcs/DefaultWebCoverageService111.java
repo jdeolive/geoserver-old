@@ -80,20 +80,23 @@ import org.vfny.geoserver.wcs.responses.CoverageResponseDelegateFactory;
 public class DefaultWebCoverageService111 implements WebCoverageService111 {
     Logger LOGGER = Logging.getLogger(DefaultWebCoverageService111.class);
 
-    private WCSInfo wcs;
+    private final static Hints HINTS = new Hints();
+    static {
+        HINTS.add(new Hints(Hints.LENIENT_DATUM_SHIFT, Boolean.TRUE));
+        HINTS.add(new Hints(Hints.OVERVIEW_POLICY, OverviewPolicy.IGNORE));
+    }
 
     private Catalog catalog;
 
 	private GeoServer geoServer;
 
     public DefaultWebCoverageService111(GeoServer geoServer) {
-        this.wcs = geoServer.getService(WCSInfo.class);
         this.geoServer = geoServer;
         this.catalog = geoServer.getCatalog();
     }
     
     public WCSInfo getServiceInfo() {
-        return wcs;
+        return geoServer.getService(WCSInfo.class);
     }
 
     public WCSCapsTransformer getCapabilities(GetCapabilitiesType request) {
@@ -111,7 +114,7 @@ public class DefaultWebCoverageService111 implements WebCoverageService111 {
 
         if ("1.1.0".equals(version) || "1.1.1".equals(version)) {
             WCSCapsTransformer capsTransformer = new WCSCapsTransformer(geoServer);
-            capsTransformer.setEncoding(Charset.forName((wcs.getGeoServer().getGlobal().getCharset())));
+            capsTransformer.setEncoding(Charset.forName((getServiceInfo().getGeoServer().getGlobal().getCharset())));
             return capsTransformer;
         }
 
@@ -121,8 +124,8 @@ public class DefaultWebCoverageService111 implements WebCoverageService111 {
     public DescribeCoverageTransformer describeCoverage(DescribeCoverageType request) {
         final String version = request.getVersion();
         if ("1.1.0".equals(version) || "1.1.1".equals(version)) {
-            DescribeCoverageTransformer describeTransformer = new DescribeCoverageTransformer(wcs, catalog);
-            describeTransformer.setEncoding(Charset.forName(wcs.getGeoServer().getGlobal().getCharset()));
+            DescribeCoverageTransformer describeTransformer = new DescribeCoverageTransformer(getServiceInfo(), catalog);
+            describeTransformer.setEncoding(Charset.forName(getServiceInfo().getGeoServer().getGlobal().getCharset()));
             return describeTransformer;
         }
 
@@ -833,4 +836,5 @@ public class DefaultWebCoverageService111 implements WebCoverageService111 {
 
        return ret;
     }
+
 }

@@ -83,8 +83,6 @@ import org.vfny.geoserver.wcs.responses.CoverageResponseDelegateFactory;
  */
 public class DefaultWebCoverageService100 implements WebCoverageService100 {
 
-    private WCSInfo wcs;
-
     private Catalog catalog;
 
     private GeoServer geoServer;
@@ -97,7 +95,6 @@ public class DefaultWebCoverageService100 implements WebCoverageService100 {
      * @param geoServer
      */
     public DefaultWebCoverageService100(GeoServer geoServer) {
-        this.wcs = geoServer.getService(WCSInfo.class);
         this.geoServer = geoServer;
         this.catalog = geoServer.getCatalog();
     }
@@ -106,7 +103,7 @@ public class DefaultWebCoverageService100 implements WebCoverageService100 {
      * 
      */
     public WCSInfo getServiceInfo() {
-        return wcs;
+        return geoServer.getService(WCSInfo.class);
     }
 
     /**
@@ -125,7 +122,7 @@ public class DefaultWebCoverageService100 implements WebCoverageService100 {
 
         if ("1.0.0".equals(version)) {
             Wcs10CapsTransformer capsTransformer = new Wcs10CapsTransformer(geoServer);
-            capsTransformer.setEncoding(Charset.forName((wcs.getGeoServer().getGlobal()
+            capsTransformer.setEncoding(Charset.forName((getServiceInfo().getGeoServer().getGlobal()
                     .getCharset())));
             return capsTransformer;
         }
@@ -140,8 +137,8 @@ public class DefaultWebCoverageService100 implements WebCoverageService100 {
         final String version = request.getVersion();
         if ("1.0.0".equals(version)) {
             Wcs10DescribeCoverageTransformer describeTransformer = new Wcs10DescribeCoverageTransformer(
-                    wcs, catalog);
-            describeTransformer.setEncoding(Charset.forName((wcs.getGeoServer().getGlobal()
+                    getServiceInfo(), catalog);
+            describeTransformer.setEncoding(Charset.forName((getServiceInfo().getGeoServer().getGlobal()
                     .getCharset())));
             return describeTransformer;
         }
