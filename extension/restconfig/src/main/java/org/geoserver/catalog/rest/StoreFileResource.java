@@ -81,7 +81,10 @@ public abstract class StoreFileResource extends Resource {
          // Prepare the directory only in case this is not an external upload
          if (isInlineUpload(method)){ 
              try {
-                  directory = catalog.getResourceLoader().createDirectory( "data/" + storeName );
+                  File data = catalog.getResourceLoader().findOrCreateDirectory("data");
+                  directory = File.createTempFile(storeName + "_", "", data);
+                  directory.delete();
+                  directory.mkdir();
              } 
              catch (IOException e) {
                  throw new RestletException( e.getMessage(), Status.SERVER_ERROR_INTERNAL, e );
