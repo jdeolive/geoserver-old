@@ -1,5 +1,8 @@
 package org.geoserver.h2;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.geoserver.data.DataStoreFactoryInitializer;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geotools.data.h2.H2DataStoreFactory;
@@ -25,6 +28,15 @@ public class H2DataStoreFactoryInitializer extends
     }
     
     public void initialize(H2DataStoreFactory factory) {
-        factory.setBaseDirectory( resourceLoader.getBaseDirectory() );
+        //create an h2 directory
+        File h2;
+        try {
+            h2 = resourceLoader.findOrCreateDirectory("h2");
+        } 
+        catch (IOException e) {
+            throw new RuntimeException("Unable to create h2 directory", e);
+        }
+        
+        factory.setBaseDirectory( h2 );
     }
 }
