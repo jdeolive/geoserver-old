@@ -2,7 +2,7 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-package org.geoserver.wms;
+package org.geoserver.wms.wms_1_1_1;
 
 import static org.easymock.EasyMock.anyObject;
 import static org.easymock.EasyMock.createMock;
@@ -20,6 +20,7 @@ import org.geoserver.data.test.MockData;
 import org.geoserver.security.AccessMode;
 import org.geoserver.security.DataAccessManager;
 import org.geoserver.security.SecureCatalogImpl;
+import org.geoserver.wms.WMSTestSupport;
 
 /**
  * Similar to the GetFeatureInfoTest this class runs tests the GetFeatureInfo request for WMS layers.
