@@ -2,7 +2,7 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-package org.geoserver.wms;
+package org.geoserver.wms.wms_1_1_1;
 
 import java.awt.image.BufferedImage;
 import java.net.URL;
@@ -16,6 +16,7 @@ import junit.framework.Test;
 
 import org.geoserver.data.test.MockData;
 import org.geoserver.test.RemoteOWSTestSupport;
+import org.geoserver.wms.WMSTestSupport;
 import org.geotools.util.logging.Logging;
 import org.w3c.dom.Document;
 
