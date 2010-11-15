@@ -33,6 +33,7 @@ public class WMSLoader extends LegacyServiceLoader<WMSInfo> {
         return WMSInfo.class;
     }
 
+    @SuppressWarnings("unchecked")
     public WMSInfo load(LegacyServicesReader reader, GeoServer geoServer) throws Exception {
         WMSInfoImpl wms = new WMSInfoImpl();
         wms.setId("wms");
@@ -147,6 +148,7 @@ public class WMSLoader extends LegacyServiceLoader<WMSInfo> {
         }
 
         wms.getVersions().add(new Version("1.1.1"));
+        wms.getVersions().add(new Version("1.3.0"));
         return wms;
     }
 
