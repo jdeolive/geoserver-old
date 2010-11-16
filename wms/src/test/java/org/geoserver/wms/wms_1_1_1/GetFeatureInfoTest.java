@@ -195,7 +195,7 @@ public class GetFeatureInfoTest extends WMSTestSupport {
      */
     public void testUknownFormat() throws Exception {
         String layer = MockData.FORESTS.getPrefix() + ":" + MockData.FORESTS.getLocalPart();
-        String request = "wms?bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=unknown/format&request=GetFeatureInfo&layers="
+        String request = "wms?version=1.1.1&bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=unknown/format&request=GetFeatureInfo&layers="
                 + layer + "&query_layers=" + layer + "&width=20&height=20&x=10&y=10";
         Document doc = dom(get(request), true);
         // print(doc);
@@ -269,7 +269,7 @@ public class GetFeatureInfoTest extends WMSTestSupport {
     public void testUnkonwnQueryLayer() throws Exception {
         String layers1 = getLayerId(MockData.FORESTS) + "," + getLayerId(MockData.LAKES);
         String layers2 = getLayerId(MockData.FORESTS) + "," + getLayerId(MockData.BRIDGES);
-        String request = "wms?bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/html&request=GetFeatureInfo&layers="
+        String request = "wms?version=1.1.1&bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/html&request=GetFeatureInfo&layers="
                 + layers1 + "&query_layers=" + layers2 + "&width=20&height=20&x=10&y=10&info";
         
         Document dom = getAsDOM(request + "");

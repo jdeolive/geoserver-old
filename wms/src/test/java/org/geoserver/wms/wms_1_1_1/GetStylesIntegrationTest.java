@@ -57,7 +57,7 @@ public class GetStylesIntegrationTest extends WMSTestSupport {
     }
     
     public void testSimple() throws Exception {
-        InputStream stream = get("wms?service=WMS&version=1.1.0&&request=GetStyles&layers="
+        InputStream stream = get("wms?service=WMS&version=1.1.1&&request=GetStyles&layers="
                 + getLayerId(MockData.BASIC_POLYGONS) + "&sldver=1.0.0");
         
         SLDParser parser = new SLDParser(CommonFactoryFinder.getStyleFactory(null));
@@ -76,7 +76,7 @@ public class GetStylesIntegrationTest extends WMSTestSupport {
     }
     
     public void testGroup() throws Exception {
-        InputStream stream = get("wms?service=WMS&version=1.1.0&request=GetStyles&layers=lakesGroup&sldver=1.0.0");
+        InputStream stream = get("wms?service=WMS&version=1.1.1&request=GetStyles&layers=lakesGroup&sldver=1.0.0");
         
         SLDParser parser = new SLDParser(CommonFactoryFinder.getStyleFactory(null));
         parser.setInput(stream);
@@ -92,7 +92,7 @@ public class GetStylesIntegrationTest extends WMSTestSupport {
     }
     
     public void testMultiStyle() throws Exception {
-        InputStream stream = get("wms?service=WMS&version=1.1.0&request=GetStyles&layers="
+        InputStream stream = get("wms?service=WMS&version=1.1.1&request=GetStyles&layers="
                 + getLayerId(MockData.LAKES) + "&sldver=1.0.0");
         
         SLDParser parser = new SLDParser(CommonFactoryFinder.getStyleFactory(null));
