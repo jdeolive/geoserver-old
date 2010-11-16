@@ -20,6 +20,8 @@ import org.geoserver.data.test.MockData;
 import org.geoserver.wms.WMSTestSupport;
 import org.w3c.dom.Document;
 
+import com.mockrunner.mock.web.MockHttpServletResponse;
+
 /**
  * WMS 1.3 GetCapabilities system tests, following clauses in section 7.2 of <a
  * href="http://portal.opengeospatial.org/files/?artifact_id=14416">OGC document 06-042, OpenGIS Web
@@ -123,6 +125,29 @@ public class CapabilitiesSystemTest extends WMSTestSupport {
          */
         dom = getAsDOM("ows?service=WMS&request=GetCapabilities&version=1.0.0");
         assertXpathEvaluatesTo("1.1.1", "/WMT_MS_Capabilities/@version", dom);
+    }
+
+    /**
+     * Section 7.2.3.1, FORMAT is an optional parameter, all services shall support {@code text/xml}
+     * , if a non supported format is requested, the default {@code text/xml} representation shall
+     * be returned. The response Content-Type header shall also be {@code text/xml}
+     */
+    public void testRequestOptionalFormatParameter() throws Exception {
+        MockHttpServletResponse response;
+        String path = "ows?service=WMS&request=GetCapabilities&version=1.3.0";
+        response = getAsServletResponse(path);
+        assertEquals("WMS_Capabilities", getAsDOM(path).getDocumentElement().getNodeName());
+        assertEquals("text/xml", response.getContentType());
+
+        path = "ows?service=WMS&request=GetCapabilities&version=1.3.0&format=text/xml";
+        response = getAsServletResponse(path);
+        assertEquals("WMS_Capabilities", getAsDOM(path).getDocumentElement().getNodeName());
+        assertEquals("text/xml", response.getContentType());
+
+        path = "ows?service=WMS&request=GetCapabilities&version=1.3.0&format=application/unsupported";
+        response = getAsServletResponse(path);
+        assertEquals("WMS_Capabilities", getAsDOM(path).getDocumentElement().getNodeName());
+        assertEquals("text/xml", response.getContentType());
     }
 
     /**
