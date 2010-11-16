@@ -56,7 +56,7 @@ public class DataStoreFileResource extends StoreFileResource {
         formatToDataStoreFactory.put( "shp", "org.geotools.data.shapefile.ShapefileDataStoreFactory");
         formatToDataStoreFactory.put( "properties", "org.geotools.data.property.PropertyDataStoreFactory");
         formatToDataStoreFactory.put( "h2", "org.geotools.data.h2.H2DataStoreFactory");
-        
+        formatToDataStoreFactory.put( "spatialite", "org.geotools.data.spatialite.SpatiaLiteDataStoreFactory");
     }
     
     protected static HashMap<String,Map> dataStoreFactoryToDefaultParams = new HashMap();
@@ -66,6 +66,12 @@ public class DataStoreFileResource extends StoreFileResource {
         map.put("dbtype", "h2");
         
         dataStoreFactoryToDefaultParams.put("org.geotools.data.h2.H2DataStoreFactory", map);
+        
+        map = new HashMap();
+        map.put("database", "@NAME@");
+        map.put("dbtype", "spatialite");
+        
+        dataStoreFactoryToDefaultParams.put("org.geotools.data.spatialite.SpatiaLiteDataStoreFactory", map);
     }
     
     public static DataStoreFactorySpi lookupDataStoreFactory(String format) {
