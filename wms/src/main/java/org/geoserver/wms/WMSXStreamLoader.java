@@ -41,8 +41,8 @@ public class WMSXStreamLoader extends XStreamServiceLoader<WMSInfo> {
     protected WMSInfo initialize(WMSInfo service) {
         super.initialize(service);
 
-        final Version version_1_1_1 = new Version("1.1.1");
-        final Version version_1_3_0 = new Version("1.3.0");
+        final Version version_1_1_1 = WMS.VERSION_1_1_1;
+        final Version version_1_3_0 = WMS.VERSION_1_3_0;
 
         if (!service.getVersions().contains(version_1_1_1)) {
             service.getVersions().add(version_1_1_1);

@@ -7,6 +7,7 @@ package org.geoserver.wms;
 import java.util.Map;
 
 import org.geoserver.ows.Dispatcher;
+import org.geotools.util.Version;
 
 /**
  * Defines a general Request type and provides accessor methods for universal request information.

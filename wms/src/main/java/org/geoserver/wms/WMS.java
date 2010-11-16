@@ -43,6 +43,10 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class WMS implements ApplicationContextAware {
 
+    public static final Version VERSION_1_1_1 = new Version("1.1.1");
+
+    public static final Version VERSION_1_3_0 = new Version("1.3.0");
+
     public static final String JPEG_COMPRESSION = "jpegCompression";
 
     public static final int JPEG_COMPRESSION_DEFAULT = 25;
@@ -139,6 +143,39 @@ public class WMS implements ApplicationContextAware {
     public boolean isEnabled() {
         WMSInfo serviceInfo = getServiceInfo();
         return serviceInfo.isEnabled();
+    }
+
+    /**
+     * Returns a supported version according to the version negotiation rules in section 6.2.4 of
+     * the WMS 1.3.0 spec.
+     * <p>
+     * For instance: <u>
+     * <li>request version not provided? -> higher version supported
+     * <li>requested version supported? -> that same version
+     * <li>requested version < lowest supported version? -> lowest supported
+     * <li>requested version > lowest supported version? -> higher supported version that's lower
+     * than the requested version </u>
+     * </p>
+     * 
+     * @param requestedVersion
+     *            the request version, or {@code null} if unspecified
+     * @return
+     */
+    public Version negotiateVersion(final Version requestedVersion) {
+        if (null == requestedVersion) {
+            return VERSION_1_3_0;
+        }
+        if (VERSION_1_1_1.equals(requestedVersion)) {
+            return VERSION_1_1_1;
+        }
+        if (VERSION_1_3_0.equals(requestedVersion)) {
+            return VERSION_1_3_0;
+        }
+        if (requestedVersion.compareTo(VERSION_1_3_0) < 0) {
+            return VERSION_1_1_1;
+        }
+
+        return VERSION_1_3_0;
     }
 
     public String getVersion() {
@@ -480,5 +517,17 @@ public class WMS implements ApplicationContextAware {
         GetLegendGraphicOutputFormat format;
         format = WMSExtensions.findLegendGraphicFormat(outputFormat, applicationContext);
         return format;
+    }
+
+    public static Version version(String version) {
+        if (version == null || 0 == version.trim().length()) {
+            return null;
+        }
+        if (VERSION_1_1_1.toString().equals(version)) {
+            return VERSION_1_1_1;
+        } else if (VERSION_1_3_0.toString().equals(version)) {
+            return VERSION_1_3_0;
+        }
+        return new Version(version);
     }
 }
