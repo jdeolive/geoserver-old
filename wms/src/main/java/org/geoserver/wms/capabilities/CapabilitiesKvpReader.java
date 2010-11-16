@@ -38,11 +38,12 @@ public class CapabilitiesKvpReader extends KvpRequestReader {
         if (null == version || version.length() == 0) {
             version = (String) rawKvp.get("WMTVER");
         }
+        
         // version negotation
-
         Version requestedVersion = WMS.version(version);
         Version negotiatedVersion = wms.negotiateVersion(requestedVersion);
-
+        request.setVersion(negotiatedVersion.toString());
+        
         return request;
     }
 }

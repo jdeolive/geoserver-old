@@ -227,6 +227,7 @@
  	<!-- kvp request readers -->
  	<bean id="wmsGetCapabilitiesKvpReader" 
  		class="org.geoserver.wms.capabilities.CapabilitiesKvpReader">
+      <constructor-arg ref="wms"/>
 	</bean>
 
 	<bean id="describeLayerKvpReader"
