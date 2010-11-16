@@ -31,9 +31,11 @@ import org.geoserver.rest.util.RESTUtils;
 import org.geotools.data.DataAccessFactory;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFactorySpi;
+import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.DataAccessFactory.Param;
 import org.geotools.data.FeatureStore;
+import org.geotools.data.Transaction;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -207,6 +209,7 @@ public class DataStoreFileResource extends StoreFileResource {
         NamespaceInfo namespace = catalog.getNamespaceByPrefix( workspace );
 
         boolean add = false;
+        boolean save = false;
         if (info == null) {
             LOGGER.info("Auto-configuring datastore: " + datastore);
             
@@ -240,6 +243,7 @@ public class DataStoreFileResource extends StoreFileResource {
             }
             
             if (targetDataStoreFormat.equals(sourceDataStoreFormat)) {
+                save = true;
                 updateParameters(info, namespace, factory, uploadedFile);
             }
         }
@@ -250,7 +254,9 @@ public class DataStoreFileResource extends StoreFileResource {
             catalog.add( info );
         }
         else {
-            catalog.save( info );
+            if (save) {
+                catalog.save( info );
+            }
         }
         
         //create an instanceof the source datastore
@@ -263,12 +269,12 @@ public class DataStoreFileResource extends StoreFileResource {
             throw new RuntimeException("Unable to create source data store", e);
         }
         
-        //if it is the case that the source does not match the target we need to 
-        // copy the data into the target
-        if (!targetDataStoreFormat.equals(sourceDataStoreFormat)) {
-            try {
-                DataStore ds = (DataStore) info.getDataStore(null);
-                
+        try {
+            DataStore ds = (DataStore) info.getDataStore(null);
+            //synchronized(ds) {
+            //if it is the case that the source does not match the target we need to 
+            // copy the data into the target
+            if (!targetDataStoreFormat.equals(sourceDataStoreFormat)) {
                 //copy over the feature types
                 for (String featureTypeName : source.getTypeNames()) {
                     SimpleFeatureType featureType = null;
@@ -293,38 +299,44 @@ public class DataStoreFileResource extends StoreFileResource {
                         continue;
                     }
                     
+                    Transaction tx = new DefaultTransaction();
                     FeatureStore featureStore = (FeatureStore) featureSource;
+                    featureStore.setTransaction(tx);
                     
-                    //figure out update mode, whether we should kill existing data or append
-                    String update = form.getFirstValue("update");
-                    if ("overwrite".equalsIgnoreCase(update)) {
-                        LOGGER.fine("Removing existing features from " + featureTypeName);
-                        //kill all features
-                        featureStore.removeFeatures(Filter.INCLUDE);
+                    try {
+                        //figure out update mode, whether we should kill existing data or append
+                        String update = form.getFirstValue("update");
+                        if ("overwrite".equalsIgnoreCase(update)) {
+                            LOGGER.fine("Removing existing features from " + featureTypeName);
+                            //kill all features
+                            featureStore.removeFeatures(Filter.INCLUDE);
+                        }
+                        
+                        LOGGER.fine("Adding features to " + featureTypeName);
+                        FeatureCollection features = source.getFeatureSource(featureTypeName).getFeatures();
+                        featureStore.addFeatures(features);
+                        
+                        tx.commit();
                     }
-                    
-                    LOGGER.fine("Adding features to " + featureTypeName);
-                    FeatureCollection features = source.getFeatureSource(featureTypeName).getFeatures();
-                    featureStore.addFeatures(features);
-                    
+                    catch(Exception e) {
+                        tx.rollback();
+                    }
+                    finally {
+                        tx.close();
+                    }
                 }
             }
-            catch(Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
 
-        //check configure parameter, if set to none to not try to configure
-        // data feature types
-        String configure = form.getFirstValue( "configure" );
-        if ( "none".equalsIgnoreCase( configure ) ) {
-            getResponse().setStatus( Status.SUCCESS_CREATED );
-            return;
-        }
-        
-        //load the target datastore
-        try {
-            DataStore ds = (DataStore) info.getDataStore(null);
+            //check configure parameter, if set to none to not try to configure
+            // data feature types
+            String configure = form.getFirstValue( "configure" );
+            if ( "none".equalsIgnoreCase( configure ) ) {
+                getResponse().setStatus( Status.SUCCESS_CREATED );
+                return;
+            }
+            
+            //load the target datastore
+            //DataStore ds = (DataStore) info.getDataStore(null);
             
             String[] featureTypeNames = source.getTypeNames();
             for ( int i = 0; i < featureTypeNames.length; i++ ) {
@@ -380,6 +392,7 @@ public class DataStoreFileResource extends StoreFileResource {
                 
                 getResponse().setStatus( Status.SUCCESS_CREATED );
             }
+            //}
         } 
         catch (Exception e) {
             //TODO: report a proper error code
