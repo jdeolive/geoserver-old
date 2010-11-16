@@ -15,9 +15,11 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.geoserver.catalog.Catalog;
@@ -210,6 +212,8 @@ public class DataStoreFileResource extends StoreFileResource {
 
         boolean add = false;
         boolean save = false;
+        boolean canRemoveFiles = false;
+        
         if (info == null) {
             LOGGER.info("Auto-configuring datastore: " + datastore);
             
@@ -226,6 +230,7 @@ public class DataStoreFileResource extends StoreFileResource {
                 }
                 
                 autoCreateParameters(info, namespace, targetFactory);
+                canRemoveFiles = true;
             }
             else {
                 updateParameters(info, namespace, targetFactory, uploadedFile);
@@ -245,6 +250,9 @@ public class DataStoreFileResource extends StoreFileResource {
             if (targetDataStoreFormat.equals(sourceDataStoreFormat)) {
                 save = true;
                 updateParameters(info, namespace, factory, uploadedFile);
+            }
+            else {
+                canRemoveFiles = true;
             }
         }
         builder.setStore(info);
@@ -397,6 +405,23 @@ public class DataStoreFileResource extends StoreFileResource {
         catch (Exception e) {
             //TODO: report a proper error code
             throw new RuntimeException ( e );
+        }
+        
+        //dispose the datastore
+        source.dispose();
+        
+        //clean up the files if we can
+        if (isInlineUpload(method) && canRemoveFiles) {
+            if (uploadedFile.isFile()) uploadedFile = uploadedFile.getParentFile();
+            try {
+                FileUtils.deleteDirectory(uploadedFile);
+            } 
+            catch (IOException e) {
+                LOGGER.info("Unable to delete " + uploadedFile.getAbsolutePath());
+                if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.log(Level.FINE, "", e);
+                }
+            }
         }
     }
     
