@@ -24,6 +24,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.projection.ProjectionException;
+import org.geotools.styling.Style;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -37,8 +38,32 @@ import org.springframework.context.ApplicationContextAware;
 
 import com.vividsolutions.jts.geom.Envelope;
 
-public class DefaultWebMapService implements WebMapService,
-        ApplicationContextAware, InitializingBean, DisposableBean {
+/**
+ * A default implementation of a {@link WebMapService}
+ * <p>
+ * This implementations relies on the code setting up the instance to provide the operation beans
+ * through the following properties:
+ * <ul>
+ * <li>{@link #setDescribeLayer DescribeLayer} for the {@link #describeLayer(DescribeLayerRequest)}
+ * operation
+ * <li>{@link #setGetCapabilities GetCapabilities} for the
+ * {@link #getCapabilities(GetCapabilitiesRequest)} operation
+ * <li>{@link #setGetFeatureInfo GetFeatureInfo} for the
+ * {@link #getFeatureInfo(GetFeatureInfoRequest)} operation
+ * <li>{@link #setGetLegendGraphic GetLegendGraphic} for the
+ * {@link #getLegendGraphic(GetLegendGraphicRequest)} operation
+ * <li>{@link #setGetMap GetMap} for the {@link #getMap(GetMapRequest)} operation
+ * <li>{@link #setGetStyles GetStyles} for the {@link #getStyles(GetStylesRequest)} operation
+ * </ul>
+ * If an operation is called for which its corresponding operation bean is not set, the call will
+ * result in an {@link UnsupportedOperationException}
+ * </p>
+ * 
+ * @author Justin Deoliveira
+ * @author Gabriel Roldan
+ */
+public class DefaultWebMapService implements WebMapService, ApplicationContextAware,
+        InitializingBean, DisposableBean {
     /**
      * default for 'format' parameter.
      */
@@ -47,7 +72,7 @@ public class DefaultWebMapService implements WebMapService,
     /**
      * default for 'styles' parameter.
      */
-    public static List STYLES = Collections.EMPTY_LIST;
+    public static List<Style> STYLES = Collections.emptyList();
 
     /**
      * longest side for the preview
@@ -73,7 +98,7 @@ public class DefaultWebMapService implements WebMapService,
      * default for 'transparent' parameter.
      */
     public static ExecutorService RENDERING_POOL;
-    
+
     /**
      * default for 'bbox' paramter
      */
@@ -83,12 +108,7 @@ public class DefaultWebMapService implements WebMapService,
     /**
      * wms configuration
      */
-    WMS wms;
-
-    /**
-     * Application context
-     */
-    ApplicationContext context;
+    private final WMS wms;
 
     /**
      * Temporary field that handles the usage of the line width optimization code
@@ -103,7 +123,19 @@ public class DefaultWebMapService implements WebMapService,
     /**
      * Max number of rule filters to be used against the data source
      */
-    public static Integer MAX_FILTER_RULES = null;
+    private static Integer MAX_FILTER_RULES = null;
+
+    private GetCapabilities getCapabilities;
+
+    private DescribeLayer describeLayer;
+
+    private GetMap getMap;
+
+    private GetFeatureInfo getFeatureInfo;
+
+    private GetStyles getStyles;
+
+    private GetLegendGraphic getLegendGraphic;
 
     public DefaultWebMapService(WMS wms) {
         this.wms = wms;
@@ -117,10 +149,51 @@ public class DefaultWebMapService implements WebMapService,
     }
 
     /**
+     * Establishes the operation bean responsible for executing the GetCapabilities requests
+     */
+    public void setGetCapabilities(GetCapabilities getCapabilities) {
+        this.getCapabilities = getCapabilities;
+    }
+
+    /**
+     * Establishes the operation bean responsible for executing the DescribeLayer requests
+     */
+    public void setDescribeLayer(DescribeLayer describeLayer) {
+        this.describeLayer = describeLayer;
+    }
+
+    /**
+     * Establishes the operation bean responsible for executing the GetMap requests
+     */
+    public void setGetMap(GetMap getMap) {
+        this.getMap = getMap;
+    }
+
+    /**
+     * Establishes the operation bean responsible for executing the GetFeatureInfo requests
+     */
+    public void setGetFeatureInfo(GetFeatureInfo getFeatureInfo) {
+        this.getFeatureInfo = getFeatureInfo;
+    }
+
+    /**
+     * Establishes the operation bean responsible for executing the GetStyles requests
+     */
+    public void setGetStyles(GetStyles getStyles) {
+        this.getStyles = getStyles;
+    }
+
+    /**
+     * Establishes the operation bean responsible for executing the GetLegendGraphics requests
+     */
+    public void setGetLegendGraphic(GetLegendGraphic getLegendGraphic) {
+        this.getLegendGraphic = getLegendGraphic;
+    }
+
+    /**
      * @see ApplicationContextAware#setApplicationContext(ApplicationContext)
      */
     public void setApplicationContext(ApplicationContext context) throws BeansException {
-        this.context = context;
 
         // first time initialization of line width optimization flag
         if (OPTIMIZE_LINE_WIDTH == null) {
@@ -187,9 +260,11 @@ public class DefaultWebMapService implements WebMapService,
      * @see WebMapService#getCapabilities(GetCapabilitiesRequest)
      */
     public GetCapabilitiesTransformer getCapabilities(GetCapabilitiesRequest request) {
-        GetCapabilities capabilities = (GetCapabilities) context.getBean("wmsGetCapabilities");
-
-        return capabilities.run(request);
+        if (null == getCapabilities) {
+            throw new UnsupportedOperationException(
+                    "Operation not properly configured, make sure the operation bean has been set");
+        }
+        return getCapabilities.run(request);
     }
 
     /**
@@ -203,8 +278,10 @@ public class DefaultWebMapService implements WebMapService,
      * @see WebMapService#describeLayer(DescribeLayerRequest)
      */
     public DescribeLayerTransformer describeLayer(DescribeLayerRequest request) {
-        DescribeLayer describeLayer = (DescribeLayer) context.getBean("wmsDescribeLayer");
-
+        if (null == describeLayer) {
+            throw new UnsupportedOperationException(
+                    "Operation not properly configured, make sure the operation bean has been set");
+        }
         return describeLayer.run(request);
     }
 
@@ -212,8 +289,10 @@ public class DefaultWebMapService implements WebMapService,
      * @see WebMapService#getMap(GetMapRequest)
      */
     public WebMap getMap(GetMapRequest request) {
-        GetMap getMap = (GetMap) context.getBean("wmsGetMap");
-
+        if (null == getMap) {
+            throw new UnsupportedOperationException(
+                    "Operation not properly configured, make sure the operation bean has been set");
+        }
         return getMap.run(request);
     }
 
@@ -228,8 +307,10 @@ public class DefaultWebMapService implements WebMapService,
      * @see WebMapService#getFeatureInfo(GetFeatureInfoRequest)
      */
     public FeatureCollectionType getFeatureInfo(final GetFeatureInfoRequest request) {
-        GetFeatureInfo getFeatureInfo = (GetFeatureInfo) context.getBean("wmsGetFeatureInfo");
-
+        if (null == getFeatureInfo) {
+            throw new UnsupportedOperationException(
+                    "Operation not properly configured, make sure the operation bean has been set");
+        }
         return getFeatureInfo.run(request);
     }
 
@@ -237,9 +318,10 @@ public class DefaultWebMapService implements WebMapService,
      * @see WebMapService#getLegendGraphic(GetLegendGraphicRequest)
      */
     public Object getLegendGraphic(GetLegendGraphicRequest request) {
-        GetLegendGraphic getLegendGraphic = (GetLegendGraphic) context
-                .getBean("wmsGetLegendGraphic");
-
+        if (null == getLegendGraphic) {
+            throw new UnsupportedOperationException(
+                    "Operation not properly configured, make sure the operation bean has been set");
+        }
         return getLegendGraphic.run(request);
     }
 
@@ -263,9 +345,6 @@ public class DefaultWebMapService implements WebMapService,
      * @see org.geoserver.wms.WebMapService#getStyles(org.geoserver.sld.GetStylesRequest)
      */
     public StyledLayerDescriptor getStyles(GetStylesRequest request) {
-
-        GetStyles getStyles = (GetStyles) context.getBean("wmsGetStyles");
-
         return (StyledLayerDescriptor) getStyles.run(request);
 
     }
@@ -294,7 +373,7 @@ public class DefaultWebMapService implements WebMapService,
             // this
             // into the GetMapKvpRequestReader
             if ((getMap.getLayers() != null) && (getMap.getLayers().size() > 0)) {
-                ArrayList styles = new ArrayList(getMap.getLayers().size());
+                ArrayList<Style> styles = new ArrayList<Style>(getMap.getLayers().size());
 
                 for (int i = 0; i < getMap.getLayers().size(); i++) {
                     styles.add(getMap.getLayers().get(i).getDefaultStyle());
@@ -550,9 +629,10 @@ public class DefaultWebMapService implements WebMapService,
         }
         return bbox;
     }
-    
+
     /**
      * Returns a app wide cached rendering pool that can be used for parallelized rendering
+     * 
      * @return
      */
     public static ExecutorService getRenderingPool() {
@@ -560,7 +640,7 @@ public class DefaultWebMapService implements WebMapService,
     }
 
     public void destroy() throws Exception {
-        if(RENDERING_POOL != null) {
+        if (RENDERING_POOL != null) {
             RENDERING_POOL.shutdown();
             RENDERING_POOL.awaitTermination(10, TimeUnit.SECONDS);
         }
