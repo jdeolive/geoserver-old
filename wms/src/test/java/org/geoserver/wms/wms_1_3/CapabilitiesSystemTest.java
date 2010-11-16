@@ -202,8 +202,10 @@ public class CapabilitiesSystemTest extends WMSTestSupport {
          */
         dom = getAsDOM("ows?service=WMS&request=GetCapabilities&version=1.3.0&updateSequence="
                 + updateSeq);
+        print(dom);
+        assertXpathEvaluatesTo("1.3.0", "/ogc:ServiceExceptionReport/@version", dom);
         assertXpathEvaluatesTo("CurrentUpdateSequence",
-                "/ogc:ServiceExceptionReport/ogc:ServiceException/@exceptionCode", dom);
+                "/ogc:ServiceExceptionReport/ogc:ServiceException/@code", dom);
 
         /*
          * Client: lower, Server: higher, response: current

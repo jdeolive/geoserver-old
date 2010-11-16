@@ -274,9 +274,13 @@
     </bean>
    		
 	<!--  responses -->
-	<bean id="wmsGetCapabilitiesResponse"
+	<bean id="wms_1_1_1_GetCapabilitiesResponse"
 		class="org.geoserver.wms.capabilities.GetCapabilitiesResponse">
 	</bean>
+    <bean id="wms_1_3_0_GetCapabilitiesResponse"
+      class="org.geoserver.wms.capabilities.Capabilities_1_3_0_Response">
+    </bean>
+  
 	<bean id="describeLayerResponse"
 		class="org.geoserver.wms.describelayer.DescribeLayerResponse">
 	</bean>

@@ -22,7 +22,6 @@ import org.geoserver.config.util.LegacyServicesReader;
 import org.geoserver.wms.WMSInfo.WMSInterpolation;
 import org.geoserver.wms.WatermarkInfo.Position;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.util.Version;
 import org.geotools.util.logging.Logging;
 
 public class WMSLoader extends LegacyServiceLoader<WMSInfo> {
@@ -147,8 +146,8 @@ public class WMSLoader extends LegacyServiceLoader<WMSInfo> {
             }
         }
 
-        wms.getVersions().add(new Version("1.1.1"));
-        wms.getVersions().add(new Version("1.3.0"));
+        wms.getVersions().add(WMS.VERSION_1_1_1);
+        wms.getVersions().add(WMS.VERSION_1_3_0);
         return wms;
     }
 

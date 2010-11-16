@@ -18,6 +18,7 @@ import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.sld.GetStyles;
 import org.geoserver.sld.GetStylesRequest;
+import org.geoserver.wms.capabilities.Capabilities_1_3_0_Transformer;
 import org.geoserver.wms.capabilities.GetCapabilitiesTransformer;
 import org.geoserver.wms.describelayer.DescribeLayerTransformer;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -26,6 +27,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.projection.ProjectionException;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyledLayerDescriptor;
+import org.geotools.xml.transform.TransformerBase;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -258,8 +260,10 @@ public class DefaultWebMapService implements WebMapService, ApplicationContextAw
 
     /**
      * @see WebMapService#getCapabilities(GetCapabilitiesRequest)
+     * @see GetCapabilitiesTransformer
+     * @see Capabilities_1_3_0_Transformer
      */
-    public GetCapabilitiesTransformer getCapabilities(GetCapabilitiesRequest request) {
+    public TransformerBase getCapabilities(GetCapabilitiesRequest request) {
         if (null == getCapabilities) {
             throw new UnsupportedOperationException(
                     "Operation not properly configured, make sure the operation bean has been set");
@@ -270,7 +274,7 @@ public class DefaultWebMapService implements WebMapService, ApplicationContextAw
     /**
      * @see WebMapService#capabilities(GetCapabilitiesRequest)
      */
-    public GetCapabilitiesTransformer capabilities(GetCapabilitiesRequest request) {
+    public TransformerBase capabilities(GetCapabilitiesRequest request) {
         return getCapabilities(request);
     }
 

@@ -62,6 +62,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.styling.Style;
+import org.geotools.util.logging.Logging;
 import org.geotools.xml.transform.TransformerBase;
 import org.geotools.xml.transform.Translator;
 import org.opengis.feature.type.Name;
@@ -75,7 +76,7 @@ import org.xml.sax.helpers.AttributesImpl;
 import com.vividsolutions.jts.geom.Envelope;
 
 /**
- * Geotools xml framework based encoder for a Capabilities WMS 1.1.1 document.
+ * Geotools xml framework based encoder for a Capabilities WMS 1.3.0 document.
  * 
  * @author Gabriel Roldan
  * @version $Id
@@ -83,25 +84,23 @@ import com.vividsolutions.jts.geom.Envelope;
  * @see GetCapabilitiesResponse#write(Object, java.io.OutputStream,
  *      org.geoserver.platform.Operation)
  */
-public class GetCapabilitiesTransformer extends TransformerBase {
+public class Capabilities_1_3_0_Transformer extends TransformerBase {
+
     /** fixed MIME type for the returned capabilities document */
-    public static final String WMS_CAPS_MIME = "application/vnd.ogc.wms_xml";
+    public static final String WMS_CAPS_MIME = "text/xml";
 
     /** the WMS supported exception formats */
     static final String[] EXCEPTION_FORMATS = { "application/vnd.ogc.se_xml",
             "application/vnd.ogc.se_inimage", };
 
     /**
-     * The geoserver base URL to append it the schemas/wms/1.1.1/WMS_MS_Capabilities.dtd DTD
+     * The geoserver base URL to append it the schemas/wms/1.3.0/exceptions_1_3_0.xsd schema
      * location
      */
     private String baseURL;
 
     /** The list of output formats to state as supported for the GetMap request */
     private Set<String> getMapFormats;
-
-    /** The list of output formats to state as supported for the GetLegendGraphic request */
-    private Set<String> getLegendGraphicFormats;
 
     private WMS wmsConfig;
 
@@ -114,23 +113,17 @@ public class GetCapabilitiesTransformer extends TransformerBase {
      *            the base URL of the current request (usually "http://host:port/geoserver")
      * @param getMapFormats
      *            the list of supported output formats to state for the GetMap request
-     * @param getLegendGraphicFormats
-     *            the list of supported output formats to state for the GetLegendGraphic request
-     * 
      * @throws NullPointerException
      *             if <code>schemaBaseUrl</code> is null;
      */
-    public GetCapabilitiesTransformer(WMS wms, String baseURL, Set<String> getMapFormats,
-            Set<String> getLegendGraphicFormats) {
+    public Capabilities_1_3_0_Transformer(WMS wms, String baseURL, Set<String> getMapFormats) {
         super();
         Assert.notNull(wms);
         Assert.notNull(baseURL, "baseURL");
         Assert.notNull(getMapFormats, "getMapFormats");
-        Assert.notNull(getLegendGraphicFormats, "getLegendGraphicFormats");
 
         this.wmsConfig = wms;
         this.getMapFormats = getMapFormats;
-        this.getLegendGraphicFormats = getLegendGraphicFormats;
         this.baseURL = baseURL;
         this.setNamespaceDeclarationEnabled(false);
         setIndentation(2);
@@ -140,8 +133,7 @@ public class GetCapabilitiesTransformer extends TransformerBase {
 
     @Override
     public Translator createTranslator(ContentHandler handler) {
-        return new CapabilitiesTranslator(handler, wmsConfig, getMapFormats,
-                getLegendGraphicFormats);
+        return new Capabilities_1_3_0_Translator(handler, wmsConfig, getMapFormats);
     }
 
     /**
@@ -172,10 +164,9 @@ public class GetCapabilitiesTransformer extends TransformerBase {
      * @author Gabriel Roldan
      * @version $Id
      */
-    private static class CapabilitiesTranslator extends TranslatorSupport {
+    private static class Capabilities_1_3_0_Translator extends TranslatorSupport {
 
-        private static final Logger LOGGER = org.geotools.util.logging.Logging
-                .getLogger(CapabilitiesTranslator.class.getPackage().getName());
+        private static final Logger LOGGER = Logging.getLogger(Capabilities_1_3_0_Translator.class);
 
         private static final String EPSG = "EPSG:";
 
@@ -184,7 +175,7 @@ public class GetCapabilitiesTransformer extends TransformerBase {
         private static final String XLINK_NS = "http://www.w3.org/1999/xlink";
 
         static {
-            wmsVersion.addAttribute("", "version", "version", "", "1.1.1");
+            wmsVersion.addAttribute("", "version", "version", "", "1.3.0");
         }
 
         /**
@@ -195,8 +186,6 @@ public class GetCapabilitiesTransformer extends TransformerBase {
 
         private Set<String> getMapFormats;
 
-        private Set<String> getLegendGraphicFormats;
-
         private WMS wmsConfig;
 
         /**
@@ -206,12 +195,11 @@ public class GetCapabilitiesTransformer extends TransformerBase {
          *            content handler to send sax events to.
          * @param wmsConfig2
          */
-        public CapabilitiesTranslator(ContentHandler handler, WMS wmsConfig,
-                Set<String> getMapFormats, Set<String> getLegendGraphicFormats) {
+        public Capabilities_1_3_0_Translator(ContentHandler handler, WMS wmsConfig,
+                Set<String> getMapFormats) {
             super(handler, null, null);
             this.wmsConfig = wmsConfig;
             this.getMapFormats = getMapFormats;
-            this.getLegendGraphicFormats = getLegendGraphicFormats;
         }
 
         /**
@@ -235,10 +223,10 @@ public class GetCapabilitiesTransformer extends TransformerBase {
             AttributesImpl rootAtts = new AttributesImpl(wmsVersion);
             rootAtts.addAttribute("", "updateSequence", "updateSequence", "",
                     wmsConfig.getUpdateSequence() + "");
-            start("WMT_MS_Capabilities", rootAtts);
+            start("WMS_Capabilities", rootAtts);
             handleService();
             handleCapability();
-            end("WMT_MS_Capabilities");
+            end("WMS_Capabilities");
         }
 
         /**
@@ -403,14 +391,14 @@ public class GetCapabilitiesTransformer extends TransformerBase {
             handleDcpType(serviceUrl, null);
             end("DescribeLayer");
 
-            start("GetLegendGraphic");
-
-            for (String format : getLegendGraphicFormats) {
-                element("Format", format);
-            }
-
-            handleDcpType(serviceUrl, null);
-            end("GetLegendGraphic");
+            // start("GetLegendGraphic");
+            //
+            // for (String format : getLegendGraphicFormats) {
+            // element("Format", format);
+            // }
+            //
+            // handleDcpType(serviceUrl, null);
+            // end("GetLegendGraphic");
 
             start("GetStyles");
             element("Format", GetStylesResponse.SLD_MIME_TYPE);
@@ -456,7 +444,7 @@ public class GetCapabilitiesTransformer extends TransformerBase {
         private void handleException() {
             start("Exception");
 
-            for (String exceptionFormat : GetCapabilitiesTransformer.EXCEPTION_FORMATS) {
+            for (String exceptionFormat : Capabilities_1_3_0_Transformer.EXCEPTION_FORMATS) {
                 element("Format", exceptionFormat);
             }
 
