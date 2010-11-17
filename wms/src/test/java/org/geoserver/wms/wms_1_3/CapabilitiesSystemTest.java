@@ -6,8 +6,16 @@ package org.geoserver.wms.wms_1_3;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 
 import junit.framework.Test;
 
@@ -19,6 +27,7 @@ import org.geoserver.config.GeoServerInfo;
 import org.geoserver.data.test.MockData;
 import org.geoserver.wms.WMSTestSupport;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.mockrunner.mock.web.MockHttpServletResponse;
 
@@ -75,6 +84,28 @@ public class CapabilitiesSystemTest extends WMSTestSupport {
         super.populateDataDirectory(dataDirectory);
         dataDirectory.addWcs11Coverages();
         dataDirectory.disableDataStore(MockData.SF_PREFIX);
+    }
+
+    /**
+     * As for section 7.2.4.1, ensures the GeCapabilities document validates against its schema
+     */
+    public void testValidateCapabilitiesXML() throws Exception {
+        Document dom = getAsDOM("ows?service=WMS&version=1.3.0&request=GetCapabilities");
+        print(dom);
+        SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
+        URL schemaLocation = getClass().getResource(
+                "/geoserver/schemas/wms/1.3.0/capabilities_1_3_0.xsd");
+        Schema schema = factory.newSchema(schemaLocation);
+
+        Validator validator = schema.newValidator();
+        Source source = new DOMSource(dom);
+        try {
+            validator.validate(source);
+            assertTrue(true);
+        } catch (SAXException ex) {
+            LOGGER.log(Level.WARNING, "WMS 1.3.0 capabilities validation error", ex);
+            fail("WMS 1.3.0 capabilities validation error: " + ex.getMessage());
+        }
     }
 
     /**

@@ -25,10 +25,6 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-
 import org.apache.xalan.transformer.TransformerIdentityImpl;
 import org.geoserver.catalog.AttributionInfo;
 import org.geoserver.catalog.Catalog;
@@ -47,13 +43,11 @@ import org.geoserver.config.ContactInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.ows.URLMangler.URLType;
 import org.geoserver.platform.ServiceException;
-import org.geoserver.sld.GetStylesResponse;
 import org.geoserver.wms.GetCapabilities;
 import org.geoserver.wms.GetCapabilitiesRequest;
 import org.geoserver.wms.GetLegendGraphicRequest;
 import org.geoserver.wms.WMS;
 import org.geoserver.wms.WMSInfo;
-import org.geoserver.wms.describelayer.DescribeLayerResponse;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.data.ows.Layer;
 import org.geotools.data.ows.WMSCapabilities;
@@ -86,12 +80,13 @@ import com.vividsolutions.jts.geom.Envelope;
  */
 public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
+    private static final String NAMESPACE = "http://www.opengis.net/wms";
+
     /** fixed MIME type for the returned capabilities document */
     public static final String WMS_CAPS_MIME = "text/xml";
 
     /** the WMS supported exception formats */
-    static final String[] EXCEPTION_FORMATS = { "application/vnd.ogc.se_xml",
-            "application/vnd.ogc.se_inimage", };
+    static final String[] EXCEPTION_FORMATS = { "XML", "INIMAGE", "BLANK" };
 
     /**
      * The geoserver base URL to append it the schemas/wms/1.3.0/exceptions_1_3_0.xsd schema
@@ -113,18 +108,16 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
      *            the base URL of the current request (usually "http://host:port/geoserver")
      * @param getMapFormats
      *            the list of supported output formats to state for the GetMap request
-     * @throws NullPointerException
-     *             if <code>schemaBaseUrl</code> is null;
      */
-    public Capabilities_1_3_0_Transformer(WMS wms, String baseURL, Set<String> getMapFormats) {
+    public Capabilities_1_3_0_Transformer(WMS wms, String schemaBaseUrl, Set<String> getMapFormats) {
         super();
         Assert.notNull(wms);
-        Assert.notNull(baseURL, "baseURL");
+        Assert.notNull(schemaBaseUrl, "baseURL");
         Assert.notNull(getMapFormats, "getMapFormats");
 
         this.wmsConfig = wms;
         this.getMapFormats = getMapFormats;
-        this.baseURL = baseURL;
+        this.baseURL = schemaBaseUrl;
         this.setNamespaceDeclarationEnabled(false);
         setIndentation(2);
         final Charset encoding = wms.getCharSet();
@@ -133,31 +126,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
     @Override
     public Translator createTranslator(ContentHandler handler) {
-        return new Capabilities_1_3_0_Translator(handler, wmsConfig, getMapFormats);
-    }
-
-    /**
-     * Gets the <code>Transformer</code> created by the overriden method in the superclass and adds
-     * it the system DOCTYPE token pointing to the Capabilities DTD on this server instance.
-     * 
-     * <p>
-     * The DTD is set at the fixed location given by the <code>schemaBaseUrl</code> passed to the
-     * constructor <code>+
-     * "wms/1.1.1/WMS_MS_Capabilities.dtd</code>.
-     * </p>
-     * 
-     * @return a Transformer propoerly configured to produce DescribeLayer responses.h
-     * 
-     * @throws TransformerException
-     *             if it is thrown by <code>super.createTransformer()</code>
-     */
-    @Override
-    public Transformer createTransformer() throws TransformerException {
-        Transformer transformer = super.createTransformer();
-        String dtdUrl = buildSchemaURL(baseURL, "wms/1.1.1/WMS_MS_Capabilities.dtd");
-        transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, dtdUrl);
-
-        return transformer;
+        String schemaLocation = buildSchemaURL(baseURL, "wms/1.3.0/capabilities_1_3_0.xsd");
+        return new Capabilities_1_3_0_Translator(handler, wmsConfig, getMapFormats, schemaLocation);
     }
 
     /**
@@ -166,17 +136,13 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
      */
     private static class Capabilities_1_3_0_Translator extends TranslatorSupport {
 
+        private static final String XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
+
         private static final Logger LOGGER = Logging.getLogger(Capabilities_1_3_0_Translator.class);
 
         private static final String EPSG = "EPSG:";
 
-        private static AttributesImpl wmsVersion = new AttributesImpl();
-
         private static final String XLINK_NS = "http://www.w3.org/1999/xlink";
-
-        static {
-            wmsVersion.addAttribute("", "version", "version", "", "1.3.0");
-        }
 
         /**
          * The request from wich all the information needed to produce the capabilities document can
@@ -188,18 +154,33 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
         private WMS wmsConfig;
 
+        private String schemaLocationURI;
+
         /**
          * Creates a new CapabilitiesTranslator object.
          * 
          * @param handler
          *            content handler to send sax events to.
-         * @param wmsConfig2
+         * @param schemaLoc
+         * 
          */
         public Capabilities_1_3_0_Translator(ContentHandler handler, WMS wmsConfig,
-                Set<String> getMapFormats) {
+                Set<String> getMapFormats, String schemaLocationURI) {
             super(handler, null, null);
             this.wmsConfig = wmsConfig;
             this.getMapFormats = getMapFormats;
+            this.schemaLocationURI = schemaLocationURI;
+        }
+
+        private AttributesImpl attributes(String... kvp) {
+            String[] atts = kvp;
+            AttributesImpl attributes = new AttributesImpl();
+            for (int i = 0; i < atts.length; i += 2) {
+                String name = atts[i];
+                String value = atts[i + 1];
+                attributes.addAttribute("", name, name, "", value);
+            }
+            return attributes;
         }
 
         /**
@@ -220,9 +201,12 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                         request).toString());
             }
 
-            AttributesImpl rootAtts = new AttributesImpl(wmsVersion);
-            rootAtts.addAttribute("", "updateSequence", "updateSequence", "",
-                    wmsConfig.getUpdateSequence() + "");
+            String updateSequence = String.valueOf(wmsConfig.getUpdateSequence());
+            String schemaLoc = NAMESPACE + " " + schemaLocationURI;
+            AttributesImpl rootAtts = attributes("version", "1.3.0", "updateSequence",
+                    updateSequence, "xmlns", NAMESPACE, "xmlns:xlink", XLINK_NS, "xmlns:xsi",
+                    XML_SCHEMA_INSTANCE, "xsi:schemaLocation", schemaLoc);
+
             start("WMS_Capabilities", rootAtts);
             handleService();
             handleCapability();
@@ -236,18 +220,16 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             start("Service");
 
             final WMSInfo serviceInfo = wmsConfig.getServiceInfo();
-            element("Name", "OGC:WMS");
+            element("Name", "WMS");
             element("Title", serviceInfo.getTitle());
             element("Abstract", serviceInfo.getAbstract());
 
             handleKeywordList(serviceInfo.getKeywords());
 
-            AttributesImpl orAtts = new AttributesImpl();
-            orAtts.addAttribute("", "xmlns:xlink", "xmlns:xlink", "", XLINK_NS);
-            orAtts.addAttribute(XLINK_NS, "xlink:type", "xlink:type", "", "simple");
-            orAtts.addAttribute("", "xlink:href", "xlink:href", "",
-                    buildURL(request.getBaseUrl(), "wms", null, URLType.SERVICE));
-            element("OnlineResource", null, orAtts);
+            String onlineResource = buildURL(request.getBaseUrl(), "ows", null, URLType.SERVICE);
+            AttributesImpl attributes = attributes("xmlns:xlink", XLINK_NS, "xlink:type", "simple",
+                    "xlink:href", onlineResource);
+            element("OnlineResource", null, attributes);
 
             GeoServer geoServer = wmsConfig.getGeoServer();
             ContactInfo contact = geoServer.getGlobal().getContact();
@@ -255,13 +237,14 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
             element("Fees", serviceInfo.getFees());
             element("AccessConstraints", serviceInfo.getAccessConstraints());
+
+            // TODO: LayerLimit, MaxWidth and MaxHeight have no equivalence in GeoServer config so
+            // far
             end("Service");
         }
 
         /**
          * Encodes contact information in the WMS capabilities document
-         * 
-         * @param geoServer
          */
         public void handleContactInfo(ContactInfo contact) {
             start("ContactInformation");
@@ -298,8 +281,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             start("KeywordList");
 
             if (keywords != null) {
-                for (Iterator<String> it = keywords.iterator(); it.hasNext();) {
-                    element("Keyword", it.next());
+                for (String kw : keywords) {
+                    element("Keyword", kw);
                 }
             }
 
@@ -341,7 +324,6 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             start("Capability");
             handleRequest();
             handleException();
-            handleSLD();
             handleLayers();
             end("Capability");
         }
@@ -353,7 +335,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             element("Format", WMS_CAPS_MIME);
 
             // build the service URL and make sure it ends with &
-            String serviceUrl = buildURL(request.getBaseUrl(), "wms", params("SERVICE", "WMS"),
+            String serviceUrl = buildURL(request.getBaseUrl(), "ows", params("SERVICE", "WMS"),
                     URLType.SERVICE);
             serviceUrl = appendQueryString(serviceUrl, "");
 
@@ -370,11 +352,11 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                 sortedFormats.remove("image/png");
                 sortedFormats.add(0, "image/png");
             }
-            for (Iterator<String> it = sortedFormats.iterator(); it.hasNext();) {
-                element("Format", String.valueOf(it.next()));
+            for (String format : sortedFormats) {
+                element("Format", format);
             }
 
-            handleDcpType(serviceUrl, null);
+            handleDcpType(serviceUrl, null);// only GET method
             end("GetMap");
 
             start("GetFeatureInfo");
@@ -383,14 +365,16 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                 element("Format", format);
             }
 
-            handleDcpType(serviceUrl, serviceUrl);
+            handleDcpType(serviceUrl, null); // only GET method
             end("GetFeatureInfo");
 
-            start("DescribeLayer");
-            element("Format", DescribeLayerResponse.DESCLAYER_MIME_TYPE);
-            handleDcpType(serviceUrl, null);
-            end("DescribeLayer");
+            // no DescribeLayer in 1.3.0
+            // start("DescribeLayer");
+            // element("Format", DescribeLayerResponse.DESCLAYER_MIME_TYPE);
+            // handleDcpType(serviceUrl, null);
+            // end("DescribeLayer");
 
+            // same thing, not defined for 1.3.0
             // start("GetLegendGraphic");
             //
             // for (String format : getLegendGraphicFormats) {
@@ -400,11 +384,15 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             // handleDcpType(serviceUrl, null);
             // end("GetLegendGraphic");
 
-            start("GetStyles");
-            element("Format", GetStylesResponse.SLD_MIME_TYPE);
-            handleDcpType(serviceUrl, null);
-            end("GetStyles");
+            // no way
+            // start("GetStyles");
+            // element("Format", GetStylesResponse.SLD_MIME_TYPE);
+            // handleDcpType(serviceUrl, null);
+            // end("GetStyles");
 
+            // but there are _ExtendedOperations in WMS 1.3.0, seems to be calling for an extension
+            // point
+            // TODO: define extension point for _ExtendedOperation
             end("Request");
         }
 
@@ -444,33 +432,11 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
         private void handleException() {
             start("Exception");
 
-            for (String exceptionFormat : Capabilities_1_3_0_Transformer.EXCEPTION_FORMATS) {
+            for (String exceptionFormat : EXCEPTION_FORMATS) {
                 element("Format", exceptionFormat);
             }
 
             end("Exception");
-        }
-
-        private void handleSLD() {
-            AttributesImpl sldAtts = new AttributesImpl();
-
-            String supportsSLD = wmsConfig.supportsSLD() ? "1" : "0";
-            String supportsUserLayer = wmsConfig.supportsUserLayer() ? "1" : "0";
-            String supportsUserStyle = wmsConfig.supportsUserStyle() ? "1" : "0";
-            String supportsRemoteWFS = wmsConfig.supportsRemoteWFS() ? "1" : "0";
-            sldAtts.addAttribute("", "SupportSLD", "SupportSLD", "", supportsSLD);
-            sldAtts.addAttribute("", "UserLayer", "UserLayer", "", supportsUserLayer);
-            sldAtts.addAttribute("", "UserStyle", "UserStyle", "", supportsUserStyle);
-            sldAtts.addAttribute("", "RemoteWFS", "RemoteWFS", "", supportsRemoteWFS);
-
-            start("UserDefinedSymbolization", sldAtts);
-            // djb: this was removed, even though they are correct - the CITE tests have an
-            // incorrect DTD
-            // element("SupportedSLDVersion","1.0.0"); //djb: added that we support this. We support
-            // partial 1.1
-            end("UserDefinedSymbolization");
-
-            // element("UserDefinedSymbolization", null, sldAtts);
         }
 
         /**
@@ -1151,7 +1117,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                 if (style != null) {
                     params.put("style", style.getName());
                 }
-                String legendURL = buildURL(request.getBaseUrl(), "wms", params, URLType.SERVICE);
+                String legendURL = buildURL(request.getBaseUrl(), "ows", params, URLType.SERVICE);
 
                 attrs.addAttribute("", "xmlns:xlink", "xmlns:xlink", "", XLINK_NS);
                 attrs.addAttribute(XLINK_NS, "type", "xlink:type", "", "simple");
