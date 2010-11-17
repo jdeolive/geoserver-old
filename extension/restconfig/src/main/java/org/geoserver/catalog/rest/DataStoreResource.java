@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
+import org.geoserver.catalog.CascadeDeleteVisitor;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.CatalogBuilder;
 import org.geoserver.catalog.DataStoreInfo;
@@ -149,12 +150,19 @@ public class DataStoreResource extends AbstractCatalogResource {
     protected void handleObjectDelete() throws Exception {
         String workspace = getAttribute("workspace");
         String datastore = getAttribute("datastore");
+        boolean recurse = getQueryStringValue("recurse", Boolean.class, false);
         
         DataStoreInfo ds = catalog.getDataStoreByName(workspace, datastore);
-        if ( !catalog.getFeatureTypesByDataStore(ds).isEmpty() ) {
-            throw new RestletException( "datastore not empty", Status.CLIENT_ERROR_FORBIDDEN);
+        if (!recurse) {
+            if ( !catalog.getFeatureTypesByDataStore(ds).isEmpty() ) {
+                throw new RestletException( "datastore not empty", Status.CLIENT_ERROR_FORBIDDEN);
+            }
+            catalog.remove( ds );
         }
-        catalog.remove( ds );
+        else {
+            //recursive delete
+            new CascadeDeleteVisitor(catalog).visit(ds);
+        }
         clear(ds);
         
         LOGGER.info( "DELETE data store " + workspace + "," + datastore );
