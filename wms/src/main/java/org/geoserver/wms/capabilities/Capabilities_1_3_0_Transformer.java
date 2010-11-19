@@ -226,8 +226,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             handleKeywordList(serviceInfo.getKeywords());
 
             String onlineResource = buildURL(request.getBaseUrl(), "ows", null, URLType.SERVICE);
-            AttributesImpl attributes = attributes("xmlns:xlink", XLINK_NS, "xlink:type", "simple",
-                    "xlink:href", onlineResource);
+            AttributesImpl attributes = attributes("xlink:type", "simple", "xlink:href",
+                    onlineResource);
             element("OnlineResource", null, attributes);
 
             GeoServer geoServer = wmsConfig.getGeoServer();
@@ -306,10 +306,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
                 element("Format", link.getType());
 
-                AttributesImpl orAtts = new AttributesImpl();
-                orAtts.addAttribute("", "xmlns:xlink", "xmlns:xlink", "", XLINK_NS);
-                orAtts.addAttribute(XLINK_NS, "xlink:type", "xlink:type", "", "simple");
-                orAtts.addAttribute("", "xlink:href", "xlink:href", "", link.getContent());
+                AttributesImpl orAtts = attributes("xlink:type", "simple", "xlink:href",
+                        link.getContent());
                 element("OnlineResource", null, orAtts);
 
                 end("MetadataURL");
@@ -405,9 +403,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
          */
         private void handleDcpType(String getUrl, String postUrl) {
             AttributesImpl orAtts = new AttributesImpl();
-            orAtts.addAttribute("", "xmlns:xlink", "xmlns:xlink", "", XLINK_NS);
-            orAtts.addAttribute("", "xlink:type", "xlink:type", "", "simple");
-            orAtts.addAttribute("", "xlink:href", "xlink:href", "", getUrl);
+            orAtts.addAttribute(XLINK_NS, "type", "xlink:type", "", "simple");
+            orAtts.addAttribute(XLINK_NS, "href", "xlink:href", "", getUrl);
             start("DCPType");
             start("HTTP");
 
@@ -418,7 +415,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             }
 
             if (postUrl != null) {
-                orAtts.setAttribute(2, "", "xlink:href", "xlink:href", "", postUrl);
+                orAtts.setAttribute(1, "", "href", "xlink:href", "", postUrl);
                 start("Post");
                 element("OnlineResource", null, orAtts);
                 end("Post");
@@ -838,6 +835,15 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             }
         }
 
+        boolean isLayerQueryable(LayerGroupInfo layerGroup) {
+            for (LayerInfo layer : layerGroup.getLayers()) {
+                if (!isLayerQueryable(layer)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         protected void handleLayerGroups(List<LayerGroupInfo> layerGroups) throws FactoryException,
                 TransformException {
             if (layerGroups == null || layerGroups.size() == 0) {
@@ -854,9 +860,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                 String layerName = layerGroup.getName();
 
                 AttributesImpl qatts = new AttributesImpl();
-                qatts.addAttribute("", "queryable", "queryable", "", "0");
-                // qatts.addAttribute("", "opaque", "opaque", "", "1");
-                // qatts.addAttribute("", "cascaded", "cascaded", "", "1");
+                boolean queryable = isLayerQueryable(layerGroup);
+                qatts.addAttribute("", "queryable", "queryable", "", queryable ? "1" : "0");
                 start("Layer", qatts);
                 element("Name", layerName);
                 element("Title", layerName);
@@ -869,7 +874,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                 String authority = layerGroupBounds.getCoordinateReferenceSystem().getIdentifiers()
                         .toArray()[0].toString();
 
-                element("SRS", authority);
+                element("CRS", authority);
 
                 handleGeographicBoundingBox(latLonBounds);
                 handleBBox(layerGroupBounds, authority);
