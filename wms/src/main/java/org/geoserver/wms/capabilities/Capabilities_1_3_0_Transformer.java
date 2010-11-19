@@ -61,7 +61,6 @@ import org.geotools.xml.transform.TransformerBase;
 import org.geotools.xml.transform.Translator;
 import org.opengis.feature.type.Name;
 import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.springframework.util.Assert;
 import org.xml.sax.ContentHandler;
@@ -549,7 +548,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                     if (currentSRS.indexOf(':') == -1) {
                         currentSRS = EPSG + currentSRS;
                     }
-                    element("SRS", currentSRS);
+                    element("CRS", currentSRS);
                 }
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
@@ -581,7 +580,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                 LOGGER.fine("Summarized LatLonBBox is " + latlonBbox);
             }
 
-            handleLatLonBBox(latlonBbox);
+            handleGeographicBoundingBox(latlonBbox);
         }
 
         /**
@@ -636,21 +635,13 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
         }
 
         /**
-         * Calls super.handleFeatureType to add common FeatureType content such as Name, Title and
-         * LatLonBoundingBox, and then writes WMS specific layer properties as Styles, Scale Hint,
-         * etc.
-         * 
-         * @throws IOException
-         * 
-         * @task TODO: write wms specific elements.
          */
-        @SuppressWarnings("deprecation")
         protected void handleLayer(final LayerInfo layer) {
-            // HACK: by now all our layers are queryable, since they reference
-            // only featuretypes managed by this server
-            AttributesImpl qatts = new AttributesImpl();
-            qatts.addAttribute("", "queryable", "queryable", "", isLayerQueryable(layer) ? "1"
-                    : "0");
+            AttributesImpl qatts = attributes("queryable", isLayerQueryable(layer) ? "1" : "0");
+            int cascadedHopCount = getCascadedHopCount(layer);
+            if (cascadedHopCount > 0) {
+                qatts.addAttribute("", "cascaded", "cascaded", "", String.valueOf(cascadedHopCount));
+            }
             start("Layer", qatts);
             element("Name", layer.getResource().getNamespace().getPrefix() + ":" + layer.getName());
             // REVISIT: this is bad, layer should have title and anbstract by itself
@@ -658,127 +649,45 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             element("Abstract", layer.getResource().getAbstract());
             handleKeywordList(layer.getResource().getKeywords());
 
-            /**
-             * @task REVISIT: should getSRS() return the full URL? no - the spec says it should be a
-             *       set of <SRS>EPSG:#</SRS>...
-             */
-            final String srs = layer.getResource().getSRS();
-            element("SRS", srs);
+            final String crs = layer.getResource().getSRS();
+            element("CRS", crs);
 
-            // DJB: I want to be nice to the people reading the capabilities
-            // file - I'm going to get the
-            // human readable name and stick it in the capabilities file
-            // NOTE: this isnt well done because "comment()" isnt in the
-            // ContentHandler interface...
-            try {
-                CoordinateReferenceSystem crs = layer.getResource().getCRS();
-                String desc = "WKT definition of this CRS:\n" + crs;
-                comment(desc);
-            } catch (Exception e) {
-                if (LOGGER.isLoggable(Level.WARNING)) {
-                    LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
-                }
-            }
+            ReferencedEnvelope llbbox = layer.getResource().getLatLonBoundingBox();
+            handleGeographicBoundingBox(llbbox);
 
-            Envelope bbox;
+            ReferencedEnvelope bbox;
             try {
                 bbox = layer.getResource().boundingBox();
             } catch (Exception e) {
                 throw new RuntimeException("Unexpected error obtaining bounding box for layer "
                         + layer.getName(), e);
             }
-            Envelope llbbox = layer.getResource().getLatLonBoundingBox();
-
-            handleLatLonBBox(llbbox);
             // the native bbox might be null
             if (bbox != null) {
-                handleBBox(bbox, srs);
+                handleBBox(bbox, crs);
             }
 
             // handle dimensions
-            String timeMetadata = null;
-            String elevationMetadata = null;
-            if (layer.getType() == Type.RASTER) {
-                CoverageInfo cvinfo = ((CoverageInfo) layer.getResource());
-
-                if (cvinfo == null)
-                    throw new RuntimeException("Unable to acquire coverage resource for layer: "
-                            + layer.getName());
-
-                Catalog catalog = cvinfo.getCatalog();
-
-                if (catalog == null)
-                    throw new RuntimeException("Unable to acquire catalog resource for layer: "
-                            + layer.getName());
-
-                CoverageStoreInfo csinfo = cvinfo.getStore();
-
-                if (csinfo == null)
-                    throw new RuntimeException(
-                            "Unable to acquire coverage store resource for layer: "
-                                    + layer.getName());
-
-                AbstractGridCoverage2DReader reader = null;
-                try {
-                    reader = (AbstractGridCoverage2DReader) catalog.getResourcePool()
-                            .getGridCoverageReader(csinfo, GeoTools.getDefaultHints());
-                } catch (Throwable t) {
-                    LOGGER.severe("Unable to acquire a reader for this coverage with format: "
-                            + csinfo.getFormat().getName());
-                }
-
-                if (reader == null)
-                    throw new RuntimeException(
-                            "Unable to acquire a reader for this coverage with format: "
-                                    + csinfo.getFormat().getName());
-
-                final String[] metadataNames = reader.getMetadataNames();
-
-                if (metadataNames != null && metadataNames.length > 0) {
-                    // TIME DIMENSION
-                    timeMetadata = reader.getMetadataValue("TIME_DOMAIN");
-
-                    if (timeMetadata != null) {
-                        AttributesImpl timeDim = new AttributesImpl();
-                        timeDim.addAttribute("", "name", "name", "", "time");
-                        timeDim.addAttribute("", "units", "units", "", "ISO8601");
-                        element("Dimension", null, timeDim);
-                    }
-
-                    // ELEVATION DIMENSION
-                    elevationMetadata = reader.getMetadataValue("ELEVATION_DOMAIN");
-
-                    if (elevationMetadata != null) {
-                        AttributesImpl elevDim = new AttributesImpl();
-                        elevDim.addAttribute("", "name", "name", "", "elevation");
-                        elevDim.addAttribute("", "units", "units", "", "EPSG:5030");
-                        element("Dimension", null, elevDim);
-                    }
-                }
-            }
-
-            // handle extensions
-            if (timeMetadata != null && timeMetadata.length() > 0) {
-                AttributesImpl timeDim = new AttributesImpl();
-                timeDim.addAttribute("", "name", "name", "", "time");
-                timeDim.addAttribute("", "default", "default", "", "current");
-                element("Extent", timeMetadata, timeDim);
-            }
-
-            if (elevationMetadata != null && elevationMetadata.length() > 0) {
-                final String[] elevationLevels = elevationMetadata.split(",");
-                AttributesImpl elevDim = new AttributesImpl();
-                elevDim.addAttribute("", "name", "name", "", "elevation");
-                elevDim.addAttribute("", "default", "default", "", elevationLevels[0]);
-                element("Extent", elevationMetadata, elevDim);
-            }
+            handleDimensions(layer);
 
             // handle data attribution
             handleAttribution(layer);
 
+            // TODO: AuthorityURL
+
+            // TODO: Identifier
+
             // handle metadata URLs
             handleMetadataList(layer.getResource().getMetadataLinks());
 
+            // TODO: DataURL
+            // TODO: FeatureListURL
+            handleStyles(layer);
+
+            end("Layer");
+        }
+
+        private void handleStyles(final LayerInfo layer) {
             if (layer.getResource() instanceof WMSLayerInfo) {
                 // do nothing for the moment, we may want to list the set of cascaded named styles
                 // in the future (when we add support for that)
@@ -819,97 +728,89 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                     end("Style");
                 }
             }
-
-            end("Layer");
         }
 
-        // /**
-        // *
-        // * @param originalArray
-        // * @return
-        // */
-        // private static String[] orderDoubleArray(String[] originalArray) {
-        // List finalArray = Arrays.asList(originalArray);
-        //
-        // Collections.sort(finalArray, new Comparator<String>() {
-        //
-        // public int compare(String o1, String o2) {
-        // if (o1.equals(o2))
-        // return 0;
-        //
-        // return (Double.parseDouble(o1) > Double.parseDouble(o2) ? 1 : -1);
-        // }
-        //
-        // });
-        //
-        // return (String[]) finalArray.toArray(new String[1]);
-        // }
+        private void handleDimensions(final LayerInfo layer) {
+            String timeMetadataExtent = null;
+            String elevationMetadataExtent = null;
+            if (layer.getType() == Type.RASTER) {
+                CoverageInfo cvinfo = ((CoverageInfo) layer.getResource());
 
-        // /**
-        // *
-        // * @param originalArray
-        // * @return
-        // */
-        // private static String[] orderTimeArray(String[] originalArray) {
-        // List finalArray = Arrays.asList(originalArray);
-        //
-        // Collections.sort(finalArray, new Comparator<String>() {
-        // /**
-        // * All patterns that are correct regarding the ISO-8601 norm.
-        // */
-        // final String[] PATTERNS = {
-        // "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-        // "yyyy-MM-dd'T'HH:mm:sss'Z'",
-        // "yyyy-MM-dd'T'HH:mm:ss'Z'",
-        // "yyyy-MM-dd'T'HH:mm'Z'",
-        // "yyyy-MM-dd'T'HH'Z'",
-        // "yyyy-MM-dd",
-        // "yyyy-MM",
-        // "yyyy"
-        // };
-        //
-        // public int compare(String o1, String o2) {
-        // if (o1.equals(o2))
-        // return 0;
-        //
-        // Date d1 = getDate(o1);
-        // Date d2 = getDate(o2);
-        //
-        // if (d1 == null || d2 == null)
-        // return 0;
-        //
-        // return (d1.getTime() > d2.getTime() ? 1 : -1);
-        // }
-        //
-        // private Date getDate(final String value) {
-        //
-        // // special handling for current keyword
-        // if(value.equalsIgnoreCase("current"))
-        // return null;
-        // for (int i=0; i<PATTERNS.length; i++) {
-        // // rebuild formats at each parse, date formats are not thread safe
-        // SimpleDateFormat format = new SimpleDateFormat(PATTERNS[i], Locale.CANADA);
-        //
-        // /* We do not use the standard method DateFormat.parse(String), because if the parsing
-        // * stops before the end of the string, the remaining characters are just ignored and
-        // * no exception is thrown. So we have to ensure that the whole string is correct for
-        // * the format.
-        // */
-        // ParsePosition pos = new ParsePosition(0);
-        // Date time = format.parse(value, pos);
-        // if (pos.getIndex() == value.length()) {
-        // return time;
-        // }
-        // }
-        //
-        // return null;
-        // }
-        //
-        //
-        // });
-        //
-        // return (String[]) finalArray.toArray(new String[1]);
-        // }
+                if (cvinfo == null)
+                    throw new RuntimeException("Unable to acquire coverage resource for layer: "
+                            + layer.getName());
+
+                Catalog catalog = cvinfo.getCatalog();
+
+                if (catalog == null)
+                    throw new RuntimeException("Unable to acquire catalog resource for layer: "
+                            + layer.getName());
+
+                CoverageStoreInfo csinfo = cvinfo.getStore();
+
+                if (csinfo == null)
+                    throw new RuntimeException(
+                            "Unable to acquire coverage store resource for layer: "
+                                    + layer.getName());
+
+                AbstractGridCoverage2DReader reader = null;
+                try {
+                    reader = (AbstractGridCoverage2DReader) catalog.getResourcePool()
+                            .getGridCoverageReader(csinfo, GeoTools.getDefaultHints());
+                } catch (Throwable t) {
+                    LOGGER.severe("Unable to acquire a reader for this coverage with format: "
+                            + csinfo.getFormat().getName());
+                }
+
+                if (reader == null)
+                    throw new RuntimeException(
+                            "Unable to acquire a reader for this coverage with format: "
+                                    + csinfo.getFormat().getName());
+
+                final String[] metadataNames = reader.getMetadataNames();
+
+                if (metadataNames != null && metadataNames.length > 0) {
+                    // TIME DIMENSION
+                    timeMetadataExtent = reader.getMetadataValue("TIME_DOMAIN");
+
+                    if (timeMetadataExtent != null) {
+                        AttributesImpl timeDim = new AttributesImpl();
+                        timeDim.addAttribute("", "name", "name", "", "time");
+                        timeDim.addAttribute("", "units", "units", "", "ISO8601");
+                        timeDim.addAttribute("", "current", "current", "", "true");
+                        timeDim.addAttribute("", "default", "default", "", "current");
+                        element("Dimension", timeMetadataExtent, timeDim);
+                    }
+
+                    // ELEVATION DIMENSION
+                    elevationMetadataExtent = reader.getMetadataValue("ELEVATION_DOMAIN");
+                    final String[] elevationLevels = elevationMetadataExtent.split(",");
+                    if (elevationMetadataExtent != null) {
+                        AttributesImpl elevDim = new AttributesImpl();
+                        elevDim.addAttribute("", "name", "name", "", "elevation");
+                        elevDim.addAttribute("", "units", "units", "", "EPSG:5030");
+                        elevDim.addAttribute("", "default", "default", "", elevationLevels[0]);
+                        element("Dimension", elevationMetadataExtent, elevDim);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Returns the layer hop count if the layer is cascaded
+         * <p>
+         * TODO: the geotools wms Layer object does not hold information on the cascaded status of
+         * layers, so in order to correctly implement this we need to gather that information in the
+         * geotools wms module. For now this method just returns {@code 1} is layer is a
+         * {@link WMSLayerInfo}
+         * </p>
+         */
+        private int getCascadedHopCount(final LayerInfo layer) {
+            if (layer instanceof WMSLayerInfo) {
+                return 1;
+            }
+            return 0;
+        }
 
         /**
          * Returns true if the layer can be queried
@@ -970,7 +871,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
                 element("SRS", authority);
 
-                handleLatLonBBox(latLonBounds);
+                handleGeographicBoundingBox(latLonBounds);
                 handleBBox(layerGroupBounds, authority);
 
                 // the layer style is not provided since the group does just have
@@ -1133,19 +1034,18 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
          * 
          * @param bbox
          */
-        private void handleLatLonBBox(Envelope bbox) {
+        private void handleGeographicBoundingBox(Envelope bbox) {
             String minx = String.valueOf(bbox.getMinX());
             String miny = String.valueOf(bbox.getMinY());
             String maxx = String.valueOf(bbox.getMaxX());
             String maxy = String.valueOf(bbox.getMaxY());
 
-            AttributesImpl bboxAtts = new AttributesImpl();
-            bboxAtts.addAttribute("", "minx", "minx", "", minx);
-            bboxAtts.addAttribute("", "miny", "miny", "", miny);
-            bboxAtts.addAttribute("", "maxx", "maxx", "", maxx);
-            bboxAtts.addAttribute("", "maxy", "maxy", "", maxy);
-
-            element("LatLonBoundingBox", null, bboxAtts);
+            start("EX_GeographicBoundingBox");
+            element("westBoundLongitude", minx);
+            element("eastBoundLongitude", maxx);
+            element("southBoundLatitude", miny);
+            element("northBoundLatitude", maxy);
+            end("EX_GeographicBoundingBox");
         }
 
         /**
@@ -1177,18 +1077,17 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
          * 
          * @param bbox
          */
-        private void handleBBox(Envelope bbox, String SRS) {
+        private void handleBBox(Envelope bbox, String CRS) {
             String minx = String.valueOf(bbox.getMinX());
             String miny = String.valueOf(bbox.getMinY());
             String maxx = String.valueOf(bbox.getMaxX());
             String maxy = String.valueOf(bbox.getMaxY());
 
-            AttributesImpl bboxAtts = new AttributesImpl();
-            bboxAtts.addAttribute("", "SRS", "SRS", "", SRS);
-            bboxAtts.addAttribute("", "minx", "minx", "", minx);
-            bboxAtts.addAttribute("", "miny", "miny", "", miny);
-            bboxAtts.addAttribute("", "maxx", "maxx", "", maxx);
-            bboxAtts.addAttribute("", "maxy", "maxy", "", maxy);
+            AttributesImpl bboxAtts = attributes("CRS", CRS, //
+                    "minx", minx, //
+                    "miny", miny,//
+                    "maxx", maxx,//
+                    "maxy", maxy);
 
             element("BoundingBox", null, bboxAtts);
         }
