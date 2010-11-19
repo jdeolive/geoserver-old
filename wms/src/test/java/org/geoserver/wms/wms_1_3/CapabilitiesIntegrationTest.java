@@ -64,7 +64,7 @@ public class CapabilitiesIntegrationTest extends WMSTestSupport {
 
         NamespaceContext ctx = new SimpleNamespaceContext(namespaces);
         XMLUnit.setXpathNamespaceContext(ctx);
-        
+
         GeoServerInfo global = getGeoServer().getGlobal();
         global.setProxyBaseUrl("src/test/resources/geoserver");
         getGeoServer().save(global);
@@ -78,14 +78,14 @@ public class CapabilitiesIntegrationTest extends WMSTestSupport {
     }
 
     public void testCapabilities() throws Exception {
-        Document dom = dom(get("wms?request=getCapabilities"), false);
+        Document dom = dom(get("wms?request=getCapabilities&version=1.3.0"), false);
         Element e = dom.getDocumentElement();
         assertEquals("WMS_Capabilities", e.getLocalName());
     }
 
     public void testGetCapsContainsNoDisabledTypes() throws Exception {
 
-        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.3.0", true);
         // print(doc);
         assertEquals("WMS_Capabilities", doc.getDocumentElement().getNodeName());
         // see that disabled elements are disabled for good
@@ -94,13 +94,15 @@ public class CapabilitiesIntegrationTest extends WMSTestSupport {
     }
 
     public void testFilteredCapabilitiesCite() throws Exception {
-        Document dom = dom(get("wms?request=getCapabilities&namespace=cite"), true);
+        Document dom = dom(get("wms?request=getCapabilities&version=1.3.0&namespace=cite"), true);
         Element e = dom.getDocumentElement();
         assertEquals("WMS_Capabilities", e.getLocalName());
         XpathEngine xpath = XMLUnit.newXpathEngine();
-        assertTrue(xpath.getMatchingNodes("//Layer/Name[starts-with(., cite)]", dom).getLength() > 0);
-        assertEquals(0, xpath.getMatchingNodes("//Layer/Name[not(starts-with(., cite))]", dom)
-                .getLength());
+        assertTrue(xpath.getMatchingNodes("//wms:Layer/wms:Name[starts-with(., cite)]", dom)
+                .getLength() > 0);
+        assertEquals(0,
+                xpath.getMatchingNodes("//wms:Layer/wms:Name[not(starts-with(., cite))]", dom)
+                        .getLength());
     }
 
     public void testLayerCount() throws Exception {
@@ -112,47 +114,52 @@ public class CapabilitiesIntegrationTest extends WMSTestSupport {
             }
         }
 
-        Document dom = dom(get("wms?request=getCapabilities"), true);
+        Document dom = dom(get("wms?request=GetCapabilities&version=1.3.0"), true);
 
         XpathEngine xpath = XMLUnit.newXpathEngine();
-        NodeList nodeLayers = xpath.getMatchingNodes("/WMS_Capabilities/Capability/Layer/Layer",
-                dom);
+        NodeList nodeLayers = xpath.getMatchingNodes(
+                "/wms:WMS_Capabilities/wms:Capability/wms:Layer/wms:Layer", dom);
 
         assertEquals(layers.size(), nodeLayers.getLength());
     }
 
     public void testWorkspaceQualified() throws Exception {
-        Document dom = dom(get("cite/wms?request=getCapabilities"), true);
+        Document dom = dom(get("cite/wms?request=getCapabilities&version=1.3.0"), true);
         Element e = dom.getDocumentElement();
         assertEquals("WMS_Capabilities", e.getLocalName());
         XpathEngine xpath = XMLUnit.newXpathEngine();
-        assertTrue(xpath.getMatchingNodes("//Layer/Name[starts-with(., cite)]", dom).getLength() > 0);
-        assertEquals(0, xpath.getMatchingNodes("//Layer/Name[not(starts-with(., cite))]", dom)
-                .getLength());
+        assertTrue(xpath.getMatchingNodes("//wms:Layer/wms:Name[starts-with(., cite)]", dom)
+                .getLength() > 0);
+        assertEquals(0,
+                xpath.getMatchingNodes("//wms:Layer/wms:Name[not(starts-with(., cite))]", dom)
+                        .getLength());
 
-        NodeList nodes = xpath.getMatchingNodes("//OnlineResource", dom);
+        NodeList nodes = xpath.getMatchingNodes("//wms:OnlineResource", dom);
         assertTrue(nodes.getLength() > 0);
         for (int i = 0; i < nodes.getLength(); i++) {
             e = (Element) nodes.item(i);
-            assertTrue(e.getAttribute("xlink:href").contains("geoserver/cite/wms"));
+            String attribute = e.getAttribute("xlink:href");
+            assertTrue(attribute.contains("geoserver/cite/ows"));
         }
 
     }
 
     public void testLayerQualified() throws Exception {
-        Document dom = dom(get("cite/Forests/wms?request=getCapabilities"), true);
+        Document dom = dom(get("cite/Forests/wms?request=getCapabilities&version=1.3.0"), true);
         Element e = dom.getDocumentElement();
         assertEquals("WMS_Capabilities", e.getLocalName());
         XpathEngine xpath = XMLUnit.newXpathEngine();
-        assertTrue(xpath.getMatchingNodes("//Layer/Name[starts-with(., cite:Forests)]", dom)
+        assertTrue(xpath
+                .getMatchingNodes("//wms:Layer/wms:Name[starts-with(., cite:Forests)]", dom)
                 .getLength() == 1);
-        assertEquals(1, xpath.getMatchingNodes("//Layer/Layer", dom).getLength());
+        assertEquals(1, xpath.getMatchingNodes("//wms:Layer/wms:Layer", dom).getLength());
 
-        NodeList nodes = xpath.getMatchingNodes("//OnlineResource", dom);
+        NodeList nodes = xpath.getMatchingNodes("//wms:OnlineResource", dom);
         assertTrue(nodes.getLength() > 0);
         for (int i = 0; i < nodes.getLength(); i++) {
             e = (Element) nodes.item(i);
-            assertTrue(e.getAttribute("xlink:href").contains("geoserver/cite/Forests/wms"));
+            String attribute = e.getAttribute("xlink:href");
+            assertTrue(attribute.contains("geoserver/cite/Forests/ows"));
         }
 
     }
@@ -167,8 +174,8 @@ public class CapabilitiesIntegrationTest extends WMSTestSupport {
         // global.setProxyBaseUrl("src/test/resources/geoserver");
         // getGeoServer().save(global);
 
-        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
-        assertXpathEvaluatesTo("0", "count(//Attribution)", doc);
+        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.3.0", true);
+        assertXpathEvaluatesTo("0", "count(//wms:Attribution)", doc);
 
         // Add attribution to one of the layers
         LayerInfo points = getCatalog().getLayerByName(MockData.POINTS.getLocalPart());
@@ -177,20 +184,20 @@ public class CapabilitiesIntegrationTest extends WMSTestSupport {
         attr.setTitle("Point Provider");
         getCatalog().save(points);
 
-        doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
-        assertXpathEvaluatesTo("1", "count(//Attribution)", doc);
-        assertXpathEvaluatesTo("1", "count(//Attribution/Title)", doc);
+        doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.3.0", true);
+        assertXpathEvaluatesTo("1", "count(//wms:Attribution)", doc);
+        assertXpathEvaluatesTo("1", "count(//wms:Attribution/wms:Title)", doc);
 
         // Add href to same layer
         attr = points.getAttribution();
         attr.setHref("http://example.com/points/provider");
         getCatalog().save(points);
 
-        doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.3.0", true);
         // print(doc);
-        assertXpathEvaluatesTo("1", "count(//Attribution)", doc);
-        assertXpathEvaluatesTo("1", "count(//Attribution/Title)", doc);
-        assertXpathEvaluatesTo("1", "count(//Attribution/OnlineResource)", doc);
+        assertXpathEvaluatesTo("1", "count(//wms:Attribution)", doc);
+        assertXpathEvaluatesTo("1", "count(//wms:Attribution/wms:Title)", doc);
+        assertXpathEvaluatesTo("1", "count(//wms:Attribution/wms:OnlineResource)", doc);
 
         // Add logo to same layer
         attr = points.getAttribution();
@@ -200,11 +207,11 @@ public class CapabilitiesIntegrationTest extends WMSTestSupport {
         attr.setLogoWidth(50);
         getCatalog().save(points);
 
-        doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.3.0", true);
         // print(doc);
-        assertXpathEvaluatesTo("1", "count(//Attribution)", doc);
-        assertXpathEvaluatesTo("1", "count(//Attribution/Title)", doc);
-        assertXpathEvaluatesTo("1", "count(//Attribution/LogoURL)", doc);
+        assertXpathEvaluatesTo("1", "count(//wms:Attribution)", doc);
+        assertXpathEvaluatesTo("1", "count(//wms:Attribution/wms:Title)", doc);
+        assertXpathEvaluatesTo("1", "count(//wms:Attribution/wms:LogoURL)", doc);
     }
 
     public void testAlternateStyles() throws Exception {
@@ -214,23 +221,23 @@ public class CapabilitiesIntegrationTest extends WMSTestSupport {
         layer.getStyles().add(pointStyle);
         getCatalog().save(layer);
 
-        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.3.0", true);
         // print(doc);
 
-        assertXpathEvaluatesTo("1", "count(//Layer[Name='cdf:Fifteen'])", doc);
-        assertXpathEvaluatesTo("2", "count(//Layer[Name='cdf:Fifteen']/Style)", doc);
+        assertXpathEvaluatesTo("1", "count(//wms:Layer[wms:Name='cdf:Fifteen'])", doc);
+        assertXpathEvaluatesTo("2", "count(//wms:Layer[wms:Name='cdf:Fifteen']/wms:Style)", doc);
 
         XpathEngine xpath = newXpathEngine();
         String href = xpath
                 .evaluate(
-                        "//Layer[Name='cdf:Fifteen']/Style[Name='Default']/LegendURL/OnlineResource/@xlink:href",
+                        "//wms:Layer[wms:Name='cdf:Fifteen']/wms:Style[wms:Name='Default']/wms:LegendURL/wms:OnlineResource/@xlink:href",
                         doc);
         assertTrue(href.contains("GetLegendGraphic"));
         assertTrue(href.contains("layer=Fifteen"));
         assertFalse(href.contains("style"));
         href = xpath
                 .evaluate(
-                        "//Layer[Name='cdf:Fifteen']/Style[Name='point']/LegendURL/OnlineResource/@xlink:href",
+                        "//wms:Layer[wms:Name='cdf:Fifteen']/wms:Style[wms:Name='point']/wms:LegendURL/wms:OnlineResource/@xlink:href",
                         doc);
         assertTrue(href.contains("GetLegendGraphic"));
         assertTrue(href.contains("layer=Fifteen"));

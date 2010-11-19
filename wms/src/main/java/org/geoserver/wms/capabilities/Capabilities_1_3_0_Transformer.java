@@ -91,7 +91,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
      * The geoserver base URL to append it the schemas/wms/1.3.0/exceptions_1_3_0.xsd schema
      * location
      */
-    private String baseURL;
+    private String schemaBaseURL;
 
     /** The list of output formats to state as supported for the GetMap request */
     private Set<String> getMapFormats;
@@ -116,7 +116,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
         this.wmsConfig = wms;
         this.getMapFormats = getMapFormats;
-        this.baseURL = schemaBaseUrl;
+        this.schemaBaseURL = schemaBaseUrl;
         this.setNamespaceDeclarationEnabled(false);
         setIndentation(2);
         final Charset encoding = wms.getCharSet();
@@ -125,7 +125,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
     @Override
     public Translator createTranslator(ContentHandler handler) {
-        String schemaLocation = buildSchemaURL(baseURL, "wms/1.3.0/capabilities_1_3_0.xsd");
+        String schemaLocation = buildSchemaURL(schemaBaseURL, "wms/1.3.0/capabilities_1_3_0.xsd");
         return new Capabilities_1_3_0_Translator(handler, wmsConfig, getMapFormats, schemaLocation);
     }
 
@@ -225,7 +225,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
             handleKeywordList(serviceInfo.getKeywords());
 
-            String onlineResource = buildURL(request.getBaseUrl(), "ows", null, URLType.SERVICE);
+            String requestBaseUrl = request.getBaseUrl();
+            String onlineResource = buildURL(requestBaseUrl, "ows", null, URLType.SERVICE);
             AttributesImpl attributes = attributes("xlink:type", "simple", "xlink:href",
                     onlineResource);
             element("OnlineResource", null, attributes);

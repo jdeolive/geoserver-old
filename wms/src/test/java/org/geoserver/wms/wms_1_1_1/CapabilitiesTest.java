@@ -54,14 +54,14 @@ public class CapabilitiesTest extends WMSTestSupport {
     }
 
     public void testCapabilities() throws Exception {
-        Document dom = dom(get("wms?request=getCapabilities"), false);
+        Document dom = dom(get("wms?request=getCapabilities&version=1.1.1"), false);
         Element e = dom.getDocumentElement();
         assertEquals("WMT_MS_Capabilities", e.getLocalName());
     }
 
     public void testGetCapsContainsNoDisabledTypes() throws Exception {
 
-        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.1.1", true);
         // print(doc);
         assertEquals("WMT_MS_Capabilities", doc.getDocumentElement().getNodeName());
 
@@ -71,7 +71,7 @@ public class CapabilitiesTest extends WMSTestSupport {
     }
 
     public void testFilteredCapabilitiesCite() throws Exception {
-        Document dom = dom(get("wms?request=getCapabilities&namespace=cite"), true);
+        Document dom = dom(get("wms?request=getCapabilities&version=1.1.1&namespace=cite"), true);
         Element e = dom.getDocumentElement();
         assertEquals("WMT_MS_Capabilities", e.getLocalName());
         XpathEngine xpath = XMLUnit.newXpathEngine();
@@ -89,7 +89,7 @@ public class CapabilitiesTest extends WMSTestSupport {
             }
         }
 
-        Document dom = dom(get("wms?request=getCapabilities"), true);
+        Document dom = dom(get("wms?request=getCapabilities&version=1.1.1"), true);
 
         XpathEngine xpath = XMLUnit.newXpathEngine();
         NodeList nodeLayers = xpath.getMatchingNodes("/WMT_MS_Capabilities/Capability/Layer/Layer",
@@ -99,7 +99,7 @@ public class CapabilitiesTest extends WMSTestSupport {
     }
 
     public void testWorkspaceQualified() throws Exception {
-        Document dom = dom(get("cite/wms?request=getCapabilities"), true);
+        Document dom = dom(get("cite/wms?request=getCapabilities&version=1.1.1"), true);
         Element e = dom.getDocumentElement();
         assertEquals("WMT_MS_Capabilities", e.getLocalName());
         XpathEngine xpath = XMLUnit.newXpathEngine();
@@ -111,13 +111,14 @@ public class CapabilitiesTest extends WMSTestSupport {
         assertTrue(nodes.getLength() > 0);
         for (int i = 0; i < nodes.getLength(); i++) {
             e = (Element) nodes.item(i);
-            assertTrue(e.getAttribute("xlink:href").contains("geoserver/cite/wms"));
+            String attribute = e.getAttribute("xlink:href");
+            assertTrue(attribute.contains("geoserver/cite/wms"));
         }
 
     }
 
     public void testLayerQualified() throws Exception {
-        Document dom = dom(get("cite/Forests/wms?request=getCapabilities"), true);
+        Document dom = dom(get("cite/Forests/wms?request=getCapabilities&version=1.1.1"), true);
         Element e = dom.getDocumentElement();
         assertEquals("WMT_MS_Capabilities", e.getLocalName());
         XpathEngine xpath = XMLUnit.newXpathEngine();
@@ -144,7 +145,7 @@ public class CapabilitiesTest extends WMSTestSupport {
         // global.setProxyBaseUrl("src/test/resources/geoserver");
         // getGeoServer().save(global);
 
-        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.1.1", true);
         assertXpathEvaluatesTo("0", "count(//Attribution)", doc);
 
         // Add attribution to one of the layers
@@ -154,7 +155,7 @@ public class CapabilitiesTest extends WMSTestSupport {
         attr.setTitle("Point Provider");
         getCatalog().save(points);
 
-        doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.1.1", true);
         assertXpathEvaluatesTo("1", "count(//Attribution)", doc);
         assertXpathEvaluatesTo("1", "count(//Attribution/Title)", doc);
 
@@ -163,7 +164,7 @@ public class CapabilitiesTest extends WMSTestSupport {
         attr.setHref("http://example.com/points/provider");
         getCatalog().save(points);
 
-        doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.1.1", true);
         // print(doc);
         assertXpathEvaluatesTo("1", "count(//Attribution)", doc);
         assertXpathEvaluatesTo("1", "count(//Attribution/Title)", doc);
@@ -177,7 +178,7 @@ public class CapabilitiesTest extends WMSTestSupport {
         attr.setLogoWidth(50);
         getCatalog().save(points);
 
-        doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.1.1", true);
         // print(doc);
         assertXpathEvaluatesTo("1", "count(//Attribution)", doc);
         assertXpathEvaluatesTo("1", "count(//Attribution/Title)", doc);
@@ -191,7 +192,7 @@ public class CapabilitiesTest extends WMSTestSupport {
         layer.getStyles().add(pointStyle);
         getCatalog().save(layer);
 
-        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities", true);
+        Document doc = getAsDOM("wms?service=WMS&request=getCapabilities&version=1.1.1", true);
         // print(doc);
 
         assertXpathEvaluatesTo("1", "count(//Layer[Name='cdf:Fifteen'])", doc);
