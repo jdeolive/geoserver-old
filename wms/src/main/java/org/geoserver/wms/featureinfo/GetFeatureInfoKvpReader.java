@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.geoserver.catalog.LayerInfo;
 import org.geoserver.ows.KvpRequestReader;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wms.GetFeatureInfoRequest;
@@ -41,7 +42,15 @@ public class GetFeatureInfoKvpReader extends KvpRequestReader {
     public GetFeatureInfoKvpReader(WMS wms) {
         super(GetFeatureInfoRequest.class);
         getMapReader = new GetMapKvpRequestReader(wms);
+        setWMS(wms);
+    }
+
+    public void setWMS(final WMS wms) {
         this.wms = wms;
+    }
+
+    public WMS getWMS() {
+        return wms;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -78,6 +87,13 @@ public class GetFeatureInfoKvpReader extends KvpRequestReader {
             // the original ones anymore
             throw new ServiceException("QUERY_LAYERS contains layers not cited in LAYERS. "
                     + "It should be a proper subset of those instead");
+        }
+        for (MapLayerInfo l : request.getQueryLayers()) {
+            LayerInfo layerInfo = l.getLayerInfo();
+            if (!wms.isQueryable(layerInfo)) {
+                throw new ServiceException("Layer " + l.getName() + " is not queryable",
+                        "OperationNotSupported", "QUERY_LAYERS");
+            }
         }
 
         String format = (String) (kvp.containsKey("INFO_FORMAT") ? kvp.get("INFO_FORMAT") : null);

@@ -17,12 +17,19 @@ import junit.framework.Test;
 import org.custommonkey.xmlunit.NamespaceContext;
 import org.custommonkey.xmlunit.SimpleNamespaceContext;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.geoserver.catalog.LayerInfo;
 import org.geoserver.data.test.MockData;
+import org.geoserver.wms.WMS;
 import org.geoserver.wms.WMSInfo;
 import org.geoserver.wms.WMSTestSupport;
+import org.geoserver.wms.featureinfo.GetFeatureInfoKvpReader;
 import org.geotools.util.logging.Logging;
 import org.w3c.dom.Document;
 
+/**
+ * A GetFeatureInfo 1.3.0 integration test suite covering both spec mandates and geoserver specific
+ * features.
+ */
 public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
 
     public static String WCS_PREFIX = "wcs";
@@ -79,6 +86,51 @@ public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
     }
 
     /**
+     * As per section 7.4.1, a client shall not issue a GetFeatureInfo request for non queryable
+     * layers; yet that section is not too clear with regard to whether an exception should be
+     * thrown. I read it like an exception with OperationNotSupported code should be thrown. The
+     * full text is:
+     * <p>
+     * <i> GetFeatureInfo is an optional operation. It is only supported for those Layers for which
+     * the attribute queryable="1" (true) has been defined or inherited. A client shall not issue a
+     * GetFeatureInfo request for other layers. A WMS shall respond with a properly formatted
+     * service exception (XML) response (code = OperationNotSupported) if it receives a
+     * GetFeatureInfo request but does not support it. </i>
+     * </p>
+     */
+    public void testQueryNonQueryableLayer() throws Exception {
+        // HACK: fake the WMS facade to inform the layer is non queryable. Looks like we would need
+        // a LayerInfo.isQueryable() property
+        final WMS wms = (WMS) applicationContext.getBean("wms");
+        GetFeatureInfoKvpReader reader = (GetFeatureInfoKvpReader) applicationContext
+                .getBean("getFeatureInfoKvpReader");
+        try {
+            WMS fakeWMS = new WMS(wms.getGeoServer()) {
+                @Override
+                public boolean isQueryable(LayerInfo layer) {
+                    if ("Forests".equals(layer.getName())) {
+                        return false;
+                    }
+                    return super.isQueryable(layer);
+                }
+            };
+
+            reader.setWMS(fakeWMS);
+
+            String layer = getLayerId(MockData.FORESTS);
+            String request = "wms?version=1.3.0&bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/plain&request=GetFeatureInfo&layers="
+                    + layer + "&query_layers=" + layer + "&width=20&height=20&i=10&j=10";
+            Document doc = dom(get(request), true);
+            // print(doc);
+            assertXpathEvaluatesTo("OperationNotSupported",
+                    "/ogc:ServiceExceptionReport/ogc:ServiceException/@code", doc);
+        } finally {
+            // restore the original wms
+            reader.setWMS(wms);
+        }
+    }
+
+    /**
      * As for section 7.4.3.7, a missing or incorrectly specified pair of I,J parameters shall issue
      * a service exception with {@code InvalidPoint} code.
      * 
@@ -90,7 +142,7 @@ public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
         String request = "wms?version=1.3.0&bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/plain&request=GetFeatureInfo&layers="
                 + layer + "&query_layers=" + layer + "&width=20&height=20";
         Document doc = dom(get(request), true);
-        print(doc);
+        // print(doc);
         assertXpathEvaluatesTo("InvalidPoint",
                 "/ogc:ServiceExceptionReport/ogc:ServiceException/@code", doc);
 
@@ -128,7 +180,7 @@ public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
         String request = "wms?version=1.3.0&bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/html&request=GetFeatureInfo&layers="
                 + layer + "&query_layers=" + layer + "&width=20&height=20&i=10&j=10";
         Document dom = getAsDOM(request);
-        print(dom);
+        // print(dom);
         // count lines that do contain a forest reference
         assertXpathEvaluatesTo("1", "count(/html/body/table/tr/td[starts-with(.,'Forests.')])", dom);
     }
