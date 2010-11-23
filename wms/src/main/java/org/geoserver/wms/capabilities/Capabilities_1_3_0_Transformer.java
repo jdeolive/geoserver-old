@@ -49,8 +49,6 @@ import org.geoserver.wms.GetLegendGraphicRequest;
 import org.geoserver.wms.WMS;
 import org.geoserver.wms.WMSInfo;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
-import org.geotools.data.ows.Layer;
-import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.factory.GeoTools;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -635,7 +633,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
         /**
          */
         protected void handleLayer(final LayerInfo layer) {
-            AttributesImpl qatts = attributes("queryable", isLayerQueryable(layer) ? "1" : "0");
+            AttributesImpl qatts = attributes("queryable", wmsConfig.isQueryable(layer) ? "1" : "0");
             int cascadedHopCount = getCascadedHopCount(layer);
             if (cascadedHopCount > 0) {
                 qatts.addAttribute("", "cascaded", "cascaded", "", String.valueOf(cascadedHopCount));
@@ -810,41 +808,6 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             return 0;
         }
 
-        /**
-         * Returns true if the layer can be queried
-         */
-        boolean isLayerQueryable(LayerInfo layer) {
-            try {
-                if (layer.getResource() instanceof WMSLayerInfo) {
-                    WMSLayerInfo info = (WMSLayerInfo) layer.getResource();
-                    Layer wl = info.getWMSLayer(null);
-                    if (!wl.isQueryable()) {
-                        return false;
-                    }
-                    WMSCapabilities caps = info.getStore().getWebMapServer(null).getCapabilities();
-                    if (!caps.getRequest().getGetFeatureInfo().getFormats()
-                            .contains("application/vnd.ogc.gml")) {
-                        return false;
-                    }
-                }
-                // all other layers are queryable
-                return true;
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE,
-                        "Failed to determin if the layer is queryable, assuming it's not", e);
-                return false;
-            }
-        }
-
-        boolean isLayerQueryable(LayerGroupInfo layerGroup) {
-            for (LayerInfo layer : layerGroup.getLayers()) {
-                if (!isLayerQueryable(layer)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         protected void handleLayerGroups(List<LayerGroupInfo> layerGroups) throws FactoryException,
                 TransformException {
             if (layerGroups == null || layerGroups.size() == 0) {
@@ -861,7 +824,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                 String layerName = layerGroup.getName();
 
                 AttributesImpl qatts = new AttributesImpl();
-                boolean queryable = isLayerQueryable(layerGroup);
+                boolean queryable = wmsConfig.isQueryable(layerGroup);
                 qatts.addAttribute("", "queryable", "queryable", "", queryable ? "1" : "0");
                 start("Layer", qatts);
                 element("Name", layerName);
