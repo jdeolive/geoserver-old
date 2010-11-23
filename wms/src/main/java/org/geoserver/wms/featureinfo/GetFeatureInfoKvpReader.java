@@ -126,7 +126,8 @@ public class GetFeatureInfoKvpReader extends KvpRequestReader {
             request.setXPixel(x);
             request.setYPixel(y);
         } catch (NumberFormatException ex) {
-            throw new ServiceException(colPixel + " and " + rowPixel + " incorrectly specified");
+            String msg = colPixel + " and " + rowPixel + " incorrectly specified";
+            throw new ServiceException(msg, "InvalidPoint");
         }
 
         return request;

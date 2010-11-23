@@ -79,6 +79,31 @@ public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
     }
 
     /**
+     * As for section 7.4.3.7, a missing or incorrectly specified pair of I,J parameters shall issue
+     * a service exception with {@code InvalidPoint} code.
+     * 
+     * @throws Exception
+     */
+    public void testInvalidPoint() throws Exception {
+        String layer = MockData.FORESTS.getPrefix() + ":" + MockData.FORESTS.getLocalPart();
+        // missing I,J parameters
+        String request = "wms?version=1.3.0&bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/plain&request=GetFeatureInfo&layers="
+                + layer + "&query_layers=" + layer + "&width=20&height=20";
+        Document doc = dom(get(request), true);
+        print(doc);
+        assertXpathEvaluatesTo("InvalidPoint",
+                "/ogc:ServiceExceptionReport/ogc:ServiceException/@code", doc);
+
+        // invalid I,J parameters
+        request = "wms?version=1.3.0&bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/plain&request=GetFeatureInfo&layers="
+                + layer + "&query_layers=" + layer + "&width=20&height=20&i=A&j=";
+        doc = dom(get(request), true);
+        // print(doc);
+        assertXpathEvaluatesTo("InvalidPoint",
+                "/ogc:ServiceExceptionReport/ogc:ServiceException/@code", doc);
+    }
+
+    /**
      * Tests a simple GetFeatureInfo works, and that the result contains the expected polygon
      * 
      * @throws Exception
