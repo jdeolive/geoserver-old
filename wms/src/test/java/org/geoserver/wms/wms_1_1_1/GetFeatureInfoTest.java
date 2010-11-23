@@ -65,7 +65,7 @@ public class GetFeatureInfoTest extends WMSTestSupport {
         String request = "wms?bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/plain&request=GetFeatureInfo&layers="
                 + layer + "&query_layers=" + layer + "&width=20&height=20&x=10&y=10";
         String result = getAsString(request);
-        //System.out.println(result);
+        System.out.println(result);
         assertNotNull(result);
         assertTrue(result.indexOf("Green Forest") > 0);
     }
@@ -200,7 +200,7 @@ public class GetFeatureInfoTest extends WMSTestSupport {
         Document doc = dom(get(request), true);
         // print(doc);
         assertXpathEvaluatesTo("1", "count(//ServiceExceptionReport/ServiceException)", doc);
-        assertXpathEvaluatesTo("InvalidParameterValue", "/ServiceExceptionReport/ServiceException/@code", doc);
+        assertXpathEvaluatesTo("InvalidFormat", "/ServiceExceptionReport/ServiceException/@code", doc);
         assertXpathEvaluatesTo("info_format", "/ServiceExceptionReport/ServiceException/@locator", doc);
     }
     
