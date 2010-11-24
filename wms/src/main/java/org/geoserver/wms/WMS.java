@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.geoserver.catalog.Catalog;
@@ -21,12 +22,15 @@ import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.MetadataMap;
 import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.catalog.StyleInfo;
+import org.geoserver.catalog.WMSLayerInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.config.GeoServerInfo;
 import org.geoserver.config.JAIInfo;
 import org.geoserver.wms.WMSInfo.WMSInterpolation;
 import org.geoserver.wms.WatermarkInfo.Position;
 import org.geoserver.wms.featureinfo.GetFeatureInfoOutputFormat;
+import org.geotools.data.ows.Layer;
+import org.geotools.data.ows.WMSCapabilities;
 import org.geotools.styling.Style;
 import org.geotools.util.Converters;
 import org.geotools.util.Version;
@@ -530,4 +534,40 @@ public class WMS implements ApplicationContextAware {
         }
         return new Version(version);
     }
+
+    /**
+     * Returns true if the layer can be queried
+     */
+    public boolean isQueryable(LayerInfo layer) {
+        try {
+            if (layer.getResource() instanceof WMSLayerInfo) {
+                WMSLayerInfo info = (WMSLayerInfo) layer.getResource();
+                Layer wl = info.getWMSLayer(null);
+                if (!wl.isQueryable()) {
+                    return false;
+                }
+                WMSCapabilities caps = info.getStore().getWebMapServer(null).getCapabilities();
+                if (!caps.getRequest().getGetFeatureInfo().getFormats()
+                        .contains("application/vnd.ogc.gml")) {
+                    return false;
+                }
+            }
+            // all other layers are queryable
+            return true;
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO,
+                    "Failed to determin if the layer is queryable, assuming it's not", e);
+            return false;
+        }
+    }
+
+    public boolean isQueryable(LayerGroupInfo layerGroup) {
+        for (LayerInfo layer : layerGroup.getLayers()) {
+            if (!isQueryable(layer)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }

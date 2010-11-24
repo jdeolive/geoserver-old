@@ -11,7 +11,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import junit.framework.Test;
 
-import org.acegisecurity.Authentication;
+import org.springframework.security.Authentication;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.LayerInfo;
 import org.geoserver.catalog.ResourceInfo;
@@ -77,7 +77,7 @@ public class GetFeatureInfoRestrictedTest extends WMSTestSupport {
      */
     public void testRestrictedReprojection() throws Exception {
         String layer = getLayerId(MockData.FORESTS);
-        String request = "wms?SERVICE=WMS&REQUEST=GetFeatureInfo&EXCEPTIONS=application/vnd.ogc.se_xml&VERSION=1.1.0&BBOX=-0.002,-0.002,0.002,0.002&X=109&Y=204&INFO_FORMAT=text/html&QUERY_LAYERS=" + layer + "&FEATURE_COUNT=50&SRS=EPSG:4326&LAYERS=" + layer + "&STYLES=&WIDTH=256&HEIGHT=256&FORMAT=image/png";
+        String request = "wms?SERVICE=WMS&REQUEST=GetFeatureInfo&EXCEPTIONS=application/vnd.ogc.se_xml&VERSION=1.1.1&BBOX=-0.002,-0.002,0.002,0.002&X=109&Y=204&INFO_FORMAT=text/html&QUERY_LAYERS=" + layer + "&FEATURE_COUNT=50&SRS=EPSG:4326&LAYERS=" + layer + "&STYLES=&WIDTH=256&HEIGHT=256&FORMAT=image/png";
         String result = getAsString(request);
         
         //System.out.println(result);

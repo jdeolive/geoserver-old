@@ -257,8 +257,9 @@ public class GetCapabilitiesTransformer extends TransformerBase {
             AttributesImpl orAtts = new AttributesImpl();
             orAtts.addAttribute("", "xmlns:xlink", "xmlns:xlink", "", XLINK_NS);
             orAtts.addAttribute(XLINK_NS, "xlink:type", "xlink:type", "", "simple");
-            orAtts.addAttribute("", "xlink:href", "xlink:href", "",
-                    buildURL(request.getBaseUrl(), "wms", null, URLType.SERVICE));
+            String requestBaseUrl = request.getBaseUrl();
+            String onlineResource = buildURL(requestBaseUrl, "wms", null, URLType.SERVICE);
+            orAtts.addAttribute("", "xlink:href", "xlink:href", "", onlineResource);
             element("OnlineResource", null, orAtts);
 
             GeoServer geoServer = wmsConfig.getGeoServer();

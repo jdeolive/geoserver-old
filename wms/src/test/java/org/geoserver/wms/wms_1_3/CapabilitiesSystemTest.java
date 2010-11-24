@@ -91,7 +91,6 @@ public class CapabilitiesSystemTest extends WMSTestSupport {
      */
     public void testValidateCapabilitiesXML() throws Exception {
         Document dom = getAsDOM("ows?service=WMS&version=1.3.0&request=GetCapabilities");
-        print(dom);
         SchemaFactory factory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
         URL schemaLocation = getClass().getResource(
                 "/geoserver/schemas/wms/1.3.0/capabilities_1_3_0.xsd");
@@ -104,6 +103,7 @@ public class CapabilitiesSystemTest extends WMSTestSupport {
             assertTrue(true);
         } catch (SAXException ex) {
             LOGGER.log(Level.WARNING, "WMS 1.3.0 capabilities validation error", ex);
+            print(dom);
             fail("WMS 1.3.0 capabilities validation error: " + ex.getMessage());
         }
     }
@@ -127,7 +127,7 @@ public class CapabilitiesSystemTest extends WMSTestSupport {
          * it supports.
          */
         dom = getAsDOM("ows?service=WMS&request=GetCapabilities");
-        assertXpathEvaluatesTo("1.3.0", "/WMS_Capabilities/@version", dom);
+        assertXpathEvaluatesTo("1.3.0", "/wms:WMS_Capabilities/@version", dom);
 
         /*
          * A specific version is requested, the server responds with that specific version iif
@@ -137,7 +137,7 @@ public class CapabilitiesSystemTest extends WMSTestSupport {
         assertXpathEvaluatesTo("1.1.1", "/WMT_MS_Capabilities/@version", dom);
 
         dom = getAsDOM("ows?service=WMS&request=GetCapabilities&version=1.3.0");
-        assertXpathEvaluatesTo("1.3.0", "/WMS_Capabilities/@version", dom);
+        assertXpathEvaluatesTo("1.3.0", "/wms:WMS_Capabilities/@version", dom);
 
         /*
          * If a version unknown to the server and higher than the lowest supported version is
@@ -148,7 +148,7 @@ public class CapabilitiesSystemTest extends WMSTestSupport {
         assertXpathEvaluatesTo("1.1.1", "/WMT_MS_Capabilities/@version", dom);
 
         dom = getAsDOM("ows?service=WMS&request=GetCapabilities&version=1.4.0");
-        assertXpathEvaluatesTo("1.3.0", "/WMS_Capabilities/@version", dom);
+        assertXpathEvaluatesTo("1.3.0", "/wms:WMS_Capabilities/@version", dom);
 
         /*
          * If a version lower than any of those known to the server is requested, then the server
@@ -211,7 +211,7 @@ public class CapabilitiesSystemTest extends WMSTestSupport {
     public void testRequestUpdateSequence() throws Exception {
         Document dom = getAsDOM("ows?service=WMS&request=GetCapabilities&version=1.3.0");
         final XpathEngine xpath = XMLUnit.newXpathEngine();
-        final String locationPath = "/WMS_Capabilities/@updateSequence";
+        final String locationPath = "/wms:WMS_Capabilities/@updateSequence";
         final String updateSeq = xpath.evaluate(locationPath, dom);
 
         final int currUpdateSeq = Integer.parseInt(updateSeq);
