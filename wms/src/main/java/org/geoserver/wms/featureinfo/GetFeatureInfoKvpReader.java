@@ -139,6 +139,13 @@ public class GetFeatureInfoKvpReader extends KvpRequestReader {
             String rowParam = String.valueOf(kvp.get(rowPixel));
             int x = Integer.parseInt(colParam);
             int y = Integer.parseInt(rowParam);
+            
+            //ensure x/y in dimension of image
+            if (x < 0 || x > getMapPart.getWidth() || y < 0 || y > getMapPart.getHeight()) {
+                throw new ServiceException(
+                    String.format("%d, %d not in dimensions of image: %d, %d", x, y, 
+                        getMapPart.getWidth(), getMapPart.getHeight()), "InvalidPoint");
+            }
             request.setXPixel(x);
             request.setYPixel(y);
         } catch (NumberFormatException ex) {
