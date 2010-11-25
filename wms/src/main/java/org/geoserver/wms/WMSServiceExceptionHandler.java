@@ -151,7 +151,7 @@ public class WMSServiceExceptionHandler extends ServiceExceptionHandler {
             handleXmlException(exception, request);
             return;
         }
-        if (exceptions == null || !"application/vnd.ogc.se_inimage".equals(exceptions)
+        if (exceptions == null || !isImageExceptionType(exceptions)
                 || width <= 0 || height <= 0 || !FORMATS.contains(format)) {
             handleXmlException(exception, request);
             return;
@@ -162,6 +162,10 @@ public class WMSServiceExceptionHandler extends ServiceExceptionHandler {
         handleImageException(exception, request, width, height, format);
     }
 
+    private boolean isImageExceptionType(String exceptions) {
+        return "application/vnd.ogc.se_inimage".equals(exceptions) || "INIMAGE".equals(exceptions);
+    }
+    
     private void handleImageException(ServiceException exception, Request request, final int width,
             final int height, final String format) {
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
