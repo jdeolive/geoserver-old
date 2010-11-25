@@ -101,6 +101,9 @@ public class DataStoreFileResource extends StoreFileResource {
         Form form = getRequest().getResourceRef().getQueryAsForm();
 
         File uploadedFile = doFileUpload(method, datastore, format);
+        if (uploadedFile == null) {
+            throw new RestletException("Unable to locate file from request", Status.CLIENT_ERROR_NOT_FOUND);
+        }
         
         //create a builder to help build catalog objects
         CatalogBuilder builder = new CatalogBuilder(catalog);
