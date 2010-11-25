@@ -549,6 +549,9 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
             }
+            
+            //the default CRS:84
+            element("CRS", "CRS:84");
         }
 
         /**
@@ -647,6 +650,9 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
             final String crs = layer.getResource().getSRS();
             element("CRS", crs);
+            
+            //always handle the CRS:84 crs
+            element("CRS", "CRS:84");
 
             ReferencedEnvelope llbbox = layer.getResource().getLatLonBoundingBox();
             handleGeographicBoundingBox(llbbox);
@@ -980,8 +986,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
                 element("Format", defaultFormat);
                 attrs.clear();
 
-                Map<String, String> params = params("request", "GetLegendGraphic", "format",
-                        defaultFormat, "width",
+                Map<String, String> params = params("service", "WMS", "request", "GetLegendGraphic",
+                        "format", defaultFormat, "width",
                         String.valueOf(GetLegendGraphicRequest.DEFAULT_WIDTH), "height",
                         String.valueOf(GetLegendGraphicRequest.DEFAULT_HEIGHT), "layer", layerName);
                 if (style != null) {
