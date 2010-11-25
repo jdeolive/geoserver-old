@@ -73,7 +73,7 @@
     </bean>
         
 	<!-- wms service + descriptor -->
- 	<bean id="wmsService2" class="org.geoserver.wms.DefaultWebMapService">
+ 	<bean id="wmsServiceTarget" class="org.geoserver.wms.DefaultWebMapService">
  	  <constructor-arg ref="wms"/>
       <property name="getCapabilities" ref="wmsGetCapabilities"/>
       <property name="describeLayer" ref="wmsDescribeLayer"/>
@@ -82,8 +82,23 @@
       <property name="getLegendGraphic" ref="wmsGetLegendGraphic"/>
       <property name="getStyles" ref="wmsGetStyles"/>
  	</bean>
- 	<alias name="wmsService2" alias="webMapService"/>
  	
+ 	<bean id="wmsLogger" class="org.geoserver.ows.util.RequestObjectLogger">
+      <constructor-arg type="java.lang.String" value="org.geoserver.wms"/>
+    </bean>
+    <bean id="wmsService2" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+        <value>org.geoserver.wms.WebMapService</value>
+      </property>
+      <property name="interceptorNames">
+        <list>
+            <value>wmsLogger</value>
+            <value>wmsServiceTarget</value>
+        </list>
+      </property>
+    </bean>
+    <alias name="wmsService2" alias="webMapService"/>
+
  	<bean id="wms-1_1_1-ServiceDescriptor" class="org.geoserver.platform.Service">
 		<constructor-arg index="0" value="wms"/>
 		<constructor-arg index="1" ref="wmsService2"/>
