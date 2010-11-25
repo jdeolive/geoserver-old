@@ -150,6 +150,10 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
         // set the raw params used to create the request
         getMap.setRawKvp(rawKvp);
 
+        // wms 1.3, srs changed to crs
+        if (kvp.containsKey("crs")) {
+            getMap.setSRS((String)kvp.get("crs"));
+        }
         // do some additional checks
 
         // srs
@@ -163,8 +167,9 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
             } catch (Exception e) {
                 // couldnt make it - we send off a service exception with the
                 // correct info
+                String errorCode = "1.3.0".equals(getMap.getVersion()) ? "InvalidCRS" : "InvalidSRS";
                 throw new ServiceException("Error occurred decoding the espg code " + epsgCode, e,
-                        "InvalidSRS");
+                        errorCode);
             }
         }
 
