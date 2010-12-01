@@ -430,6 +430,13 @@ public class WMS implements ApplicationContextAware {
     }
 
     /**
+     * Returns all available map output formats. 
+     */
+    public Collection<GetMapOutputFormat> getAvailableMapFormats() {
+        return WMSExtensions.findMapProducers(applicationContext);
+    }
+    
+    /**
      * Grabs the list of available MIME-Types for the GetMap operation from the set of
      * {@link GetMapOutputFormat}s registered in the application context.
      * 
@@ -437,7 +444,7 @@ public class WMS implements ApplicationContextAware {
      *            The application context where to grab the GetMapOutputFormats from.
      * @see GetMapOutputFormat#getContentType()
      */
-    public Set<String> getAvailableMapFormats() {
+    public Set<String> getAvailableMapFormatNames() {
 
         final Collection<GetMapOutputFormat> producers;
         producers = WMSExtensions.findMapProducers(applicationContext);

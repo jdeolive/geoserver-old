@@ -46,6 +46,7 @@ import org.geoserver.platform.ServiceException;
 import org.geoserver.wms.GetCapabilities;
 import org.geoserver.wms.GetCapabilitiesRequest;
 import org.geoserver.wms.GetLegendGraphicRequest;
+import org.geoserver.wms.GetMapOutputFormat;
 import org.geoserver.wms.WMS;
 import org.geoserver.wms.WMSInfo;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
@@ -92,7 +93,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
     private String schemaBaseURL;
 
     /** The list of output formats to state as supported for the GetMap request */
-    private Set<String> getMapFormats;
+    private Collection<GetMapOutputFormat> getMapFormats;
 
     private WMS wmsConfig;
 
@@ -106,7 +107,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
      * @param getMapFormats
      *            the list of supported output formats to state for the GetMap request
      */
-    public Capabilities_1_3_0_Transformer(WMS wms, String schemaBaseUrl, Set<String> getMapFormats) {
+    public Capabilities_1_3_0_Transformer(WMS wms, String schemaBaseUrl, 
+            Collection<GetMapOutputFormat> getMapFormats) {
         super();
         Assert.notNull(wms);
         Assert.notNull(schemaBaseUrl, "baseURL");
@@ -147,7 +149,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
          */
         private GetCapabilitiesRequest request;
 
-        private Set<String> getMapFormats;
+        private Collection<GetMapOutputFormat> getMapFormats;
 
         private WMS wmsConfig;
 
@@ -162,7 +164,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
          * 
          */
         public Capabilities_1_3_0_Translator(ContentHandler handler, WMS wmsConfig,
-                Set<String> getMapFormats, String schemaLocationURI) {
+                Collection<GetMapOutputFormat> getMapFormats, String schemaLocationURI) {
             super(handler, null, null);
             this.wmsConfig = wmsConfig;
             this.getMapFormats = getMapFormats;
@@ -340,7 +342,23 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
             start("GetMap");
 
-            List<String> sortedFormats = new ArrayList<String>(getMapFormats);
+            Set<String> formats = new LinkedHashSet();
+            if (wmsConfig.getServiceInfo().isCiteCompliant()) {
+                //return only mime types, since the cite tests dictate that a format
+                // name must match the mime type
+                for(GetMapOutputFormat format : getMapFormats) {
+                    if (format.getOutputFormatNames().contains(format.getMimeType())) {
+                        formats.add(format.getMimeType());    
+                    }
+                }
+            }
+            else {
+                for(GetMapOutputFormat format : getMapFormats) {
+                    formats.addAll(format.getOutputFormatNames());
+                }
+            }
+            
+            List<String> sortedFormats = new ArrayList(formats);
             Collections.sort(sortedFormats);
             // this is a hack necessary to make cite tests pass: we need an output format
             // that is equal to the mime type as the first one....

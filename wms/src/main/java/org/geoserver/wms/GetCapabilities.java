@@ -4,6 +4,7 @@
  */
 package org.geoserver.wms;
 
+import java.util.Collection;
 import java.util.Set;
 
 import org.geoserver.platform.ServiceException;
@@ -63,12 +64,14 @@ public class GetCapabilities {
         // otherwise it's a normal response...
 
         Set<String> legendFormats = wms.getAvailableLegendGraphicsFormats();
-        Set<String> mapFormats = wms.getAvailableMapFormats();
+        
         TransformerBase transformer;
         String baseUrl = request.getBaseUrl();
         if (WMS.VERSION_1_1_1.equals(version)) {
+            Set<String> mapFormats = wms.getAvailableMapFormatNames();
             transformer = new GetCapabilitiesTransformer(wms, baseUrl, mapFormats, legendFormats);
         } else if (WMS.VERSION_1_3_0.equals(version)) {
+            Collection<GetMapOutputFormat> mapFormats = wms.getAvailableMapFormats();
             transformer = new Capabilities_1_3_0_Transformer(wms, baseUrl, mapFormats);
         } else {
             throw new IllegalArgumentException("Unknown version: " + version);
