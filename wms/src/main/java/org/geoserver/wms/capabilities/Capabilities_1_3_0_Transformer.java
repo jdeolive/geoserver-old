@@ -10,6 +10,8 @@ import static org.geoserver.ows.util.ResponseUtils.buildURL;
 import static org.geoserver.ows.util.ResponseUtils.params;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,6 +44,7 @@ import org.geoserver.catalog.WMSLayerInfo;
 import org.geoserver.config.ContactInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.ows.URLMangler.URLType;
+import org.geoserver.ows.util.KvpUtils;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wms.GetCapabilities;
 import org.geoserver.wms.GetCapabilitiesRequest;
@@ -307,8 +310,29 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
                 element("Format", link.getType());
 
-                AttributesImpl orAtts = attributes("xlink:type", "simple", "xlink:href",
-                        link.getContent());
+                //check for "localhost" and turn it into a proper back reference
+                String content = link.getContent();
+                try {
+                    URL url = new URL(content);
+                    try {
+                        if ("localhost".equals(url.getHost())) {
+                            Map<String,String> kvp = null;
+                            if (url.getQuery() != null && !"".equals(url.getQuery())) {
+                                kvp = KvpUtils.parseQueryString(url.getQuery());
+                            }
+                            
+                            content = 
+                                buildURL(request.getBaseUrl(), url.getPath(), kvp, URLType.RESOURCE);
+                        }
+                    }
+                    catch(Exception e) {
+                        LOGGER.log(Level.WARNING, 
+                            "Unable to create proper back referece for metadata url: " + content, e);
+                    }
+                }
+                catch(MalformedURLException e) {}
+                
+                AttributesImpl orAtts = attributes("xlink:type", "simple", "xlink:href", content);
                 element("OnlineResource", null, orAtts);
 
                 end("MetadataURL");
