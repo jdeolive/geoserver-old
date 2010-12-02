@@ -65,6 +65,11 @@ public interface WebMapService {
     WebMap reflect(GetMapRequest request);
 
     WebMap getMapReflect(GetMapRequest request);
+    
+    /**
+     * KML reflector
+     */
+    WebMap kml(GetMapRequest getMap);
 
     StyledLayerDescriptor getStyles(GetStylesRequest request);
 }
