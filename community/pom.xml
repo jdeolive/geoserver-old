@@ -193,6 +193,11 @@
         <module>wps-sextante</module>
       </modules>
     </profile>
-
+    <profile>
+      <id>inspire</id>
+      <modules>
+        <module>inspire</module>
+      </modules>
+    </profile>
   </profiles>
 </project>
