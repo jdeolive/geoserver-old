@@ -158,7 +158,11 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
 
         // srs
         String epsgCode = getMap.getSRS();
-
+        if (epsgCode != null &&  "1.3.0".equals(getMap.getVersion())) {
+            epsgCode = epsgCode.replace("EPSG:", "urn:x-ogc:def:crs:EPSG:");
+            getMap.setSRS(epsgCode);
+        }
+        
         if (epsgCode != null) {
             try {
                 // set the crs as well
