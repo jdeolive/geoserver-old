@@ -471,6 +471,13 @@ public class WMS implements ApplicationContextAware {
     }
 
     /**
+     * Returns all {@link ExtendedCapabilitiesProvider} extensions.
+     */
+    public List<ExtendedCapabilitiesProvider> getAvailableExtendedCapabilitiesProviders() {
+        return WMSExtensions.findExtendedCapabilitiesProviders(applicationContext);
+    }
+    
+    /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
      */
     public void setApplicationContext(final ApplicationContext applicationContext)

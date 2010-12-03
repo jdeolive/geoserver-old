@@ -46,6 +46,7 @@ import org.geoserver.config.GeoServer;
 import org.geoserver.ows.URLMangler.URLType;
 import org.geoserver.ows.util.KvpUtils;
 import org.geoserver.platform.ServiceException;
+import org.geoserver.wms.ExtendedCapabilitiesProvider;
 import org.geoserver.wms.GetCapabilities;
 import org.geoserver.wms.GetCapabilitiesRequest;
 import org.geoserver.wms.GetLegendGraphicRequest;
@@ -65,6 +66,7 @@ import org.opengis.feature.type.Name;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.springframework.util.Assert;
+import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.AttributesImpl;
 
@@ -97,6 +99,9 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
     /** The list of output formats to state as supported for the GetMap request */
     private Collection<GetMapOutputFormat> getMapFormats;
+    
+    /** The list of all extended capabilities providers */
+    private Collection<ExtendedCapabilitiesProvider> extCapsProviders;
 
     private WMS wmsConfig;
 
@@ -111,7 +116,8 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
      *            the list of supported output formats to state for the GetMap request
      */
     public Capabilities_1_3_0_Transformer(WMS wms, String schemaBaseUrl, 
-            Collection<GetMapOutputFormat> getMapFormats) {
+            Collection<GetMapOutputFormat> getMapFormats, 
+            Collection<ExtendedCapabilitiesProvider> extCapsProviders) {
         super();
         Assert.notNull(wms);
         Assert.notNull(schemaBaseUrl, "baseURL");
@@ -119,8 +125,10 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
         this.wmsConfig = wms;
         this.getMapFormats = getMapFormats;
+        this.extCapsProviders = extCapsProviders;
         this.schemaBaseURL = schemaBaseUrl;
-        this.setNamespaceDeclarationEnabled(false);
+        this.setNamespaceDeclarationEnabled(true);
+        
         setIndentation(2);
         final Charset encoding = wms.getCharSet();
         setEncoding(encoding);
@@ -128,10 +136,41 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
     @Override
     public Translator createTranslator(ContentHandler handler) {
-        String schemaLocation = buildSchemaURL(schemaBaseURL, "wms/1.3.0/capabilities_1_3_0.xsd");
-        return new Capabilities_1_3_0_Translator(handler, wmsConfig, getMapFormats, schemaLocation);
+        StringBuffer schemaLocation = new StringBuffer();
+        schemaLocation.append(schemaLocation(NAMESPACE, "wms/1.3.0/capabilities_1_3_0.xsd"));
+
+        for (ExtendedCapabilitiesProvider cp : extCapsProviders) {
+            String[] locations = cp.getSchemaLocations();
+            try {
+                for (int i = 0; i < locations.length-1; i+=2) {
+                    schemaLocation.append(schemaLocation(locations[i], locations[i+1]));
+                }
+            }
+            catch(ArrayIndexOutOfBoundsException e) {
+                throw new ServiceException("Extended capabilities provider returned improper " +
+                    "set of namespace,location pairs from getSchemaLocations()", e);
+            }
+        }
+        
+        return new Capabilities_1_3_0_Translator(
+            handler, wmsConfig, getMapFormats, extCapsProviders, schemaLocation.toString());
     }
 
+    String schemaLocation(String namespace, String uri) {
+        String location = null;
+        try {
+            new URL(uri);
+            
+            //external location
+            location = uri;
+        }
+        catch(MalformedURLException e) {
+            //means the url is relative
+            location = buildSchemaURL(schemaBaseURL, uri);
+        }
+        
+        return namespace + " " + location;
+    }
     /**
      * @author Gabriel Roldan
      * @version $Id
@@ -153,10 +192,12 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
         private GetCapabilitiesRequest request;
 
         private Collection<GetMapOutputFormat> getMapFormats;
+        
+        private Collection<ExtendedCapabilitiesProvider> extCapsProviders;
 
         private WMS wmsConfig;
 
-        private String schemaLocationURI;
+        private String schemaLocation;
 
         /**
          * Creates a new CapabilitiesTranslator object.
@@ -167,11 +208,18 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
          * 
          */
         public Capabilities_1_3_0_Translator(ContentHandler handler, WMS wmsConfig,
-                Collection<GetMapOutputFormat> getMapFormats, String schemaLocationURI) {
+                Collection<GetMapOutputFormat> getMapFormats, 
+                Collection<ExtendedCapabilitiesProvider> extCapsProviders, String schemaLocation) {
             super(handler, null, null);
             this.wmsConfig = wmsConfig;
             this.getMapFormats = getMapFormats;
-            this.schemaLocationURI = schemaLocationURI;
+            this.extCapsProviders = extCapsProviders;
+            this.schemaLocation = schemaLocation;
+            
+            //register namespaces provided by extended capabilities
+            for (ExtendedCapabilitiesProvider cp : extCapsProviders) {
+                cp.registerNamespaces(getNamespaceSupport());
+            }
         }
 
         private AttributesImpl attributes(String... kvp) {
@@ -204,10 +252,9 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             }
 
             String updateSequence = String.valueOf(wmsConfig.getUpdateSequence());
-            String schemaLoc = NAMESPACE + " " + schemaLocationURI;
             AttributesImpl rootAtts = attributes("version", "1.3.0", "updateSequence",
                     updateSequence, "xmlns", NAMESPACE, "xmlns:xlink", XLINK_NS, "xmlns:xsi",
-                    XML_SCHEMA_INSTANCE, "xsi:schemaLocation", schemaLoc);
+                    XML_SCHEMA_INSTANCE, "xsi:schemaLocation", schemaLocation);
 
             start("WMS_Capabilities", rootAtts);
             handleService();
@@ -346,6 +393,7 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             start("Capability");
             handleRequest();
             handleException();
+            handleExtendedCapabilities();
             handleLayers();
             end("Capability");
         }
@@ -476,6 +524,31 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             end("Exception");
         }
 
+        private void handleExtendedCapabilities() {
+            for(ExtendedCapabilitiesProvider cp: extCapsProviders) {
+                try {
+                    cp.encode(new ExtendedCapabilitiesProvider.Translator() {
+                        public void start(String element) {
+                            Capabilities_1_3_0_Translator.this.start(element);
+                        }
+                        
+                        public void start(String element, Attributes attributes) {
+                            Capabilities_1_3_0_Translator.this.start(element, attributes);
+                        }
+                        public void chars(String text) {
+                            Capabilities_1_3_0_Translator.this.chars(text);
+                        }
+                        public void end(String element) {
+                            Capabilities_1_3_0_Translator.this.end(element);
+                        }
+                    }, wmsConfig.getServiceInfo());
+                } 
+                catch (Exception e) {
+                    throw new ServiceException("Extended capabilities provider threw error", e);
+                }
+            }
+        }
+        
         /**
          * Handles the encoding of the layers elements.
          * 
