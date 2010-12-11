@@ -505,6 +505,9 @@ public class GeoServerResourceLoader extends DefaultResourceLoader implements Ap
             }
 
             file = new File(baseDirectory, location);
+            if (!file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
             file.createNewFile();
         }
         
