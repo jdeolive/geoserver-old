@@ -4,6 +4,7 @@
  */
 package org.geoserver.wms.map;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,11 +25,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.geoserver.catalog.LayerGroupInfo;
 import org.geoserver.catalog.LayerInfo;
+import org.geoserver.catalog.SLD;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WMSLayerInfo;
 import org.geoserver.ows.HttpServletRequestAware;
 import org.geoserver.ows.KvpRequestReader;
 import org.geoserver.ows.util.KvpUtils;
+import org.geoserver.ows.util.RequestUtils;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
@@ -49,13 +52,13 @@ import org.geotools.styling.FeatureTypeConstraint;
 import org.geotools.styling.NamedLayer;
 import org.geotools.styling.NamedStyle;
 import org.geotools.styling.RemoteOWS;
-import org.geotools.styling.SLDParser;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyleAttributeExtractor;
 import org.geotools.styling.StyleFactory;
 import org.geotools.styling.StyledLayer;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.UserLayer;
+import org.geotools.util.Version;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -67,6 +70,9 @@ import org.opengis.filter.identity.FeatureId;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.vfny.geoserver.util.Requests;
 import org.vfny.geoserver.util.SLDValidator;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServletRequestAware {
 
@@ -233,7 +239,7 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
             if (getMap.getValidateSchema().booleanValue()) {
                 ByteArrayInputStream stream = new ByteArrayInputStream(getMap.getSldBody()
                         .getBytes());
-                List errors = validateSld(stream, getMap.getBaseUrl());
+                List errors = validateSld(stream, getMap);
 
                 if (errors.size() != 0) {
                     throw new ServiceException(SLDValidator.getErrorMessage(
@@ -241,8 +247,8 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
                 }
             }
 
-            StyledLayerDescriptor sld = parseSld(new ByteArrayInputStream(getMap.getSldBody()
-                    .getBytes()));
+            InputStream input = new ByteArrayInputStream(getMap.getSldBody().getBytes());
+            StyledLayerDescriptor sld = parseSld(getMap, input);
             processSld(getMap, requestedLayerInfos, sld, styleNameList);
 
             // set filter in, we'll check consistency later
@@ -259,7 +265,7 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
                 List errors = null;
 
                 try {
-                    errors = validateSld(input, getMap.getBaseUrl());
+                    errors = validateSld(input, getMap);
                 } finally {
                     input.close();
                 }
@@ -280,7 +286,7 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
             InputStream input = Requests.getInputStream(sldUrl);
 
             try {
-                StyledLayerDescriptor sld = parseSld(input);
+                StyledLayerDescriptor sld = parseSld(getMap, input);
                 processSld(getMap, requestedLayerInfos, sld, styleNameList);
             } finally {
                 input.close();
@@ -463,22 +469,95 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
      * validates an sld document.
      * 
      */
-    private List validateSld(InputStream input, String baseURL) {
-        // user requested to validate the schema.
-        SLDValidator validator = new SLDValidator();
-
-        return validator.validateSLD(input, baseURL);
+    private List validateSld(InputStream stream, GetMapRequest getMap) {
+        Object[] sldInfo = getSldInfo(getMap, stream);
+        String version = (String)sldInfo[0];
+        Object input = sldInfo[1];
+        
+        try {
+            return SLD.validate(input, new Version(version));
+        } 
+        catch (IOException e) {
+            throw new ServiceException("Error validating style", e);
+        }
     }
 
     /**
      * Parses an sld document.
      */
-    private StyledLayerDescriptor parseSld(InputStream input) {
-        SLDParser parser = new SLDParser(styleFactory, input);
-
-        return parser.parseSLD();
+    private StyledLayerDescriptor parseSld(GetMapRequest getMap, InputStream stream) {
+       
+        Object[] sldInfo = getSldInfo(getMap, stream);
+        String version = (String) sldInfo[0];
+        Object input = sldInfo[1];
+        
+        StyledLayerDescriptor sld;
+        try {
+            sld = SLD.parse(input, new Version(version));
+        } 
+        catch (IOException e) {
+            throw new ServiceException("Error parsing style", e);
+        }
+        return sld;
     }
 
+    /**
+     * Figures out the version of sld from a request, possibly by parsing some of the SLD input.
+     *
+     * @return A tuple of SLDInfo,
+     */
+    private Object[] getSldInfo(GetMapRequest getMap, InputStream stream) {
+        Object in = stream;
+        
+        //figure out the version of the sld
+        String version;
+        if(getMap.getSldVersion() != null) {
+            version = getMap.getSldVersion();
+        }
+        else {
+            try {
+                //need to determine version of sld from actual content
+                BufferedReader input = RequestUtils.getBufferedXMLReader(stream, 8192);
+                if (!input.ready()) {
+                    return null;
+                }
+
+                //create stream parser
+                XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+                factory.setNamespaceAware(true);
+                factory.setValidating(false);
+
+                //parse root element
+                XmlPullParser parser = factory.newPullParser();
+                parser.setInput(input);
+                parser.nextTag();
+
+                version = null;
+
+                for (int i = 0; i < parser.getAttributeCount(); i++) {
+                    if ("version".equals(parser.getAttributeName(i))) {
+                        version = parser.getAttributeValue(i);
+                    }
+                }
+
+                parser.setInput(null);
+
+                //reset input stream
+                input.reset();
+                in = input;
+            } 
+            catch(Exception e) {
+                throw new ServiceException("Error preparsing SLD", e);
+            }
+            
+            if (version == null) {
+                LOGGER.warning("SLD version not specified, assuming version 1.0");
+                version = "1.0.0";
+            }
+        }
+        return new Object[]{version, in};
+    }
+    
     private void processSld(final GetMapRequest request, final List<?> requestedLayers,
             final StyledLayerDescriptor sld, final List styleNames) throws ServiceException,
             IOException {
