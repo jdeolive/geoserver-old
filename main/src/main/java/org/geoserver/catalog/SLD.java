@@ -1,18 +1,19 @@
+/* Copyright (c) 2001 - 2010 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, availible at the root
+ * application directory.
+ */
 package org.geoserver.catalog;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import org.geotools.factory.CommonFactoryFinder;
@@ -23,33 +24,83 @@ import org.geotools.styling.SLDParser;
 import org.geotools.styling.SLDTransformer;
 import org.geotools.styling.Style;
 import org.geotools.styling.StyleFactory;
-import org.geotools.styling.StyledLayer;
 import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.styling.UserLayer;
 import org.geotools.util.Version;
 import org.geotools.xml.Parser;
 import org.vfny.geoserver.util.SLDValidator;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
+/**
+ * Provides methods to parse/encode SLD documents based on SLD version. 
+ * <p>
+ * Currently SLD versions 1.0, and 1.1 are supported.
+ * </p>
+ * @author Justin Deoliveira, OpenGeo
+ */
 public class SLD {
 
     static StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory(null);
     
+    /**
+     * Parses an SLD document into a StyledLayerDescriptor object.
+     * <p>
+     * </p>
+     * @param input a File, Reader, or InputStream object.
+     * @param version The SLD version
+     * 
+     * @return The parsed StyleLayerDescriptor.
+     * 
+     * @throws IOException Any parsing errors that occur.
+     * @throws IllegalArgumentException If the specified version is not supported.
+     */
     public static StyledLayerDescriptor parse(Object input, Version version) throws IOException {
         return Handler.lookup(version).parse(input);
     }
     
+    /**
+     * Encodes a StyledLayerDescriptor object to an SLD document.
+     * <p>
+     * </p>
+     * @param sld The StyledLayerDescriptor object
+     * @param version The SLD version
+     * @param format Specifies if the serialized SLD should be formatted or not.
+     * @param output The output stream to serialize to.
+     * 
+     * @throws IOException Any encoding errors that occur.
+     * @throws IllegalArgumentException If the specified version is not supported.
+     */
     public static void encode(StyledLayerDescriptor sld, Version version, boolean format, 
             OutputStream output) throws IOException {
         
         Handler.lookup(version).encode(sld, format, output);
     }
     
+    /**
+     * Performs schema validation on an SLD document.
+     * 
+     * @param input A File, Reader, or InputStream object.
+     * @param version The SLD version
+     * 
+     * @return A list of validation exceptions, empty if no errors are present and the document is
+     *   valid.
+     * 
+     * @throws IOException Any parsing errors that occur.
+     * @throws IllegalArgumentException If the specified version is not supported.
+     */
     public static List<Exception> validate(Object input, Version version) throws IOException {
         return Handler.lookup(version).validate(input);
     }
 
+    /**
+     * Convenience method to pull a UserSyle from a StyledLayerDescriptor.
+     * <p>
+     * This method will return the first UserStyle it encounters in the StyledLayerDescriptor tree.
+     * </p>
+     * @param sld The StyledLayerDescriptor object.
+     * 
+     * @return The UserStyle, or <code>null</code> if no such style could be found.
+     */
     public static Style style(StyledLayerDescriptor sld) {
         for (int i = 0; i < sld.getStyledLayers().length; i++) {
             Style[] styles = null;
@@ -76,6 +127,15 @@ public class SLD {
         return null;
     }
 
+    /**
+     * Convenience method to wrap a UserStyle in a StyledLayerDescriptor object.
+     * <p>
+     * This method wraps the UserStyle in a NamedLayer, and wraps the result in a StyledLayerDescriptor.
+     * </p>
+     * @param style The UserStyle.
+     * 
+     * @return The StyledLayerDescriptor.
+     */
     public static StyledLayerDescriptor sld(Style style) {
         StyledLayerDescriptor sld = styleFactory.createStyledLayerDescriptor();
         
