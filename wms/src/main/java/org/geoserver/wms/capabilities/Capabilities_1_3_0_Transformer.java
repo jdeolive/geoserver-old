@@ -57,6 +57,7 @@ import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.factory.GeoTools;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.CRS.AxisOrder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.styling.Style;
 import org.geotools.util.logging.Logging;
@@ -64,6 +65,8 @@ import org.geotools.xml.transform.TransformerBase;
 import org.geotools.xml.transform.Translator;
 import org.opengis.feature.type.Name;
 import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.springframework.util.Assert;
 import org.xml.sax.Attributes;
@@ -1167,13 +1170,27 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
          * 
          * @param bbox
          */
-        private void handleBBox(Envelope bbox, String CRS) {
+        private void handleBBox(Envelope bbox, String srs) {
             String minx = String.valueOf(bbox.getMinX());
             String miny = String.valueOf(bbox.getMinY());
             String maxx = String.valueOf(bbox.getMaxX());
             String maxy = String.valueOf(bbox.getMaxY());
 
-            AttributesImpl bboxAtts = attributes("CRS", CRS, //
+            //we need to report geographic coordinate as latitude/longitude
+            CoordinateReferenceSystem crs = null;
+            try {
+                crs = CRS.decode(WMS.toInternalSRS(srs, WMS.VERSION_1_3_0));
+            } 
+            catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Unable to decode " + srs, e);
+            }
+            
+            if (crs != null && CRS.getAxisOrder(crs) == AxisOrder.LAT_LON) {
+                String tmp = minx; minx = miny; miny = tmp;
+                tmp = maxx; maxx = maxy; maxy = tmp;
+            }
+            
+            AttributesImpl bboxAtts = attributes("CRS", srs, //
                     "minx", minx, //
                     "miny", miny,//
                     "maxx", maxx,//
