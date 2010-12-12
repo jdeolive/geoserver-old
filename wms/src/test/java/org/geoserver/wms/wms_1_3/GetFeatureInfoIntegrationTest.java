@@ -321,9 +321,10 @@ public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
         // http://jira.codehaus.org/browse/GEOS-2574
         String layer = getLayerId(TASMANIA_BM);
         String request = "wms?version=1.3.0&service=wms&request=GetFeatureInfo" + "&layers="
-                + layer + "&styles=&bbox=146.5,-44.5,148,-43&width=600&height=600"
+                + layer + "&styles=&bbox=-44.5,146.5,-43,148&width=600&height=600"
                 + "&info_format=text/html&query_layers=" + layer + "&i=300&j=300&srs=EPSG:4326";
         Document dom = getAsDOM(request);
+        
         // we also have the charset which may be platf. dep.
         assertXpathEvaluatesTo("1", "count(/html/body/table/tr/th[. = 'RED_BAND'])", dom);
         assertXpathEvaluatesTo("1", "count(/html/body/table/tr/th[. = 'GREEN_BAND'])", dom);
@@ -334,7 +335,7 @@ public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
         // http://jira.codehaus.org/browse/GEOS-3996
         String layer = getLayerId(TASMANIA_BM);
         String request = "wms?version=1.3.0&service=wms&request=GetFeatureInfo" + "&layers="
-                + layer + "&styles=&bbox=146.5,-44.5,148,-43&width=600&height=600"
+                + layer + "&styles=&bbox=-44.5,146.5,-43,148&width=600&height=600"
                 + "&info_format=application/vnd.ogc.gml&query_layers=" + layer
                 + "&i=300&j=300&srs=EPSG:4326";
         Document dom = getAsDOM(request);
@@ -351,7 +352,7 @@ public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
     public void testCoverageScales() throws Exception {
         String layer = getLayerId(TASMANIA_BM);
         String request = "wms?version=1.3.0&service=wms&request=GetFeatureInfo" + "&layers="
-                + layer + "&styles=rasterScales&bbox=146.5,-44.5,148,-43"
+                + layer + "&styles=rasterScales&bbox=-44.5,146.5,-43,148"
                 + "&info_format=text/html&query_layers=" + layer + "&i=300&j=300&srs=EPSG:4326";
 
         // this one should be blank
