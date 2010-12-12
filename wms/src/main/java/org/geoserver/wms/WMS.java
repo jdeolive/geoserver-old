@@ -548,6 +548,26 @@ public class WMS implements ApplicationContextAware {
         }
         return new Version(version);
     }
+    
+    /**
+     * Transforms a crs identifier to its internal representation based on the specified 
+     * WMS version.
+     * <p>
+     * In version 1.3 of WMS geographic coordinate systems are to be ordered y/x or 
+     * latitude/longitude. The only possible way to represent this internally is to use the 
+     * explicit epsg namespace "urn:x-ogc:def:crs:EPSG:". This method essentially replaces the 
+     * traditional "EPSG:" namespace with the explicit. 
+     * </p>
+     */
+    public static String toInternalSRS(String srs, Version version) {
+        if (VERSION_1_3_0.equals(version)) {
+            if (srs.toUpperCase().startsWith("EPSG:")) {
+                srs = srs.toUpperCase().replace("EPSG:", "urn:x-ogc:def:crs:EPSG:");
+            }
+        }
+        
+        return srs;
+    }
 
     /**
      * Returns true if the layer can be queried
