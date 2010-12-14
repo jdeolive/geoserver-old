@@ -4,6 +4,7 @@
  */
 package org.geoserver.catalog;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.util.List;
 
 import javax.xml.transform.TransformerException;
 
+import org.geoserver.ows.util.RequestUtils;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.sld.v1_1.SLDConfiguration;
 import org.geotools.styling.NamedLayer;
@@ -30,6 +32,9 @@ import org.geotools.util.Version;
 import org.geotools.xml.Parser;
 import org.vfny.geoserver.util.SLDValidator;
 import org.xml.sax.InputSource;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
 
 /**
  * Provides methods to parse/encode style documents. 
@@ -40,10 +45,32 @@ import org.xml.sax.InputSource;
  */
 public class Styles {
 
-    static StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory(null);
-    
     /**
-     * Parses a style document into a StyledLayerDescriptor object.
+     * number of bytes to "look ahead" when pre parsing xml document.
+     * TODO: make this configurable, and possibley link it to the same value 
+     * used by the ows dispatcher.
+     */
+    static int XML_LOOKAHEAD = 8192;
+    
+    static StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory(null);
+
+    /**
+     * Parses a style document into a StyleLayerDescriptor determining style type/version 
+     * from the content itself.
+     *  
+     * @param input a File, Reader, or InputStream object.
+     * 
+     * @return The parsed style.
+     * 
+     * @throws IOException Any parsing errors that occur.
+     * @throws IllegalArgumentException If the type of the style can not be determined.
+     */
+    public static StyledLayerDescriptor parse(Object input) throws IOException {
+        return parse(input, findVersion(input));
+    }
+
+    /**
+     * Parses a style document into a StyledLayerDescriptor object explicitly specifying version.
      * <p>
      * </p>
      * @param input a File, Reader, or InputStream object.
@@ -77,7 +104,23 @@ public class Styles {
     }
     
     /**
-     * Performs schema validation on an SLD document.
+     * Performs schema validation on an style document determining style type from the content
+     * itself. 
+     * 
+     * @param input A File, Reader, or InputStream object.
+     * 
+     * @return A list of validation exceptions, empty if no errors are present and the document is
+     *   valid.
+     * 
+     * @throws IOException Any parsing errors that occur.
+     * @throws IllegalArgumentException If the specified version is not supported.
+     */
+    public static List<Exception> validate(Object input) throws IOException {
+        return validate(input, findVersion(input));
+    }
+
+    /**
+     * Performs schema validation on an style document, specifying the version.
      * 
      * @param input A File, Reader, or InputStream object.
      * @param version The SLD version
@@ -148,6 +191,59 @@ public class Styles {
         return sld;
     }
 
+    /**
+     * Helper method for finding which style handler/version to use from the actual content.
+     */
+    static Version findVersion(Object input) throws IOException {
+        //need to determine version of sld from actual content
+        BufferedReader reader = null;
+        
+        if (input instanceof InputStream) {
+            reader = RequestUtils.getBufferedXMLReader((InputStream) input, 8192);
+        }
+        else {
+            reader = RequestUtils.getBufferedXMLReader(toReader(input), 8192);
+        }
+            
+        if (!reader.ready()) {
+            return null;
+        }
+
+        String version;
+        try {
+            //create stream parser
+            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            factory.setValidating(false);
+
+            //parse root element
+            XmlPullParser parser = factory.newPullParser();
+            parser.setInput(reader);
+            parser.nextTag();
+
+            version = null;
+            for (int i = 0; i < parser.getAttributeCount(); i++) {
+                if ("version".equals(parser.getAttributeName(i))) {
+                    version = parser.getAttributeValue(i);
+                }
+            }
+
+            parser.setInput(null);
+        } 
+        catch (XmlPullParserException e) {
+            throw (IOException) new IOException("Error parsing content").initCause(e);
+        }
+
+        //reset input stream
+        reader.reset();
+        
+        if (version == null) {
+            throw new IllegalArgumentException("Could not determine version from content");
+        }
+        
+        return new Version(version);
+    }
+    
     static Reader toReader(Object input) throws IOException {
         if (input instanceof Reader) {
             return (Reader) input;

@@ -220,7 +220,24 @@ public class RequestUtils {
 
         //rest the input
         input.reset();
-
+        
+        return getBufferedXMLReader(reader, xmlLookahead);
+    }
+    
+    /**
+     * Wraps an xml reader in a buffered reader specifying a lookahead that can be used
+     * to preparse some of the xml document, resetting it back to its original state for actual 
+     * parsing.
+     * 
+     * @param reader The original xml reader.
+     * @param xmlLookahead The number of bytes to support for parse. If more than this number of 
+     *   bytes are preparsed the stream can not be properly reset.
+     *     
+     * @return The buffered reader.
+     * @throws IOException
+     */
+    public static BufferedReader getBufferedXMLReader(Reader reader, int xmlLookahead) 
+        throws IOException {
         //ensure the reader is a buffered reader
         
         if (!(reader instanceof BufferedReader)) {
