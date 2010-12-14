@@ -34,6 +34,7 @@ import org.geoserver.platform.ServiceException;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
 import org.geoserver.wms.WMS;
+import org.geoserver.wms.WMSErrorCode;
 import org.geotools.data.DataStore;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.Query;
@@ -170,9 +171,8 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
             } catch (Exception e) {
                 // couldnt make it - we send off a service exception with the
                 // correct info
-                String errorCode = "1.3.0".equals(getMap.getVersion()) ? "InvalidCRS" : "InvalidSRS";
                 throw new ServiceException("Error occurred decoding the espg code " + epsgCode, e,
-                        errorCode);
+                    WMSErrorCode.INVALID_CRS.get(getMap.getVersion()));
             }
         }
 

@@ -15,6 +15,7 @@ import org.geoserver.wms.GetFeatureInfoRequest;
 import org.geoserver.wms.GetMapRequest;
 import org.geoserver.wms.MapLayerInfo;
 import org.geoserver.wms.WMS;
+import org.geoserver.wms.WMSErrorCode;
 import org.geoserver.wms.kvp.MapLayerInfoKvpParser;
 import org.geoserver.wms.map.GetMapKvpRequestReader;
 import org.geotools.util.Version;
@@ -92,7 +93,7 @@ public class GetFeatureInfoKvpReader extends KvpRequestReader {
             LayerInfo layerInfo = l.getLayerInfo();
             if (!wms.isQueryable(layerInfo)) {
                 throw new ServiceException("Layer " + l.getName() + " is not queryable",
-                        "OperationNotSupported", "QUERY_LAYERS");
+                    WMSErrorCode.LAYER_NOT_QUERYABLE.get(request.getVersion()), "QUERY_LAYERS");
             }
         }
 
