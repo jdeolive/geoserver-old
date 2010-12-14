@@ -32,18 +32,18 @@ import org.vfny.geoserver.util.SLDValidator;
 import org.xml.sax.InputSource;
 
 /**
- * Provides methods to parse/encode SLD documents based on SLD version. 
+ * Provides methods to parse/encode style documents. 
  * <p>
  * Currently SLD versions 1.0, and 1.1 are supported.
  * </p>
  * @author Justin Deoliveira, OpenGeo
  */
-public class SLD {
+public class Styles {
 
     static StyleFactory styleFactory = CommonFactoryFinder.getStyleFactory(null);
     
     /**
-     * Parses an SLD document into a StyledLayerDescriptor object.
+     * Parses a style document into a StyledLayerDescriptor object.
      * <p>
      * </p>
      * @param input a File, Reader, or InputStream object.
@@ -59,7 +59,7 @@ public class SLD {
     }
     
     /**
-     * Encodes a StyledLayerDescriptor object to an SLD document.
+     * Encodes a StyledLayerDescriptor object to a style document.
      * <p>
      * </p>
      * @param sld The StyledLayerDescriptor object

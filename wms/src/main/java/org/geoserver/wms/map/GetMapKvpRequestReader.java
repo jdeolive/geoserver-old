@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.geoserver.catalog.LayerGroupInfo;
 import org.geoserver.catalog.LayerInfo;
-import org.geoserver.catalog.SLD;
+import org.geoserver.catalog.Styles;
 import org.geoserver.catalog.StyleInfo;
 import org.geoserver.catalog.WMSLayerInfo;
 import org.geoserver.ows.HttpServletRequestAware;
@@ -473,7 +473,7 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
         Object input = sldInfo[1];
         
         try {
-            return SLD.validate(input, new Version(version));
+            return Styles.validate(input, new Version(version));
         } 
         catch (IOException e) {
             throw new ServiceException("Error validating style", e);
@@ -491,7 +491,7 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
         
         StyledLayerDescriptor sld;
         try {
-            sld = SLD.parse(input, new Version(version));
+            sld = Styles.parse(input, new Version(version));
         } 
         catch (IOException e) {
             throw new ServiceException("Error parsing style", e);
