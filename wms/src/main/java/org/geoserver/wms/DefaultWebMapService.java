@@ -61,6 +61,7 @@ import com.vividsolutions.jts.geom.Envelope;
  * result in an {@link UnsupportedOperationException}
  * </p>
  * 
+ * @author Andrea Aime
  * @author Justin Deoliveira
  * @author Gabriel Roldan
  */
