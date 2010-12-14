@@ -30,6 +30,18 @@
    <artifactId>web-core</artifactId>
    <version>${project.version}</version>
   </dependency>
+  <dependency>
+   <groupId>org.geoserver</groupId>
+   <artifactId>main</artifactId>
+   <classifier>tests</classifier>
+   <scope>test</scope>
+   <version>${project.version}</version>
+  </dependency>
+  <dependency>
+    <groupId>com.mockrunner</groupId>
+    <artifactId>mockrunner</artifactId>
+    <scope>test</scope>
+  </dependency>
  </dependencies>
 
 </project>
