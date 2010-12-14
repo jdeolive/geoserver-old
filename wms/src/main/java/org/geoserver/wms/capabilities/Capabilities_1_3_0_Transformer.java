@@ -418,18 +418,19 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
             start("GetMap");
 
             Set<String> formats = new LinkedHashSet();
-            if (wmsConfig.getServiceInfo().isCiteCompliant()) {
-                //return only mime types, since the cite tests dictate that a format
-                // name must match the mime type
-                for(GetMapOutputFormat format : getMapFormats) {
-                    if (format.getOutputFormatNames().contains(format.getMimeType())) {
-                        formats.add(format.getMimeType());    
-                    }
+            
+            //return only mime types, since the cite tests dictate that a format
+            // name must match the mime type
+            for(GetMapOutputFormat format : getMapFormats) {
+                if (format.getOutputFormatNames().contains(format.getMimeType())) {
+                    formats.add(format.getMimeType());
                 }
-            }
-            else {
-                for(GetMapOutputFormat format : getMapFormats) {
-                    formats.addAll(format.getOutputFormatNames());
+                else {
+                    if (LOGGER.isLoggable(Level.WARNING)) {
+                        LOGGER.warning("Map output format " + format.getMimeType() + " does " +
+                            "not include mime type in output format names. Will be excluded from" +
+                            " capabilities document.");
+                    }
                 }
             }
             
