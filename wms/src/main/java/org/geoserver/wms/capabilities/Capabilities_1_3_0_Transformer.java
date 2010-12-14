@@ -1024,18 +1024,18 @@ public class Capabilities_1_3_0_Transformer extends TransformerBase {
 
         /**
          * Writes layer LegendURL pointing to the user supplied icon URL, if any, or to the proper
-         * GetLegendGraphic operation if an URL was not supplied by configuration file.
+         * GetLegendGraphic operation if an URL was not supplied.
          * 
          * <p>
          * It is common practice to supply a URL to a WMS accesible legend graphic when it is
          * difficult to create a dynamic legend for a layer.
          * </p>
          * 
-         * @param ft
-         *            The FeatureTypeInfo that holds the legendURL to write out, or<code>null</code>
-         *            if dynamically generated.
+         * @param layerName The name of the layer.
+         * @param legend The user specified legend url. If null a default url pointing back to 
+         *  the GetLegendGraphic operation will be automatically created.
+         * @param style The styel for the layer.
          * 
-         * @task TODO: figure out how to unhack legend parameters such as WIDTH, HEIGHT and FORMAT
          */
         protected void handleLegendURL(String layerName, LegendInfo legend, StyleInfo style) {
             if (legend != null) {
