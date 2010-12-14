@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2010 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, availible at the root
+ * application directory.
+ */
 package org.geoserver.wms;
 
 import java.io.IOException;
@@ -42,14 +46,37 @@ public interface ExtendedCapabilitiesProvider {
      */
     void encode(Translator tx, WMSInfo wms) throws IOException;
     
+    /**
+     * Interface for clients to encode XML.
+     */
     public interface Translator {
         
+        /**
+         * Starts an element creating the opening tag.
+         * 
+         * @param element The name of the element.
+         */
         void start(String element);
         
+        /**
+         * Starts an element with attributes, creating the opening tag.
+         * 
+         * @param element The name of the element.
+         * @param attributes The attributes of the element.
+         */
         void start(String element, Attributes attributes);
         
+        /**
+         * Creates a text node within an element.
+         * 
+         * @param text The character text.
+         */
         void chars(String text);
         
+        /**
+         * Ends an element creating a closing tag.
+         * @param element
+         */
         void end(String element);
     }
 }
