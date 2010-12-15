@@ -121,8 +121,8 @@ public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
             String request = "wms?version=1.3.0&bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/plain&request=GetFeatureInfo&layers="
                     + layer + "&query_layers=" + layer + "&width=20&height=20&i=10&j=10";
             Document doc = dom(get(request), true);
-            // print(doc);
-            assertXpathEvaluatesTo("OperationNotSupported",
+
+            assertXpathEvaluatesTo("LayerNotQueryable",
                     "/ogc:ServiceExceptionReport/ogc:ServiceException/@code", doc);
         } finally {
             // restore the original wms

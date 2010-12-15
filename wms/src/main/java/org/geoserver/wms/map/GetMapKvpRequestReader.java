@@ -160,7 +160,7 @@ public class GetMapKvpRequestReader extends KvpRequestReader implements HttpServ
 
         // srs
         String epsgCode = getMap.getSRS();
-        epsgCode = WMS.toInternalSRS(epsgCode, new Version(getMap.getVersion()));
+        epsgCode = WMS.toInternalSRS(epsgCode, WMS.version(getMap.getVersion()));
         getMap.setSRS(epsgCode);
         
         if (epsgCode != null) {

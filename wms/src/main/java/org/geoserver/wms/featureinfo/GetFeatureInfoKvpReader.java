@@ -120,19 +120,9 @@ public class GetFeatureInfoKvpReader extends KvpRequestReader {
             // do nothing, FEATURE_COUNT is optional
         }
 
-        Version version = WMS.version(request.getVersion());
-        if (null == version) {
-            if (wms.getServiceInfo().isCiteCompliant()) {
-                throw new ServiceException("Request supplied no protocol version");
-            } else {
-                // defaults to 1.1.1 for backwards compatibility. VERSION is mandatory anyways
-                version = WMS.VERSION_1_1_1;
-                request.setVersion(version.toString());
-            }
-        }
-        if (!(WMS.VERSION_1_1_1.equals(version) || WMS.VERSION_1_3_0.equals(version))) {
-            throw new ServiceException("Unknown version: " + version);
-        }
+        Version version = wms.negotiateVersion(request.getVersion()); 
+        request.setVersion(version.toString());
+        
         String colPixel = WMS.VERSION_1_1_1.equals(version) ? "X" : "I";
         String rowPixel = WMS.VERSION_1_1_1.equals(version) ? "Y" : "J";
         try {

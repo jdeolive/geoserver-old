@@ -150,6 +150,20 @@ public class WMS implements ApplicationContextAware {
     }
 
     /**
+     * /**
+     * Returns a supported version according to the version negotiation rules in section 6.2.4 of
+     * the WMS 1.3.0 spec.
+     * <p>
+     * Calls through to {@link #negotiateVersion(Version)}. 
+     * </p>
+     * @param requestedVersion The version, may be bull.
+     * 
+     */
+    public Version negotiateVersion(final String requestedVersion) {
+        return negotiateVersion(requestedVersion != null ? new Version(requestedVersion) : null);
+    }
+    
+    /**
      * Returns a supported version according to the version negotiation rules in section 6.2.4 of
      * the WMS 1.3.0 spec.
      * <p>
@@ -561,7 +575,7 @@ public class WMS implements ApplicationContextAware {
      */
     public static String toInternalSRS(String srs, Version version) {
         if (VERSION_1_3_0.equals(version)) {
-            if (srs.toUpperCase().startsWith("EPSG:")) {
+            if (srs != null && srs.toUpperCase().startsWith("EPSG:")) {
                 srs = srs.toUpperCase().replace("EPSG:", "urn:x-ogc:def:crs:EPSG:");
             }
         }
