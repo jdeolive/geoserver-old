@@ -66,7 +66,8 @@ public class Styles {
      * @throws IllegalArgumentException If the type of the style can not be determined.
      */
     public static StyledLayerDescriptor parse(Object input) throws IOException {
-        return parse(input, findVersion(input));
+        Object[] obj = findVersion(input);
+        return parse(obj[1], (Version)obj[0]);
     }
 
     /**
@@ -116,7 +117,8 @@ public class Styles {
      * @throws IllegalArgumentException If the specified version is not supported.
      */
     public static List<Exception> validate(Object input) throws IOException {
-        return validate(input, findVersion(input));
+        Object[] obj = findVersion(input);
+        return validate(obj[1], (Version)obj[0]);
     }
 
     /**
@@ -194,7 +196,7 @@ public class Styles {
     /**
      * Helper method for finding which style handler/version to use from the actual content.
      */
-    static Version findVersion(Object input) throws IOException {
+    static Object[] findVersion(Object input) throws IOException {
         //need to determine version of sld from actual content
         BufferedReader reader = null;
         
@@ -241,7 +243,7 @@ public class Styles {
             throw new IllegalArgumentException("Could not determine version from content");
         }
         
-        return new Version(version);
+        return new Object[]{new Version(version), reader};
     }
     
     static Reader toReader(Object input) throws IOException {
