@@ -411,4 +411,13 @@ public class GetFeatureInfoIntegrationTest extends WMSTestSupport {
         assertTrue(result.indexOf("Green Forest") > 0);
     }
 
+    public void testXY() throws Exception {
+        String layer = getLayerId(MockData.FORESTS);
+        String request = "wms?version=1.3.0&bbox=-0.002,-0.002,0.002,0.002&styles=&format=jpeg&info_format=text/plain&request=GetFeatureInfo&layers="
+                + layer + "&query_layers=" + layer + "&width=20&height=20&x=10&y=10";
+        String result = getAsString(request);
+        // System.out.println(result);
+        assertNotNull(result);
+        assertTrue(result.indexOf("Green Forest") > 0);
+    }
 }

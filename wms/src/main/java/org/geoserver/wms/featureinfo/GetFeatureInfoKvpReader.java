@@ -123,8 +123,26 @@ public class GetFeatureInfoKvpReader extends KvpRequestReader {
         Version version = wms.negotiateVersion(request.getVersion()); 
         request.setVersion(version.toString());
         
-        String colPixel = WMS.VERSION_1_1_1.equals(version) ? "X" : "I";
-        String rowPixel = WMS.VERSION_1_1_1.equals(version) ? "Y" : "J";
+        //JD: most wms 1.3 client implementations still use x/y rather than i/j, so we support those
+        // too when i/j not specified when not running in strict cite compliance mode
+        String colPixel, rowPixel;
+        if(WMS.VERSION_1_3_0.compareTo(version) >= 0) {
+            colPixel = "I";
+            rowPixel = "J";
+            
+            if (!kvp.containsKey(colPixel) && !kvp.containsKey(rowPixel)) { 
+                if (!wms.getServiceInfo().isCiteCompliant() && kvp.containsKey("X") 
+                    && kvp.containsKey("Y")) {
+                    colPixel = "X";
+                    rowPixel = "Y"; 
+                }
+            }
+        }
+        else {
+            colPixel = "X";
+            rowPixel = "Y";
+        }
+        
         try {
             String colParam = String.valueOf(kvp.get(colPixel));
             String rowParam = String.valueOf(kvp.get(rowPixel));
