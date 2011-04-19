@@ -209,5 +209,11 @@
         <module>sfs</module>
       </modules>
     </profile>
+    <profile>      
+      <id>teradata</id>
+      <modules>
+        <module>teradata</module>
+      </modules>
+    </profile>
   </profiles>
 </project>
