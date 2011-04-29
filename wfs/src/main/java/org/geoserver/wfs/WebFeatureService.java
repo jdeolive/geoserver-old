@@ -47,7 +47,7 @@ public interface WebFeatureService {
      */
     TransformerBase getCapabilities(GetCapabilitiesType request)
         throws WFSException;
-
+    
     /**
      * WFS DescribeFeatureType operation.
      *

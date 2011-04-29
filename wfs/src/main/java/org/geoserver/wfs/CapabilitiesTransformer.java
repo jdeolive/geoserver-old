@@ -34,18 +34,17 @@ import org.geoserver.ows.URLMangler.URLType;
 import org.geoserver.ows.xml.v1_0.OWS;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.ServiceException;
+import org.geoserver.wfs.CapabilitiesTransformer.WFS1_1.CapabilitiesTranslator1_1;
 import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.factory.FactoryRegistry;
-import org.geotools.filter.FunctionExpression;
 import org.geotools.filter.FunctionFactory;
 import org.geotools.filter.v1_0.OGC;
+import org.geotools.filter.v2_0.FES;
 import org.geotools.gml3.GML;
 import org.geotools.xlink.XLINK;
 import org.geotools.xml.transform.TransformerBase;
 import org.geotools.xml.transform.Translator;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.capability.FunctionName;
-import org.opengis.filter.expression.Function;
 import org.vfny.geoserver.global.FeatureTypeInfoTitleComparator;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.AttributesImpl;
@@ -149,11 +148,76 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
         return sortedFunctions;
     }
     
+    String[] getAvailableOutputFormatNames(String first) {
+        List<String> oflist = new ArrayList<String>();
+        Collection featureProducers = GeoServerExtensions.extensions(WFSGetFeatureOutputFormat.class);
+        for (Iterator i = featureProducers.iterator(); i.hasNext();) {
+            WFSGetFeatureOutputFormat format = (WFSGetFeatureOutputFormat) i.next();
+            for ( Iterator f = format.getOutputFormats().iterator(); f.hasNext(); ) {
+                oflist.add(f.next().toString());
+            }
+        }
+        Collections.sort(oflist);
+        if(oflist.contains(first)) {
+            oflist.remove(first);
+            oflist.add(0, first);
+        }
+        return (String[]) oflist.toArray(new String[oflist.size()]);
+    }
+    
+    void updateSequence(AttributesImpl attributes) {
+        attributes.addAttribute("", "updateSequence", "updateSequence", "", 
+                wfs.getGeoServer().getGlobal().getUpdateSequence() + "");
+    }
+
+    void registerNamespaces(AttributesImpl attributes) {
+        List<NamespaceInfo> namespaces = catalog.getNamespaces();
+        for (NamespaceInfo namespace : namespaces) {
+            String prefix = namespace.getPrefix();
+            String uri = namespace.getURI();
+
+            //ignore xml prefix
+            if ("xml".equals(prefix)) {
+                continue;
+            }
+
+            String prefixDef = "xmlns:" + prefix;
+
+            attributes.addAttribute("", prefixDef, prefixDef, "", uri);
+        }
+    }
+    
+    AttributesImpl attributes(String[] nameValues) {
+        AttributesImpl atts = new AttributesImpl();
+
+        for (int i = 0; i < nameValues.length; i += 2) {
+            String name = nameValues[i];
+            String valu = nameValues[i + 1];
+
+            atts.addAttribute(null, null, name, null, valu);
+        }
+
+        return atts;
+    }
+
+    Map.Entry parameter(final String name, final String[] values) {
+        return new Map.Entry() {
+                public Object getKey() {
+                    return name;
+                }
+
+                public Object getValue() {
+                    return values;
+                }
+
+                public Object setValue(Object value) {
+                    return null;
+                }
+            };
+    }
+    
     /**
      * Transformer for wfs 1.0 capabilities document.
-     *
-     * @author Justin Deoliveira, The Open Planning Project
-     *
      */
     public static class WFS1_0 extends CapabilitiesTransformer {
         public WFS1_0(WFSInfo wfs, Catalog catalog) {
@@ -759,9 +823,6 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
 
     /**
      * Transformer for wfs 1.1 capabilities document.
-     *
-     * @author Justin Deoliveira, The Open Planning Project
-     *
      */
     public static class WFS1_1 extends CapabilitiesTransformer {
         public WFS1_1(WFSInfo wfs, Catalog catalog) {
@@ -796,23 +857,8 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                                         (buildSchemaURL(request.getBaseUrl(), "wfs/1.1.0/wfs.xsd")))
                             });
 
-                List<NamespaceInfo> namespaces = catalog.getNamespaces();
-                for (NamespaceInfo namespace : namespaces) {
-                    String prefix = namespace.getPrefix();
-                    String uri = namespace.getURI();
-
-                    //ignore xml prefix
-                    if ("xml".equals(prefix)) {
-                        continue;
-                    }
-
-                    String prefixDef = "xmlns:" + prefix;
-
-                    attributes.addAttribute("", prefixDef, prefixDef, "", uri);
-                }
-                
-                attributes.addAttribute("", "updateSequence", "updateSequence", "", 
-                        wfs.getGeoServer().getGlobal().getUpdateSequence() + "");
+                registerNamespaces(attributes);
+                updateSequence(attributes);
 
                 start("wfs:WFS_Capabilities", attributes);
 
@@ -1080,20 +1126,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
             }
 
             private String[] getoutputFormatNames() {
-                List<String> oflist = new ArrayList<String>();
-                Collection featureProducers = GeoServerExtensions.extensions(WFSGetFeatureOutputFormat.class);
-                for (Iterator i = featureProducers.iterator(); i.hasNext();) {
-                    WFSGetFeatureOutputFormat format = (WFSGetFeatureOutputFormat) i.next();
-                    for ( Iterator f = format.getOutputFormats().iterator(); f.hasNext(); ) {
-                        oflist.add(f.next().toString());
-                    }
-                }
-                Collections.sort(oflist);
-                if(oflist.contains(GML_3_1_1_FORMAT)) {
-                    oflist.remove(GML_3_1_1_FORMAT);
-                    oflist.add(0, GML_3_1_1_FORMAT);
-                }
-                return (String[]) oflist.toArray(new String[oflist.size()]);
+                return getAvailableOutputFormatNames(GML_3_1_1_FORMAT);
             }
 
             /**
@@ -1192,6 +1225,16 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
 
                 end("Operations");
                 
+                featureTypes();
+
+                end("FeatureTypeList");
+            }
+
+            void featureTypes() {
+                featureTypes(true, "urn:x-ogc:def:crs:", request.getNamespace());
+            }
+            
+            void featureTypes(boolean crs, String srsPrefix, String namespace) {
                 List featureTypes = new ArrayList(catalog.getFeatureTypes());
                 
                 // filter out disabled feature types
@@ -1202,8 +1245,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 }
                 
                 // filter the layers if a namespace filter has been set
-                if(request.getNamespace() != null) {
-                    String namespace = request.getNamespace();
+                if(namespace != null) {
                     for (Iterator it = featureTypes.iterator(); it.hasNext();) {
                         FeatureTypeInfo ft = (FeatureTypeInfo) it.next();
                         if(!namespace.equals(ft.getNamespace().getPrefix()))
@@ -1215,10 +1257,8 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 for (Iterator i = featureTypes.iterator(); i.hasNext();) {
                     FeatureTypeInfo featureType = (FeatureTypeInfo) i.next();
                     if(featureType.enabled())
-                        featureType(featureType);
+                        featureType(featureType, crs, srsPrefix);
                 }
-
-                end("FeatureTypeList");
             }
 
             /**
@@ -1311,7 +1351,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                  * </p>
                  * @param featureType
                  */
-            void featureType(FeatureTypeInfo featureType) {
+            void featureType(FeatureTypeInfo featureType, boolean crs, String srsPrefix) {
                 String prefix = featureType.getNamespace().getPrefix();
                 String uri = featureType.getNamespace().getURI();
 
@@ -1323,8 +1363,14 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 keywords(featureType.getKeywords());
 
                 //default srs
-                //element("DefaultSRS", "urn:x-ogc:def:crs:EPSG:6.11.2:" + featureType.getSRS());
-                element("DefaultSRS", "urn:x-ogc:def:crs:" + featureType.getSRS());
+                if (crs) {
+                    //wfs 2.0
+                    element("DefaultCRS", srsPrefix + featureType.getSRS());
+                }
+                else {
+                    element("DefaultSRS", srsPrefix + featureType.getSRS());    
+                }
+                
                 //TODO: other srs's
 
                 Envelope bbox = null;
@@ -1339,7 +1385,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
 
                 end("FeatureType");
             }
-
+            
             /**
                  * Encodes the wfs:SupportsGMLObjectTypeList element.
                  *        <p>
@@ -1501,6 +1547,13 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
             }
 
             /**
+             * @see {@link #operation(String, java.util.Map.Entry[], java.util.Map.Entry[], boolean, boolean)}
+             */
+            void operation(String name, Map.Entry[] parameters, boolean get, boolean post) {
+               operation(name,parameters,null,get,post);
+            }
+            
+            /**
              * Encodes the ows:Operation element.
              * <p>
              * <pre>
@@ -1541,24 +1594,13 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
              * @param get
              * @param post
              */
-            void operation(String name, Map.Entry[] parameters, Map.Entry[] constraints, boolean get, boolean post) { 
+            void operation(String name, Map.Entry[] parameters, Map.Entry[] constraints, boolean get, boolean post) {
                 start("ows:Operation", attributes(new String[] { "name", name }));
 
-                //dcp
-                start("ows:DCP");
-                start("ows:HTTP");
-                
                 String serviceURL = buildURL(request.getBaseUrl(), "wfs", null, URLType.SERVICE);
-                if (get) {
-                    element("ows:Get", null, attributes(new String[] { "xlink:href", serviceURL}));
-                }
-
-                if (post) {
-                    element("ows:Post", null, attributes(new String[] { "xlink:href", serviceURL}));
-                }
-
-                end("ows:HTTP");
-                end("ows:DCP");
+                
+                //dcp
+                dcp(serviceURL, get, post);
 
                 //parameters
                 for (int i = 0; i < parameters.length; i++) {
@@ -1591,41 +1633,287 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 end("ows:Operation");
             }
             
-            /**
-             * @see {@link #operation(String, java.util.Map.Entry[], java.util.Map.Entry[], boolean, boolean)}
-             */
-            void operation(String name, Map.Entry[] parameters, boolean get, boolean post) {
-               operation(name,parameters,null,get,post);
-            }
-
-            AttributesImpl attributes(String[] nameValues) {
-                AttributesImpl atts = new AttributesImpl();
-
-                for (int i = 0; i < nameValues.length; i += 2) {
-                    String name = nameValues[i];
-                    String valu = nameValues[i + 1];
-
-                    atts.addAttribute(null, null, name, null, valu);
+            void dcp(String serviceURL, boolean get, boolean post) {
+                start("ows:DCP");
+                start("ows:HTTP");
+                
+                
+                if (get) {
+                    element("ows:Get", null, attributes(new String[] { "xlink:href", serviceURL}));
                 }
 
-                return atts;
-            }
+                if (post) {
+                    element("ows:Post", null, attributes(new String[] { "xlink:href", serviceURL}));
+                }
 
-            Map.Entry parameter(final String name, final String[] values) {
-                return new Map.Entry() {
-                        public Object getKey() {
-                            return name;
-                        }
-
-                        public Object getValue() {
-                            return values;
-                        }
-
-                        public Object setValue(Object value) {
-                            return null;
-                        }
-                    };
+                end("ows:HTTP");
+                end("ows:DCP");
             }
         }
+    }
+
+    /**
+     * Transformer for wfs 2.0 capabilities document.
+     */
+    public static class WFS2_0 extends CapabilitiesTransformer {
+        /** wfs namespace uri */
+        static String WFS20_URI = "http://www.opengis.net/wfs/2.0";
+        /** gml 3.2 mime type */
+        static final String GML32_FORMAT = "text/xml; subtype=gml/3.2";
+        
+        /** filter namespace + prefix */
+        protected static final String FES_PREFIX = "fes";
+        protected static final String FES_URI = FES.NAMESPACE;
+        
+        public WFS2_0(WFSInfo wfs, Catalog catalog) {
+            super(wfs, catalog);
+        }
+        
+        @Override
+        public Translator createTranslator(ContentHandler handler) {
+            return new CapabilitiesTranslator2_0(handler);
+        }
+        
+        class CapabilitiesTranslator2_0 extends TranslatorSupport {
+
+            net.opengis.wfs20.GetCapabilitiesType request;
+            WFS1_1.CapabilitiesTranslator1_1 delegate;
+            
+            public CapabilitiesTranslator2_0(ContentHandler handler) {
+                super(handler, null, null);
+                
+                //wfs 1.1 already does a lot of the capabilities work, use that transformer 
+                // as a delegate
+                delegate = 
+                    (CapabilitiesTranslator1_1) new WFS1_1(wfs, catalog).createTranslator(handler);
+            }
+
+            public void encode(Object o) throws IllegalArgumentException {
+                request = (net.opengis.wfs20.GetCapabilitiesType) o;
+                
+                AttributesImpl attributes = attributes(new String[] { "version", "2.0.0", 
+                    "xmlns:xsi", XSI_URI, "xmlns", WFS20_URI, "xmlns:wfs", WFS20_URI, 
+                    "xmlns:ows", org.geotools.ows.v1_1.OWS.NAMESPACE, 
+                    "xmlns:gml", org.geotools.gml3.v3_2.GML.NAMESPACE,
+                    "xmlns:fes", FES_URI, "xmlns:xlink", XLINK.NAMESPACE,
+                    "xsi:schemaLocation", WFS20_URI + " " +
+                        (wfs.isCanonicalSchemaLocation()?
+                                org.geoserver.wfs.xml.v1_1_0.WFS.CANONICAL_SCHEMA_LOCATION:
+                                    (buildSchemaURL(request.getBaseUrl(), "wfs/2.0.0/wfs.xsd")))
+                });
+
+                registerNamespaces(attributes);
+                updateSequence(attributes);
+
+                start("wfs:WFS_Capabilities", attributes);
+
+                delegate.serviceIdentification();
+                delegate.serviceProvider(wfs.getGeoServer());
+                operationsMetadata();
+                featureTypeList();
+                filterCapabilities();
+
+                end("wfs:WFS_Capabilities");
+            }
+            
+            
+
+            void operationsMetadata() {
+                start("ows:OperationsMetadata");
+
+                getCapabilities();
+                describeFeatureType();
+                getFeature();
+
+//                getGmlObject();
+//                
+//                if (wfs.getServiceLevel().contains( WFSInfo.ServiceLevel.COMPLETE )) {
+//                    lockFeature();
+//                    getFeatureWithLock();
+//                }
+//
+//                if (wfs.getServiceLevel().contains( WFSInfo.ServiceLevel.TRANSACTIONAL) ) {
+//                    transaction();
+//                }
+
+                end("ows:OperationsMetadata");
+            }
+            
+            void operation(String name, Map.Entry[] parameters, boolean get, boolean post) {
+                start("ows:Operation", attributes(new String[] { "name", name }));
+
+                String serviceURL = buildURL(request.getBaseUrl(), "wfs", null, URLType.SERVICE);
+                
+                //dcp
+                delegate.dcp(serviceURL, get, post);
+
+                //parameters
+                for (int i = 0; parameters != null && i < parameters.length; i++) {
+                    String pname = (String) parameters[i].getKey();
+                    String[] pvalues = (String[]) parameters[i].getValue();
+
+                    start("ows:Parameter", attributes(new String[] { "name", pname }));
+                    start("ows:AllowedValues");
+                    
+                    for (int j = 0; j < pvalues.length; j++) {
+                        element("ows:Value", pvalues[j]);
+                    }
+                    end("ows:AllowedValues");
+                    end("ows:Parameter");
+                }
+                
+                end("ows:Operation");
+            }
+            
+            /**
+             * Encodes the GetCapabilities ows:Operation element.
+             */
+            void getCapabilities() {
+                Map.Entry[] parameters = new Map.Entry[] {
+                    parameter("AcceptVersions", new String[] { "1.0.0", "1.1.0", "2.0.0" }),
+                    parameter("AcceptFormats", new String[] { "text/xml" })
+                };
+                operation("GetCapabilities", parameters, true, true);
+            }
+            
+            /**
+             * Encodes the DescribeFeatureType ows:Operation element.
+             */
+            void describeFeatureType() {
+                Map.Entry[] parameters = new Map.Entry[] {
+                    parameter("outputFormat", new String[] { GML32_FORMAT })
+                };
+
+                operation("DescribeFeatureType", parameters, true, true);
+            }
+            
+            /**
+             * Encodes the GetFeature ows:Operation element.
+             */
+            void getFeature() {
+                String[] oflist = getAvailableOutputFormatNames(GML32_FORMAT);
+                Map.Entry[] parameters = new Map.Entry[] {
+                    parameter("resultType", new String[] { "results", "hits" }),
+                    parameter("outputFormat", oflist)
+                };
+                    
+//                Map.Entry[] constraints = new Map.Entry[] {
+//                    parameter("LocalTraverseXLinkScope", new String[]{ "2" } )
+//                };
+                
+                operation("GetFeature", parameters, true, true);
+            }
+            
+            void featureTypeList() {
+                start("FeatureTypeList");
+                
+                //TODO: namespace filtering
+                delegate.featureTypes(true, "urn:ogc:def:crs:", request.getNamespace());
+                end("FeatureTypeList");
+            }
+            
+            void filterCapabilities() {
+                start("fes:Filter_Capabilities");
+                start("fes:Conformance");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsQuery"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "TRUE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name","ImplementsAdHocQuery"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "TRUE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsFunctions"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "TRUE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsMinStandardFilter"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "TRUE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsStandardFilter"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "FALSE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsMinSpatialFilter"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "TRUE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsSpatialFilter"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "FALSE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsMinTemporalFilter"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "FALSE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsTemporalFilter"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "FALSE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsVersionNav"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "FALSE");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsSorting"}));
+                      start("ows:PossibleValues");
+                        element("ows:Value", "ASC");
+                        element("ows:Value", "DESC");
+                      end("ows:PossibleValues");
+                      element("ows:DefaultValue", "ASC");
+                   end("fes:Constraint");
+                   start("fes:Constraint", attributes(new String[]{"name", "ImplementsExtendedOperators"}));
+                      element("ows:NoValues", null);
+                      element("ows:DefaultValue", "FALSE");
+                   end("fes:Constraint");
+               end("fes:Conformance");
+               
+               start("fes:Id_Capabilities");
+                  element("fes:ResourceIdentifier", null, attributes(new String[]{"name", "fes:ResourceId"}));
+               end("fes:Id_Capabilities");
+               
+               start("fes:Spatial_Capabilities");
+                 start("fes:GeometryOperands");
+                   element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:Envelope"}));
+                   element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:Point"}));
+                   element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:LineString"}));
+                   element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:Polygon"}));
+                 end("fes:GeometryOperands");
+                 start("fes:SpatialOperators");
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "Disjoint" }));
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "Equals" }));
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "DWithin" }));
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "Beyond" }));
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "Intersects" }));
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "Touches" }));
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "Crosses" }));
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "Contains" }));
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "Overlaps" }));
+                   element("fes:SpatialOperator", null, attributes(new String[] { "name", "BBOX" }));
+                 end("fes:SpatialOperators");
+               end("fes:Spatial_Capabilities");
+
+               start("fes:Functions");
+               
+               for (FunctionName fn : getAvailableFunctionNames()) {
+                   start("fes:Function", attributes(new String[] { "name", fn.getName() }));
+                   //TODO: return type
+                   if (!fn.getArgumentNames().isEmpty()) {
+                       start("fes:Arguments");
+                       for (String arg : fn.getArgumentNames()) {
+                           element("fes:Argument", null, attributes(new String[]{"name", arg}));
+                           //TODO: argument Type is mandatory
+                       }
+                       end("fes:Arguments");
+                   }
+                   end("fes:Function");
+               }
+               
+               end("fes:Functions");
+               
+             end("fes:Filter_Capabilities");
+            }
+        }
+        
     }
 }

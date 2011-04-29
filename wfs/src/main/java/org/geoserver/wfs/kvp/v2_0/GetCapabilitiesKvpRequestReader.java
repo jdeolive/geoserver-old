@@ -2,16 +2,13 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-package org.geoserver.wfs.kvp;
+package org.geoserver.wfs.kvp.v2_0;
 
 import java.util.Map;
 
 import org.geoserver.wfs.RequestObjectHandler;
 
-import net.opengis.ows10.AcceptVersionsType;
-import net.opengis.ows10.Ows10Factory;
-import net.opengis.wfs.GetCapabilitiesType;
-
+import net.opengis.wfs20.GetCapabilitiesType;
 
 public class GetCapabilitiesKvpRequestReader extends WFSKvpRequestReader {
     public GetCapabilitiesKvpRequestReader() {
@@ -20,18 +17,12 @@ public class GetCapabilitiesKvpRequestReader extends WFSKvpRequestReader {
 
     public Object read(Object request, Map kvp, Map rawKvp) throws Exception {
         request = super.read(request, kvp, rawKvp);
-
+        
         //set the version attribute on the request
         if (kvp.containsKey("version")) {
-            new RequestObjectHandler.WFS_11().setAcceptVersions(request, (String)kvp.get("version"));
-//            AcceptVersionsType acceptVersions = Ows10Factory.eINSTANCE
-//                .createAcceptVersionsType();
-//            acceptVersions.getVersion().add(kvp.get("version"));
-//
-//            GetCapabilitiesType getCapabilities = (GetCapabilitiesType) request;
-//            getCapabilities.setAcceptVersions(acceptVersions);
+            new RequestObjectHandler.WFS_20().setAcceptVersions(request, (String)kvp.get("version"));
         }
-
+        
         return request;
     }
 }

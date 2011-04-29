@@ -80,9 +80,9 @@ public class DefaultWebFeatureService implements WebFeatureService, ApplicationC
      */
     public TransformerBase getCapabilities(GetCapabilitiesType request)
         throws WFSException {
-        return new GetCapabilities(getServiceInfo(), catalog).run(request);
+        return new GetCapabilities(getServiceInfo(), catalog, handler()).run(request);
     }
-
+    
     /**
      * WFS DescribeFeatureType operation.
      *
@@ -192,5 +192,9 @@ public class DefaultWebFeatureService implements WebFeatureService, ApplicationC
     public void setApplicationContext(ApplicationContext context)
         throws BeansException {
         this.context = context;
+    }
+    
+    RequestObjectHandler handler() {
+        return new RequestObjectHandler.WFS_11();
     }
 }

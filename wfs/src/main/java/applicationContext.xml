@@ -19,6 +19,9 @@
 		<constructor-arg ref="geoServer"/>
 		<property name="filterFactory" ref="filterFactory"/>
 	</bean>
+    <bean id="wfsService20Target" class="org.geoserver.wfs.DefaultWebFeatureService20">
+        <constructor-arg ref="geoServer"/>
+    </bean>
 
     <bean id="wfsLogger" class="org.geoserver.ows.util.EMFLogger">
       <constructor-arg type="java.lang.String" value="org.geoserver.wfs"/>
@@ -34,7 +37,18 @@
 	  	</list>
 	  </property>
 	</bean>
-  
+    <bean id="wfsService20" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+        <value>org.geoserver.wfs.WebFeatureService20</value>
+      </property>
+      <property name="interceptorNames">
+        <list>
+            <value>wfsLogger</value>
+            <value>wfsService20Target</value>
+        </list>
+      </property>
+    </bean>
+
     <!-- Transaction element handlers -->
     <bean id="wfsInsertElementHandler" class="org.geoserver.wfs.InsertElementHandler">
       <constructor-arg ref="geoServer"/>
@@ -85,6 +99,23 @@
           </list>
         </constructor-arg>
 	</bean>
+	
+    <bean id="wfsService-2.0" class="org.geoserver.platform.Service">
+        <constructor-arg index="0" value="wfs"/>
+        <constructor-arg index="1" ref="wfsService20"/>
+        <constructor-arg index="2" value="2.0.0"/>
+        <constructor-arg index="3">
+          <list>
+            <value>GetCapabilities</value>
+            <!--value>DescribeFeatureType</value>
+            <value>GetGmlObject</value>
+            <value>GetFeature</value>
+            <value>GetFeatureWithLock</value>
+            <value>LockFeature</value>
+            <value>Transaction</value-->
+          </list>
+        </constructor-arg>
+    </bean>
 	
 	<!-- service exception handler -->
 	<bean id="wfsExceptionHandler" class="org.geoserver.wfs.response.WfsExceptionHandler">
@@ -260,8 +291,11 @@
     
 	<!-- kvp request readers -->
 	<bean id="wfsGetCapabilitiesKvpReader"  
-		class="org.geoserver.wfs.kvp.GetCapabilitiesKvpRequestReader"/>
+        class="org.geoserver.wfs.kvp.GetCapabilitiesKvpRequestReader"/>
 
+    <bean id="wfs20GetCapabilitiesKvpReader"  
+        class="org.geoserver.wfs.kvp.v2_0.GetCapabilitiesKvpRequestReader"/>
+        
   <bean id="describeFeatureTypeKvpReader" class="org.geoserver.wfs.kvp.DescribeFeatureTypeKvpRequestReader">
     <constructor-arg ref="catalog" />
   </bean>
@@ -341,6 +375,14 @@
 	    <constructor-arg value="GetGmlObject"/>
 	</bean>
 	
+	<!-- 2.0 xml readers -->
+	<bean id="xmlReader-2.0" class="org.geoserver.wfs.xml.v2_0.WfsXmlReader" abstract="true">
+        <constructor-arg ref="geoServer"/>
+    </bean>
+    <bean id="wfsGetCapabilitiesXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg type="java.lang.String" value="GetCapabilities"/>
+    </bean>
+    
 	<!-- default feature type encoders -->
 	<bean id="gml2FeatureTypeEncoder" 
 		class="org.geoserver.wfs.xml.v1_1_0.XmlSchemaEncoder$V10">

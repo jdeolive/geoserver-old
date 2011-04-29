@@ -76,6 +76,11 @@ public abstract class WFSTestSupport extends GeoServerTestSupport {
         namespaces.put("xsi", "http://www.w3.org/2001/XMLSchema-instance");
         
         getTestData().registerNamespaces(namespaces);
+        setUpNamespaces(namespaces);
+        
         XMLUnit.setXpathNamespaceContext(new SimpleNamespaceContext(namespaces));
+    }
+    
+    protected void setUpNamespaces(Map<String,String> namespaces) {
     }
 }
