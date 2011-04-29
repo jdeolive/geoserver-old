@@ -107,8 +107,8 @@
         <constructor-arg index="3">
           <list>
             <value>GetCapabilities</value>
-            <!--value>DescribeFeatureType</value>
-            <value>GetGmlObject</value>
+            <value>DescribeFeatureType</value>
+            <!--value>GetGmlObject</value>
             <value>GetFeature</value>
             <value>GetFeatureWithLock</value>
             <value>LockFeature</value>
@@ -239,6 +239,12 @@
     <property name="version"><value>1.1.0</value></property>
     <property name="request"><value>DescribeFeatureType</value></property>
   </bean>
+  <bean id="dft20NamespaceKvpParser" class="org.geoserver.wfs.kvp.NamespaceKvpParser">
+    <constructor-arg value="namespace"/>
+    <property name="service"><value>WFS</value></property>
+    <property name="version"><value>2.0.0</value></property>
+    <property name="request"><value>DescribeFeatureType</value></property>
+  </bean>
   
 	<bean id="featureIdKvpParser" class="org.geoserver.ows.FlatKvpParser">
 		<constructor-arg index="0" value="featureId"/>
@@ -300,6 +306,10 @@
         class="org.geoserver.wfs.kvp.v2_0.GetCapabilitiesKvpRequestReader"/>
         
   <bean id="describeFeatureTypeKvpReader" class="org.geoserver.wfs.kvp.DescribeFeatureTypeKvpRequestReader">
+    <constructor-arg ref="catalog" />
+  </bean>
+  
+  <bean id="describeFeature20TypeKvpReader" class="org.geoserver.wfs.kvp.v2_0.DescribeFeatureTypeKvpRequestReader">
     <constructor-arg ref="catalog" />
   </bean>
 
@@ -384,6 +394,9 @@
     </bean>
     <bean id="wfsGetCapabilitiesXmlReader-2.0" parent="xmlReader-2.0">
         <constructor-arg type="java.lang.String" value="GetCapabilities"/>
+    </bean>
+    <bean id="describeFeatureTypeXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="DescribeFeatureType"/>
     </bean>
     
 	<!-- default feature type encoders -->

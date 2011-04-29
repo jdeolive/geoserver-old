@@ -51,7 +51,7 @@ public class GetCapabilities {
     }
     
     /**
-     * Creates a new wfs 1.0/1.1 GetCapabilitis operation specifying the request object handler.
+     * Creates a new wfs GetCapabilitis operation specifying the request object handler.
      *
      */
     public GetCapabilities(WFSInfo wfs, Catalog catalog, RequestObjectHandler handler) {

@@ -6,6 +6,8 @@ package org.geoserver.wfs.xml.v1_1_0;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import net.opengis.wfs.DescribeFeatureTypeType;
 
@@ -18,6 +20,7 @@ import org.geoserver.config.GeoServerInfo;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
+import org.geoserver.wfs.RequestObjectHandler;
 import org.geoserver.wfs.WFSDescribeFeatureTypeOutputFormat;
 import org.geoserver.wfs.xml.FeatureTypeSchemaBuilder;
 import org.geotools.xml.Schemas;
@@ -42,6 +45,15 @@ public class XmlSchemaEncoder extends WFSDescribeFeatureTypeOutputFormat {
         this.resourceLoader = catalog.getResourceLoader();
         this.schemaBuilder = schemaBuilder;
     }
+    
+    public XmlSchemaEncoder(Set<String> mimeTypes, GeoServer gs, FeatureTypeSchemaBuilder schemaBuilder) {
+        super(gs, mimeTypes);
+        
+       
+        this.catalog = gs.getCatalog();
+        this.resourceLoader = catalog.getResourceLoader();
+        this.schemaBuilder = schemaBuilder;
+    }
 
     public String getMimeType(Object value, Operation operation)
         throws ServiceException {
@@ -53,10 +65,13 @@ public class XmlSchemaEncoder extends WFSDescribeFeatureTypeOutputFormat {
         Operation describeFeatureType) throws IOException {
         
         GeoServerInfo global = gs.getGlobal();
+
         //create the schema
-        DescribeFeatureTypeType req = (DescribeFeatureTypeType)describeFeatureType.getParameters()[0];
-        XSDSchema schema = schemaBuilder.build(featureTypeInfos, req.getBaseUrl());
-    
+        Object request = describeFeatureType.getParameters()[0];
+        RequestObjectHandler h = RequestObjectHandler.get(request);
+        
+        XSDSchema schema = schemaBuilder.build(featureTypeInfos, h.getBaseURL(request));
+
         //serialize
         schema.updateElement();
         final String encoding = global.getCharset();
@@ -64,9 +79,13 @@ public class XmlSchemaEncoder extends WFSDescribeFeatureTypeOutputFormat {
     }
     
     public static class V20 extends XmlSchemaEncoder {
-
+        static Set<String> MIME_TYPES = new LinkedHashSet<String>();
+        static {
+            MIME_TYPES.add("text/xml; subtype=gml/3.2");
+            MIME_TYPES.add("application/gml+xml; version=3.2");
+        }
         public V20(GeoServer gs) {
-            super("text/xml; subtype=gml/3.2", gs, new FeatureTypeSchemaBuilder.GML32(gs));
+            super(MIME_TYPES, gs, new FeatureTypeSchemaBuilder.GML32(gs));
         }
         
     }

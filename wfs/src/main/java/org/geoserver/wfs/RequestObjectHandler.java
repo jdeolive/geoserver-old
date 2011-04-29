@@ -7,6 +7,8 @@ package org.geoserver.wfs;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.xml.namespace.QName;
+
 import net.opengis.ows10.Ows10Factory;
 import net.opengis.ows11.Ows11Factory;
 import net.opengis.wfs20.Wfs20Package;
@@ -30,21 +32,28 @@ public abstract class RequestObjectHandler {
         return new WFS_11();
     }
     
+    //
+    //common properties
+    //
     public String getBaseURL(Object request) {
         return eGet(request, "baseUrl", String.class);
     }
     
     public String getVersion(Object request) {
-        return eGet(request, "verison", String.class);
-    }
-    
-    public String getUpdateSequence(Object request) {
-        return eGet(request, "updateSequence", String.class);
+        return eGet(request, "version", String.class);
     }
     
     public boolean isSetService(Object request) {
         return eIsSet(request, "service");
     }
+    
+    //
+    //GetCapabilities
+    //
+    public String getUpdateSequence(Object request) {
+        return eGet(request, "updateSequence", String.class);
+    }
+    
     
     public List<String> getAcceptVersions(Object request) {
         return eGet(request, "acceptVersions.version", List.class);
@@ -57,6 +66,32 @@ public abstract class RequestObjectHandler {
         eSet(request, "acceptVersions", acceptedVersions);
     }
     
+    //
+    // DescribeFeatureType
+    //
+    public List<QName> getTypeNames(Object request) {
+        return eGet(request, "typeName", List.class);
+    }
+    
+    public void setTypeNames(Object request, List<QName> typeNames) {
+        List l = eGet(request, "typeName", List.class);
+        l.clear();
+        l.addAll(typeNames);
+    }
+    
+    public boolean isSetOutputFormat(Object request) {
+        return eIsSet(request, "outputFormat");
+    }
+    
+    public void setOutputFormat(Object request, String outputFormat) {
+        eSet(request, "outputFormat", outputFormat);
+    }
+    
+    
+    
+    //
+    // helpers
+    //
     <T> T eGet(Object obj, String property, Class<T> type) {
         String[] props = property.split("\\.");
         for (String prop : props) {
