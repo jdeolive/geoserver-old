@@ -33,7 +33,7 @@ import com.vividsolutions.jts.geom.Point;
 public class CSVOutputFormatTest extends WFSTestSupport {
 
     public void testFullRequest() throws Exception {
-        MockHttpServletResponse resp = getAsServletResponse("wfs?request=GetFeature&typeName=sf:PrimitiveGeoFeature&outputFormat=csv");
+        MockHttpServletResponse resp = getAsServletResponse("wfs?version=1.1.0&request=GetFeature&typeName=sf:PrimitiveGeoFeature&outputFormat=csv");
         
         FeatureSource fs = getFeatureSource(MockData.PRIMITIVEGEOFEATURE);
         

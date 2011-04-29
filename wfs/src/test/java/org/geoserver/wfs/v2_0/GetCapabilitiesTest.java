@@ -1,7 +1,8 @@
-package org.geoserver.wfs;
+package org.geoserver.wfs.v2_0;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import junit.framework.Test;
@@ -12,11 +13,14 @@ import org.custommonkey.xmlunit.XpathEngine;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.data.test.MockData;
 import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.wfs.WFSGetFeatureOutputFormat;
+import org.geoserver.wfs.WFSTestSupport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-public class GetCapabilitiesTest extends WFSTestSupport {
+public class GetCapabilitiesTest extends WFS20TestSupport {
+    
     /**
      * This is a READ ONLY TEST so we can use one time setup
      */
@@ -24,24 +28,33 @@ public class GetCapabilitiesTest extends WFSTestSupport {
         return new OneTimeTestSetup(new GetCapabilitiesTest());
     }
     
-    @Override
-    protected void populateDataDirectory(MockData dataDirectory) throws Exception {
-        super.populateDataDirectory(dataDirectory);
-        dataDirectory.disableDataStore(MockData.CITE_PREFIX);
-    }
-    
-
     public void testGet() throws Exception {
-        Document doc = getAsDOM("wfs?service=WFS&version=1.0.0&request=getCapabilities");
-        assertEquals("WFS_Capabilities", doc.getDocumentElement()
+        Document doc = getAsDOM("wfs?service=WFS&request=getCapabilities&version=2.0.0");
+        
+        assertEquals("wfs:WFS_Capabilities", doc.getDocumentElement()
                 .getNodeName());
+        assertEquals("2.0.0", doc.getDocumentElement().getAttribute("version"));
+        
         XpathEngine xpath =  XMLUnit.newXpathEngine();
         assertTrue(xpath.getMatchingNodes("//wfs:FeatureType", doc).getLength() > 0);
     }
     
+    public void testPost() throws Exception {
+        String xml = "<GetCapabilities service=\"WFS\" "
+                + " xmlns=\"http://www.opengis.net/wfs/2.0\" "
+                + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                + " xsi:schemaLocation=\"http://www.opengis.net/wfs/2.0 "
+                + " http://schemas.opengis.net/wfs/2.0/wfs.xsd\"/>";
+
+        Document doc = postAsDOM("wfs", xml);
+        assertEquals("wfs:WFS_Capabilities", doc.getDocumentElement()
+                .getNodeName());
+        assertEquals("2.0.0", doc.getDocumentElement().getAttribute("version"));
+    }
+    
     public void testNamespaceFilter() throws Exception {
         // filter on an existing namespace
-        Document doc = getAsDOM("wfs?service=WFS&version=1.0.0&request=getCapabilities&namespace=sf");
+        Document doc = getAsDOM("wfs?service=WFS&version=2.0.0&request=getCapabilities&namespace=sf");
         Element e = doc.getDocumentElement();
         assertEquals("WFS_Capabilities", e.getLocalName());
         XpathEngine xpath =  XMLUnit.newXpathEngine();
@@ -49,50 +62,61 @@ public class GetCapabilitiesTest extends WFSTestSupport {
         assertEquals(0, xpath.getMatchingNodes("//wfs:FeatureType/wfs:Name[not(starts-with(., sf))]", doc).getLength());
         
         // try again with a missing one
-        doc = getAsDOM("wfs?service=WFS&version=1.0.0&request=getCapabilities&namespace=NotThere");
+        doc = getAsDOM("wfs?service=WFS&request=getCapabilities&namespace=NotThere");
         e = doc.getDocumentElement();
         assertEquals("WFS_Capabilities", e.getLocalName());
         assertEquals(0, xpath.getMatchingNodes("//wfs:FeatureType", doc).getLength());
     }
 
-    public void testPost() throws Exception {
-        String xml = "<GetCapabilities service=\"WFS\" version=\"1.0.0\""
-                + " xmlns=\"http://www.opengis.net/wfs\" "
-                + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-                + " xsi:schemaLocation=\"http://www.opengis.net/wfs "
-                + " http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd\"/>";
-        Document doc = postAsDOM("wfs", xml);
-        
-        assertEquals("WFS_Capabilities", doc.getDocumentElement().getNodeName());
+    public void testPostNoSchemaLocation() throws Exception {
+        String xml = "<GetCapabilities service=\"WFS\" version='2.0.0' "
+                + " xmlns=\"http://www.opengis.net/wfs/2.0\" "
+                + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" />";
 
+        Document doc = postAsDOM("wfs", xml);
+        assertEquals("wfs:WFS_Capabilities", doc.getDocumentElement()
+                .getNodeName());
+        assertEquals("2.0.0", doc.getDocumentElement().getAttribute("version"));
     }
     
     public void testOutputFormats() throws Exception {
-        Document doc = getAsDOM("wfs?service=WFS&request=getCapabilities&version=1.0.0");
+        Document doc = getAsDOM("wfs?service=WFS&request=getCapabilities&version=2.0.0");
         
-        Element outputFormats = getFirstElementByTagName(doc, "ResultFormat");
-        NodeList formats = outputFormats.getChildNodes();
+         print(doc);
+
+        // let's look for the outputFormat parameter values inside of the GetFeature operation metadata
+        XpathEngine engine = XMLUnit.newXpathEngine();
+        NodeList formats = engine.getMatchingNodes(
+                "//ows:Operation[@name=\"GetFeature\"]/ows:Parameter[@name=\"outputFormat\"]/ows:AllowedValues/ows:Value", doc);
         
-        TreeSet s1 = new TreeSet();
+        Set<String> s1 = new TreeSet<String>();
         for ( int i = 0; i < formats.getLength(); i++ ) {
-            String format = formats.item(i).getNodeName();
+            String format = formats.item(i).getFirstChild().getNodeValue();
             s1.add( format );
         }
         
-        List extensions = GeoServerExtensions.extensions( WFSGetFeatureOutputFormat.class );
+        List<WFSGetFeatureOutputFormat> extensions = GeoServerExtensions.extensions( WFSGetFeatureOutputFormat.class );
         
-        TreeSet s2 = new TreeSet();
+        Set<String> s2 = new TreeSet<String>();
         for ( Iterator e = extensions.iterator(); e.hasNext(); ) {
             WFSGetFeatureOutputFormat extension = (WFSGetFeatureOutputFormat) e.next();
-            s2.add( extension.getCapabilitiesElementName() );
+            s2.addAll( extension.getOutputFormats() );
         }
         
         assertEquals( s1, s2 );
     }
+    public void testFunctionArgCount() throws Exception {
+        Document doc = getAsDOM("wfs?service=WFS&request=getCapabilities&version=2.0.0");
+        
+         print(doc);
+
+        // let's check the argument count of "abs" function
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//fes:Function[@name=\"abs\"]/fes:Arguments/fes:Argument)", doc);
+    }
 
     public void testTypeNameCount() throws Exception {
         // filter on an existing namespace
-        Document doc = getAsDOM("wfs?service=WFS&version=1.0.0&request=getCapabilities");
+        Document doc = getAsDOM("wfs?service=WFS&version=2.0.0&request=getCapabilities");
         Element e = doc.getDocumentElement();
         assertEquals("WFS_Capabilities", e.getLocalName());
 
@@ -113,7 +137,7 @@ public class GetCapabilitiesTest extends WFSTestSupport {
 
     public void testTypeNames() throws Exception {
         // filter on an existing namespace
-        Document doc = getAsDOM("wfs?service=WFS&version=1.0.0&request=getCapabilities");
+        Document doc = getAsDOM("wfs?service=WFS&version=2.0.0&request=getCapabilities");
         Element e = doc.getDocumentElement();
         assertEquals("WFS_Capabilities", e.getLocalName());
 
@@ -131,26 +155,9 @@ public class GetCapabilitiesTest extends WFSTestSupport {
         }
     }
     
-    public void testWorkspaceQualified() throws Exception {
-        // filter on an existing namespace
-        Document doc = getAsDOM("sf/wfs?service=WFS&version=1.0.0&request=getCapabilities");
-        
-        Element e = doc.getDocumentElement();
-        assertEquals("WFS_Capabilities", e.getLocalName());
-        
-        XpathEngine xpath =  XMLUnit.newXpathEngine();
-        assertTrue(xpath.getMatchingNodes("//wfs:FeatureType/wfs:Name[starts-with(., sf)]", doc).getLength() > 0);
-        assertEquals(0, xpath.getMatchingNodes("//wfs:FeatureType/wfs:Name[not(starts-with(., sf))]", doc).getLength());
-
-        assertEquals(6, xpath.getMatchingNodes("//wfs:Get[contains(@onlineResource,'sf/wfs')]", doc).getLength());
-        assertEquals(6, xpath.getMatchingNodes("//wfs:Post[contains(@onlineResource,'sf/wfs')]", doc).getLength());
-        
-        //TODO: test with a non existing workspace
-    }
-    
     public void testLayerQualified() throws Exception {
-        // filter on an existing namespace
-        Document doc = getAsDOM("sf/PrimitiveGeoFeature/wfs?service=WFS&version=1.0.0&request=getCapabilities");
+     // filter on an existing namespace
+        Document doc = getAsDOM("sf/PrimitiveGeoFeature/wfs?service=WFS&version=2.0.0&request=getCapabilities");
         
         Element e = doc.getDocumentElement();
         assertEquals("WFS_Capabilities", e.getLocalName());
@@ -159,8 +166,9 @@ public class GetCapabilitiesTest extends WFSTestSupport {
         assertEquals(1, xpath.getMatchingNodes("//wfs:FeatureType/wfs:Name[starts-with(., sf)]", doc).getLength());
         assertEquals(0, xpath.getMatchingNodes("//wfs:FeatureType/wfs:Name[not(starts-with(., sf))]", doc).getLength());
 
-        assertEquals(6, xpath.getMatchingNodes("//wfs:Get[contains(@onlineResource,'sf/PrimitiveGeoFeature/wfs')]", doc).getLength());
-        assertEquals(6, xpath.getMatchingNodes("//wfs:Post[contains(@onlineResource,'sf/PrimitiveGeoFeature/wfs')]", doc).getLength());
+        //TODO: renable assertions when all operations implemented
+        //assertEquals(7, xpath.getMatchingNodes("//ows:Get[contains(@xlink:href,'sf/PrimitiveGeoFeature/wfs')]", doc).getLength());
+        //assertEquals(7, xpath.getMatchingNodes("//ows:Post[contains(@xlink:href,'sf/PrimitiveGeoFeature/wfs')]", doc).getLength());
         
         //TODO: test with a non existing workspace
     }
