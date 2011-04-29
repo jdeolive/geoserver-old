@@ -19,6 +19,7 @@ import javax.xml.namespace.QName;
 
 import net.opengis.wfs.GetFeatureType;
 import net.opengis.wfs.QueryType;
+import net.opengis.wfs.WfsFactory;
 
 import org.eclipse.emf.ecore.EObject;
 import org.geoserver.catalog.Catalog;
@@ -345,19 +346,20 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             return;
         }
 
+        WfsFactory wfsFactory = (WfsFactory) getFactory();
         //match up sizes
         if (m > n) {
             if (n == 0) {
                 //make same size, with empty objects
                 for (int i = 0; i < m; i++) {
-                    query.add(getWfsFactory().createQueryType());
+                    query.add(wfsFactory.createQueryType());
                 }
             } else if (n == 1) {
                 //clone single object up to 
                 EObject q = (EObject) query.get(0);
 
                 for (int i = 1; i < m; i++) {
-                    query.add(EMFUtils.clone(q, getWfsFactory()));
+                    query.add(EMFUtils.clone(q, wfsFactory));
                 }
 
                 return;

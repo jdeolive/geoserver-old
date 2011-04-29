@@ -6,12 +6,12 @@ package org.geoserver.wfs;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Set;
 
 import net.opengis.wfs.FeatureCollectionType;
 
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
-import org.geoserver.ows.Response;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.response.WFSResponse;
@@ -40,6 +40,15 @@ public abstract class WFSDescribeFeatureTypeOutputFormat extends WFSResponse {
         super(gs, FeatureTypeInfo[].class, outputFormat);
     }
 
+    /**
+     * Constructor which sets multiple outputFormats.
+     *
+     * @param outputFormat The well-known name of the format, not <code>null</code>
+     */
+    public WFSDescribeFeatureTypeOutputFormat(GeoServer gs, Set<String> outputFormats) {
+        super(gs, FeatureTypeInfo[].class, outputFormats);
+    }
+    
     /**
      * Ensures that the operation being executed is a DescribeFeatureType operation.
      * <p>

@@ -4,8 +4,10 @@
  */
 package org.geoserver.wfs;
 
+import net.opengis.wfs20.DescribeFeatureTypeType;
 import net.opengis.wfs20.GetCapabilitiesType;
 
+import org.geoserver.catalog.FeatureTypeInfo;
 import org.geotools.xml.transform.TransformerBase;
 
 /**
@@ -34,5 +36,17 @@ public interface WebFeatureService20 {
      * @throws WFSException Any service exceptions.
      */
     TransformerBase getCapabilities(GetCapabilitiesType request)
+        throws WFSException;
+    
+    /**
+     * WFS DescribeFeatureType operation.
+     *
+     * @param request The describe feature type request.
+     *
+     * @return A set of feature type metadata objects.
+     *
+     * @throws WFSException Any service exceptions.
+     */
+    FeatureTypeInfo[] describeFeatureType(DescribeFeatureTypeType request)
         throws WFSException;
 }

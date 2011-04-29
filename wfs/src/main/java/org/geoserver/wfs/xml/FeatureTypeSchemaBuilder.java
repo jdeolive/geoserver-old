@@ -872,9 +872,11 @@ public abstract class FeatureTypeSchemaBuilder {
             XSDImport imprt;
             try {
                 imprt = factory.createXSDImport();
-                imprt.setNamespace( WFS.getInstance().getSchema().getTargetNamespace() );
+                imprt.setNamespace(gmlNamespace);
+                //imprt.setNamespace( WFS.getInstance().getSchema().getTargetNamespace() );
                 imprt.setSchemaLocation(ResponseUtils.buildSchemaURL(baseUrl, gmlSchemaLocation));
-                imprt.setResolvedSchema(WFS.getInstance().getSchema());
+                //imprt.setResolvedSchema(WFS.getInstance().getSchema());
+                imprt.setResolvedSchema( GML.getInstance().getSchema() );
                 schema.getContents().add( imprt );
                 
                 schema.getQNamePrefixToNamespaceMap().put("wfs", WFS.NAMESPACE);

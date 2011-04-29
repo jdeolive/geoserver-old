@@ -4,34 +4,14 @@
  */
 package org.geoserver.wfs.kvp;
 
-import java.util.Map;
+import net.opengis.wfs.GetCapabilitiesType;
+import net.opengis.wfs.WfsFactory;
 
 import org.geoserver.wfs.RequestObjectHandler;
 
-import net.opengis.ows10.AcceptVersionsType;
-import net.opengis.ows10.Ows10Factory;
-import net.opengis.wfs.GetCapabilitiesType;
 
-
-public class GetCapabilitiesKvpRequestReader extends WFSKvpRequestReader {
+public class GetCapabilitiesKvpRequestReader extends GetCapabilitiesKvpRequestReaderBase {
     public GetCapabilitiesKvpRequestReader() {
-        super(GetCapabilitiesType.class);
-    }
-
-    public Object read(Object request, Map kvp, Map rawKvp) throws Exception {
-        request = super.read(request, kvp, rawKvp);
-
-        //set the version attribute on the request
-        if (kvp.containsKey("version")) {
-            new RequestObjectHandler.WFS_11().setAcceptVersions(request, (String)kvp.get("version"));
-//            AcceptVersionsType acceptVersions = Ows10Factory.eINSTANCE
-//                .createAcceptVersionsType();
-//            acceptVersions.getVersion().add(kvp.get("version"));
-//
-//            GetCapabilitiesType getCapabilities = (GetCapabilitiesType) request;
-//            getCapabilities.setAcceptVersions(acceptVersions);
-        }
-
-        return request;
+        super(GetCapabilitiesType.class, WfsFactory.eINSTANCE, new RequestObjectHandler.WFS_11());
     }
 }
