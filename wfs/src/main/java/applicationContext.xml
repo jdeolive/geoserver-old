@@ -108,8 +108,8 @@
           <list>
             <value>GetCapabilities</value>
             <value>DescribeFeatureType</value>
-            <!--value>GetGmlObject</value>
             <value>GetFeature</value>
+            <!--value>GetGmlObject</value>
             <value>GetFeatureWithLock</value>
             <value>LockFeature</value>
             <value>Transaction</value-->
@@ -315,6 +315,11 @@
 		<constructor-arg ref="catalog"/>
 		<constructor-arg ref="filterFactory"/>
 	</bean>
+	<bean id="getFeature20KvpReader" class="org.geoserver.wfs.kvp.v2_0.GetFeatureKvpRequestReader">
+        <constructor-arg value="net.opengis.wfs20.GetFeatureType"/>
+        <constructor-arg ref="catalog"/>
+        <constructor-arg ref="filterFactory"/>
+    </bean>
 	<bean id="getFeatureWithLockKvpReader" class="org.geoserver.wfs.kvp.GetFeatureKvpRequestReader">
 		<constructor-arg value="net.opengis.wfs.GetFeatureWithLockType"/>
 		<constructor-arg ref="catalog"/>

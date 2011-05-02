@@ -21,6 +21,7 @@ import net.opengis.wfs.FeatureCollectionType;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.platform.Operation;
+import org.geoserver.wfs.RequestObjectHandler;
 import org.geoserver.wfs.xml.v1_1_0.WFSConfiguration;
 import org.geotools.wfs.v2_0.WFS;
 import org.geotools.xml.Configuration;
@@ -60,12 +61,12 @@ public class GML32OutputFormat extends GML3OutputFormat {
 
     @Override
     protected Encoder createEncoder(Configuration configuration, 
-        Map<String, Set<FeatureTypeInfo>> featureTypes, BaseRequestType request) {
+        Map<String, Set<FeatureTypeInfo>> featureTypes, Object request) {
         
         FeatureTypeSchemaBuilder schemaBuilder = new FeatureTypeSchemaBuilder.GML32(geoServer);
         
         ApplicationSchemaXSD2 xsd = new ApplicationSchemaXSD2(schemaBuilder, featureTypes);
-        xsd.setBaseURL(request.getBaseUrl());
+        xsd.setBaseURL(RequestObjectHandler.baseURL(request));
         
         ApplicationSchemaConfiguration2 config = new ApplicationSchemaConfiguration2(xsd, 
             new org.geotools.wfs.v2_0.WFSConfiguration());

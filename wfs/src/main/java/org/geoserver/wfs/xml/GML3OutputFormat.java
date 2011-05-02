@@ -38,10 +38,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import net.opengis.wfs.BaseRequestType;
 import net.opengis.wfs.FeatureCollectionType;
-import net.opengis.wfs.GetFeatureType;
-import net.opengis.wfs.QueryType;
 
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
@@ -51,6 +48,7 @@ import org.geoserver.ows.URLMangler.URLType;
 import org.geoserver.ows.util.OwsUtils;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
+import org.geoserver.wfs.RequestObjectHandler;
 import org.geoserver.wfs.WFSException;
 import org.geoserver.wfs.WFSGetFeatureOutputFormat;
 import org.geoserver.wfs.WFSInfo;
@@ -115,17 +113,18 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
             throws ServiceException, IOException, UnsupportedEncodingException {
         List featureCollections = results.getFeature();
 
+        Object request = RequestObjectHandler.findGetFeature(getFeature);
+        
         // round up the info objects for each feature collection
         HashMap<String, Set<FeatureTypeInfo>> ns2metas = new HashMap<String, Set<FeatureTypeInfo>>();
         for (int fcIndex = 0; fcIndex < featureCollections.size(); fcIndex++) {
-            if(getFeature.getParameters()[0] instanceof GetFeatureType) {
-                // get the query for this featureCollection
-                GetFeatureType request = (GetFeatureType) OwsUtils.parameter(getFeature.getParameters(),
-                        GetFeatureType.class);
-                QueryType queryType = (QueryType) request.getQuery().get(fcIndex);
+            if(request != null) {
+                RequestObjectHandler handler = RequestObjectHandler.get(request);
+                List queries = handler.getQueries(request);
+                Object queryType = queries.get(fcIndex);
                 
                 // may have multiple type names in each query, so add them all
-                for (QName name : (List<QName>) queryType.getTypeName()) {
+                for (QName name : handler.getQueryTypeNames(queryType)) {
                     // get a feature type name from the query
                     Name featureTypeName = new NameImpl(name.getNamespaceURI(), name.getLocalPart());
                     FeatureTypeInfo meta = catalog.getFeatureTypeByName(featureTypeName);
@@ -189,7 +188,7 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
         }
         
         //declare wfs schema location
-        BaseRequestType gft = (BaseRequestType)getFeature.getParameters()[0];
+        Object gft = getFeature.getParameters()[0];
         
         Encoder encoder = createEncoder(configuration, ns2metas, gft);
         encoder.setEncoding(Charset.forName( global.getCharset() ));
@@ -198,7 +197,7 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
             encoder.setSchemaLocation(getWfsNamespace(), getCanonicalWfsSchemaLocation());
         } else {
             encoder.setSchemaLocation(getWfsNamespace(),
-                    buildSchemaURL(gft.getBaseUrl(), getRelativeWfsSchemaLocation()));
+                    buildSchemaURL(RequestObjectHandler.baseURL(gft), getRelativeWfsSchemaLocation()));
         }
 
         //declare application schema namespaces
@@ -230,7 +229,7 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
             if (typeNames.length() > 0) {
                 params.put("typeName", typeNames.toString());
                 // set the made up schema location for types not provided by the user
-                String schemaLocation = buildURL(gft.getBaseUrl(), "wfs", params, URLType.SERVICE);
+                String schemaLocation = buildURL(RequestObjectHandler.baseURL(gft), "wfs", params, URLType.SERVICE);
                 LOGGER.finer("Unable to find user-defined schema location for: " + namespaceURI
                         + ". Using a built schema location by default: " + schemaLocation);
                 encoder.setSchemaLocation(namespaceURI, schemaLocation);
@@ -245,7 +244,7 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
     }
 
     protected Encoder createEncoder(Configuration configuration, 
-        Map<String, Set<FeatureTypeInfo>> featureTypes, BaseRequestType request ) {
+        Map<String, Set<FeatureTypeInfo>> featureTypes, Object request ) {
         return new Encoder(configuration, configuration.schema());
     }
     
