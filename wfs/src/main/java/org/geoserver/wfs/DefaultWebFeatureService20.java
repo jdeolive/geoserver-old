@@ -4,8 +4,10 @@
  */
 package org.geoserver.wfs;
 
+import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs20.DescribeFeatureTypeType;
 import net.opengis.wfs20.GetCapabilitiesType;
+import net.opengis.wfs20.GetFeatureType;
 
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
@@ -40,6 +42,10 @@ public class DefaultWebFeatureService20 implements WebFeatureService20 {
         return new DescribeFeatureType(getServiceInfo(), getCatalog(), handler()).run(request);
     }
 
+    public FeatureCollectionType getFeature(GetFeatureType request) throws WFSException {
+        return new GetFeature(getServiceInfo(), getCatalog(), handler()).run(request);
+    }
+    
     RequestObjectHandler handler() {
         return new RequestObjectHandler.WFS_20();
     }
