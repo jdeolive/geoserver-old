@@ -21,6 +21,7 @@
 	</bean>
     <bean id="wfsService20Target" class="org.geoserver.wfs.DefaultWebFeatureService20">
         <constructor-arg ref="geoServer"/>
+        <property name="filterFactory" ref="filterFactory"/>
     </bean>
 
     <bean id="wfsLogger" class="org.geoserver.ows.util.EMFLogger">
@@ -127,6 +128,11 @@
 		</constructor-arg>	
 		<constructor-arg ref="geoServer"/>
 	</bean>
+    <bean id="wfs20ExceptionHandler" class="org.geoserver.ows.OWS11ServiceExceptionHandler">
+        <constructor-arg>
+           <ref bean="wfsService-2.0"/>
+        </constructor-arg>  
+    </bean>
 	
 	<!-- gml schema builders -->
 	<bean id="gml2SchemaBuilder" class="org.geoserver.wfs.xml.FeatureTypeSchemaBuilder$GML2">
@@ -230,6 +236,12 @@
     <property name="version"><value>1.1.0</value></property>
     <property name="request"><value>GetFeature</value></property>
   </bean>
+  <bean id="getFeature20NamespaceKvpParser" class="org.geoserver.wfs.kvp.NamespaceKvpParser">
+    <constructor-arg value="namespace"/>
+    <property name="service"><value>WFS</value></property>
+    <property name="version"><value>2.0.0</value></property>
+    <property name="request"><value>GetFeature</value></property>
+  </bean>
   <bean id="dftNamespaceKvpParser" class="org.geoserver.wfs.kvp.NamespaceKvpParser">
     <constructor-arg value="namespace"/>
     <property name="service"><value>WFS</value></property>
@@ -293,6 +305,8 @@
   <bean id="wfsSqlViewKvpParser" class="org.geoserver.ows.kvp.ViewParamsKvpParser">
     <property name="service" value="WFS"/>
   </bean>
+  
+  <bean id="resultType20KvpParser" class="org.geoserver.wfs.kvp.v2_0.ResultTypeKvpParser"/>
 
     
 	<!-- kvp request readers -->
@@ -400,6 +414,9 @@
     <bean id="describeFeatureTypeXmlReader-2.0" parent="xmlReader-2.0">
         <constructor-arg value="DescribeFeatureType"/>
     </bean>
+    <bean id="getFeatureXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="GetFeature"/>
+    </bean>
     
 	<!-- default feature type encoders -->
 	<bean id="gml2FeatureTypeEncoder" 
@@ -443,6 +460,10 @@
 	</bean>
     <bean id="CSVOutputFormat" class="org.geoserver.wfs.response.CSVOutputFormat">
         <constructor-arg index="0" ref="geoServer"/>
+    </bean>
+    
+    <bean id="hits20OutputFormat" class="org.geoserver.wfs.response.v2_0.HitsOutputFormat">
+        <constructor-arg ref="geoServer"/>
     </bean>
     
     <!-- workspace qualifier -->

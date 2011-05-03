@@ -16,5 +16,6 @@ public class WFS20TestSupport extends WFSTestSupport {
         namespaces.put("wfs", "http://www.opengis.net/wfs/2.0");
         namespaces.put("ows", "http://www.opengis.net/ows/1.1");
         namespaces.put("fes", "http://www.opengis.net/fes/2.0");
+        namespaces.put("gml", "http://www.opengis.net/gml/3.2");
     }
 }

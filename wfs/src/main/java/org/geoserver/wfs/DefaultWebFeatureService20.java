@@ -13,6 +13,8 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geotools.xml.transform.TransformerBase;
+import org.opengis.filter.FilterFactory;
+import org.opengis.filter.FilterFactory2;
 
 public class DefaultWebFeatureService20 implements WebFeatureService20 {
 
@@ -20,11 +22,18 @@ public class DefaultWebFeatureService20 implements WebFeatureService20 {
      * GeoServer configuration
      */
     protected GeoServer geoServer;
+    
+    /** filter factory */
+    protected FilterFactory2 filterFactory;
 
     public DefaultWebFeatureService20(GeoServer geoServer) {
         this.geoServer = geoServer;
     }
 
+    public void setFilterFactory(FilterFactory2 filterFactory) {
+        this.filterFactory = filterFactory;
+    }
+    
     public WFSInfo getServiceInfo() {
         return geoServer.getService(WFSInfo.class);
     }
@@ -43,7 +52,10 @@ public class DefaultWebFeatureService20 implements WebFeatureService20 {
     }
 
     public FeatureCollectionType getFeature(GetFeatureType request) throws WFSException {
-        return new GetFeature(getServiceInfo(), getCatalog(), handler()).run(request);
+        GetFeature gf = new GetFeature(getServiceInfo(), getCatalog(), handler());
+        gf.setFilterFactory(filterFactory);
+        
+        return gf.run(request);
     }
     
     RequestObjectHandler handler() {

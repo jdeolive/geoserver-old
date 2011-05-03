@@ -142,6 +142,8 @@ public abstract class RequestObjectHandler {
     
     public abstract boolean isResultTypeResults(Object request);
     
+    public abstract boolean isResultTypeHits(Object request);
+    
     public abstract boolean isLockRequest(Object request);
 
     //
@@ -237,6 +239,11 @@ public abstract class RequestObjectHandler {
         }
         
         @Override
+        public boolean isResultTypeHits(Object request) {
+            return ((GetFeatureType)request).getResultType() == ResultTypeType.HITS_LITERAL;
+        }
+        
+        @Override
         public boolean isLockRequest(Object request) {
             return request instanceof GetFeatureWithLockType;
         }
@@ -316,6 +323,12 @@ public abstract class RequestObjectHandler {
         public boolean isResultTypeResults(Object request) {
             return ((net.opengis.wfs20.GetFeatureType)request).getResultType() 
                 == net.opengis.wfs20.ResultTypeType.RESULTS;
+        }
+        
+        @Override
+        public boolean isResultTypeHits(Object request) {
+            return ((net.opengis.wfs20.GetFeatureType)request).getResultType() 
+                == net.opengis.wfs20.ResultTypeType.HITS;
         }
         
         @Override
