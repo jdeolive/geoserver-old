@@ -6,8 +6,10 @@ package org.geoserver.wfs.xml;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -17,6 +19,7 @@ import javax.xml.transform.dom.DOMSource;
 
 import net.opengis.wfs.BaseRequestType;
 import net.opengis.wfs.FeatureCollectionType;
+import net.opengis.wfs20.Wfs20Factory;
 
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
@@ -30,6 +33,16 @@ import org.w3c.dom.Document;
 
 public class GML32OutputFormat extends GML3OutputFormat {
 
+    public static final String[] MIME_TYPES = new String[]{
+        "text/xml; subtype=gml/3.2", "application/gml+xml; version=3.2"
+    };
+    
+    public static final List<String> FORMATS = new ArrayList<String>();
+    static {
+        FORMATS.add("gml32");
+        FORMATS.addAll(Arrays.asList(MIME_TYPES));
+    }
+    
     GeoServer geoServer;
 
     protected static DOMSource xslt;
@@ -49,14 +62,13 @@ public class GML32OutputFormat extends GML3OutputFormat {
     }
 
     public GML32OutputFormat(GeoServer geoServer, WFSConfiguration configuration) {
-        super(new HashSet(Arrays.asList("gml32", "text/xml; subtype=gml/3.2")), 
-            geoServer, configuration);
+        super(new HashSet(FORMATS), geoServer, configuration);
         this.geoServer = geoServer;
     }
 
     @Override
     public String getMimeType(Object value, Operation operation) {
-        return "text/xml; subtype=gml/3.2";
+        return MIME_TYPES[0];
     }
 
     @Override
@@ -77,8 +89,15 @@ public class GML32OutputFormat extends GML3OutputFormat {
     @Override
     protected void encode(FeatureCollectionType results, OutputStream output, Encoder encoder)
             throws IOException {
-        // encoder.getNamespaces().declarePrefix("gml", GML.NAMESPACE);
-        encoder.encode(results, WFS.FeatureCollection, output);
+        //convert to wfs 2.0 FeatureCollectionType
+        net.opengis.wfs20.FeatureCollectionType fc = Wfs20Factory.eINSTANCE.createFeatureCollectionType();
+        fc.setLockId(results.getLockId());
+        fc.setTimeStamp(results.getTimeStamp());
+        fc.setNumberReturned(results.getNumberOfFeatures());
+        fc.getMember().addAll(results.getFeature());
+        
+        //encoder.getNamespaces().declarePrefix("gml", GML.NAMESPACE);
+        encoder.encode(fc, WFS.FeatureCollection, output);
     }
     
     @Override

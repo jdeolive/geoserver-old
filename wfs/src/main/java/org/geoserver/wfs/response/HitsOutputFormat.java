@@ -27,6 +27,7 @@ import org.geoserver.wfs.xml.v1_1_0.WFSConfiguration;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureTypeImpl;
+import org.geotools.xml.Configuration;
 import org.geotools.xml.Encoder;
 
 
@@ -41,9 +42,9 @@ public class HitsOutputFormat extends WFSResponse {
     /**
      * Xml configuration
      */
-    WFSConfiguration configuration;
+    Configuration configuration;
 
-    public HitsOutputFormat(GeoServer gs, WFSConfiguration configuration) {
+    public HitsOutputFormat(GeoServer gs, Configuration configuration) {
         super(gs, FeatureCollectionType.class);
 
         this.configuration = configuration;
@@ -88,12 +89,7 @@ public class HitsOutputFormat extends WFSResponse {
         }
         hits.setTimeStamp(featureCollection.getTimeStamp());
 
-        Encoder encoder = new Encoder(configuration, configuration.schema());
-        encoder.setEncoding(Charset.forName( wfs.getGeoServer().getGlobal().getCharset()) );
-        encoder.setSchemaLocation(org.geoserver.wfs.xml.v1_1_0.WFS.NAMESPACE,
-            ResponseUtils.appendPath(wfs.getSchemaBaseURL(), "wfs/1.1.0/wfs.xsd"));
-
-        encoder.encode(hits, org.geoserver.wfs.xml.v1_1_0.WFS.FEATURECOLLECTION, output);
+        encode(hits, output, wfs);
     }
     
     private BigInteger countFeature(FeatureCollectionType fct) {
@@ -114,6 +110,14 @@ public class HitsOutputFormat extends WFSResponse {
         return count;
     }
 
-   
+    protected void encode(FeatureCollectionType hits, OutputStream output, WFSInfo wfs) 
+        throws IOException {
+        Encoder encoder = new Encoder(configuration, configuration.schema());
+        encoder.setEncoding(Charset.forName( wfs.getGeoServer().getGlobal().getCharset()) );
+        encoder.setSchemaLocation(org.geoserver.wfs.xml.v1_1_0.WFS.NAMESPACE,
+            ResponseUtils.appendPath(wfs.getSchemaBaseURL(), "wfs/1.1.0/wfs.xsd"));
+
+        encoder.encode(hits, org.geoserver.wfs.xml.v1_1_0.WFS.FEATURECOLLECTION, output);
+    }
 
 }

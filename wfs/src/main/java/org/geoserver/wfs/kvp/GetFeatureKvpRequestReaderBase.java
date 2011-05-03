@@ -348,7 +348,7 @@ public class GetFeatureKvpRequestReaderBase extends WFSKvpRequestReader {
                 property = "typeNames";
             }
             if ("propertyName".equals(property)) {
-                property = "propertyNames";
+                property = "abstractProjectionClause";
             }
         }
         
