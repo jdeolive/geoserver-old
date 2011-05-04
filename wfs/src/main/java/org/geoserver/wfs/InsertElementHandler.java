@@ -58,9 +58,18 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.wfs");
     private FilterFactory filterFactory;
 
+    Class elementClass;
+    RequestObjectHandler handler;
+    
     public InsertElementHandler(GeoServer gs, FilterFactory filterFactory) {
+        this(gs, filterFactory, InsertElementType.class);
+    }
+
+    public InsertElementHandler(GeoServer gs, FilterFactory filterFactory, Class elementClass) {
         super(gs);
         this.filterFactory = filterFactory;
+        this.elementClass = elementClass;
+        this.handler = RequestObjectHandler.get(elementClass);
     }
 
     public void checkValidity(EObject element, Map<QName, FeatureTypeInfo> featureTypeInfos)
@@ -70,20 +79,19 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
         }
     }
 
-    public void execute(EObject element, TransactionType request,
-            @SuppressWarnings("rawtypes") Map<QName, FeatureStore> featureStores,
-            TransactionResponseType response, TransactionListener listener)
-            throws WFSTransactionException {
-        LOGGER.finer("Transasction Insert:" + element);
+    @SuppressWarnings("unchecked")
+    public void execute(EObject insert, Object request, Map featureStores, Object response, 
+        TransactionListener listener) throws WFSTransactionException {
+        LOGGER.finer("Transasction Insert:" + insert);
 
-        InsertElementType insert = (InsertElementType) element;
-        long inserted = response.getTransactionSummary().getTotalInserted().longValue();
+        long inserted = handler.getTotalInserted(response).longValue();
 
         try {
             // group features by their schema
             HashMap /* <SimpleFeatureType,FeatureCollection> */ schema2features = new HashMap();
 
-            for (Iterator f = insert.getFeature().iterator(); f.hasNext();) {
+            List features = handler.getInsertFeatures(insert);
+            for (Iterator f = features.iterator(); f.hasNext();) {
                 SimpleFeature feature = (SimpleFeature) f.next();
                 SimpleFeatureType schema = feature.getFeatureType();
                 SimpleFeatureCollection collection;
@@ -182,9 +190,7 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
 
             // report back fids, we need to keep the same order the
             // fids were reported in the original feature collection
-            InsertedFeatureType insertedFeature = null;
-
-            for (Iterator f = insert.getFeature().iterator(); f.hasNext();) {
+            for (Iterator f = features.iterator(); f.hasNext();) {
                 SimpleFeature feature = (SimpleFeature) f.next();
                 SimpleFeatureType schema = feature.getFeatureType();
 
@@ -192,22 +198,19 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
                 LinkedList fids = (LinkedList) schema2fids.get(schema.getTypeName());
                 String fid = ((FeatureId) fids.removeFirst()).getID();
 
-                insertedFeature = WfsFactory.eINSTANCE.createInsertedFeatureType();
-                insertedFeature.setHandle(insert.getHandle());
-                insertedFeature.getFeatureId().add(filterFactory.featureId(fid));
-
-                response.getInsertResults().getFeature().add(insertedFeature);
+                handler.addInsertedFeature(
+                    response, handler.getHandle(insert), filterFactory.featureId(fid));
             }
 
             // update the insert counter
-            inserted += insert.getFeature().size();
+            inserted += features.size();
         } catch (Exception e) {
             String msg = "Error performing insert: " + e.getMessage();
-            throw new WFSTransactionException(msg, e, insert.getHandle());
+            throw new WFSTransactionException(msg, e, handler.getHandle(insert));
         }
 
         // update transaction summary
-        response.getTransactionSummary().setTotalInserted(BigInteger.valueOf(inserted));
+        handler.setTotalInserted(response, BigInteger.valueOf(inserted));
     }
 
     
@@ -239,24 +242,19 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
         }
     }
 
-    /**
-     * @see org.geoserver.wfs.TransactionElementHandler#getElementClass()
-     */
-    public Class<InsertElementType> getElementClass() {
-        return InsertElementType.class;
+    public Class getElementClass() {
+        return elementClass;
     }
 
-    /**
-     * @see org.geoserver.wfs.TransactionElementHandler#getTypeNames(org.eclipse.emf.ecore.EObject)
-     */
-    @SuppressWarnings("unchecked")
-    public QName[] getTypeNames(EObject element) throws WFSTransactionException {
-        InsertElementType insert = (InsertElementType) element;
-        Set<QName> typeNames = new HashSet<QName>();
+    public QName[] getTypeNames(EObject insert) throws WFSTransactionException {
+        
+        List typeNames = new ArrayList();
 
-        if (!insert.getFeature().isEmpty()) {
-            Iterable<SimpleFeature> features = insert.getFeature();
-            for (SimpleFeature feature : features) {
+        List features = handler.getInsertFeatures(insert);
+        if (!features.isEmpty()) {
+            for (Iterator f = features.iterator(); f.hasNext();) {
+                SimpleFeature feature = (SimpleFeature) f.next();
+
                 String name = feature.getFeatureType().getTypeName();
                 String namespaceURI = feature.getFeatureType().getName().getNamespaceURI();
 

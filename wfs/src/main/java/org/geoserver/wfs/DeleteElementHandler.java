@@ -7,6 +7,7 @@ package org.geoserver.wfs;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -55,50 +56,51 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
     
     FilterFactory factory = CommonFactoryFinder.getFilterFactory(null);
 
+    Class elementClass;
+    RequestObjectHandler handler;
+    
     public DeleteElementHandler(GeoServer gs) {
-        super(gs);
+        this(gs, DeleteElementType.class);
     }
 
-    /**
-     * @see org.geoserver.wfs.TransactionElementHandler#getElementClass()
-     */
-    public Class<DeleteElementType> getElementClass() {
-        return DeleteElementType.class;
+    public DeleteElementHandler(GeoServer gs, Class elementClass) {
+        super(gs);
+        this.elementClass = elementClass;
+        this.handler = RequestObjectHandler.get(elementClass);
+    }
+
+    public Class getElementClass() {
+        return elementClass;
     }
 
     /**
      * @see org.geoserver.wfs.TransactionElementHandler#getTypeNames(org.eclipse.emf.ecore.EObject)
      */
     public QName[] getTypeNames(EObject element) throws WFSTransactionException {
-        return new QName[] { ((DeleteElementType) element).getTypeName() };
+        return new QName[]{handler.getTypeName(element)};
     }
 
-    public void checkValidity(EObject element, Map<QName, FeatureTypeInfo> featureTypeInfos)
+    public void checkValidity(EObject delete, Map featureTypeInfos)
         throws WFSTransactionException {
         if (!getInfo().getServiceLevel().getOps().contains(WFSInfo.Operation.TRANSACTION_DELETE)) {
             throw new WFSException("Transaction Delete support is not enabled");
         }
 
-        // check that a filter was specified
-        DeleteElementType delete = (DeleteElementType) element;
-
-        if ((delete.getFilter() == null) || Filter.INCLUDE.equals(delete.getFilter())) {
+        Filter f = handler.getFilter(delete);
+        
+        if ((f == null) || Filter.INCLUDE.equals(f)) {
             throw new WFSTransactionException("Must specify filter for delete",
                 "MissingParameterValue");
         }
     }
 
-    /**
-     * @see org.geoserver.wfs.TransactionElementHandler#execute(org.eclipse.emf.ecore.EObject, net.opengis.wfs.TransactionType, java.util.Map, net.opengis.wfs.TransactionResponseType, org.geoserver.wfs.TransactionListener)
-     */
-    public void execute(EObject element, TransactionType request,
-            @SuppressWarnings("rawtypes") Map<QName, FeatureStore> featureStores,
-            TransactionResponseType response, TransactionListener listener)
-            throws WFSTransactionException {
-        DeleteElementType delete = (DeleteElementType) element;
-        QName elementName = delete.getTypeName();
-        String handle = delete.getHandle();
-        long deleted = response.getTransactionSummary().getTotalDeleted().longValue();
+    public void execute(EObject delete, Object request, Map featureStores, Object response, 
+        TransactionListener listener) throws WFSTransactionException {
+        
+        QName elementName = handler.getTypeName(delete);
+        String handle = handler.getHandle(delete);
+        
+        long deleted = handler.getTotalDeleted(response).longValue();
 
         SimpleFeatureStore store = DataUtilities.simple((FeatureStore) featureStores.get(elementName));
 
@@ -107,15 +109,15 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
         }
 
         String typeName = store.getSchema().getTypeName();
-        LOGGER.finer("Transaction Delete:" + element);
+        LOGGER.finer("Transaction Delete:" + delete);
 
         try {
-            Filter filter = (Filter) delete.getFilter();
+            Filter filter = handler.getFilter(delete);
             
             // make sure all geometric elements in the filter have a crs, and that the filter
             // is reprojected to store's native crs as well
             CoordinateReferenceSystem declaredCRS = WFSReprojectionUtil.getDeclaredCrs(
-                    store.getSchema(), request.getVersion());
+                    store.getSchema(), handler.getVersion(request));
             filter = WFSReprojectionUtil.normalizeFilterCRS(filter, store.getSchema(), declaredCRS);
             
             // notify listeners
@@ -125,15 +127,14 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
             listener.dataStoreChange( event );
 
             // compute damaged area
-            Envelope damaged = store.getBounds(new Query(
-                        delete.getTypeName().getLocalPart(), filter));
+            Envelope damaged = store.getBounds(new Query(elementName.getLocalPart(), filter));
 
             if (damaged == null) {
                 damaged = store.getFeatures(filter).getBounds();
             }
 
-            if ((request.getLockId() != null) && store instanceof FeatureLocking
-                    && (request.getReleaseAction() == AllSomeType.SOME_LITERAL)) {
+            if ((handler.getLockId(request) != null) && store instanceof FeatureLocking
+                    && (handler.isReleaseActionSome(request))) {
                 SimpleFeatureLocking locking;
                 locking = (SimpleFeatureLocking) store;
 
@@ -193,7 +194,7 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
             }
         } catch (IOException e) {
             String msg = e.getMessage();
-            String eHandle = (String) EMFUtils.get(element, "handle");
+            String eHandle = handler.getHandle(delete);
             String code = null;
             
             //check case of feature lock exception and set appropriate exception
@@ -205,6 +206,6 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
         }
 
         // update deletion count
-        response.getTransactionSummary().setTotalDeleted(BigInteger.valueOf(deleted));
+        handler.setTotalDeleted(response, BigInteger.valueOf(deleted));
     }
 }

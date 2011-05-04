@@ -8,6 +8,9 @@ import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs20.DescribeFeatureTypeType;
 import net.opengis.wfs20.GetCapabilitiesType;
 import net.opengis.wfs20.GetFeatureType;
+import net.opengis.wfs20.GetFeatureWithLockType;
+import net.opengis.wfs20.TransactionResponseType;
+import net.opengis.wfs20.TransactionType;
 
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geotools.xml.transform.TransformerBase;
@@ -63,4 +66,38 @@ public interface WebFeatureService20 {
      */
     FeatureCollectionType getFeature(GetFeatureType request)
         throws WFSException;
+    
+    /**
+     * WFS GetFeatureWithLock operation.
+     *
+     * @param request The get feature with lock request.
+     *
+      * @return A feature collection type instance.
+     *
+     * @throws WFSException Any service exceptions.
+     */
+    FeatureCollectionType getFeatureWithLock(GetFeatureWithLockType request)
+        throws WFSException;
+    
+    /**
+     * WFS transaction operation.
+     *
+     * @param request The transaction request.
+     *
+     * @return A transaction response instance.
+     *
+     * @throws WFSException Any service exceptions.
+     */
+    TransactionResponseType transaction(TransactionType request) throws WFSException;
+    
+    /**
+     * Release lock operation.
+     * <p>
+     * This is not an official operation of the spec.
+     * </p>
+     * @param lockId A prefiously held lock id.
+     */
+    void releaseLock(String lockId) throws WFSException;
+
+
 }

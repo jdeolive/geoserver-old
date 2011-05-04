@@ -159,7 +159,7 @@ public class DefaultWebFeatureService implements WebFeatureService, ApplicationC
         Transaction transaction = new Transaction(getServiceInfo(), catalog, context);
         transaction.setFilterFactory(filterFactory);
 
-        return transaction.transaction(request);
+        return (TransactionResponseType) transaction.transaction(request);
     }
     
     /**

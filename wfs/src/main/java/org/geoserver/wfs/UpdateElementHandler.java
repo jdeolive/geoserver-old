@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -64,11 +65,20 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
      */
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.wfs");
     
+    Class elementClass;
+    RequestObjectHandler handler;
+
     public UpdateElementHandler(GeoServer gs) {
+        this(gs, UpdateElementType.class);
+    }
+    
+    public UpdateElementHandler(GeoServer gs, Class elementClass) {
         super(gs);
+        this.elementClass = elementClass;
+        this.handler = RequestObjectHandler.get(elementClass);
     }
 
-    public void checkValidity(EObject element, Map<QName, FeatureTypeInfo> typeInfos)
+    public void checkValidity(EObject update, Map typeInfos)
         throws WFSTransactionException {
         // check inserts are enabled
         if (!getInfo().getServiceLevel().getOps().contains(WFSInfo.Operation.TRANSACTION_UPDATE) ) {
@@ -77,19 +87,17 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
 
         FilterFactory ff = CommonFactoryFinder.getFilterFactory( null );
         
-        // check that all required properties have a specified value
-        UpdateElementType update = (UpdateElementType) element;
-
         try {
             FeatureTypeInfo meta = typeInfos.values().iterator().next();
             FeatureType featureType = meta.getFeatureType();
 
-            for (Iterator prop = update.getProperty().iterator(); prop.hasNext();) {
-                PropertyType property = (PropertyType) prop.next();
+            List props = handler.getUpdateProperties(update);
+            for (Iterator prop = props.iterator(); prop.hasNext();) {
+                Object property = prop.next();
 
                 //check that valus that are non-nillable exist
-                if (property.getValue() == null) {
-                    String propertyName = property.getName().getLocalPart();
+                if (handler.getPropertyValue(property) == null) {
+                    String propertyName = handler.getPropertyName(property).getLocalPart();
                     AttributeDescriptor attributeType = null;
                     PropertyDescriptor pd = featureType.getDescriptor(propertyName);
                     if(pd instanceof AttributeDescriptor) {
@@ -103,7 +111,7 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
                 }
                 
                 //check that property names are actually valid
-                QName name = property.getName();
+                QName name = handler.getPropertyName(property);
                 PropertyName propertyName = null;
                 
                 if ( name.getPrefix() != null && !"".equals( name.getPrefix() )) {
@@ -114,24 +122,25 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
                 }
                 
                 if ( propertyName.evaluate( featureType ) == null ) {
-                    String msg = "No such property: " + property.getName();
+                    String msg = "No such property: " + name;
                     throw new WFSException( msg );
                 }
             }
         } catch (IOException e) {
-            throw new WFSTransactionException("Could not locate feature type information for "
-                + update.getTypeName(), e, update.getHandle());
+            throw new WFSTransactionException("Could not locate feature type information for " + 
+                handler.getTypeName(update), e, handler.getHandle(update));
         }
     }
 
-    public void execute(EObject element, TransactionType request,
-            @SuppressWarnings("rawtypes") Map<QName, FeatureStore> featureStores,
-            TransactionResponseType response, TransactionListener listener)
-            throws WFSTransactionException {
-        UpdateElementType update = (UpdateElementType) element;
-        final QName elementName = update.getTypeName();
-        String handle = update.getHandle();
-        long updated = response.getTransactionSummary().getTotalUpdated().longValue();
+    public void execute(EObject update, Object request,
+       @SuppressWarnings("rawtypes") Map<QName, FeatureStore> featureStores,
+       TransactionResponseType response, TransactionListener listener)
+       throws WFSTransactionException {
+        
+        final QName elementName = handler.getTypeName(update);
+        String handle = handler.getHandle(update);
+        
+        long updated = handler.getTotalUpdated(response).longValue();
 
         SimpleFeatureStore store = DataUtilities.simple((FeatureStore) featureStores.get(elementName));
 
@@ -139,31 +148,33 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
             throw new WFSException("Could not locate FeatureStore for '" + elementName + "'");
         }
 
-        LOGGER.finer("Transaction Update:" + element);
+        LOGGER.finer("Transaction Update:" + update);
 
         try {
-            Filter filter = (Filter) update.getFilter();
+            Filter filter = handler.getFilter(update);
 
             // make sure all geometric elements in the filter have a crs, and that the filter
             // is reprojected to store's native crs as well
             CoordinateReferenceSystem declaredCRS = WFSReprojectionUtil.getDeclaredCrs(
-                    store.getSchema(), request.getVersion());
+                    store.getSchema(), handler.getVersion(request));
             if(filter != null) {
                 filter = WFSReprojectionUtil.normalizeFilterCRS(filter, store.getSchema(), declaredCRS);
             } else {
                 filter = Filter.INCLUDE;
             }
 
+            List properties = handler.getUpdateProperties(update);
+            AttributeDescriptor[] types = new AttributeDescriptor[properties.size()];
+            String[] names = new String[properties.size()];
+            Object[] values = new Object[properties.size()];
 
-            AttributeDescriptor[] types = new AttributeDescriptor[update.getProperty().size()];
-            String[] names = new String[update.getProperty().size()];
-            Object[] values = new Object[update.getProperty().size()];
-
-            for (int j = 0; j < update.getProperty().size(); j++) {
-                PropertyType property = (PropertyType) update.getProperty().get(j);
-                types[j] = store.getSchema().getDescriptor(property.getName().getLocalPart());
-                names[j] = property.getName().getLocalPart();
-                values[j] = property.getValue();
+            for (int j = 0; j < properties.size(); j++) {
+                Object property = properties.get(j);
+                QName propertyName = handler.getPropertyName(property);
+                types[j] = store.getSchema().getDescriptor(propertyName.getLocalPart());
+                
+                names[j] = propertyName.getLocalPart();
+                values[j] = handler.getPropertyValue(property);
                 
                 // if geometry, it may be necessary to reproject it to the native CRS before
                 // update
@@ -250,8 +261,8 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
             }
             finally {
                 // make sure we unlock
-                if ((request.getLockId() != null) && store instanceof FeatureLocking
-                        && (request.getReleaseAction() == AllSomeType.SOME_LITERAL)) {
+                if ((handler.getLockId(request) != null) && store instanceof FeatureLocking
+                        && (handler.isReleaseActionSome(request))) {
                     SimpleFeatureLocking locking;
                     locking = (SimpleFeatureLocking) store;
                     locking.unLockFeatures(filter);
@@ -271,6 +282,8 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
 
                 Id modified = ff.id(featureIds);
 
+                handler.addUpdatedFeatures(response, handle, featureIds);
+                
                 SimpleFeatureCollection changed = store.getFeatures(modified);
                 listener.dataStoreChange(new TransactionEvent(TransactionEventType.POST_UPDATE,
                         request, elementName, changed, update));
@@ -287,20 +300,20 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
         }
 
         // update transaction summary
-        response.getTransactionSummary().setTotalUpdated(BigInteger.valueOf(updated));
+        handler.setTotalUpdated(response, BigInteger.valueOf(updated));
     }
 
     /**
      * @see org.geoserver.wfs.TransactionElementHandler#getElementClass()
      */
-    public Class<UpdateElementType> getElementClass() {
-        return UpdateElementType.class;
+    public Class getElementClass() {
+        return elementClass;
     }
 
     /**
      * @see org.geoserver.wfs.TransactionElementHandler#getTypeNames(org.eclipse.emf.ecore.EObject)
      */
     public QName[] getTypeNames(EObject element) throws WFSTransactionException {
-        return new QName[] { ((UpdateElementType) element).getTypeName() };
+        return new QName[] { handler.getTypeName(element) };
     }
 }

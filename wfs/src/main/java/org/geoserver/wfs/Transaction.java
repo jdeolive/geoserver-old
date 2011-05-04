@@ -76,10 +76,20 @@ public class Transaction {
     protected List transactionElementHandlers = new ArrayList();
     protected List transactionListeners = new ArrayList();
     protected List transactionPlugins = new ArrayList();
+    
+    /** 
+     * request object handler
+     */
+    protected RequestObjectHandler reqhandler;
 
     public Transaction(WFSInfo wfs, Catalog catalog, ApplicationContext context) {
+        this(wfs, catalog, context, new RequestObjectHandler.WFS_11());
+    }
+    
+    public Transaction(WFSInfo wfs, Catalog catalog, ApplicationContext context, RequestObjectHandler handler) {
         this.wfs = wfs;
         this.catalog = catalog;
+        this.reqhandler = handler;
         ;
         // register element handlers, listeners and plugins
         transactionElementHandlers.addAll(GeoServerExtensions.extensions(TransactionElementHandler.class));
@@ -97,7 +107,7 @@ public class Transaction {
         this.filterFactory = filterFactory;
     }
 
-    public TransactionResponseType transaction(TransactionType request)
+    public Object transaction(Object request)
         throws WFSException {
         // make sure server is supporting transactions
         if (!wfs.getServiceLevel().contains(WFSInfo.ServiceLevel.TRANSACTIONAL) ) {
@@ -150,18 +160,18 @@ public class Transaction {
      * @throws WfsTransactionException
      *             DOCUMENT ME!
      */
-    protected TransactionResponseType execute(TransactionType request)
+    protected Object execute(Object request)
         throws Exception {
         // some defaults
-        if (request.getReleaseAction() == null) {
-            request.setReleaseAction(AllSomeType.ALL_LITERAL);
+        if (reqhandler.getReleaseAction(request) == null) {
+            reqhandler.setReleaseActionAll(request);
         }
 
         // inform plugins we're about to start, and let them eventually
         // alter the request
         for (Iterator it = transactionPlugins.iterator(); it.hasNext();) {
             TransactionPlugin tp = (TransactionPlugin) it.next();
-            tp.beforeTransaction(request);
+            fireBeforeTransaction(request, tp);
         }
 
         // setup the transaction listener multiplexer
@@ -184,7 +194,7 @@ public class Transaction {
         // List of type names, maintain this list because of the insert hack
         // described below
         // List typeNames = new ArrayList();
-        Map elementHandlers = gatherElementHandlers(request.getGroup());
+        Map elementHandlers = gatherElementHandlers(request);
 
         // Gather feature types required by transaction elements and validate
         // the elements
@@ -282,7 +292,7 @@ public class Transaction {
 
         // provide authorization for transaction
         // 
-        String authorizationID = request.getLockId();
+        String authorizationID = reqhandler.getLockId(request);
 
         if (authorizationID != null) {
             if (!wfs.getServiceLevel().getOps().contains( WFSInfo.Operation.LOCKFEATURE)) {
@@ -308,16 +318,9 @@ public class Transaction {
         }
 
         // result
-        TransactionResponseType result = WfsFactory.eINSTANCE.createTransactionResponseType();
-        result.setTransactionResults(WfsFactory.eINSTANCE.createTransactionResultsType());
-        result.getTransactionResults().setHandle(request.getHandle());
-        result.setTransactionSummary(WfsFactory.eINSTANCE.createTransactionSummaryType());
-        result.getTransactionSummary().setTotalInserted(BigInteger.valueOf(0));
-        result.getTransactionSummary().setTotalUpdated(BigInteger.valueOf(0));
-        result.getTransactionSummary().setTotalDeleted(BigInteger.valueOf(0));
-
-        result.setInsertResults(WfsFactory.eINSTANCE.createInsertResultsType());
-
+        Object result = reqhandler.createTransactionResponse();
+        reqhandler.setTransactionResponseHandle(result, reqhandler.getHandle(request));
+        
         // execute elements in order, recording results as we go
         // I will need to record the damaged area for pre commit validation
         // checks
@@ -336,18 +339,8 @@ public class Transaction {
             exception = true;
             LOGGER.log(Level.SEVERE, "Transaction failed", e);
 
-            // transaction failed, rollback
-            ActionType action = WfsFactory.eINSTANCE.createActionType();
-
-            if (e.getCode() != null) {
-                action.setCode(e.getCode());
-            } else {
-                action.setCode("InvalidParameterValue");
-            }
-
-            action.setLocator(e.getLocator());
-            action.setMessage(e.getMessage());
-            result.getTransactionResults().getAction().add(action);
+            reqhandler.addAction(result, e.getCode() != null ? e.getCode() : "InvalidParameterValue", 
+                e.getLocator(), e.getMessage());
         }
 
         // commit
@@ -360,7 +353,7 @@ public class Transaction {
                 // inform plugins we're about to commit
                 for (Iterator it = transactionPlugins.iterator(); it.hasNext();) {
                     TransactionPlugin tp = (TransactionPlugin) it.next();
-                    tp.beforeCommit(request);
+                    fireBeforeCommit(request, tp);
                 }
 
                 transaction.commit();
@@ -384,11 +377,12 @@ public class Transaction {
                 // We also need to do this if the opperation is not a success,
                 // you can find this same code in the abort method
                 // 
-                if (request.getLockId() != null) {
-                    if (request.getReleaseAction() == AllSomeType.ALL_LITERAL) {
-                        lockRelease(request.getLockId());
-                    } else if (request.getReleaseAction() == AllSomeType.SOME_LITERAL) {
-                        lockRefresh(request.getLockId());
+                String lockId = reqhandler.getLockId(request);
+                if (lockId != null) {
+                    if (reqhandler.isReleaseActionAll(request)) {
+                        lockRelease(lockId);
+                    } else if (reqhandler.isReleaseActionSome(request)) {
+                        lockRefresh(lockId);
                     }
                 }
             }
@@ -400,7 +394,7 @@ public class Transaction {
         // inform plugins we're done
         for (Iterator it = transactionPlugins.iterator(); it.hasNext();) {
             TransactionPlugin tp = (TransactionPlugin) it.next();
-            tp.afterTransaction(request, committed? result : null, committed);
+            fireAfterTransaction(request, committed, tp);
         }
 
         //        
@@ -432,11 +426,9 @@ public class Transaction {
         // occured, howwever insert results needs to have at least one
         // "FeatureId" eliement, sp
         // we create an FeatureId with an empty fid
-        if (result.getInsertResults().getFeature().isEmpty()) {
-            InsertedFeatureType insertedFeature = WfsFactory.eINSTANCE.createInsertedFeatureType();
-            insertedFeature.getFeatureId().add(filterFactory.featureId("none"));
-
-            result.getInsertResults().getFeature().add(insertedFeature);
+        List insertedFeatures = reqhandler.getInsertedFeatures(result);
+        if (insertedFeatures != null && insertedFeatures.isEmpty()) {
+            reqhandler.addInsertedFeature(result, null, filterFactory.featureId("none"));
         }
 
         return result;
@@ -446,21 +438,36 @@ public class Transaction {
         // response = build;
     }
 
+    void fireAfterTransaction(Object request, boolean committed, TransactionPlugin tp) {
+        TransactionType tx = toTransaction11(request);
+        if (tx != null) tp.afterTransaction(tx, committed);
+    }
+
+    void fireBeforeCommit(Object request, TransactionPlugin tp) {
+        TransactionType tx = toTransaction11(request);
+        if (tx != null) tp.beforeCommit(tx);
+    }
+
+    void fireBeforeTransaction(Object request, TransactionPlugin tp) {
+        TransactionType tx = toTransaction11(request);
+        if (tx != null) tp.beforeTransaction(tx);
+    }
+
     /**
      * Looks up the element handlers to be used for each element
      *
      * @param group
      * @return
      */
-    private Map gatherElementHandlers(FeatureMap group)
+    private Map gatherElementHandlers(Object request)
         throws WFSTransactionException {
         //JD: use a linked hashmap since the order of elements in a transaction
         // must be respected
         Map map = new LinkedHashMap();
 
-        for (Iterator it = group.iterator(); it.hasNext();) {
-            FeatureMap.Entry entry = (FeatureMap.Entry) it.next();
-            EObject element = (EObject) entry.getValue();
+        Iterator it = reqhandler.getTransactionElements(request);
+        while(it.hasNext()) {
+            EObject element = (EObject) it.next();
             map.put(element, findElementHandler(element.getClass()));
         }
 
@@ -518,7 +525,7 @@ public class Transaction {
      *
      * @return
      */
-    protected DefaultTransaction getDatastoreTransaction(TransactionType request)
+    protected DefaultTransaction getDatastoreTransaction(Object request)
     throws IOException {
         DefaultTransaction transaction = new DefaultTransaction();
         // use handle as the log messages
@@ -534,7 +541,7 @@ public class Transaction {
         // Ok, this is a hack. We assume there is only one versioning datastore, the postgis one,
         // and that we can the following properties won't hurt transactio processing anyways...
         transaction.putProperty("VersioningCommitAuthor", username);
-        transaction.putProperty("VersioningCommitMessage", request.getHandle());
+        transaction.putProperty("VersioningCommitMessage", reqhandler.getHandle(request));
     
         return transaction;
     }
@@ -544,7 +551,7 @@ public class Transaction {
      *
      * @see org.vfny.geoserver.responses.Response#abort()
      */
-    public void abort(TransactionType request) {
+    public void abort(Object request) {
         if (transaction == null) {
             return; // no transaction to rollback
         }
@@ -557,16 +564,17 @@ public class Transaction {
             LOGGER.log(Level.SEVERE, "Failed trying to rollback a transaction:" + ioException);
         }
 
-        if (request.getLockId() != null) {
-            if (request.getReleaseAction() == AllSomeType.SOME_LITERAL) {
+        String lockId = reqhandler.getLockId(request);
+        if (lockId != null) {
+            if (reqhandler.isReleaseActionSome(request)) {
                 try {
-                    lockRefresh(request.getLockId());
+                    lockRefresh(lockId);
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Error occured refreshing lock", e);
                 }
-            } else if (request.getReleaseAction() == AllSomeType.ALL_LITERAL) {
+            } else if (reqhandler.isReleaseActionAll(request)) {
                 try {
-                    lockRelease(request.getLockId());
+                    lockRelease(lockId);
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Error occured releasing lock", e);
                 }
@@ -608,6 +616,14 @@ public class Transaction {
         lockFeature.refresh(lockId);
     }
 
+    TransactionType toTransaction11(Object request) {
+        if (request instanceof TransactionType) {
+            return (TransactionType) request;
+        }
+        
+        //TODO: copy the new transactionType object into the old
+        return null;
+    }
     /**
      * Bounces the single callback we got from transaction event handlers to all
      * registered listeners

@@ -6,16 +6,24 @@
 package org.geoserver.wfs.xml;
 
 import java.io.Reader;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import org.geoserver.catalog.Catalog;
+import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
+import org.geoserver.config.GeoServer;
 import org.geoserver.ows.XmlRequestReader;
 import org.geoserver.wfs.WFSException;
 import org.geoserver.wfs.WFSInfo;
+import org.geotools.gml2.FeatureTypeCache;
+import org.geotools.xml.Configuration;
 import org.geotools.xml.Parser;
+import org.opengis.feature.type.FeatureType;
+import org.picocontainer.MutablePicoContainer;
 import org.xml.sax.InputSource;
 
 /**
@@ -74,6 +82,36 @@ public class WFSXmlUtils {
         }
         
     }
-    
-    
+
+    public static void initWfsConfiguration(
+        Configuration config, GeoServer gs, FeatureTypeSchemaBuilder schemaBuilder) {
+        
+        MutablePicoContainer context = config.getContext();
+        
+        //seed the cache with entries from the catalog
+        FeatureTypeCache featureTypeCache = new FeatureTypeCache();
+
+        Collection featureTypes = gs.getCatalog().getFeatureTypes();
+        for (Iterator f = featureTypes.iterator(); f.hasNext();) {
+            FeatureTypeInfo meta = (FeatureTypeInfo) f.next();
+            if ( !meta.enabled() ) {
+                continue;
+            }
+
+            
+            FeatureType featureType =  null;
+            try {
+                featureType = meta.getFeatureType();
+            } 
+            catch(Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            featureTypeCache.put(featureType);
+        }
+        
+        //add the wfs handler factory to handle feature elements
+        context.registerComponentInstance(featureTypeCache);
+        context.registerComponentInstance(new WFSHandlerFactory(gs.getCatalog(), schemaBuilder));
+    }
 }
