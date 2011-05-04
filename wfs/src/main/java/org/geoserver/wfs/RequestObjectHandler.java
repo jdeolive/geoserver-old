@@ -23,6 +23,8 @@ import net.opengis.wfs.AllSomeType;
 import net.opengis.wfs.GetFeatureType;
 import net.opengis.wfs.GetFeatureWithLockType;
 import net.opengis.wfs.InsertedFeatureType;
+import net.opengis.wfs.LockFeatureResponseType;
+import net.opengis.wfs.LockFeatureType;
 import net.opengis.wfs.ResultTypeType;
 import net.opengis.wfs.TransactionResponseType;
 import net.opengis.wfs.TransactionType;
@@ -102,6 +104,10 @@ public abstract class RequestObjectHandler {
         return eGet(request, "handle", String.class);
     }
     
+    public void setHandle(Object request, String handle) {
+        eSet(request, "handle", handle);
+    }
+    
     public QName getTypeName(Object request) {
         return eGet(request, "typeName", QName.class);
     }
@@ -179,7 +185,10 @@ public abstract class RequestObjectHandler {
     public BigInteger getExpiry(Object request) {
         return eGet(request, "expiry", BigInteger.class);
     }
-
+    public void setExpiry(Object request, BigInteger expiry) {
+        eSet(request, "expiry", expiry);
+    }
+   
     // Query
     public abstract Object createQuery();
     
@@ -204,6 +213,25 @@ public abstract class RequestObjectHandler {
     public abstract List<XlinkPropertyNameType> getQueryXlinkPropertyNames(Object query);
     
     //
+    // LockFeature
+    //
+    public abstract List getLocks(Object request);
+    
+    public abstract boolean isLockActionSome(Object request);
+    
+    public abstract boolean isLockActionAll(Object request);
+    
+    public abstract QName getLockTypeName(Object lock);
+    
+    public abstract Object createLockFeatureResponse();
+    
+    public abstract void addLockedFeature(Object response, FeatureId fid);
+    
+    public abstract void addNotLockedFeature(Object response, FeatureId fid);
+    
+    public abstract List<FeatureId> getNotLockedFeatures(Object response);
+    
+    //
     //Transaction
     //
     public Object getReleaseAction(Object request) {
@@ -220,6 +248,10 @@ public abstract class RequestObjectHandler {
     
     public String getLockId(Object transaction) {
         return eGet(transaction, "lockId", String.class);
+    }
+    
+    public void setLockId(Object transaction, String lockId) {
+        eSet(transaction, "lockId", lockId);
     }
     
     //TransactionResponse
@@ -405,6 +437,54 @@ public abstract class RequestObjectHandler {
         }
 
         @Override
+        public List getLocks(Object request) {
+            return eGet(request, "lock", List.class);
+        }
+        
+        @Override
+        public boolean isLockActionAll(Object request) {
+            return ((LockFeatureType)request).getLockAction() == AllSomeType.ALL_LITERAL;
+        }
+        
+        @Override
+        public boolean isLockActionSome(Object request) {
+            return ((LockFeatureType)request).getLockAction() == AllSomeType.SOME_LITERAL;
+        }
+        
+        @Override
+        public QName getLockTypeName(Object lock) {
+            return eGet(lock, "typeName", QName.class);
+        }
+        
+        @Override
+        public Object createLockFeatureResponse() {
+            return getWfsFactory().createLockFeatureResponseType();
+        } 
+        
+        @Override
+        public void addLockedFeature(Object response, FeatureId fid) {
+            LockFeatureResponseType lfr = (LockFeatureResponseType) response;
+            if (lfr.getFeaturesLocked() == null) {
+                lfr.setFeaturesLocked(getWfsFactory().createFeaturesLockedType());
+            }
+            lfr.getFeaturesLocked().getFeatureId().add(fid);
+        }
+        
+        @Override
+        public void addNotLockedFeature(Object response, FeatureId fid) {
+            LockFeatureResponseType lfr = (LockFeatureResponseType) response;
+            if (lfr.getFeaturesNotLocked() == null) {
+                lfr.setFeaturesNotLocked(getWfsFactory().createFeaturesNotLockedType());
+            }
+            lfr.getFeaturesNotLocked().getFeatureId().add(fid);
+        }
+        
+        @Override
+        public List<FeatureId> getNotLockedFeatures(Object response) {
+            return eGet(response, "featuresNotLocked.featureId", List.class);
+        }
+        
+        @Override
         public boolean isReleaseActionAll(Object request) {
             return ((TransactionType)request).getReleaseAction() == AllSomeType.ALL_LITERAL;
         }
@@ -571,6 +651,62 @@ public abstract class RequestObjectHandler {
             return Collections.EMPTY_LIST;
         }
         
+        @Override
+        public List getLocks(Object request) {
+            return eGet(request, "abstractQueryExpression", List.class);
+        }
+        
+        @Override
+        public boolean isLockActionAll(Object request) {
+            return ((net.opengis.wfs20.LockFeatureType)request).getLockAction() 
+                == net.opengis.wfs20.AllSomeType.ALL;
+        }
+        
+        @Override
+        public boolean isLockActionSome(Object request) {
+            return ((net.opengis.wfs20.LockFeatureType)request).getLockAction() 
+                == net.opengis.wfs20.AllSomeType.SOME;
+        }
+        
+        @Override
+        public QName getLockTypeName(Object lock) {
+            List typeNames = eGet(lock, "typeNames", List.class);
+            if (typeNames.size() == 1) {
+                return (QName) typeNames.get(0);
+            }
+            throw new IllegalArgumentException("Multiple type names on single lock not supported");
+        }
+        
+        @Override
+        public Object createLockFeatureResponse() {
+            return getWfsFactory().createLockFeatureResponseType();
+        } 
+        
+        @Override
+        public void addLockedFeature(Object response, FeatureId fid) {
+            net.opengis.wfs20.LockFeatureResponseType lfr = 
+                (net.opengis.wfs20.LockFeatureResponseType) response;
+            if (lfr.getFeaturesLocked() == null) {
+                lfr.setFeaturesLocked(getWfsFactory().createFeaturesLockedType());
+            }
+            lfr.getFeaturesLocked().getResourceId().add(fid);
+        }
+        
+        @Override
+        public void addNotLockedFeature(Object response, FeatureId fid) {
+            net.opengis.wfs20.LockFeatureResponseType lfr = 
+                (net.opengis.wfs20.LockFeatureResponseType) response;
+            if (lfr.getFeaturesNotLocked() == null) {
+                lfr.setFeaturesNotLocked(getWfsFactory().createFeaturesNotLockedType());
+            }
+            lfr.getFeaturesNotLocked().getResourceId().add(fid);
+        }
+        
+        @Override
+        public List<FeatureId> getNotLockedFeatures(Object response) {
+            return eGet(response, "featuresNotLocked.resourceId", List.class);
+        }
+
         @Override
         public boolean isReleaseActionAll(Object request) {
             return ((net.opengis.wfs20.TransactionType)request).getReleaseAction() == 

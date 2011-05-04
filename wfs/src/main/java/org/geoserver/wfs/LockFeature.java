@@ -72,6 +72,8 @@ public class LockFeature {
      */
     FilterFactory filterFactory;
 
+    RequestObjectHandler handler;
+    
     /**
      *
      * @param wfs
@@ -82,11 +84,16 @@ public class LockFeature {
     }
 
     public LockFeature(WFSInfo wfs, Catalog catalog, FilterFactory filterFactory) {
+        this(wfs, catalog, filterFactory, new RequestObjectHandler.WFS_11());
+    }
+
+    public LockFeature(WFSInfo wfs, Catalog catalog, FilterFactory filterFactory, RequestObjectHandler handler) {
         this.wfs = wfs;
         this.catalog = catalog;
         this.filterFactory = filterFactory;
+        this.handler = handler;
     }
-
+    
     public void setFilterFactory(FilterFactory filterFactory) {
         this.filterFactory = filterFactory;
     }
@@ -100,14 +107,14 @@ public class LockFeature {
      *             if a lock failed and the lock specified all locks, or if an
      *             another error occurred processing the lock operation
      */
-    public LockFeatureResponseType lockFeature(LockFeatureType request)
+    public Object lockFeature(Object request)
         throws WFSException {
         FeatureLock fLock = null;
 
         try {
             // check we are dealing with a well formed request, there is at
             // least on lock request?
-            List locks = request.getLock();
+            List locks = handler.getLocks(request);
 
             if ((locks == null) || locks.isEmpty()) {
                 String msg = "A LockFeature request must contain at least one LOCK element";
@@ -120,25 +127,23 @@ public class LockFeature {
             fLock = newFeatureLock(request);
 
             // prepare the response object
-            LockFeatureResponseType response = WfsFactory.eINSTANCE.createLockFeatureResponseType();
-            response.setLockId(fLock.getAuthorization());
-            response.setFeaturesLocked(WfsFactory.eINSTANCE.createFeaturesLockedType());
-            response.setFeaturesNotLocked(WfsFactory.eINSTANCE.createFeaturesNotLockedType());
-
+            Object response = handler.createLockFeatureResponse();
+            handler.setLockId(response, fLock.getAuthorization());
+            
             // go thru each lock request, and try to perform locks on a feature
             // by feature basis
             // in order to allow for both "all" and "some" lock behaviour
             // TODO: if the lock is the default this default, lock the whole
             // query directly, should be a lot faster
             for (int i = 0, n = locks.size(); i < n; i++) {
-                LockType lock = (LockType) locks.get(i);
+                Object lock = (Object) locks.get(i);
                 LOGGER.info("curLock is " + lock);
 
-                QName typeName = lock.getTypeName();
+                QName typeName = handler.getLockTypeName(lock);
 
                 // get out the filter, and default to no filtering if none was
                 // provided
-                Filter filter = (Filter) lock.getFilter();
+                Filter filter = (Filter) handler.getFilter(lock);
 
                 if (filter == null) {
                     filter = Filter.INCLUDE;
@@ -161,7 +166,7 @@ public class LockFeature {
                     // make sure all geometric elements in the filter have a crs, and that the filter
                     // is reprojected to store's native crs as well
                     CoordinateReferenceSystem declaredCRS = WFSReprojectionUtil.getDeclaredCrs(
-                            source.getSchema(), request.getVersion());
+                            source.getSchema(), handler.getVersion(request));
                     filter = WFSReprojectionUtil.normalizeFilterCRS(filter, source.getSchema(), declaredCRS);
                     
                     // now gather the features
@@ -188,8 +193,7 @@ public class LockFeature {
                             LOGGER.fine("Lock " + fid + " not supported by data store (authID:"
                                 + fLock.getAuthorization() + ")");
 
-                            response.getFeaturesNotLocked().getFeatureId().add(fid);
-
+                            handler.addNotLockedFeature(response, fid);
                             // lockFailedFids.add(fid);
                         } else {
                             // DEFQuery is just some indirection, should be in
@@ -200,26 +204,26 @@ public class LockFeature {
                             // right now,
                             // so we'll just use all.
                             Query query = new Query(meta.getName(), (Filter) fidFilter,
-                                    Query.DEFAULT_MAX, Query.ALL_NAMES, lock.getHandle());
+                                    Query.DEFAULT_MAX, Query.ALL_NAMES, handler.getHandle(lock));
 
                             numberLocked = ((FeatureLocking) source).lockFeatures(query);
 
                             if (numberLocked == 1) {
                                 LOGGER.fine("Lock " + fid + " (authID:" + fLock.getAuthorization()
                                     + ")");
-                                response.getFeaturesLocked().getFeatureId().add(fid);
+                                handler.addLockedFeature(response, fid);
 
                                 // lockedFids.add(fid);
                             } else if (numberLocked == 0) {
                                 LOGGER.fine("Lock " + fid + " conflict (authID:"
                                     + fLock.getAuthorization() + ")");
-                                response.getFeaturesNotLocked().getFeatureId().add(fid);
+                                handler.addNotLockedFeature(response, fid);
 
                                 // lockFailedFids.add(fid);
                             } else {
                                 LOGGER.warning("Lock " + numberLocked + " " + fid + " (authID:"
                                     + fLock.getAuthorization() + ") duplicated FeatureID!");
-                                response.getFeaturesLocked().getFeatureId().add(fid);
+                                handler.addLockedFeature(response, fid);
 
                                 // lockedFids.add(fid);
                             }
@@ -243,9 +247,9 @@ public class LockFeature {
 
                     try {
                         try {
-                            t.addAuthorization(response.getLockId());
+                            t.addAuthorization(fLock.getAuthorization());
                             DataStore dataStore = (DataStore) source.getDataStore();
-                            dataStore.getLockingManager().refresh(response.getLockId(), t);
+                            dataStore.getLockingManager().refresh(fLock.getAuthorization(), t);
                         } finally {
                             t.commit();
                         }
@@ -262,23 +266,15 @@ public class LockFeature {
             }
 
             // should we releas all? if not set default to true
-            boolean lockAll = !(request.getLockAction() == AllSomeType.SOME_LITERAL);
+            
+            boolean lockAll = !handler.isLockActionSome(request);
 
-            if (lockAll && !response.getFeaturesNotLocked().getFeatureId().isEmpty()) {
+            List notLocked = handler.getNotLockedFeatures(response);
+            if (lockAll && (notLocked != null && !notLocked.isEmpty())) {
                 // I think we need to release and fail when lockAll fails
                 //
                 // abort will release the locks
-                throw new WFSException("Could not aquire locks for:"
-                    + response.getFeaturesNotLocked());
-            }
-
-            //remove empty parts of the response object
-            if (response.getFeaturesLocked().getFeatureId().isEmpty()) {
-                response.setFeaturesLocked(null);
-            }
-
-            if (response.getFeaturesNotLocked().getFeatureId().isEmpty()) {
-                response.setFeaturesNotLocked(null);
+                throw new WFSException("Could not aquire locks for:" + notLocked);
             }
 
             return response;
@@ -506,28 +502,32 @@ public class LockFeature {
         return filterFactory.id(ids);
     }
 
-    protected FeatureLock newFeatureLock(LockFeatureType request) {
-        if ((request.getHandle() == null) || request.getHandle().equals("")) {
-            request.setHandle("GeoServer");
+    protected FeatureLock newFeatureLock(Object request) {
+        String handle = handler.getHandle(request);
+        if ((handle == null) || handle.equals("")) {
+            handle = "GeoServer";
+            handler.setHandle(request, handle);
         }
 
-        if (request.getExpiry() == null) {
-            request.setExpiry(BigInteger.valueOf(0));
+        BigInteger expiry = handler.getExpiry(request);
+        if (expiry == null) {
+            expiry = BigInteger.valueOf(0);
+            handler.setExpiry(request, expiry);
         }
 
-        int lockExpiry = request.getExpiry().intValue();
+        int lockExpiry = expiry.intValue();
 
         if (lockExpiry < 0) {
             // negative time used to query if lock is available!
-            return FeatureLockFactory.generate(request.getHandle(), lockExpiry);
+            return FeatureLockFactory.generate(handle, lockExpiry);
         }
 
         if (lockExpiry == 0) {
             // perma lock with no expiry!
-            return FeatureLockFactory.generate(request.getHandle(), 0);
+            return FeatureLockFactory.generate(handle, 0);
         }
 
         // FeatureLock is specified in minutes
-        return FeatureLockFactory.generate(request.getHandle(), lockExpiry * 60 * 1000);
+        return FeatureLockFactory.generate(handle, lockExpiry * 60 * 1000);
     }
 }
