@@ -467,8 +467,8 @@ public class GetFeature {
             LockFeature lockFeature = new LockFeature(wfs, catalog);
             lockFeature.setFilterFactory(filterFactory);
 
-            LockFeatureResponseType response = lockFeature.lockFeature(lockRequest);
-            lockId = response.getLockId();
+            Object response = lockFeature.lockFeature(lockRequest);
+            lockId = handler.getLockId(response);
         }
 
         return buildResults(count, results, lockId);

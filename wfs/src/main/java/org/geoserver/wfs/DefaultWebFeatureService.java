@@ -142,7 +142,7 @@ public class DefaultWebFeatureService implements WebFeatureService, ApplicationC
         LockFeature lockFeature = new LockFeature(getServiceInfo(), catalog);
         lockFeature.setFilterFactory(filterFactory);
 
-        return lockFeature.lockFeature(request);
+        return (LockFeatureResponseType) lockFeature.lockFeature(request);
     }
 
     /**

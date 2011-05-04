@@ -9,6 +9,8 @@ import net.opengis.wfs20.DescribeFeatureTypeType;
 import net.opengis.wfs20.GetCapabilitiesType;
 import net.opengis.wfs20.GetFeatureType;
 import net.opengis.wfs20.GetFeatureWithLockType;
+import net.opengis.wfs20.LockFeatureResponseType;
+import net.opengis.wfs20.LockFeatureType;
 import net.opengis.wfs20.TransactionResponseType;
 import net.opengis.wfs20.TransactionType;
 
@@ -76,6 +78,11 @@ public class DefaultWebFeatureService20 implements WebFeatureService20,  Applica
     public FeatureCollectionType getFeatureWithLock(GetFeatureWithLockType request)
             throws WFSException {
         return getFeature(request);
+    }
+    
+    public LockFeatureResponseType lockFeature(LockFeatureType request) throws WFSException {
+        LockFeature lockFeature = new LockFeature(getServiceInfo(), getCatalog(), filterFactory, handler());
+        return (LockFeatureResponseType) lockFeature.lockFeature(request);
     }
     
     public TransactionResponseType transaction(TransactionType request) throws WFSException {

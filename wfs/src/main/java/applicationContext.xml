@@ -128,10 +128,8 @@
             <value>DescribeFeatureType</value>
             <value>GetFeature</value>
             <value>GetFeatureWithLock</value>
+            <value>LockFeature</value>
             <value>Transaction</value>
-            <!--value>GetGmlObject</value>
-            <value>LockFeature</value-->
-            
           </list>
         </constructor-arg>
     </bean>
@@ -193,6 +191,10 @@
 		<constructor-arg ref="geoServer"/>
 		<constructor-arg ref="xmlConfiguration-1.1"/>
 	</bean>
+	<bean id="lockFeatureResponse-2.0"
+        class="org.geoserver.wfs.response.v2_0.LockFeatureTypeResponse" singleton="false">
+        <constructor-arg ref="geoServer"/>
+    </bean>
 	<bean id="transactionResponse-1.0.0"
 		class="org.geoserver.wfs.response.TransactionResponse" singleton="false">
 		<constructor-arg ref="geoServer"/>
@@ -446,6 +448,9 @@
     </bean>
     <bean id="getFeatureWithLockXmlReader-2.0" parent="xmlReader-2.0">
         <constructor-arg value="GetFeatureWithLock"/>
+    </bean>
+    <bean id="lockFeatureXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="LockFeature"/>
     </bean>
     <bean id="transactionXmlReader-2.0" parent="xmlReader-2.0">
         <constructor-arg value="Transaction"/>

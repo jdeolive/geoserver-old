@@ -9,6 +9,8 @@ import net.opengis.wfs20.DescribeFeatureTypeType;
 import net.opengis.wfs20.GetCapabilitiesType;
 import net.opengis.wfs20.GetFeatureType;
 import net.opengis.wfs20.GetFeatureWithLockType;
+import net.opengis.wfs20.LockFeatureResponseType;
+import net.opengis.wfs20.LockFeatureType;
 import net.opengis.wfs20.TransactionResponseType;
 import net.opengis.wfs20.TransactionType;
 
@@ -77,6 +79,18 @@ public interface WebFeatureService20 {
      * @throws WFSException Any service exceptions.
      */
     FeatureCollectionType getFeatureWithLock(GetFeatureWithLockType request)
+        throws WFSException;
+    
+    /**
+     * WFS LockFeatureType operation.
+     *
+     * @param request The lock feature request.
+     *
+     * @return A lock feature response type.
+     *
+     * @throws WFSException An service exceptions.
+     */
+    LockFeatureResponseType lockFeature(LockFeatureType request)
         throws WFSException;
     
     /**
