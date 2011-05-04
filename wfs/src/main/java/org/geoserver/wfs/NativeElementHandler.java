@@ -34,29 +34,35 @@ public class NativeElementHandler implements TransactionElementHandler {
      * Empty array of QNames
      */
     protected static final QName[] EMPTY_QNAMES = new QName[0];
+    
+    Class elementClass;
+    RequestObjectHandler handler;
+    
+    public NativeElementHandler() {
+        this(NativeType.class);
+    }
+    
+    public NativeElementHandler(Class elementClass) {
+        this.elementClass = elementClass;
+        this.handler = RequestObjectHandler.get(elementClass);
+    }
 
-    public void checkValidity(EObject element, Map<QName, FeatureTypeInfo> featureTypeInfos)
+    public void checkValidity(EObject nativ, Map featureTypeInfos)
         throws WFSTransactionException {
-        NativeType nativ = (NativeType) element;
-
-        if (!nativ.isSafeToIgnore()) {
-            throw new WFSTransactionException("Native element:" + nativ.getVendorId()
+        
+        if (!handler.isSafeToIgnore(nativ)) {
+            throw new WFSTransactionException("Native element:" + handler.getVendorId(nativ)
                 + " unsupported but marked as" + " unsafe to ignore", "InvalidParameterValue");
         }
     }
 
-    public void execute(EObject element, TransactionType request,
-            @SuppressWarnings("rawtypes") Map<QName, FeatureStore> featureSources,
-            TransactionResponseType response, TransactionListener listener)
-            throws WFSTransactionException {
+    public void execute(EObject element, Object request, Map featureSources,
+        Object response, TransactionListener listener) throws WFSTransactionException {
         // nothing to do, we just ignore if possible
     }
 
-    /**
-     * @see org.geoserver.wfs.TransactionElementHandler#getElementClass()
-     */
-    public Class<NativeType> getElementClass() {
-        return NativeType.class;
+    public Class getElementClass() {
+        return elementClass;
     }
 
     /**

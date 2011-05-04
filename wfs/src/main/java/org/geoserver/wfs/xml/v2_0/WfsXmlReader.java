@@ -12,12 +12,15 @@ import javax.xml.namespace.QName;
 import org.geoserver.config.GeoServer;
 import org.geoserver.ows.XmlRequestReader;
 import org.geoserver.wfs.WFSInfo;
+import org.geoserver.wfs.xml.FeatureTypeSchemaBuilder;
+import org.geoserver.wfs.xml.WFSHandlerFactory;
 import org.geoserver.wfs.xml.WFSXmlUtils;
 import org.geotools.util.Version;
 import org.geotools.wfs.v2_0.WFS;
 import org.geotools.wfs.v2_0.WFSConfiguration;
 import org.geotools.xml.Configuration;
 import org.geotools.xml.Parser;
+import org.picocontainer.MutablePicoContainer;
 
 /**
  * Xml reader for wfs 1.0 xml requests.
@@ -36,7 +39,12 @@ public class WfsXmlReader extends XmlRequestReader {
     
     @Override
     public Object read(Object request, Reader reader, Map kvp) throws Exception {
-        Parser parser = new Parser(new WFSConfiguration());
+        WFSConfiguration config = new WFSConfiguration();
+        WFSXmlUtils.initWfsConfiguration(config, gs, new FeatureTypeSchemaBuilder.GML32(gs));
+        
+        Parser parser = new Parser(config);
+        
+        
         
         WFSInfo wfs = wfs();
         

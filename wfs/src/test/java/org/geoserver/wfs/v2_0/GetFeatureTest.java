@@ -51,22 +51,6 @@ public class GetFeatureTest extends WFS20TestSupport {
         testGetFifteenAll("wfs?request=GetFeature&typename=cdf:Fifteen&version=2.0.0&service=wfs&propertyname=*");
     }
     
-    private void assertGML32(Document doc) {
-        assertEquals(WFS.NAMESPACE, doc.getDocumentElement().getAttribute("xmlns:wfs"));
-        
-        String schemaLocation = doc.getDocumentElement().getAttribute("xsi:schemaLocation"); 
-        assertTrue(schemaLocation.contains(WFS.NAMESPACE));
-        
-        String[] parts = schemaLocation.split(" ");
-        for (int i = 0; i < parts .length; i++) {
-            if (parts[i].equals(WFS.NAMESPACE)) {
-                assertTrue(parts[i+1].endsWith("2.0/wfs.xsd"));
-            }
-        }
-        assertEquals("wfs:FeatureCollection", doc.getDocumentElement().getNodeName());
-
-    }
-
     private void testGetFifteenAll(String request) throws Exception{
     	Document doc = getAsDOM(request);
     	assertGML32(doc);

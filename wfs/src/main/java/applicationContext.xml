@@ -50,7 +50,7 @@
       </property>
     </bean>
 
-    <!-- Transaction element handlers -->
+    <!-- 1.0 Transaction element handlers -->
     <bean id="wfsInsertElementHandler" class="org.geoserver.wfs.InsertElementHandler">
       <constructor-arg ref="geoServer"/>
       <constructor-arg ref="filterFactory"/>
@@ -65,6 +65,23 @@
     </bean>
     
     <bean id="wfsNativeElementHandler" class="org.geoserver.wfs.NativeElementHandler">
+    </bean>
+    
+    <!-- 2.0 Transaction element handlers -->
+    <bean id="wfs20InsertElementHandler" class="org.geoserver.wfs.v2_0.InsertHandler">
+      <constructor-arg ref="geoServer"/>
+      <constructor-arg ref="filterFactory"/>
+    </bean>
+    
+    <bean id="wfs20UpdateElementHandler" class="org.geoserver.wfs.v2_0.UpdateHandler">
+      <constructor-arg ref="geoServer"/>
+    </bean>
+    
+    <bean id="wfs20DeleteElementHandler" class="org.geoserver.wfs.v2_0.DeleteHandler">
+      <constructor-arg ref="geoServer"/>
+    </bean>
+    
+    <bean id="wfs20NativeElementHandler" class="org.geoserver.wfs.v2_0.NativeHandler">
     </bean>
 		
 	<!-- service descriptors -->
@@ -110,10 +127,11 @@
             <value>GetCapabilities</value>
             <value>DescribeFeatureType</value>
             <value>GetFeature</value>
-            <!--value>GetGmlObject</value>
             <value>GetFeatureWithLock</value>
-            <value>LockFeature</value>
-            <value>Transaction</value-->
+            <value>Transaction</value>
+            <!--value>GetGmlObject</value>
+            <value>LockFeature</value-->
+            
           </list>
         </constructor-arg>
     </bean>
@@ -176,6 +194,11 @@
 		<constructor-arg ref="geoServer"/>
 		<constructor-arg ref="xmlConfiguration-1.1"/>
 	</bean>
+	<bean id="transactionResponse-2.0"
+        class="org.geoserver.wfs.response.v2_0.TransactionResponse" singleton="false">
+        <constructor-arg ref="geoServer"/>
+    </bean>
+	
 	<bean id="geometryResponse"
 		class="org.geoserver.wfs.response.GeometryResponse">
         <constructor-arg ref="geoServer"/>
@@ -416,6 +439,12 @@
     </bean>
     <bean id="getFeatureXmlReader-2.0" parent="xmlReader-2.0">
         <constructor-arg value="GetFeature"/>
+    </bean>
+    <bean id="getFeatureWithLockXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="GetFeatureWithLock"/>
+    </bean>
+    <bean id="transactionXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="Transaction"/>
     </bean>
     
 	<!-- default feature type encoders -->
