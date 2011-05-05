@@ -9,8 +9,6 @@ import java.io.OutputStream;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import net.opengis.wfs.DescribeFeatureTypeType;
-
 import org.eclipse.xsd.XSDSchema;
 import org.eclipse.xsd.util.XSDResourceImpl;
 import org.geoserver.catalog.Catalog;
@@ -20,8 +18,8 @@ import org.geoserver.config.GeoServerInfo;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
-import org.geoserver.wfs.RequestObjectHandler;
 import org.geoserver.wfs.WFSDescribeFeatureTypeOutputFormat;
+import org.geoserver.wfs.request.DescribeFeatureTypeRequest;
 import org.geoserver.wfs.xml.FeatureTypeSchemaBuilder;
 import org.geotools.xml.Schemas;
 
@@ -68,9 +66,9 @@ public class XmlSchemaEncoder extends WFSDescribeFeatureTypeOutputFormat {
 
         //create the schema
         Object request = describeFeatureType.getParameters()[0];
-        RequestObjectHandler h = RequestObjectHandler.get(request);
+        DescribeFeatureTypeRequest req = DescribeFeatureTypeRequest.adapt(request);
         
-        XSDSchema schema = schemaBuilder.build(featureTypeInfos, h.getBaseURL(request));
+        XSDSchema schema = schemaBuilder.build(featureTypeInfos, req.getBaseURL());
 
         //serialize
         schema.updateElement();

@@ -12,6 +12,7 @@ import net.opengis.wfs.GetCapabilitiesType;
 
 import org.geoserver.catalog.Catalog;
 import org.geoserver.ows.util.RequestUtils;
+import org.geoserver.wfs.request.GetCapabilitiesRequest;
 
 /**
  * Web Feature Service GetCapabilities operation.
@@ -36,37 +37,23 @@ public class GetCapabilities {
     Catalog catalog;
 
     /**
-     * request object handler
-     */
-    RequestObjectHandler handler;
-    
-    /**
      * Creates a new wfs 1.0/1.1 GetCapabilitis operation.
      *
      * @param wfs The wfs configuration
      * @param catalog The geoserver catalog.
      */
     public GetCapabilities(WFSInfo wfs, Catalog catalog) {
-        this(wfs, catalog, new RequestObjectHandler.WFS_11());
-    }
-    
-    /**
-     * Creates a new wfs GetCapabilitis operation specifying the request object handler.
-     *
-     */
-    public GetCapabilities(WFSInfo wfs, Catalog catalog, RequestObjectHandler handler) {
         this.wfs = wfs;
         this.catalog = catalog;
-        this.handler = handler;
     }
 
-    public CapabilitiesTransformer run(Object request)
+    public CapabilitiesTransformer run(GetCapabilitiesRequest request)
         throws WFSException {
         //cite requires that we fail when we see an "invalid" update sequence,
         // since we dont support update sequences, all are invalid, but we take
         // our more lax approach and just ignore it when not doint the cite thing
         if (wfs.isCiteCompliant()) {
-            if (handler.getUpdateSequence(request) != null) {
+            if (request.getUpdateSequence() != null) {
                 throw new WFSException("Invalid update sequence", "InvalidUpdateSequence");
             }
         }
@@ -78,7 +65,7 @@ public class GetCapabilities {
         // However often the the context of the request is good enough to 
         // determine what the service is, like in 'geoserver/wfs?request=GetCapabilities'
         if (wfs.isCiteCompliant()) {
-            if (!handler.isSetService(request)) {
+            if (!request.isSetService()) {
                 //give up 
                 throw new WFSException("Service not set", "MissingParameterValue", "service");
             }
@@ -89,7 +76,7 @@ public class GetCapabilities {
         provided.add("1.0.0");
         provided.add("1.1.0");
         provided.add("2.0.0");
-        List<String> accepted = handler.getAcceptVersions(request);
+        List<String> accepted = request.getAcceptVersions();
 
         String version = RequestUtils.getVersionPreOws(provided, accepted);
 

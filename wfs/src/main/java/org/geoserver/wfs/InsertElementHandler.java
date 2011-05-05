@@ -27,6 +27,10 @@ import org.eclipse.emf.ecore.EObject;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.feature.ReprojectingFeatureCollection;
+import org.geoserver.wfs.request.Insert;
+import org.geoserver.wfs.request.TransactionElement;
+import org.geoserver.wfs.request.TransactionRequest;
+import org.geoserver.wfs.request.TransactionResponse;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -58,21 +62,12 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.wfs");
     private FilterFactory filterFactory;
 
-    Class elementClass;
-    RequestObjectHandler handler;
-    
     public InsertElementHandler(GeoServer gs, FilterFactory filterFactory) {
-        this(gs, filterFactory, InsertElementType.class);
-    }
-
-    public InsertElementHandler(GeoServer gs, FilterFactory filterFactory, Class elementClass) {
         super(gs);
         this.filterFactory = filterFactory;
-        this.elementClass = elementClass;
-        this.handler = RequestObjectHandler.get(elementClass);
     }
 
-    public void checkValidity(EObject element, Map<QName, FeatureTypeInfo> featureTypeInfos)
+    public void checkValidity(TransactionElement element, Map<QName, FeatureTypeInfo> featureTypeInfos)
         throws WFSTransactionException {
         if (!getInfo().getServiceLevel().getOps().contains( WFSInfo.Operation.TRANSACTION_INSERT)) {
             throw new WFSException("Transaction INSERT support is not enabled");
@@ -80,17 +75,20 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public void execute(EObject insert, Object request, Map featureStores, Object response, 
-        TransactionListener listener) throws WFSTransactionException {
+    public void execute(TransactionElement element, TransactionRequest request, Map featureStores, 
+        TransactionResponse response, TransactionListener listener) throws WFSTransactionException {
+        
+        Insert insert = (Insert) element;
         LOGGER.finer("Transasction Insert:" + insert);
 
-        long inserted = handler.getTotalInserted(response).longValue();
+        long inserted = response.getTotalInserted().longValue();
 
         try {
             // group features by their schema
             HashMap /* <SimpleFeatureType,FeatureCollection> */ schema2features = new HashMap();
 
-            List features = handler.getInsertFeatures(insert);
+            
+            List features = insert.getFeatures();
             for (Iterator f = features.iterator(); f.hasNext();) {
                 SimpleFeature feature = (SimpleFeature) f.next();
                 SimpleFeatureType schema = feature.getFeatureType();
@@ -198,19 +196,18 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
                 LinkedList fids = (LinkedList) schema2fids.get(schema.getTypeName());
                 String fid = ((FeatureId) fids.removeFirst()).getID();
 
-                handler.addInsertedFeature(
-                    response, handler.getHandle(insert), filterFactory.featureId(fid));
+                response.addInsertedFeature(insert.getHandle(), filterFactory.featureId(fid));
             }
 
             // update the insert counter
             inserted += features.size();
         } catch (Exception e) {
             String msg = "Error performing insert: " + e.getMessage();
-            throw new WFSTransactionException(msg, e, handler.getHandle(insert));
+            throw new WFSTransactionException(msg, e, insert.getHandle());
         }
 
         // update transaction summary
-        handler.setTotalInserted(response, BigInteger.valueOf(inserted));
+        response.setTotalInserted(BigInteger.valueOf(inserted));
     }
 
     
@@ -243,14 +240,15 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
     }
 
     public Class getElementClass() {
-        return elementClass;
+        return Insert.class;
     }
 
-    public QName[] getTypeNames(EObject insert) throws WFSTransactionException {
+    public QName[] getTypeNames(TransactionElement element) throws WFSTransactionException {
+        Insert insert = (Insert) element;
         
         List typeNames = new ArrayList();
 
-        List features = handler.getInsertFeatures(insert);
+        List features = insert.getFeatures();
         if (!features.isEmpty()) {
             for (Iterator f = features.iterator(); f.hasNext();) {
                 SimpleFeature feature = (SimpleFeature) f.next();
