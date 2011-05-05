@@ -71,6 +71,8 @@ public abstract class GetFeatureRequest extends RequestObjectAdapter {
         
         @Override
         public List<Query> getQueries() {
+            //TODO: instead of creating a new list we should wrap the existing on in case the client
+            // code needs to modify
             List<Query> list = new ArrayList<Query>();
             for (Object o : getAdaptedQueries()) {
                 list.add(new Query.WFS11((EObject)o));

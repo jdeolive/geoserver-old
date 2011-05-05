@@ -18,6 +18,15 @@ import org.eclipse.emf.ecore.EObject;
  */
 public abstract class LockFeatureRequest extends RequestObjectAdapter {
 
+    public static LockFeatureRequest adapt(Object request) {
+        if (request instanceof LockFeatureType) {
+            return new WFS11((EObject) request);
+        }
+        else if (request instanceof net.opengis.wfs20.LockFeatureType) {
+            return new WFS20((EObject) request);
+        }
+        return null;
+    }
     protected LockFeatureRequest(EObject adaptee) {
         super(adaptee);
     }
