@@ -22,6 +22,10 @@ import net.opengis.wfs.TransactionType;
 import org.eclipse.emf.ecore.EObject;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
+import org.geoserver.wfs.request.Delete;
+import org.geoserver.wfs.request.TransactionElement;
+import org.geoserver.wfs.request.TransactionRequest;
+import org.geoserver.wfs.request.TransactionResponse;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.Query;
@@ -56,37 +60,28 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
     
     FilterFactory factory = CommonFactoryFinder.getFilterFactory(null);
 
-    Class elementClass;
-    RequestObjectHandler handler;
-    
     public DeleteElementHandler(GeoServer gs) {
-        this(gs, DeleteElementType.class);
-    }
-
-    public DeleteElementHandler(GeoServer gs, Class elementClass) {
         super(gs);
-        this.elementClass = elementClass;
-        this.handler = RequestObjectHandler.get(elementClass);
     }
 
     public Class getElementClass() {
-        return elementClass;
+        return Delete.class;
     }
 
     /**
      * @see org.geoserver.wfs.TransactionElementHandler#getTypeNames(org.eclipse.emf.ecore.EObject)
      */
-    public QName[] getTypeNames(EObject element) throws WFSTransactionException {
-        return new QName[]{handler.getTypeName(element)};
+    public QName[] getTypeNames(TransactionElement element) throws WFSTransactionException {
+        return new QName[]{element.getTypeName()};
     }
 
-    public void checkValidity(EObject delete, Map featureTypeInfos)
+    public void checkValidity(TransactionElement delete, Map featureTypeInfos)
         throws WFSTransactionException {
         if (!getInfo().getServiceLevel().getOps().contains(WFSInfo.Operation.TRANSACTION_DELETE)) {
             throw new WFSException("Transaction Delete support is not enabled");
         }
 
-        Filter f = handler.getFilter(delete);
+        Filter f = delete.getFilter();
         
         if ((f == null) || Filter.INCLUDE.equals(f)) {
             throw new WFSTransactionException("Must specify filter for delete",
@@ -94,13 +89,13 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
         }
     }
 
-    public void execute(EObject delete, Object request, Map featureStores, Object response, 
-        TransactionListener listener) throws WFSTransactionException {
+    public void execute(TransactionElement delete, TransactionRequest request, Map featureStores, 
+        TransactionResponse response, TransactionListener listener) throws WFSTransactionException {
         
-        QName elementName = handler.getTypeName(delete);
-        String handle = handler.getHandle(delete);
+        QName elementName = delete.getTypeName();
+        String handle = delete.getHandle();
         
-        long deleted = handler.getTotalDeleted(response).longValue();
+        long deleted = response.getTotalDeleted().longValue();
 
         SimpleFeatureStore store = DataUtilities.simple((FeatureStore) featureStores.get(elementName));
 
@@ -112,12 +107,12 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
         LOGGER.finer("Transaction Delete:" + delete);
 
         try {
-            Filter filter = handler.getFilter(delete);
+            Filter filter = delete.getFilter();
             
             // make sure all geometric elements in the filter have a crs, and that the filter
             // is reprojected to store's native crs as well
             CoordinateReferenceSystem declaredCRS = WFSReprojectionUtil.getDeclaredCrs(
-                    store.getSchema(), handler.getVersion(request));
+                    store.getSchema(), request.getVersion());
             filter = WFSReprojectionUtil.normalizeFilterCRS(filter, store.getSchema(), declaredCRS);
             
             // notify listeners
@@ -133,8 +128,8 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
                 damaged = store.getFeatures(filter).getBounds();
             }
 
-            if ((handler.getLockId(request) != null) && store instanceof FeatureLocking
-                    && (handler.isReleaseActionSome(request))) {
+            if ((request.getLockId() != null) && store instanceof FeatureLocking
+                    && (request.isReleaseActionSome())) {
                 SimpleFeatureLocking locking;
                 locking = (SimpleFeatureLocking) store;
 
@@ -194,7 +189,7 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
             }
         } catch (IOException e) {
             String msg = e.getMessage();
-            String eHandle = handler.getHandle(delete);
+            String eHandle = delete.getHandle();
             String code = null;
             
             //check case of feature lock exception and set appropriate exception
@@ -206,6 +201,6 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
         }
 
         // update deletion count
-        handler.setTotalDeleted(response, BigInteger.valueOf(deleted));
+        response.setTotalDeleted(BigInteger.valueOf(deleted));
     }
 }

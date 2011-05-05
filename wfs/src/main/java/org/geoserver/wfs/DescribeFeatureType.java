@@ -15,6 +15,7 @@ import net.opengis.wfs.DescribeFeatureTypeType;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
+import org.geoserver.wfs.request.DescribeFeatureTypeRequest;
 
 
 /**
@@ -40,12 +41,7 @@ public class DescribeFeatureType {
      * WFS service
      */
     private WFSInfo wfs;
-    
-    /**
-     * Request object handler
-     */
-    private RequestObjectHandler handler;
-    
+
     /**
          * Creates a new wfs 1.0/1.1 DescribeFeatureType operation.
          *
@@ -53,16 +49,8 @@ public class DescribeFeatureType {
          * @param catalog The geoserver catalog.
          */
     public DescribeFeatureType(WFSInfo wfs, Catalog catalog) {
-        this(wfs, catalog, new RequestObjectHandler.WFS_11());
-    }
-    
-    /**
-     * Creates a new wfs DescribeFeatureType operation specifying the request object handler.
-     */
-    public DescribeFeatureType(WFSInfo wfs, Catalog catalog, RequestObjectHandler handler) {
         this.catalog = catalog;
         this.wfs = wfs;
-        this.handler = handler;
     }
 
     public WFSInfo getWFS() {
@@ -81,9 +69,9 @@ public class DescribeFeatureType {
         this.catalog = catalog;
     }
 
-    public FeatureTypeInfo[] run(Object request)
+    public FeatureTypeInfo[] run(DescribeFeatureTypeRequest request)
         throws WFSException {
-        List<QName> names = new ArrayList<QName>(handler.getTypeNames(request));
+        List<QName> names = new ArrayList<QName>(request.getTypeNames());
 
         final boolean citeConformance = getWFS().isCiteCompliant();
         if (!citeConformance) {

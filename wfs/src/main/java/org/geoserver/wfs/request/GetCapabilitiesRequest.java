@@ -1,0 +1,73 @@
+package org.geoserver.wfs.request;
+
+import java.util.Arrays;
+import java.util.List;
+
+import net.opengis.ows10.Ows10Factory;
+import net.opengis.ows11.Ows11Factory;
+import net.opengis.wfs.GetCapabilitiesType;
+
+import org.eclipse.emf.ecore.EObject;
+
+/**
+ * WFS GetCapabilities request.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ */
+public abstract class GetCapabilitiesRequest extends RequestObjectAdapter {
+
+    public static GetCapabilitiesRequest adapt(Object request) {
+        if (request instanceof GetCapabilitiesType) {
+            return new WFS11((EObject) request);
+        }
+        else if (request instanceof net.opengis.wfs20.GetCapabilitiesType) {
+            return new WFS20((EObject) request);
+        }
+        return null;
+    }
+    
+    protected GetCapabilitiesRequest(EObject adaptee) {
+        super(adaptee);
+    }
+    
+    public String getUpdateSequence() {
+        return eGet(adaptee, "updateSequence", String.class);
+    }
+
+    public List<String> getAcceptVersions() {
+        return eGet(adaptee, "acceptVersions.version", List.class);
+    }
+    
+    public void setAcceptVersions(String... versions) {
+        Object acceptedVersions = createAcceptedVersions();
+        eAdd(acceptedVersions, "version", Arrays.asList(versions));
+        eSet(adaptee, "acceptVersions", acceptedVersions);
+    }
+
+    protected abstract Object createAcceptedVersions();
+
+    public static class WFS11 extends GetCapabilitiesRequest {
+
+        public WFS11(EObject adaptee) {
+            super(adaptee);
+        }
+
+        @Override
+        protected Object createAcceptedVersions() {
+            return Ows10Factory.eINSTANCE.createAcceptVersionsType();
+        }
+    }
+
+    public static class WFS20 extends GetCapabilitiesRequest {
+        
+        public WFS20(EObject adaptee) {
+            super(adaptee);
+        }
+
+        @Override
+        protected Object createAcceptedVersions() {
+            return Ows11Factory.eINSTANCE.createAcceptVersionsType();
+        }
+    }
+
+}

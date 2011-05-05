@@ -45,13 +45,13 @@ import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.config.GeoServerInfo;
 import org.geoserver.ows.URLMangler.URLType;
-import org.geoserver.ows.util.OwsUtils;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
-import org.geoserver.wfs.RequestObjectHandler;
 import org.geoserver.wfs.WFSException;
 import org.geoserver.wfs.WFSGetFeatureOutputFormat;
 import org.geoserver.wfs.WFSInfo;
+import org.geoserver.wfs.request.GetFeatureRequest;
+import org.geoserver.wfs.request.Query;
 import org.geoserver.wfs.xml.v1_1_0.WFS;
 import org.geoserver.wfs.xml.v1_1_0.WFSConfiguration;
 import org.geotools.feature.FeatureCollection;
@@ -113,18 +113,17 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
             throws ServiceException, IOException, UnsupportedEncodingException {
         List featureCollections = results.getFeature();
 
-        Object request = RequestObjectHandler.findGetFeature(getFeature);
-        
+        GetFeatureRequest request = GetFeatureRequest.adapt(getFeature.getParameters()[0]);
+
         // round up the info objects for each feature collection
         HashMap<String, Set<FeatureTypeInfo>> ns2metas = new HashMap<String, Set<FeatureTypeInfo>>();
         for (int fcIndex = 0; fcIndex < featureCollections.size(); fcIndex++) {
             if(request != null) {
-                RequestObjectHandler handler = RequestObjectHandler.get(request);
-                List queries = handler.getQueries(request);
-                Object queryType = queries.get(fcIndex);
+                List<Query> queries = request.getQueries();
+                Query queryType = queries.get(fcIndex);
                 
                 // may have multiple type names in each query, so add them all
-                for (QName name : handler.getQueryTypeNames(queryType)) {
+                for (QName name : queryType.getTypeNames()) {
                     // get a feature type name from the query
                     Name featureTypeName = new NameImpl(name.getNamespaceURI(), name.getLocalPart());
                     FeatureTypeInfo meta = catalog.getFeatureTypeByName(featureTypeName);
@@ -197,7 +196,7 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
             encoder.setSchemaLocation(getWfsNamespace(), getCanonicalWfsSchemaLocation());
         } else {
             encoder.setSchemaLocation(getWfsNamespace(),
-                    buildSchemaURL(RequestObjectHandler.baseURL(gft), getRelativeWfsSchemaLocation()));
+                    buildSchemaURL(request.getBaseURL(), getRelativeWfsSchemaLocation()));
         }
 
         //declare application schema namespaces
@@ -229,7 +228,7 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
             if (typeNames.length() > 0) {
                 params.put("typeName", typeNames.toString());
                 // set the made up schema location for types not provided by the user
-                String schemaLocation = buildURL(RequestObjectHandler.baseURL(gft), "wfs", params, URLType.SERVICE);
+                String schemaLocation = buildURL(request.getBaseURL(), "wfs", params, URLType.SERVICE);
                 LOGGER.finer("Unable to find user-defined schema location for: " + namespaceURI
                         + ". Using a built schema location by default: " + schemaLocation);
                 encoder.setSchemaLocation(namespaceURI, schemaLocation);

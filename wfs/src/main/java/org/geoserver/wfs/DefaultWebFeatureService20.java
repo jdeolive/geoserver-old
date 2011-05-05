@@ -17,6 +17,11 @@ import net.opengis.wfs20.TransactionType;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
+import org.geoserver.wfs.request.DescribeFeatureTypeRequest;
+import org.geoserver.wfs.request.GetCapabilitiesRequest;
+import org.geoserver.wfs.request.GetFeatureRequest;
+import org.geoserver.wfs.request.LockFeatureRequest;
+import org.geoserver.wfs.request.TransactionRequest;
 import org.geotools.xml.transform.TransformerBase;
 import org.opengis.filter.FilterFactory2;
 import org.springframework.beans.BeansException;
@@ -60,19 +65,21 @@ public class DefaultWebFeatureService20 implements WebFeatureService20,  Applica
     }
 
     public TransformerBase getCapabilities(GetCapabilitiesType request) throws WFSException {
-        return new GetCapabilities(getServiceInfo(), getCatalog(), handler()).run(request);
+        return new GetCapabilities(getServiceInfo(), getCatalog())
+        .run(new GetCapabilitiesRequest.WFS20(request));
     }
     
     public FeatureTypeInfo[] describeFeatureType(DescribeFeatureTypeType request)
             throws WFSException {
-        return new DescribeFeatureType(getServiceInfo(), getCatalog(), handler()).run(request);
+        return new DescribeFeatureType(getServiceInfo(), getCatalog())
+            .run(new DescribeFeatureTypeRequest.WFS20(request));
     }
 
     public FeatureCollectionType getFeature(GetFeatureType request) throws WFSException {
-        GetFeature gf = new GetFeature(getServiceInfo(), getCatalog(), handler());
+        GetFeature gf = new GetFeature(getServiceInfo(), getCatalog());
         gf.setFilterFactory(filterFactory);
         
-        return gf.run(request);
+        return gf.run(new GetFeatureRequest.WFS20(request));
     }
     
     public FeatureCollectionType getFeatureWithLock(GetFeatureWithLockType request)
@@ -81,23 +88,21 @@ public class DefaultWebFeatureService20 implements WebFeatureService20,  Applica
     }
     
     public LockFeatureResponseType lockFeature(LockFeatureType request) throws WFSException {
-        LockFeature lockFeature = new LockFeature(getServiceInfo(), getCatalog(), filterFactory, handler());
-        return (LockFeatureResponseType) lockFeature.lockFeature(request);
+        LockFeature lockFeature = new LockFeature(getServiceInfo(), getCatalog(), filterFactory);
+        return (LockFeatureResponseType) 
+            lockFeature.lockFeature(new LockFeatureRequest.WFS20(request)).getAdaptee();
     }
     
     public TransactionResponseType transaction(TransactionType request) throws WFSException {
-        Transaction tx = new Transaction(getServiceInfo(), getCatalog(), context, handler());
+        Transaction tx = new Transaction(getServiceInfo(), getCatalog(), context);
         tx.setFilterFactory(filterFactory);
-        return (TransactionResponseType) tx.transaction(request);
+        
+        return (TransactionResponseType) 
+            tx.transaction(new TransactionRequest.WFS20(request)).getAdaptee();
     }
     
     //the following operations are not part of the spec
     public void releaseLock(String lockId) throws WFSException {
         new LockFeature(getServiceInfo(), getCatalog()).release(lockId);
     }
-
-    RequestObjectHandler handler() {
-        return new RequestObjectHandler.WFS_20();
-    }
-
 }

@@ -12,10 +12,9 @@ import java.util.logging.Logger;
 import net.opengis.wfs.FeatureCollectionType;
 
 import org.geoserver.config.GeoServer;
-import org.geoserver.ows.Response;
-import org.geoserver.ows.util.OwsUtils;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
+import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.response.WFSResponse;
 
 
@@ -81,10 +80,8 @@ public abstract class WFSGetFeatureOutputFormat extends WFSResponse {
         if ("GetFeature".equalsIgnoreCase(operation.getId())
                 || "GetFeatureWithLock".equalsIgnoreCase(operation.getId())) {
             //also check that the resultType is "results"
-            Object request = RequestObjectHandler.findGetFeature(operation);
-            RequestObjectHandler handler = RequestObjectHandler.get(request);
-            
-            if (handler.isResultTypeResults(request)) {
+            GetFeatureRequest req = GetFeatureRequest.adapt(operation.getParameters()[0]);
+            if (req.isResultTypeResults()) {
                 //call subclass hook
                 return canHandleInternal(operation);
             }

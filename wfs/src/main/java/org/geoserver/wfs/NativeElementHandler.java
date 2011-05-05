@@ -16,6 +16,11 @@ import net.opengis.wfs.TransactionType;
 import org.eclipse.emf.ecore.EObject;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geotools.data.FeatureStore;
+import org.geoserver.wfs.request.Native;
+import org.geoserver.wfs.request.TransactionElement;
+import org.geoserver.wfs.request.TransactionRequest;
+import org.geoserver.wfs.request.TransactionResponse;
+>>>>>>> refactoring RequestObjectHandler into multiple classes, an object model adapting the wfs 1.1  and 2.0 object models
 
 
 /**
@@ -34,35 +39,27 @@ public class NativeElementHandler implements TransactionElementHandler {
      * Empty array of QNames
      */
     protected static final QName[] EMPTY_QNAMES = new QName[0];
-    
-    Class elementClass;
-    RequestObjectHandler handler;
-    
+
     public NativeElementHandler() {
-        this(NativeType.class);
-    }
-    
-    public NativeElementHandler(Class elementClass) {
-        this.elementClass = elementClass;
-        this.handler = RequestObjectHandler.get(elementClass);
     }
 
-    public void checkValidity(EObject nativ, Map featureTypeInfos)
+    public void checkValidity(TransactionElement element, Map featureTypeInfos)
         throws WFSTransactionException {
         
-        if (!handler.isSafeToIgnore(nativ)) {
-            throw new WFSTransactionException("Native element:" + handler.getVendorId(nativ)
+        Native nativ = (Native) element;
+        if (!nativ.isSafeToIgnore()) {
+            throw new WFSTransactionException("Native element:" + nativ.getVendorId()
                 + " unsupported but marked as" + " unsafe to ignore", "InvalidParameterValue");
         }
     }
 
-    public void execute(EObject element, Object request, Map featureSources,
-        Object response, TransactionListener listener) throws WFSTransactionException {
+    public void execute(TransactionElement element, TransactionRequest request, Map featureSources,
+        TransactionResponse response, TransactionListener listener) throws WFSTransactionException {
         // nothing to do, we just ignore if possible
     }
 
     public Class getElementClass() {
-        return elementClass;
+        return Native.class;
     }
 
     /**

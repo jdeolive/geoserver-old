@@ -35,6 +35,9 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.ServiceException;
+import org.geoserver.wfs.request.TransactionElement;
+import org.geoserver.wfs.request.TransactionRequest;
+import org.geoserver.wfs.request.TransactionResponse;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
@@ -77,20 +80,10 @@ public class Transaction {
     protected List transactionListeners = new ArrayList();
     protected List transactionPlugins = new ArrayList();
     
-    /** 
-     * request object handler
-     */
-    protected RequestObjectHandler reqhandler;
-
     public Transaction(WFSInfo wfs, Catalog catalog, ApplicationContext context) {
-        this(wfs, catalog, context, new RequestObjectHandler.WFS_11());
-    }
-    
-    public Transaction(WFSInfo wfs, Catalog catalog, ApplicationContext context, RequestObjectHandler handler) {
         this.wfs = wfs;
         this.catalog = catalog;
-        this.reqhandler = handler;
-        ;
+        
         // register element handlers, listeners and plugins
         transactionElementHandlers.addAll(GeoServerExtensions.extensions(TransactionElementHandler.class));
         transactionListeners.addAll(GeoServerExtensions.extensions(TransactionListener.class));
@@ -107,7 +100,7 @@ public class Transaction {
         this.filterFactory = filterFactory;
     }
 
-    public Object transaction(Object request)
+    public TransactionResponse transaction(TransactionRequest request)
         throws WFSException {
         // make sure server is supporting transactions
         if (!wfs.getServiceLevel().contains(WFSInfo.ServiceLevel.TRANSACTIONAL) ) {
@@ -160,11 +153,11 @@ public class Transaction {
      * @throws WfsTransactionException
      *             DOCUMENT ME!
      */
-    protected Object execute(Object request)
+    protected TransactionResponse execute(TransactionRequest request)
         throws Exception {
         // some defaults
-        if (reqhandler.getReleaseAction(request) == null) {
-            reqhandler.setReleaseActionAll(request);
+        if (request.getReleaseAction() == null) {
+            request.setReleaseActionAll();
         }
 
         // inform plugins we're about to start, and let them eventually
@@ -205,10 +198,11 @@ public class Transaction {
         // to agree with the spec docs)
         for (Iterator it = elementHandlers.entrySet().iterator(); it.hasNext();) {
             Map.Entry entry = (Map.Entry) it.next();
-            EObject element = (EObject) entry.getKey();
+            TransactionElement element = (TransactionElement) entry.getKey();
             TransactionElementHandler handler = (TransactionElementHandler) entry.getValue();
             Map featureTypeInfos = new HashMap();
 
+            
             QName[] typeNames = handler.getTypeNames(element);
 
             for (int i = 0; i < typeNames.length; i++) {
@@ -228,8 +222,7 @@ public class Transaction {
 
                 if (meta == null) {
                     String msg = "Feature type '" + name + "' is not available: ";
-                    String handle = (String) EMFUtils.get(element, "handle");
-                    throw new WFSTransactionException(msg, (String) null, handle);
+                    throw new WFSTransactionException(msg, (String) null, element.getHandle());
                 }
 
                 featureTypeInfos.put(typeName, meta);
@@ -277,22 +270,19 @@ public class Transaction {
                         stores2.put(typeRef, source);
                     } else {
                         String msg = elementName + " is read-only";
-                        String handle = (String) EMFUtils.get(element, "handle");
-
-                        throw new WFSTransactionException(msg, (String) null, handle);
+                        throw new WFSTransactionException(msg, (String) null, element.getHandle());
                     }
                 } catch (IOException ioException) {
                     String msg = elementName + " is not available: "
                         + ioException.getLocalizedMessage();
-                    String handle = (String) EMFUtils.get(element, "handle");
-                    throw new WFSTransactionException(msg, ioException, handle);
+                    throw new WFSTransactionException(msg, ioException, element.getHandle());
                 }
             }
         }
 
         // provide authorization for transaction
         // 
-        String authorizationID = reqhandler.getLockId(request);
+        String authorizationID = request.getLockId();
 
         if (authorizationID != null) {
             if (!wfs.getServiceLevel().getOps().contains( WFSInfo.Operation.LOCKFEATURE)) {
@@ -318,8 +308,8 @@ public class Transaction {
         }
 
         // result
-        Object result = reqhandler.createTransactionResponse();
-        reqhandler.setTransactionResponseHandle(result, reqhandler.getHandle(request));
+        TransactionResponse result = request.createResponse();
+        result.setHandle(request.getHandle());
         
         // execute elements in order, recording results as we go
         // I will need to record the damaged area for pre commit validation
@@ -330,7 +320,7 @@ public class Transaction {
         try {
             for (Iterator it = elementHandlers.entrySet().iterator(); it.hasNext();) {
                 Map.Entry entry = (Map.Entry) it.next();
-                EObject element = (EObject) entry.getKey();
+                TransactionElement element = (TransactionElement) entry.getKey();
                 TransactionElementHandler handler = (TransactionElementHandler) entry.getValue();
 
                 handler.execute(element, request, stores, result, multiplexer);
@@ -339,7 +329,7 @@ public class Transaction {
             exception = true;
             LOGGER.log(Level.SEVERE, "Transaction failed", e);
 
-            reqhandler.addAction(result, e.getCode() != null ? e.getCode() : "InvalidParameterValue", 
+            result.addAction(e.getCode() != null ? e.getCode() : "InvalidParameterValue", 
                 e.getLocator(), e.getMessage());
         }
 
@@ -377,11 +367,11 @@ public class Transaction {
                 // We also need to do this if the opperation is not a success,
                 // you can find this same code in the abort method
                 // 
-                String lockId = reqhandler.getLockId(request);
+                String lockId = request.getLockId();
                 if (lockId != null) {
-                    if (reqhandler.isReleaseActionAll(request)) {
+                    if (request.isReleaseActionAll()) {
                         lockRelease(lockId);
-                    } else if (reqhandler.isReleaseActionSome(request)) {
+                    } else if (request.isReleaseActionSome()) {
                         lockRefresh(lockId);
                     }
                 }
@@ -426,9 +416,9 @@ public class Transaction {
         // occured, howwever insert results needs to have at least one
         // "FeatureId" eliement, sp
         // we create an FeatureId with an empty fid
-        List insertedFeatures = reqhandler.getInsertedFeatures(result);
+        List insertedFeatures = result.getInsertedFeatures();
         if (insertedFeatures != null && insertedFeatures.isEmpty()) {
-            reqhandler.addInsertedFeature(result, null, filterFactory.featureId("none"));
+            result.addInsertedFeature(null, filterFactory.featureId("none"));
         }
 
         return result;
@@ -459,15 +449,14 @@ public class Transaction {
      * @param group
      * @return
      */
-    private Map gatherElementHandlers(Object request)
+    private Map gatherElementHandlers(TransactionRequest request)
         throws WFSTransactionException {
         //JD: use a linked hashmap since the order of elements in a transaction
         // must be respected
         Map map = new LinkedHashMap();
 
-        Iterator it = reqhandler.getTransactionElements(request);
-        while(it.hasNext()) {
-            EObject element = (EObject) it.next();
+        List<TransactionElement> elements = request.getElements();
+        for (TransactionElement element : elements) {
             map.put(element, findElementHandler(element.getClass()));
         }
 
@@ -525,7 +514,7 @@ public class Transaction {
      *
      * @return
      */
-    protected DefaultTransaction getDatastoreTransaction(Object request)
+    protected DefaultTransaction getDatastoreTransaction(TransactionRequest request)
     throws IOException {
         DefaultTransaction transaction = new DefaultTransaction();
         // use handle as the log messages
@@ -541,7 +530,7 @@ public class Transaction {
         // Ok, this is a hack. We assume there is only one versioning datastore, the postgis one,
         // and that we can the following properties won't hurt transactio processing anyways...
         transaction.putProperty("VersioningCommitAuthor", username);
-        transaction.putProperty("VersioningCommitMessage", reqhandler.getHandle(request));
+        transaction.putProperty("VersioningCommitMessage", request.getHandle());
     
         return transaction;
     }
@@ -551,7 +540,7 @@ public class Transaction {
      *
      * @see org.vfny.geoserver.responses.Response#abort()
      */
-    public void abort(Object request) {
+    public void abort(TransactionRequest request) {
         if (transaction == null) {
             return; // no transaction to rollback
         }
@@ -564,15 +553,15 @@ public class Transaction {
             LOGGER.log(Level.SEVERE, "Failed trying to rollback a transaction:" + ioException);
         }
 
-        String lockId = reqhandler.getLockId(request);
+        String lockId = request.getLockId();
         if (lockId != null) {
-            if (reqhandler.isReleaseActionSome(request)) {
+            if (request.isReleaseActionSome()) {
                 try {
                     lockRefresh(lockId);
                 } catch (Exception e) {
                     LOGGER.log(Level.WARNING, "Error occured refreshing lock", e);
                 }
-            } else if (reqhandler.isReleaseActionAll(request)) {
+            } else if (request.isReleaseActionAll()) {
                 try {
                     lockRelease(lockId);
                 } catch (Exception e) {

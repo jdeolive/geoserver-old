@@ -7,11 +7,8 @@ package org.geoserver.wfs.kvp.v2_0;
 import net.opengis.wfs20.GetCapabilitiesType;
 import net.opengis.wfs20.Wfs20Factory;
 
-import org.geoserver.wfs.RequestObjectHandler;
-import org.geoserver.wfs.kvp.GetCapabilitiesKvpRequestReaderBase;
-
-public class GetCapabilitiesKvpRequestReader extends GetCapabilitiesKvpRequestReaderBase {
+public class GetCapabilitiesKvpRequestReader extends org.geoserver.wfs.kvp.GetCapabilitiesKvpRequestReader {
     public GetCapabilitiesKvpRequestReader() {
-        super(GetCapabilitiesType.class, Wfs20Factory.eINSTANCE, new RequestObjectHandler.WFS_20());
+        super(GetCapabilitiesType.class, Wfs20Factory.eINSTANCE);
     }
 }

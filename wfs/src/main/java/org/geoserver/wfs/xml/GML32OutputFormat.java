@@ -17,14 +17,13 @@ import java.util.logging.Level;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
 
-import net.opengis.wfs.BaseRequestType;
 import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs20.Wfs20Factory;
 
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.platform.Operation;
-import org.geoserver.wfs.RequestObjectHandler;
+import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.xml.v1_1_0.WFSConfiguration;
 import org.geotools.wfs.v2_0.WFS;
 import org.geotools.xml.Configuration;
@@ -78,7 +77,7 @@ public class GML32OutputFormat extends GML3OutputFormat {
         FeatureTypeSchemaBuilder schemaBuilder = new FeatureTypeSchemaBuilder.GML32(geoServer);
         
         ApplicationSchemaXSD2 xsd = new ApplicationSchemaXSD2(schemaBuilder, featureTypes);
-        xsd.setBaseURL(RequestObjectHandler.baseURL(request));
+        xsd.setBaseURL(GetFeatureRequest.adapt(request).getBaseURL());
         
         ApplicationSchemaConfiguration2 config = new ApplicationSchemaConfiguration2(xsd, 
             new org.geotools.wfs.v2_0.WFSConfiguration());
