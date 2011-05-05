@@ -44,6 +44,14 @@ public abstract class GetCapabilitiesRequest extends RequestObjectAdapter {
         eSet(adaptee, "acceptVersions", acceptedVersions);
     }
 
+    public String getNamespace() {
+        return eGet(adaptee, "namespace", String.class);
+    }
+    
+    public void setNamespace(String namespace) {
+        eSet(adaptee, "namespace", namespace);
+    }
+    
     protected abstract Object createAcceptedVersions();
 
     public static class WFS11 extends GetCapabilitiesRequest {

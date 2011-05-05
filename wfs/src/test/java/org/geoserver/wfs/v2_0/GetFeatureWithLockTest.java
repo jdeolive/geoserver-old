@@ -246,7 +246,7 @@ public class GetFeatureWithLockTest extends WFS20TestSupport {
                 + "  xmlns:cdf=\"http://www.opengis.net/cite/data\""
                 + "  xmlns:fes='" + FES.NAMESPACE + "' "
                 + "  xmlns:wfs='" + WFS.NAMESPACE + "'>"
-                + "  <wfs:Query typeName=\"Locks\">" + "    <fes:Filter>"
+                + "  <wfs:Query typeNames=\"Locks\">" + "    <fes:Filter>"
                 + "      <fes:ResourceId rid=\"" + fid1 + "\"/>"
                 + "      <fes:ResourceId rid=\"" + fid2 + "\"/>"
                 + "    </fes:Filter>" + "  </wfs:Query>"
@@ -327,7 +327,7 @@ public class GetFeatureWithLockTest extends WFS20TestSupport {
         
         
         dom = postAsDOM("cdf/Fifteen/wfs", xml);
-        XMLAssert.assertXpathEvaluatesTo("1", "count(//ogc:ExceptionReport)", dom);
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//ows:ExceptionReport)", dom);
         
         dom = postAsDOM("cdf/Locks/wfs", xml);
         assertEquals("wfs:FeatureCollection", dom.getDocumentElement().getNodeName());

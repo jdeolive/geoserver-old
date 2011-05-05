@@ -28,6 +28,15 @@ import org.eclipse.emf.ecore.EObject;
  */
 public abstract class TransactionRequest extends RequestObjectAdapter {
 
+    public static TransactionRequest adapt(Object request) {
+        if (request instanceof TransactionType) {
+            return new WFS11((EObject) request);
+        }
+        else if (request instanceof net.opengis.wfs20.TransactionType) {
+            return new WFS20((EObject) request);
+        }
+        return null;
+    }
     protected TransactionRequest(EObject adaptee) {
         super(adaptee);
     }
