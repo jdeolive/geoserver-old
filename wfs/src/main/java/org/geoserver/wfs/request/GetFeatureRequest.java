@@ -33,6 +33,10 @@ public abstract class GetFeatureRequest extends RequestObjectAdapter {
     protected GetFeatureRequest(EObject adaptee) {
         super(adaptee);
     }
+    
+    public BigInteger getStartIndex() {
+        return eGet(adaptee, "startIndex", BigInteger.class);
+    }
 
     public abstract List<Query> getQueries();
     

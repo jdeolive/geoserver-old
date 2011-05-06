@@ -223,6 +223,11 @@ public abstract class FeatureTypeSchemaBuilder {
             }
         } else {
             //different namespaces, write out import statements
+            
+            //set the first namespace as the target one
+            NamespaceInfo ns = featureTypeInfos[0].getNamespace();
+            schema.setTargetNamespace(ns.getURI());
+            
             Map<String, String> imports = new HashMap<String, String>();
             for (Iterator i = ns2featureTypeInfos.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry) i.next();
@@ -880,7 +885,7 @@ public abstract class FeatureTypeSchemaBuilder {
             baseType = "AbstractFeatureType";
             substitutionGroup = "AbstractFeature";
             describeFeatureTypeParams =  params("request", "DescribeFeatureType", 
-                    "version", "1.1.0",
+                    "version", "2.0.0",
                     "service", "WFS", 
                     "outputFormat", "text/xml; subtype=gml/3.2");
             xmlConfiguration = new org.geotools.gml3.v3_2.GMLConfiguration();

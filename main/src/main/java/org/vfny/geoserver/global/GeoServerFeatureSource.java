@@ -31,6 +31,7 @@ import org.geotools.feature.FeatureTypes;
 import org.geotools.feature.SchemaException;
 import org.geotools.filter.spatial.DefaultCRSFilterVisitor;
 import org.geotools.filter.spatial.ReprojectingFilterVisitor;
+import org.geotools.feature.collection.MaxSimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.opengis.feature.simple.SimpleFeature;
@@ -332,6 +333,19 @@ public class GeoServerFeatureSource implements SimpleFeatureSource {
      */
     public SimpleFeatureCollection getFeatures(Query query)
             throws IOException {
+        //check for an offset in the query, if the underlying store does not do offsets then 
+        // we need to apply it after the fact along with max features
+        Integer offset = null, maxFeatures = null;
+        if (query.getStartIndex() != null) {
+            if (!source.getQueryCapabilities().isOffsetSupported()) {
+                offset = query.getStartIndex();
+                maxFeatures = query.getMaxFeatures();
+                
+                query.setStartIndex(null);
+                query.setMaxFeatures(Query.DEFAULT_MAX);
+            }
+        }
+
         Query reprojected = reprojectFilter(query);
         Query newQuery = adaptQuery(reprojected, schema);
         
@@ -339,6 +353,13 @@ public class GeoServerFeatureSource implements SimpleFeatureSource {
         try {
             //this is the raw "unprojected" feature collection
             SimpleFeatureCollection fc = source.getFeatures(newQuery);
+            
+            //apply limit offset if necessary
+            if (offset != null) {
+                fc = new MaxSimpleFeatureCollection(fc, offset, maxFeatures);
+            }
+            
+            //apply reprojection 
             return applyProjectionPolicies(targetCRS, fc);
         } catch (Exception e) {
             throw new DataSourceException(e);
