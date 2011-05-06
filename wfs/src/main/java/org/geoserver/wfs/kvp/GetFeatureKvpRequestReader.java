@@ -4,6 +4,7 @@
  */
 package org.geoserver.wfs.kvp;
 
+import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
