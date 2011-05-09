@@ -23,6 +23,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import javax.xml.namespace.QName;
+
 import net.opengis.wfs.GetCapabilitiesType;
 
 import org.geoserver.catalog.Catalog;
@@ -36,6 +38,7 @@ import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.CapabilitiesTransformer.WFS1_1.CapabilitiesTranslator1_1;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.NameImpl;
 import org.geotools.filter.FunctionFactory;
 import org.geotools.filter.v1_0.OGC;
 import org.geotools.filter.v2_0.FES;
@@ -43,8 +46,13 @@ import org.geotools.gml3.GML;
 import org.geotools.xlink.XLINK;
 import org.geotools.xml.transform.TransformerBase;
 import org.geotools.xml.transform.Translator;
+import org.geotools.xs.XS;
+import org.opengis.feature.type.AttributeType;
+import org.opengis.feature.type.Name;
+import org.opengis.feature.type.Schema;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.capability.FunctionName;
+import org.opengis.parameter.Parameter;
 import org.vfny.geoserver.global.FeatureTypeInfoTitleComparator;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.AttributesImpl;
@@ -1681,6 +1689,10 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
             
             public CapabilitiesTranslator2_0(ContentHandler handler) {
                 super(handler, null, null);
+
+                //register schema mappings for function return + argument types
+                getNamespaceSupport().declarePrefix("xs", XS.NAMESPACE);
+                getNamespaceSupport().declarePrefix("gml", org.geotools.gml3.v3_2.GML.NAMESPACE);
                 
                 //wfs 1.1 already does a lot of the capabilities work, use that transformer 
                 // as a delegate
@@ -1893,16 +1905,43 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                  end("fes:SpatialOperators");
                end("fes:Spatial_Capabilities");
 
+               List<Schema> typeMappingProfiles = 
+                   org.geotools.gml3.v3_2.GML.getInstance().getAllTypeMappingProfiles();
+               
                start("fes:Functions");
                
                for (FunctionName fn : getAvailableFunctionNames()) {
                    start("fes:Function", attributes(new String[] { "name", fn.getName() }));
-                   //TODO: return type
+
+                   //figure out return type
+                   Name returnType = lookupTypeName(typeMappingProfiles, fn.getReturn());
+                   String prefix = 
+                       getNamespaceSupport().getPrefix(returnType.getNamespaceURI());
+                   if (prefix != null) {
+                       element("fes:Returns", prefix + ":" + returnType.getLocalPart());
+                   }
+                   else {
+                       LOGGER.warning(String.format("Unable to map function return type to QName for " +
+                           "function %s. No namespace mapping for %s.", fn.getName(), 
+                           returnType.getNamespaceURI() ));
+                   }
+                   
                    if (!fn.getArgumentNames().isEmpty()) {
                        start("fes:Arguments");
-                       for (String arg : fn.getArgumentNames()) {
-                           element("fes:Argument", null, attributes(new String[]{"name", arg}));
-                           //TODO: argument Type is mandatory
+                       for(Parameter<?> arg : fn.getArguments()) {
+                           start("fes:Argument", attributes(new String[]{"name", arg.getName()}));
+                           
+                           Name argType = lookupTypeName(typeMappingProfiles, arg);
+                           prefix = getNamespaceSupport().getPrefix(argType.getNamespaceURI());
+                           if (prefix != null) {
+                               element("fes:Type", prefix + ":" + argType.getLocalPart());
+                           }
+                           else {
+                               LOGGER.warning(String.format("Unable to map function argument type to QName for " +
+                                   "function %s. No namespace mapping for %s.", arg.getName(), 
+                                   argType.getNamespaceURI() ));
+                           }
+                           end("fes:Argument");
                        }
                        end("fes:Arguments");
                    }
@@ -1914,6 +1953,36 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
              end("fes:Filter_Capabilities");
             }
         }
-        
+
+        Name lookupTypeName(List<Schema> profiles, Parameter arg) {
+            //hack, look up for geometry mae
+            if ("geometry".equals(arg.getName())) {
+                return new NameImpl(org.geotools.gml3.v3_2.GML.AbstractGeometryType);
+            }
+            
+            //default
+            Class clazz = arg.getType();
+            if (clazz == Object.class) {
+                return new NameImpl(XS.STRING);
+            }
+
+            //TODO: this is stolen from FeaturTypeSchemaBuilder, factor out into utility class
+            for (Schema profile : profiles) {
+                for (Map.Entry<Name,AttributeType> e : profile.entrySet()) {
+                    AttributeType at = e.getValue();
+                    if (at.getBinding() != null && at.getBinding().equals(clazz)) {
+                        return at.getName();
+                    }
+                }
+                
+                for (AttributeType at : profile.values()) {
+                    if (clazz.isAssignableFrom(at.getBinding())) {
+                        return at.getName();
+                    }
+                }
+            }
+
+            return new NameImpl(XS.STRING);
+        }
     }
 }
