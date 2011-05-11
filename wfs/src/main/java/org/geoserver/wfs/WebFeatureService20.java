@@ -5,10 +5,18 @@
 package org.geoserver.wfs;
 
 import net.opengis.wfs.FeatureCollectionType;
+import net.opengis.wfs20.CreateStoredQueryResponseType;
+import net.opengis.wfs20.CreateStoredQueryType;
 import net.opengis.wfs20.DescribeFeatureTypeType;
+import net.opengis.wfs20.DescribeStoredQueriesResponseType;
+import net.opengis.wfs20.DescribeStoredQueriesType;
+import net.opengis.wfs20.DropStoredQueryType;
+import net.opengis.wfs20.ExecutionStatusType;
 import net.opengis.wfs20.GetCapabilitiesType;
 import net.opengis.wfs20.GetFeatureType;
 import net.opengis.wfs20.GetFeatureWithLockType;
+import net.opengis.wfs20.ListStoredQueriesResponseType;
+import net.opengis.wfs20.ListStoredQueriesType;
 import net.opengis.wfs20.LockFeatureResponseType;
 import net.opengis.wfs20.LockFeatureType;
 import net.opengis.wfs20.TransactionResponseType;
@@ -103,7 +111,28 @@ public interface WebFeatureService20 {
      * @throws WFSException Any service exceptions.
      */
     TransactionResponseType transaction(TransactionType request) throws WFSException;
+
+    /**
+     * WFS list stored query operation. 
+     */
+    ListStoredQueriesResponseType listStoredQueries(ListStoredQueriesType request) throws WFSException;
+
+    /**
+     * WFS describe stored query operation. 
+     */
+    DescribeStoredQueriesResponseType describeStoredQueries(DescribeStoredQueriesType request) 
+        throws WFSException;
+
+    /**
+     * WFS create stored query operation. 
+     */
+    CreateStoredQueryResponseType createStoredQuery(CreateStoredQueryType request) throws WFSException;
     
+    /**
+     * WFS drop stored query operation. 
+     */
+    ExecutionStatusType dropStoredQuery(DropStoredQueryType request) throws WFSException;
+
     /**
      * Release lock operation.
      * <p>
