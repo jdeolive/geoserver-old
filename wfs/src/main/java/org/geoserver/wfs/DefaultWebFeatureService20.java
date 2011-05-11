@@ -5,10 +5,18 @@
 package org.geoserver.wfs;
 
 import net.opengis.wfs.FeatureCollectionType;
+import net.opengis.wfs20.CreateStoredQueryResponseType;
+import net.opengis.wfs20.CreateStoredQueryType;
 import net.opengis.wfs20.DescribeFeatureTypeType;
+import net.opengis.wfs20.DescribeStoredQueriesResponseType;
+import net.opengis.wfs20.DescribeStoredQueriesType;
+import net.opengis.wfs20.DropStoredQueryType;
+import net.opengis.wfs20.ExecutionStatusType;
 import net.opengis.wfs20.GetCapabilitiesType;
 import net.opengis.wfs20.GetFeatureType;
 import net.opengis.wfs20.GetFeatureWithLockType;
+import net.opengis.wfs20.ListStoredQueriesResponseType;
+import net.opengis.wfs20.ListStoredQueriesType;
 import net.opengis.wfs20.LockFeatureResponseType;
 import net.opengis.wfs20.LockFeatureType;
 import net.opengis.wfs20.TransactionResponseType;
@@ -28,7 +36,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
-public class DefaultWebFeatureService20 implements WebFeatureService20,  ApplicationContextAware {
+public class DefaultWebFeatureService20 implements WebFeatureService20, ApplicationContextAware {
 
     /**
      * GeoServer configuration
@@ -99,6 +107,25 @@ public class DefaultWebFeatureService20 implements WebFeatureService20,  Applica
         
         return (TransactionResponseType) 
             tx.transaction(new TransactionRequest.WFS20(request)).getAdaptee();
+    }
+    
+    public ListStoredQueriesResponseType listStoredQueries(ListStoredQueriesType request) 
+        throws WFSException {
+        return new ListStoredQueries(getServiceInfo(), context).run(request);
+    }
+    
+    public DescribeStoredQueriesResponseType describeStoredQueries(DescribeStoredQueriesType request)
+            throws WFSException {
+        return new DescribeStoredQueries(getServiceInfo(), context).run(request);
+    }
+    
+    public CreateStoredQueryResponseType createStoredQuery(CreateStoredQueryType request)
+            throws WFSException {
+        return new CreateStoredQuery(getServiceInfo(), context).run(request);
+    }
+    
+    public ExecutionStatusType dropStoredQuery(DropStoredQueryType request) throws WFSException {
+        return new DropStoredQuery(getServiceInfo(), context).run(request);
     }
     
     //the following operations are not part of the spec

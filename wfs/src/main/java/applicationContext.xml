@@ -113,6 +113,10 @@
             <value>GetFeatureWithLock</value>
             <value>LockFeature</value>
             <value>Transaction</value>
+            <value>ListStoredQueries</value>
+            <value>DescribeStoredQueries</value>
+            <value>CreateStoredQuery</value>
+            <value>DropStoredQuery</value>
           </list>
         </constructor-arg>
     </bean>
@@ -193,6 +197,26 @@
 		<constructor-arg ref="geoServer"/>
 		<constructor-arg ref="xmlConfiguration-1.1"/>
 	</bean>
+	
+	<bean id="listStoredQueriesResponse-2.0" 
+       class="org.geoserver.wfs.response.v2_0.ListStoredQueriesResponse">
+        <constructor-arg ref="geoServer"/>
+    </bean>
+    
+    <bean id="describeStoredQueriesResponse-2.0" 
+       class="org.geoserver.wfs.response.v2_0.DescribeStoredQueriesResponse">
+        <constructor-arg ref="geoServer"/>
+    </bean>
+    
+	<bean id="createStoredQueryResponse-2.0" 
+	   class="org.geoserver.wfs.response.v2_0.CreateStoredQueryResponse">
+	    <constructor-arg ref="geoServer"/>
+	</bean>
+	
+	<bean id="dropStoredQueryResponse-2.0" 
+       class="org.geoserver.wfs.response.v2_0.DropStoredQueryResponse">
+        <constructor-arg ref="geoServer"/>
+    </bean>
 	
 	<!-- cite compliance hack -->
 	<bean id="citeComplianceHack" class="org.geoserver.wfs.CiteComplianceHack">
@@ -324,7 +348,10 @@
   </bean>
   
   <bean id="resultType20KvpParser" class="org.geoserver.wfs.kvp.v2_0.ResultTypeKvpParser"/>
-
+  <bean id="storedQueryIdKvpParser" class="org.geoserver.ows.FlatKvpParser">
+    <constructor-arg value="storedQueryId"/>
+    <constructor-arg value="java.lang.String"/>
+  </bean>
     
 	<!-- kvp request readers -->
 	<bean id="wfsGetCapabilitiesKvpReader"  
@@ -363,6 +390,15 @@
 		<constructor-arg value="net.opengis.wfs.TransactionType"/>
 	</bean>
 	<bean id="releaseLockKvpReader" class="org.geoserver.wfs.kvp.ReleaseLockKvpRequestReader"/>
+	
+	<bean id="listStoredQueries20KvpReader" 
+	   class="org.geoserver.wfs.kvp.v2_0.ListStoredQueriesKvpRequestReader"/>
+	
+	<bean id="describeStoredQueries20KvpReader" 
+	   class="org.geoserver.wfs.kvp.v2_0.DescribeStoredQueriesKvpRequestReader"/>
+	   
+    <bean id="dropStoredQuery20KvpReader" 
+       class="org.geoserver.wfs.kvp.v2_0.DropStoredQueryKvpRequestReader"/>
 	
 	<!-- 1.0 xml readers -->
 	<bean id="xmlReader-1.0.0" class="org.geoserver.wfs.xml.v1_0_0.WfsXmlReader" abstract="true">
@@ -443,6 +479,18 @@
     <bean id="transactionXmlReader-2.0" parent="xmlReader-2.0">
         <constructor-arg value="Transaction"/>
     </bean>
+    <bean id="listStoredQueriesXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="ListStoredQueries"/>
+    </bean>
+    <bean id="describeStoredQueriesXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="DescribeStoredQueries"/>
+    </bean>
+    <bean id="createStoredQueryXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="CreateStoredQuery"/>
+    </bean>
+    <bean id="dropStoredQueryXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="DropStoredQuery"/>
+    </bean>
     
 	<!-- default feature type encoders -->
 	<bean id="gml2FeatureTypeEncoder" 
@@ -498,5 +546,10 @@
     </bean>
     <bean id="wfsLocalWorkspaceURLManger" class="org.geoserver.ows.LocalWorkspaceURLMangler">
       <constructor-arg value="wfs"/>
+    </bean>
+    
+    <!-- stored query providers -->
+    <bean id="wfsStoredQueryProvider" class="org.geoserver.wfs.WFSStoredQueryProvider">
+     <constructor-arg ref="resourceLoader"/>
     </bean>
 </beans>

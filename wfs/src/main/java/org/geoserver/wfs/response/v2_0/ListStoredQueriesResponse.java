@@ -7,23 +7,23 @@ package org.geoserver.wfs.response.v2_0;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import net.opengis.wfs20.TransactionResponseType;
+import net.opengis.wfs20.ListStoredQueriesResponseType;
 
 import org.geoserver.config.GeoServer;
 import org.geoserver.platform.ServiceException;
 import org.geotools.wfs.v2_0.WFS;
 import org.geotools.xml.Encoder;
 
-public class TransactionResponse extends WFSResponse {
+public class ListStoredQueriesResponse extends WFSResponse {
 
-    public TransactionResponse(GeoServer gs) {
-        super(gs, TransactionResponseType.class);
+    public ListStoredQueriesResponse(GeoServer gs) {
+        super(gs, ListStoredQueriesResponseType.class);
     }
-    
+
     @Override
     protected void encode(Encoder encoder, Object value, OutputStream output) throws IOException,
             ServiceException {
-        encoder.encode(value, WFS.TransactionResponse, output);
+        encoder.encode(value, WFS.ListStoredQueriesResponse, output);
     }
 
 }
