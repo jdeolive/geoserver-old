@@ -70,7 +70,6 @@ import org.geotools.map.Layer;
 import org.geotools.map.StyleLayer;
 import org.geotools.parameter.Parameter;
 import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.builder.GridToEnvelopeMapper;
 import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.RendererUtilities;
@@ -83,7 +82,6 @@ import org.geotools.styling.Style;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
-import org.opengis.geometry.BoundingBox;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -1116,7 +1114,33 @@ public class RenderedImageMapOutputFormat extends AbstractMapOutputFormat {
                 image = iw.getRenderedImage();
             }
         }
-        
+            
+//        // is there any chance we have translucent pixels that we need to blend with a background?
+//        if(!transparent && alphaChannels != null && transparencyType==Transparency.TRANSLUCENT&& cm instanceof ComponentColorModel) {
+//            Byte[] bg = new Byte[bgValues.length - 1];
+//            for (int i = 0; i < bg.length; i++) {
+//                bg[i] = (byte) bgValues[i];
+//            }
+//            Byte[] bgAlpha = new Byte[] {(byte) 0xFF};
+//            
+//            RenderingHints hints = new RenderingHints(JAI.KEY_IMAGE_LAYOUT, layout);
+//            RenderedImage background = ConstantDescriptor.create((float) image.getWidth(), 
+//                    (float) image.getHeight(), bg, hints);
+//            RenderedImage bgAlphaImage = ConstantDescriptor.create((float) image.getWidth(), 
+//                    (float) image.getHeight(), bgAlpha, hints);
+//            
+//            ImageWorker iwRGB = new ImageWorker(image);
+//            ImageWorker iwAlpha = new ImageWorker(image);
+//            iwRGB.setRenderingHints(hints);
+//            image = iwRGB.retainBands(iwRGB.getNumBands() - 1).getRenderedImage();
+//            iwAlpha.setRenderingHints(hints);
+//            RenderedImage alphaImage = iwAlpha.retainLastBand().getRenderedImage();
+//            
+//            image = CompositeDescriptor.create(image, background, alphaImage,  bgAlphaImage, false, 
+//                    CompositeDescriptor.NO_DESTINATION_ALPHA, 
+//                    hints);
+//        }
+
         return image;
     }
 
@@ -1202,27 +1226,27 @@ public class RenderedImageMapOutputFormat extends AbstractMapOutputFormat {
         // there is an actual intersection
         //
         ////
-        try {
-            final CoordinateReferenceSystem coverageCRS=reader.getCrs();
-            final CoordinateReferenceSystem requestCRS= requestedModelArea.getCoordinateReferenceSystem();
-            final ReferencedEnvelope coverageEnvelope=new ReferencedEnvelope(reader.getOriginalEnvelope());
-            if(CRS.equalsIgnoreMetadata(coverageCRS, requestCRS)){
-                if(!coverageEnvelope.intersects((BoundingBox)requestedModelArea))
-                    return null;
-            }else{
-                
-                ReferencedEnvelope dataEnvelopeWGS84 = coverageEnvelope.transform(DefaultGeographicCRS.WGS84, true);
-                ReferencedEnvelope requestEnvelopeWGS84 = requestedModelArea.transform(
-                        DefaultGeographicCRS.WGS84, true);
-                if (!dataEnvelopeWGS84.intersects((BoundingBox) requestEnvelopeWGS84))
-                    return null;                
-            }
-        } catch (Exception e) {
-            LOGGER.log(
-                    Level.WARNING,
-                    "Failed to compare data and request envelopes, proceeding with rendering anyways",
-                    e);
-        }
+//        try {
+//            final CoordinateReferenceSystem coverageCRS=reader.getCrs();
+//            final CoordinateReferenceSystem requestCRS= requestedModelArea.getCoordinateReferenceSystem();
+//            final ReferencedEnvelope coverageEnvelope=new ReferencedEnvelope(reader.getOriginalEnvelope());
+//            if(CRS.equalsIgnoreMetadata(coverageCRS, requestCRS)){
+//                if(!coverageEnvelope.intersects((BoundingBox)requestedModelArea))
+//                    return null;
+//            }else{
+//                
+//                ReferencedEnvelope dataEnvelopeWGS84 = coverageEnvelope.transform(DefaultGeographicCRS.WGS84, true);
+//                ReferencedEnvelope requestEnvelopeWGS84 = requestedModelArea.transform(
+//                        DefaultGeographicCRS.WGS84, true);
+//                if (!dataEnvelopeWGS84.intersects((BoundingBox) requestEnvelopeWGS84))
+//                    return null;                
+//            }
+//        } catch (Exception e) {
+//            LOGGER.log(
+//                    Level.WARNING,
+//                    "Failed to compare data and request envelopes, proceeding with rendering anyways",
+//                    e);
+//        }
 
         // //
         // It is an AbstractGridCoverage2DReader, let's use parameters
