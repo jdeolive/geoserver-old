@@ -71,6 +71,10 @@ public class DefaultWebFeatureService20 implements WebFeatureService20, Applicat
     public Catalog getCatalog() {
         return geoServer.getCatalog();
     }
+    
+    public StoredQueryProvider getStoredQueryProvider() {
+        return new StoredQueryProvider(getCatalog().getResourceLoader());
+    }
 
     public TransformerBase getCapabilities(GetCapabilitiesType request) throws WFSException {
         return new GetCapabilities(getServiceInfo(), getCatalog())
@@ -86,6 +90,7 @@ public class DefaultWebFeatureService20 implements WebFeatureService20, Applicat
     public FeatureCollectionType getFeature(GetFeatureType request) throws WFSException {
         GetFeature gf = new GetFeature(getServiceInfo(), getCatalog());
         gf.setFilterFactory(filterFactory);
+        gf.setStoredQueryProvider(getStoredQueryProvider());
         
         return gf.run(new GetFeatureRequest.WFS20(request));
     }
@@ -111,21 +116,21 @@ public class DefaultWebFeatureService20 implements WebFeatureService20, Applicat
     
     public ListStoredQueriesResponseType listStoredQueries(ListStoredQueriesType request) 
         throws WFSException {
-        return new ListStoredQueries(getServiceInfo(), context).run(request);
+        return new ListStoredQueries(getServiceInfo(), getStoredQueryProvider()).run(request);
     }
     
     public DescribeStoredQueriesResponseType describeStoredQueries(DescribeStoredQueriesType request)
             throws WFSException {
-        return new DescribeStoredQueries(getServiceInfo(), context).run(request);
+        return new DescribeStoredQueries(getServiceInfo(), getStoredQueryProvider()).run(request);
     }
     
     public CreateStoredQueryResponseType createStoredQuery(CreateStoredQueryType request)
             throws WFSException {
-        return new CreateStoredQuery(getServiceInfo(), context).run(request);
+        return new CreateStoredQuery(getServiceInfo(), getStoredQueryProvider()).run(request);
     }
     
     public ExecutionStatusType dropStoredQuery(DropStoredQueryType request) throws WFSException {
-        return new DropStoredQuery(getServiceInfo(), context).run(request);
+        return new DropStoredQuery(getServiceInfo(), getStoredQueryProvider()).run(request);
     }
     
     //the following operations are not part of the spec

@@ -9,6 +9,8 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -28,11 +30,14 @@ import net.opengis.wfs.LockType;
 import net.opengis.wfs.QueryType;
 import net.opengis.wfs.WfsFactory;
 import net.opengis.wfs.XlinkPropertyNameType;
+import net.opengis.wfs20.ParameterType;
+import net.opengis.wfs20.StoredQueryType;
 
 import org.geoserver.catalog.AttributeTypeInfo;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.request.LockFeatureRequest;
 import org.geoserver.wfs.request.LockFeatureResponse;
@@ -66,7 +71,9 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.filter.spatial.BinarySpatialOperator;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.parameter.Parameter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.helpers.NamespaceSupport;
 
 /**
@@ -96,9 +103,11 @@ public class GetFeature {
     /** filter factory */
     protected FilterFactory2 filterFactory;
 
+    /** stored query provider */
+    StoredQueryProvider storedQueryProvider;
+
     /**
      * Creates the WFS 1.0/1.1 GetFeature operation.
-     *
      */
     public GetFeature(WFSInfo wfs, Catalog catalog) {
         this.wfs = wfs;
@@ -140,6 +149,13 @@ public class GetFeature {
     public void setFilterFactory(FilterFactory2 filterFactory) {
         this.filterFactory = filterFactory;
     }
+    
+    /**
+     * Sets the stored query provider
+     */
+    public void setStoredQueryProvider(StoredQueryProvider storedQueryProvider) {
+        this.storedQueryProvider = storedQueryProvider;
+    }
 
     public FeatureCollectionType run(GetFeatureRequest request)
         throws WFSException {
@@ -149,6 +165,9 @@ public class GetFeature {
             throw new WFSException("No query specified");
         }
 
+        //stored queries, preprocess compile any stored queries into actual query objects
+        processStoredQueries(request);
+        queries = request.getQueries();
         
         if (request.isQueryTypeNamesUnset()) {
             String msg = "No feature types specified";
@@ -505,6 +524,32 @@ public class GetFeature {
         return buildResults(count, results, lockId);
     }
 
+    protected void processStoredQueries(GetFeatureRequest request) {
+        List queries = request.getAdaptedQueries();
+        for (int i = 0; i < queries.size(); i++) {
+            Object obj = queries.get(i);
+            if (obj instanceof StoredQueryType) {
+                
+                if (storedQueryProvider == null) {
+                    throw new WFSException("Stored query not supported");
+                }
+
+                StoredQueryType sq = (StoredQueryType) obj;
+
+                //look up the store query
+                StoredQuery storedQuery = storedQueryProvider.getStoredQuery(sq.getId());
+                if (storedQuery == null) {
+                    throw new WFSException("Stored query '" + sq.getId() + "' does not exist.");
+                }
+
+                List<net.opengis.wfs20.QueryType> compiled = storedQuery.compile(sq);
+                queries.remove(i);
+                queries.addAll(i, compiled);
+                i += compiled.size();
+            }
+        }
+    }
+    
     /**
      * Allows subclasses to alter the result generation
      * @param count

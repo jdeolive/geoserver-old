@@ -8,9 +8,6 @@ import net.opengis.wfs20.DropStoredQueryType;
 import net.opengis.wfs20.ExecutionStatusType;
 import net.opengis.wfs20.Wfs20Factory;
 
-import org.geoserver.platform.GeoServerExtensions;
-import org.springframework.context.ApplicationContext;
-
 /**
  * Web Feature Service DropStoredQuery operation.
  *
@@ -23,12 +20,12 @@ public class DropStoredQuery {
     /** service config */
     WFSInfo wfs;
     
-    /** app context for looking up stored query providers */
-    ApplicationContext appContext;
+    /** stored query provider */
+    StoredQueryProvider storedQueryProvider;
     
-    public DropStoredQuery(WFSInfo wfs, ApplicationContext appContext) {
+    public DropStoredQuery(WFSInfo wfs, StoredQueryProvider storedQueryProvider) {
         this.wfs = wfs;
-        this.appContext = appContext;
+        this.storedQueryProvider = storedQueryProvider;
     }
     
     public ExecutionStatusType run(DropStoredQueryType request) throws WFSException {
@@ -37,18 +34,11 @@ public class DropStoredQuery {
             throw new WFSException("No stored query id specified");
         }
         
-        StoredQuery query = null;
-        for (StoredQueryProvider provider : 
-            GeoServerExtensions.extensions(StoredQueryProvider.class)) {
-            
-            query = provider.getStoredQuery(request.getId());
-            if (query != null) {
-                provider.removeStoredQuery(query);
-                break;
-            }
+        StoredQuery query = storedQueryProvider.getStoredQuery(request.getId());
+        if (query != null) {
+            storedQueryProvider.removeStoredQuery(query);
         }
-        
-        if (query == null) {
+        else {
             throw new WFSException(String.format("Stored query %s does not exist.", request.getId()));
         }
         

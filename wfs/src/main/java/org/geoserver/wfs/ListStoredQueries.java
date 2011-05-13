@@ -10,9 +10,6 @@ import net.opengis.wfs20.StoredQueryListItemType;
 import net.opengis.wfs20.TitleType;
 import net.opengis.wfs20.Wfs20Factory;
 
-import org.geoserver.platform.GeoServerExtensions;
-import org.springframework.context.ApplicationContext;
-
 /**
  * Web Feature Service ListStoredQueries operation.
  *
@@ -25,12 +22,12 @@ public class ListStoredQueries {
     /** service config */
     WFSInfo wfs;
     
-    /** app context for looking up stored query providers */
-    ApplicationContext appContext;
+    /** stored query provider */
+    StoredQueryProvider storedQueryProvider;
     
-    public ListStoredQueries(WFSInfo wfs, ApplicationContext appContext) {
+    public ListStoredQueries(WFSInfo wfs, StoredQueryProvider storedQueryProvider) {
         this.wfs = wfs;
-        this.appContext = appContext;
+        this.storedQueryProvider = storedQueryProvider;
     }
     
     public ListStoredQueriesResponseType run(ListStoredQueriesType request) throws WFSException {
@@ -38,21 +35,17 @@ public class ListStoredQueries {
         Wfs20Factory factory = Wfs20Factory.eINSTANCE;
         ListStoredQueriesResponseType response = factory.createListStoredQueriesResponseType();
         
-        for (StoredQueryProvider<StoredQuery> sqp : 
-            GeoServerExtensions.extensions(StoredQueryProvider.class)) {
+        for (StoredQuery sq : storedQueryProvider.listStoredQueries()) {
+            StoredQueryListItemType item = factory.createStoredQueryListItemType();
+            item.setId(sq.getName());
             
-            for (StoredQuery sq : sqp.listStoredQueries()) {
-                StoredQueryListItemType item = factory.createStoredQueryListItemType();
-                item.setId(sq.getName());
-                
-                TitleType title = factory.createTitleType();
-                title.setValue(sq.getTitle());
-                item.getTitle().add(title);
-                
-                item.getReturnFeatureType().addAll(sq.getFeatureTypes());
-                
-                response.getStoredQuery().add(item);
-            }
+            TitleType title = factory.createTitleType();
+            title.setValue(sq.getTitle());
+            item.getTitle().add(title);
+            
+            item.getReturnFeatureType().addAll(sq.getFeatureTypes());
+            
+            response.getStoredQuery().add(item);
         }
 
         return response;
