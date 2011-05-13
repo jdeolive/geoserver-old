@@ -57,9 +57,9 @@ public class StoredQueryTest extends WFS20TestSupport {
         testCreateStoredQuery();
         
         String xml = 
-            "<wfs:DescribeStoredQuery xmlns:wfs='" + WFS.NAMESPACE + " service='WFS'>" + 
+            "<wfs:DescribeStoredQueries xmlns:wfs='" + WFS.NAMESPACE + "' service='WFS'>" + 
               "<wfs:StoredQueryId>myStoredQuery</wfs:StoredQueryId>" + 
-            "</wfs:DescribeStoredQuery>";
+            "</wfs:DescribeStoredQueries>";
         
         dom = postAsDOM("wfs", xml);
         assertEquals("wfs:DescribeStoredQueriesResponse", dom.getDocumentElement().getNodeName());

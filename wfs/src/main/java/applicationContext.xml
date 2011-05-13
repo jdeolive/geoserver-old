@@ -548,8 +548,4 @@
       <constructor-arg value="wfs"/>
     </bean>
     
-    <!-- stored query providers -->
-    <bean id="wfsStoredQueryProvider" class="org.geoserver.wfs.WFSStoredQueryProvider">
-     <constructor-arg ref="resourceLoader"/>
-    </bean>
 </beans>

@@ -4,9 +4,6 @@
  */
 package org.geoserver.wfs;
 
-import org.geoserver.platform.GeoServerExtensions;
-import org.springframework.context.ApplicationContext;
-
 import net.opengis.wfs20.CreateStoredQueryResponseType;
 import net.opengis.wfs20.CreateStoredQueryType;
 import net.opengis.wfs20.StoredQueryDescriptionType;
@@ -23,22 +20,21 @@ public class CreateStoredQuery {
 
     /** service config */
     WFSInfo wfs;
-    
-    /** app context for looking up stored query providers */
-    ApplicationContext appContext;
-    
-    public CreateStoredQuery(WFSInfo wfs, ApplicationContext appContext) {
+
+    /** stored query provider */
+    StoredQueryProvider storedQueryProvider;
+
+    public CreateStoredQuery(WFSInfo wfs, StoredQueryProvider storedQueryProvider) {
         this.wfs = wfs;
-        this.appContext = appContext;
+        this.storedQueryProvider = storedQueryProvider;
     }
     
     public CreateStoredQueryResponseType run(CreateStoredQueryType request) throws WFSException {
         for (StoredQueryDescriptionType sqd : request.getStoredQueryDefinition()) {
             validateStoredQuery(sqd);
             
-            StoredQueryProvider provider = lookupStoredQueryProvider(sqd);
             try {
-                provider.createStoredQuery(sqd);
+                storedQueryProvider.createStoredQuery(sqd);
             }
             catch(Exception e) {
                 throw new WFSException("Error occured creating stored query", e);
@@ -62,15 +58,5 @@ public class CreateStoredQuery {
                     "Not supported");
             }
         }
-    }
-
-    StoredQueryProvider lookupStoredQueryProvider(StoredQueryDescriptionType sq) throws WFSException {
-        String lang = sq.getQueryExpressionText().get(0).getLanguage();
-        for (StoredQueryProvider<?> sqp : GeoServerExtensions.extensions(StoredQueryProvider.class)) {
-            if (sqp.getLanguage().equals(lang)) {
-                return sqp;
-            }
-        }
-        throw new WFSException(String.format("Stored query language %s is not supported", lang));
     }
 }

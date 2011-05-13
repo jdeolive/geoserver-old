@@ -4,6 +4,7 @@
  */
 package org.geoserver.wfs;
 
+import java.net.URI;
 import java.util.List;
 
 import net.opengis.wfs20.DescribeStoredQueriesResponseType;
@@ -11,7 +12,6 @@ import net.opengis.wfs20.DescribeStoredQueriesType;
 import net.opengis.wfs20.Wfs20Factory;
 
 import org.geoserver.platform.GeoServerExtensions;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Web Feature Service DescribeStoredQueries operation.
@@ -25,12 +25,12 @@ public class DescribeStoredQueries {
     /** service config */
     WFSInfo wfs;
     
-    /** app context for looking up stored query providers */
-    ApplicationContext appContext;
+    /** stored query provider */
+    StoredQueryProvider storedQueryProvider;
     
-    public DescribeStoredQueries(WFSInfo wfs, ApplicationContext appContext) {
+    public DescribeStoredQueries(WFSInfo wfs, StoredQueryProvider storedQueryProvider) {
         this.wfs = wfs;
-        this.appContext = appContext;
+        this.storedQueryProvider = storedQueryProvider;
     }
     
     public DescribeStoredQueriesResponseType run(DescribeStoredQueriesType request) throws WFSException {
@@ -43,22 +43,13 @@ public class DescribeStoredQueries {
             GeoServerExtensions.extensions(StoredQueryProvider.class);
         
         if (request.getStoredQueryId().isEmpty()) {
-            for (StoredQueryProvider provider : providers) {
-                for (StoredQuery query : (List<StoredQuery>) provider.listStoredQueries()) {
-                    describeStoredQuery(query, response);
-                }
+            for (StoredQuery query : storedQueryProvider.listStoredQueries()) {
+                describeStoredQuery(query, response);
             }
         }
         else {
-            for (String id : request.getStoredQueryId()) {
-                StoredQuery query = null;
-                for (StoredQueryProvider provider : providers) {
-                    query = provider.getStoredQuery(id);
-                    if (query != null) {
-                        break;
-                    }
-                }
-
+            for (URI id : request.getStoredQueryId()) {
+                StoredQuery query = storedQueryProvider.getStoredQuery(id.toString());
                 if (query == null) {
                     throw new WFSException("No such stored query: " + id);
                 }
@@ -66,19 +57,11 @@ public class DescribeStoredQueries {
                 describeStoredQuery(query, response);
             }
         }
-        
 
         return response;
     }
-
+    
     void describeStoredQuery(StoredQuery query, DescribeStoredQueriesResponseType response) {
-        //shortcut
-        if (query instanceof WFSStoredQuery) {
-            response.getStoredQueryDescription().add(((WFSStoredQuery) query).getQuery());
-        }
-        else {
-            //TODO
-        }
-        
+        response.getStoredQueryDescription().add(query.getQuery());
     }
 }

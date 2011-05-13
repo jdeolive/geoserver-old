@@ -435,6 +435,94 @@ public class GetFeatureTest extends WFS20TestSupport {
         XMLAssert.assertXpathExists("//sf:description", dom);
     }
     
+    public void testStoredQuery() throws Exception {
+        String xml = 
+                "<wfs:CreateStoredQuery service='WFS' version='2.0.0' " +
+                "   xmlns:wfs='http://www.opengis.net/wfs/2.0' " + 
+                "   xmlns:fes='http://www.opengis.org/fes/2.0' " + 
+                "   xmlns:gml='http://www.opengis.net/gml/3.2' " + 
+                "   xmlns:myns='http://www.someserver.com/myns' " + 
+                "   xmlns:sf='" + MockData.SF_URI + "'>" + 
+                "   <wfs:StoredQueryDefinition id='myStoredQuery'> " + 
+                "      <wfs:Parameter name='integers' type='xs:integer'/> " + 
+                "      <wfs:QueryExpressionText " + 
+                "           returnFeatureTypes='sf:PrimitiveGeoFeature' " + 
+                "           language='urn:ogc:def:queryLanguage:OGC-WFS::WFS_QueryExpression' " + 
+                "           isPrivate='false'> "
+                    + "<wfs:Query typeNames=\"cdf:Other\"> " 
+                    + "<fes:Filter> "
+                      + "<fes:PropertyIsEqualTo> "
+                        + "<fes:ValueReference>cdf:integers</fes:ValueReference> "
+                        + "${integers}"
+                      + "</fes:PropertyIsEqualTo> " 
+                    + "</fes:Filter> "
+                  + "</wfs:Query> " + 
+                "      </wfs:QueryExpressionText> " + 
+                "   </wfs:StoredQueryDefinition> " + 
+                "</wfs:CreateStoredQuery>"; 
+        Document dom = postAsDOM("wfs", xml);
+        assertEquals("wfs:CreateStoredQueryResponse", dom.getDocumentElement().getNodeName());
+        
+        xml = "<wfs:GetFeature service='WFS' version='2.0.0' " + 
+            "       xmlns:wfs='" + WFS.NAMESPACE + "' xmlns:fes='" + FES.NAMESPACE + "'>" + 
+            "   <wfs:StoredQuery id='myStoredQuery'> " + 
+            "      <wfs:Parameter name='integers'>" + 
+            "        <fes:Literal>7</fes:Literal>" + 
+            "      </wfs:Parameter> " + 
+            "   </wfs:StoredQuery> " + 
+            "</wfs:GetFeature>";
+        dom = postAsDOM("wfs", xml);
+        assertGML32(dom);
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//cdf:Other)", dom);
+        XMLAssert.assertXpathExists("//cdf:Other/cdf:integers[text() = '7']", dom);
+    }
+    
+    public void testStoredQueryBBOX() throws Exception {
+        String xml = 
+            "<wfs:CreateStoredQuery service='WFS' version='2.0.0' " +
+            "   xmlns:wfs='http://www.opengis.net/wfs/2.0' " + 
+            "   xmlns:fes='http://www.opengis.org/fes/2.0' " + 
+            "   xmlns:gml='http://www.opengis.net/gml/3.2' " + 
+            "   xmlns:myns='http://www.someserver.com/myns' " + 
+            "   xmlns:sf='" + MockData.SF_URI + "'>" + 
+            "   <wfs:StoredQueryDefinition id='myStoredBBOXQuery'> " + 
+            "      <wfs:Parameter name='BBOX' type='gml:Envelope'/> " + 
+            "      <wfs:QueryExpressionText " + 
+            "           returnFeatureTypes='sf:PrimitiveGeoFeature' " + 
+            "           language='urn:ogc:def:queryLanguage:OGC-WFS::WFS_QueryExpression' " + 
+            "           isPrivate='false'> "
+                + "<wfs:Query typeNames='sf:PrimitiveGeoFeature'> " 
+                + "<fes:Filter> "
+                + "<fes:BBOX>"
+                + "   <fes:ValueReference>pointProperty</fes:ValueReference>"
+                + "    ${BBOX}"
+                + "</fes:BBOX>"
+                + "</fes:Filter> "
+              + "</wfs:Query> " + 
+            "      </wfs:QueryExpressionText> " + 
+            "   </wfs:StoredQueryDefinition> " + 
+            "</wfs:CreateStoredQuery>"; 
+        Document dom = postAsDOM("wfs", xml);
+        assertEquals("wfs:CreateStoredQueryResponse", dom.getDocumentElement().getNodeName());
+        
+        xml = "<wfs:GetFeature service='WFS' version='2.0.0' xmlns:gml='" + GML.NAMESPACE + "'" + 
+            "       xmlns:wfs='" + WFS.NAMESPACE + "' xmlns:fes='" + FES.NAMESPACE + "'>" + 
+            "   <wfs:StoredQuery id='myStoredBBOXQuery'> " + 
+            "      <wfs:Parameter name='BBOX'>" 
+            +   "   <gml:Envelope srsName='EPSG:4326'>"
+            +   "      <gml:lowerCorner>57.0 -4.5</gml:lowerCorner>"
+            +   "      <gml:upperCorner>62.0 1.0</gml:upperCorner>"
+            +   "   </gml:Envelope>" + 
+            "      </wfs:Parameter> " + 
+            "   </wfs:StoredQuery> " + 
+            "</wfs:GetFeature>";
+        dom = postAsDOM("wfs", xml);
+        print(dom);
+        assertGML32(dom);
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//sf:PrimitiveGeoFeature)", dom);
+        XMLAssert.assertXpathExists("//sf:PrimitiveGeoFeature/gml:name[text() = 'name-f002']", dom);
+    }
+    
     public static void main(String[] args) {
         TestRunner runner = new TestRunner();
         runner.run(GetFeatureTest.class);
