@@ -61,6 +61,10 @@ public abstract class RequestObjectAdapter {
         return eGet(adaptee, "metadata", Map.class);
     }
     
+    public void setMetadata(Map metadata) {
+        eSet(adaptee, "metadata", metadata);
+    }
+
     public Map getFormatOptions() {
         return eGet(adaptee, "formatOptions", Map.class);
     }

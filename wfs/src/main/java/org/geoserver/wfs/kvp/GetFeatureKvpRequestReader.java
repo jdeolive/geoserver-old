@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -268,7 +269,30 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
         
         // sql view params
         if(kvp.containsKey("viewParams")) {
-            req.getMetadata().put(GetFeature.SQL_VIEW_PARAMS, kvp.get("viewParams"));
+            if(req.getMetadata() == null) {
+                req.setMetadata(new HashMap());
+            }
+
+            // fan out over all layers if necessary
+            List<Map<String, String>> viewParams = (List<Map<String, String>>) kvp.get("viewParams");
+            if(viewParams.size() > 0) {
+                int layerCount = req.getQueries().size();
+
+                // if we have just one replicate over all layers
+                if(viewParams.size() == 1 && layerCount > 1) {
+                    List<Map<String, String>> replacement = new ArrayList<Map<String,String>>();
+                    for (int i = 0; i < layerCount; i++) {
+                        replacement.add(viewParams.get(0));
+                    }
+                    viewParams = replacement;
+                } else if(viewParams.size() != layerCount) {
+                    String msg = layerCount + " feature types requested, but found " + viewParams.size()
+                   + " view params specified. ";
+                    throw new WFSException(msg, getClass().getName());
+                }
+            }
+
+            req.getMetadata().put(GetFeature.SQL_VIEW_PARAMS, viewParams);
         }
 
         return request;

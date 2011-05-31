@@ -44,7 +44,6 @@ import org.geoserver.wfs.request.LockFeatureResponse;
 import org.geoserver.wfs.request.Query;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
-import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.Hints;
 import org.geotools.feature.FeatureCollection;
@@ -209,7 +208,6 @@ public class GetFeature {
         //offset into result set in which to return features
         int offset = request.getStartIndex() != null ? request.getStartIndex().intValue() : -1;
 
-        int count = 0; //should probably be long
         List results = new ArrayList();
         try {
             for (int i = 0; (i < queries.size()) && (count < maxFeatures); i++) {
@@ -449,7 +447,7 @@ public class GetFeature {
                         //no features might have been because of the offset that was specified, check 
                         // the size of the same query but with no offset
                         org.geotools.data.Query q2 = 
-                            toDataQuery(query, 0, queryMaxFeatures, source, request, allPropNames);
+                            toDataQuery(query, 0, queryMaxFeatures, source, request, allPropNames, viewParam);
                         
                         //int size2 = getFeatures(request, source, q2).size();
                         int size2 = source.getCount(q2);
@@ -711,7 +709,8 @@ public class GetFeature {
         // check for sql view parameters
         if(viewParams != null) {
             hints.put(Hints.VIRTUAL_TABLE_PARAMETERS, viewParams);
-
+        }
+        
         Map metadata = request.getMetadata();
         if(metadata != null && metadata.containsKey(SQL_VIEW_PARAMS)) {
             hints.put(Hints.VIRTUAL_TABLE_PARAMETERS, metadata.get(SQL_VIEW_PARAMS));
