@@ -352,6 +352,12 @@
   </bean>
   
   <bean id="resultType20KvpParser" class="org.geoserver.wfs.kvp.v2_0.ResultTypeKvpParser"/>
+  <bean id="propertyName20KvpParser" class="org.geoserver.wfs.kvp.QNameNestedKvpParser">
+    <constructor-arg value="propertyName"/>
+    <constructor-arg ref="catalog"/>
+    <property name="service"><value>WFS</value></property>
+    <property name="version"><value>2.0.0</value></property>
+  </bean>
   <bean id="storedQueryIdKvpParser" class="org.geoserver.ows.FlatKvpParser">
     <constructor-arg value="storedQueryId"/>
     <constructor-arg value="java.lang.String"/>
