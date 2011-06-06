@@ -523,6 +523,46 @@ public class GetFeatureTest extends WFS20TestSupport {
         XMLAssert.assertXpathExists("//sf:PrimitiveGeoFeature/gml:name[text() = 'name-f002']", dom);
     }
     
+    public void testTemporalFilter() throws Exception {
+        print(getAsDOM("wfs?version=2.0.0&service=wfs&request=getfeature&typename=sf:PrimitiveGeoFeature&propertyName=dateProperty,dateTimeProperty"));
+        
+        //2006-06-26T18:00:00-06:00
+        String xml = "<wfs:GetFeature service='WFS' version='2.0.0' "
+            + "outputFormat='text/xml; subtype=gml/3.2' "
+            + "xmlns:sf='" + MockData.SF_URI + "' "
+            + "xmlns:wfs='" + WFS.NAMESPACE + "' xmlns:fes='" + FES.NAMESPACE + "'>"
+                + "<wfs:Query typeNames=\"sf:PrimitiveGeoFeature\"> " 
+                  + "<fes:Filter> "
+                    + "<fes:After> "
+                      + "<fes:ValueReference>dateTimeProperty</fes:ValueReference> "
+                      + "<fes:Literal>2006-06-25T18:00:00-06:00</fes:Literal> "
+                    + "</fes:After> " 
+                  + "</fes:Filter> "
+                + "</wfs:Query> " 
+              + "</wfs:GetFeature>";
+        Document dom = postAsDOM("wfs", xml);
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//sf:PrimitiveGeoFeature)", dom);
+        XMLAssert.assertXpathExists("//sf:PrimitiveGeoFeature[@gml:id = 'PrimitiveGeoFeature.f008']", dom);
+        
+        xml = "<wfs:GetFeature service='WFS' version='2.0.0' "
+            + "outputFormat='text/xml; subtype=gml/3.2' "
+            + "xmlns:sf='" + MockData.SF_URI + "' "
+            + "xmlns:wfs='" + WFS.NAMESPACE + "' xmlns:fes='" + FES.NAMESPACE + "'>"
+                + "<wfs:Query typeNames=\"sf:PrimitiveGeoFeature\"> " 
+                  + "<fes:Filter> "
+                    + "<fes:Before> "
+                      + "<fes:ValueReference>dateTimeProperty</fes:ValueReference> "
+                      + "<fes:Literal>2006-06-27T18:00:00-06:00</fes:Literal> "
+                    + "</fes:Before> " 
+                  + "</fes:Filter> "
+                + "</wfs:Query> " 
+              + "</wfs:GetFeature>";
+        dom = postAsDOM("wfs", xml);
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//sf:PrimitiveGeoFeature)", dom);
+        XMLAssert.assertXpathExists("//sf:PrimitiveGeoFeature[@gml:id = 'PrimitiveGeoFeature.f008']", dom);
+        
+    }
+    
     public static void main(String[] args) {
         TestRunner runner = new TestRunner();
         runner.run(GetFeatureTest.class);
