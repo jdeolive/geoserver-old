@@ -154,7 +154,23 @@ public class GetCapabilitiesTest extends WFS20TestSupport {
             }
         }
     }
-    
+
+    public void testOperationsMetadata() throws Exception {
+        Document doc = getAsDOM("wfs?service=WFS&version=2.0.0&request=getCapabilities");
+        assertEquals("WFS_Capabilities", doc.getDocumentElement().getLocalName());
+
+        XMLAssert.assertXpathExists("//ows:Operation[@name='GetCapabilities']", doc);
+        XMLAssert.assertXpathExists("//ows:Operation[@name='DescribeFeatureType']", doc);
+        XMLAssert.assertXpathExists("//ows:Operation[@name='GetFeature']", doc);
+        XMLAssert.assertXpathExists("//ows:Operation[@name='LockFeature']", doc);
+        XMLAssert.assertXpathExists("//ows:Operation[@name='GetFeatureWithLock']", doc);
+        XMLAssert.assertXpathExists("//ows:Operation[@name='Transaction']", doc);
+        XMLAssert.assertXpathExists("//ows:Operation[@name='ListStoredQueries']", doc);
+        XMLAssert.assertXpathExists("//ows:Operation[@name='DescribeStoredQueries']", doc);
+        XMLAssert.assertXpathExists("//ows:Operation[@name='CreateStoredQuery']", doc);
+        XMLAssert.assertXpathExists("//ows:Operation[@name='DropStoredQuery']", doc);
+    }
+
     public void testLayerQualified() throws Exception {
      // filter on an existing namespace
         Document doc = getAsDOM("sf/PrimitiveGeoFeature/wfs?service=WFS&version=2.0.0&request=getCapabilities");
