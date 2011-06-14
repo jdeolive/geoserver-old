@@ -1731,8 +1731,6 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
 
                 end("wfs:WFS_Capabilities");
             }
-            
-            
 
             void operationsMetadata() {
                 start("ows:OperationsMetadata");
@@ -1740,17 +1738,23 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 getCapabilities();
                 describeFeatureType();
                 getFeature();
+                
+                //TODO: make whether to support stored queries optional like transations
+                listStoredQueries();
+                describeStoredQueries();
+                createStoredQuery();
+                dropStoredQuery();
 
 //                getGmlObject();
 //                
-//                if (wfs.getServiceLevel().contains( WFSInfo.ServiceLevel.COMPLETE )) {
-//                    lockFeature();
-//                    getFeatureWithLock();
-//                }
-//
-//                if (wfs.getServiceLevel().contains( WFSInfo.ServiceLevel.TRANSACTIONAL) ) {
-//                    transaction();
-//                }
+                if (wfs.getServiceLevel().contains( WFSInfo.ServiceLevel.COMPLETE )) {
+                    lockFeature();
+                    getFeatureWithLock();
+                }
+
+                if (wfs.getServiceLevel().contains( WFSInfo.ServiceLevel.TRANSACTIONAL) ) {
+                    transaction();
+                }
 
                 end("ows:OperationsMetadata");
             }
@@ -1791,7 +1795,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 };
                 operation("GetCapabilities", parameters, true, true);
             }
-            
+
             /**
              * Encodes the DescribeFeatureType ows:Operation element.
              */
@@ -1802,7 +1806,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
 
                 operation("DescribeFeatureType", parameters, true, true);
             }
-            
+
             /**
              * Encodes the GetFeature ows:Operation element.
              */
@@ -1818,6 +1822,70 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
 //                };
                 
                 operation("GetFeature", parameters, true, true);
+            }
+            
+            /**
+             * Encodes the GetFeatureWithLock ows:Operation element.
+             */
+            void getFeatureWithLock() {
+                String[] oflist = getAvailableOutputFormatNames(GML32_FORMAT);
+                Map.Entry[] parameters = new Map.Entry[] {
+                    parameter("resultType", new String[] { "results", "hits" }),
+                    parameter("outputFormat", oflist)
+                };
+    
+                operation("GetFeatureWithLock", parameters, true, true);
+            }
+
+            /**
+             * Encodes the LockFeature ows:Operation element.
+             */
+            void lockFeature() {
+                Map.Entry[] parameters = new Map.Entry[] {
+                    parameter("releaseAction", new String[] { "ALL", "SOME" })
+                };
+    
+                operation("LockFeature", parameters, true, true);
+            }
+
+            /**
+             * Encodes the Transaction ows:Operation element.
+             */
+            void transaction() {
+                Map.Entry[] parameters = new Map.Entry[] {
+                        parameter("inputFormat", new String[] { GML32_FORMAT }),
+                        parameter("releaseAction", new String[] { "ALL", "SOME" })
+                    };
+    
+                operation("Transaction", parameters, true, true);
+            }
+
+            /**
+             * Encodes the ListStoredQueries ows:Operation element.
+             */
+            void listStoredQueries() {
+                operation("ListStoredQueries", null, true, true);
+            }
+
+            /**
+             * Encodes the ListStoredQueries ows:Operation element.
+             */
+            void describeStoredQueries() {
+                operation("DescribeStoredQueries", null, true, true);
+            }
+
+            /**
+             * Encodes the CreateStoredQuery ows:Operation element.
+             */
+            void createStoredQuery() {
+                operation("CreateStoredQuery", null, true, true);
+            }
+
+            /**
+             * Encodes the DropStoredQuery ows:Operation element.
+             */
+            void dropStoredQuery() {
+                operation("DropStoredQuery", null, true, true);
             }
             
             void featureTypeList() {
