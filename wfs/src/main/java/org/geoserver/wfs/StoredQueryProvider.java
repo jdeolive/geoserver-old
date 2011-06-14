@@ -31,7 +31,12 @@ import net.opengis.wfs20.StoredQueryDescriptionType;
  *
  */
 public class StoredQueryProvider {
-    
+
+    /**
+     * language for this provider
+     */
+    public static String LANGUAGE = "urn:ogc:def:queryLanguage:OGC-WFS::WFS_QueryExpression";
+
     /** logger */
     static Logger LOGGER = Logging.getLogger(StoredQueryProvider.class);
     
@@ -46,7 +51,7 @@ public class StoredQueryProvider {
      * The language/type of stored query the provider handles. 
      */
     public String getLanguage() {
-        return "urn:ogc:def:queryLanguage:OGC-WFS::WFS_QueryExpression";
+        return LANGUAGE;
     }
 
     /**
@@ -56,6 +61,11 @@ public class StoredQueryProvider {
         Parser p = new Parser(new WFSConfiguration());
         
         List<StoredQuery> queries = new ArrayList();
+
+        //add the default as mandated by spec
+        queries.add(StoredQuery.DEFAULT);
+
+        // add user created ones
         try {
             File dir = storedQueryDir();
             for (String f : dir.list()) {
@@ -110,6 +120,11 @@ public class StoredQueryProvider {
      * @param name Identifying name of the stored query.
      */
     public StoredQuery getStoredQuery(String name) {
+        //default?
+        if (StoredQuery.DEFAULT.getName().equals(name)) {
+            return StoredQuery.DEFAULT;
+        }
+
         try {
             File dir = storedQueryDir();
             File f = new File(dir, name + ".xml");
@@ -124,7 +139,7 @@ public class StoredQueryProvider {
             throw new RuntimeException("Error accessign stoed query: " + name, e);
         }
     }
-
+    
     /**
      * Persists a stored query, overwriting it if the query already exists. 
      *  

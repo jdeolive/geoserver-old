@@ -37,6 +37,7 @@ import org.geoserver.catalog.AttributeTypeInfo;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
+import org.geoserver.feature.TypeNameExtractingVisitor;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.request.LockFeatureRequest;
@@ -169,8 +170,22 @@ public class GetFeature {
         queries = request.getQueries();
         
         if (request.isQueryTypeNamesUnset()) {
-            String msg = "No feature types specified";
-            throw new WFSException(msg);
+            //do a check for FeatureId filters in the queries and update the type names for the 
+            // queries accordingly
+            for (Query q : queries) {
+                if (!q.getTypeNames().isEmpty()) continue;
+                
+                if (q.getFilter() != null) {
+                    TypeNameExtractingVisitor v = new TypeNameExtractingVisitor(catalog);
+                    q.getFilter().accept(v, null);
+                    q.getTypeNames().addAll(v.getTypeNames());
+                }
+
+                if (q.getTypeNames().isEmpty()) {
+                    String msg = "No feature types specified";
+                    throw new WFSException(msg);
+                }
+            }
         }
 
         // Optimization Idea
