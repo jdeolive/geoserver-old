@@ -111,11 +111,14 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             }
         }
         
-        //typeName
-        if (kvp.containsKey("typeName")) {
+        //typeName (in WFS 2.0 it is typeNames, not typeName)
+        if (kvp.containsKey("typeName") || kvp.containsKey("typeNames")) {
             //HACK, the kvp reader gives us a list of QName, need to wrap in 
             // another
             List typeName = (List) kvp.get("typeName");
+            if (typeName == null) {
+                typeName = (List) kvp.get("typeNames");
+            }
             List list = new ArrayList();
 
             for (Iterator itr = typeName.iterator(); itr.hasNext();) {

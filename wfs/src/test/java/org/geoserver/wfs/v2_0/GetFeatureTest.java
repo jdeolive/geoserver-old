@@ -41,7 +41,11 @@ public class GetFeatureTest extends WFS20TestSupport {
     }
 
     public void testGet() throws Exception {
-    	testGetFifteenAll("wfs?request=GetFeature&typename=cdf:Fifteen&version=2.0.0&service=wfs");
+    	testGetFifteenAll("wfs?request=GetFeature&typenames=cdf:Fifteen&version=2.0.0&service=wfs");
+    }
+    
+    public void testGetTypeName() throws Exception {
+        testGetFifteenAll("wfs?request=GetFeature&typename=cdf:Fifteen&version=2.0.0&service=wfs");
     }
     
     public void testGetPropertyNameEmpty() throws Exception {
