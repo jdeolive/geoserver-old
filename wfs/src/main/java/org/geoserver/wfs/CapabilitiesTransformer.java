@@ -1756,6 +1756,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                     transaction();
                 }
 
+                constraints();
                 end("ows:OperationsMetadata");
             }
             
@@ -1887,7 +1888,36 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
             void dropStoredQuery() {
                 operation("DropStoredQuery", null, true, true);
             }
+
+            /**
+             * Encodes service constraints.
+             */
+            void constraints() {
+                constraint("ImplementsBasicWFS", true);
+                constraint("ImplementsTransactionalWFS", true);
+                constraint("ImplementsLockingWFS", true);
+                constraint("KVPEncoding", true);
+                constraint("XMLEncoding", true);
+                constraint("SOAPEncoding", false);
+                constraint("ImplementsInheritance", false);
+                constraint("ImplementsRemoteResolve", false);
+                constraint("ImplementsResultPaging", true);
+                constraint("ImplementsStandardJoins", false);
+                constraint("ImplementsSpatialJoins", false);
+                constraint("ImplementsTemporalJoins", false);
+                constraint("ImplementsFeatureVersioning", false);
+                constraint("ManageStoredQueries", true);
+                
+                //capacity constraints
+                constraint("PagingIsTransactionSafe", false);
+            }
             
+            void constraint(String name, boolean value) {
+                start("ows:Constraint", attributes(new String[]{"name", name}));
+                  element("NoValues", null);
+                  element("DefaultValue", String.valueOf(value).toUpperCase());
+                end("ows:Constraint");
+            }
             void featureTypeList() {
                 start("FeatureTypeList");
                 
@@ -1929,7 +1959,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                    end("fes:Constraint");
                    start("fes:Constraint", attributes(new String[]{"name", "ImplementsMinTemporalFilter"}));
                       element("ows:NoValues", null);
-                      element("ows:DefaultValue", "FALSE");
+                      element("ows:DefaultValue", "TRUE");
                    end("fes:Constraint");
                    start("fes:Constraint", attributes(new String[]{"name", "ImplementsTemporalFilter"}));
                       element("ows:NoValues", null);
