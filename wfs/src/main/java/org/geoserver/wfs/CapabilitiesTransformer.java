@@ -1712,6 +1712,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                     "xmlns:ows", org.geotools.ows.v1_1.OWS.NAMESPACE, 
                     "xmlns:gml", org.geotools.gml3.v3_2.GML.NAMESPACE,
                     "xmlns:fes", FES_URI, "xmlns:xlink", XLINK.NAMESPACE,
+                    "xmlns:xs", XS.NAMESPACE,
                     "xsi:schemaLocation", WFS20_URI + " " +
                         (wfs.isCanonicalSchemaLocation()?
                                 org.geoserver.wfs.xml.v1_1_0.WFS.CANONICAL_SCHEMA_LOCATION:
@@ -1982,10 +1983,10 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                       element("ows:DefaultValue", "FALSE");
                    end("fes:Constraint");
                    start("fes:Constraint", attributes(new String[]{"name", "ImplementsSorting"}));
-                      start("ows:PossibleValues");
+                      start("ows:AllowedValues");
                         element("ows:Value", "ASC");
                         element("ows:Value", "DESC");
-                      end("ows:PossibleValues");
+                      end("ows:AllowedValues");
                       element("ows:DefaultValue", "ASC");
                    end("fes:Constraint");
                    start("fes:Constraint", attributes(new String[]{"name", "ImplementsExtendedOperators"}));

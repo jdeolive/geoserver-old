@@ -1,5 +1,6 @@
 package org.geoserver.wfs.v2_0;
 
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -15,6 +16,8 @@ import org.geoserver.data.test.MockData;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.wfs.WFSGetFeatureOutputFormat;
 import org.geoserver.wfs.WFSTestSupport;
+import org.geotools.wfs.v2_0.WFSConfiguration;
+import org.geotools.xml.Parser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -171,6 +174,15 @@ public class GetCapabilitiesTest extends WFS20TestSupport {
         XMLAssert.assertXpathExists("//ows:Operation[@name='DropStoredQuery']", doc);
     }
 
+    public void testValidCapabilitiesDocument() throws Exception {
+        InputStream in = get("wfs?service=WFS&version=2.0.0&request=getCapabilities");
+        Parser p = new Parser(new WFSConfiguration());
+        p.setValidating(true);
+        p.validate(in);
+        
+        assertTrue(p.getValidationErrors().isEmpty());
+    }
+    
     public void testLayerQualified() throws Exception {
      // filter on an existing namespace
         Document doc = getAsDOM("sf/PrimitiveGeoFeature/wfs?service=WFS&version=2.0.0&request=getCapabilities");
