@@ -10,6 +10,7 @@ import junit.textui.TestRunner;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.geoserver.data.test.MockData;
 import org.geoserver.wfs.GMLInfo;
+import org.geoserver.wfs.StoredQuery;
 import org.geoserver.wfs.WFSInfo;
 import org.geotools.filter.v2_0.FES;
 import org.geotools.gml3.v3_2.GML;
@@ -476,7 +477,15 @@ public class GetFeatureTest extends WFS20TestSupport {
         XMLAssert.assertXpathEvaluatesTo("1", "count(//cdf:Other)", dom);
         XMLAssert.assertXpathExists("//cdf:Other/cdf:integers[text() = '7']", dom);
     }
-    
+
+    public void testDefaultStoredQuery() throws Exception {
+        Document dom = getAsDOM("wfs?request=GetFeature&version=2.0.0&storedQueryId=" + 
+            StoredQuery.DEFAULT.getName() + "&ID=PrimitiveGeoFeature.f001");
+        
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//sf:PrimitiveGeoFeature)", dom);
+        XMLAssert.assertXpathExists("//sf:PrimitiveGeoFeature[@gml:id = 'PrimitiveGeoFeature.f001']", dom);
+    }
+
     public void testStoredQueryBBOX() throws Exception {
         String xml = 
             "<wfs:CreateStoredQuery service='WFS' version='2.0.0' " +

@@ -19,6 +19,10 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 
 import net.opengis.wfs.WfsFactory;
+import net.opengis.wfs20.ParameterExpressionType;
+import net.opengis.wfs20.ParameterType;
+import net.opengis.wfs20.StoredQueryType;
+import net.opengis.wfs20.Wfs20Factory;
 
 import org.eclipse.emf.ecore.EFactory;
 import org.eclipse.emf.ecore.EObject;
@@ -26,9 +30,12 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.wfs.GetFeature;
+import org.geoserver.wfs.StoredQuery;
+import org.geoserver.wfs.StoredQueryProvider;
 import org.geoserver.wfs.WFSException;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.request.Query;
+import org.geoserver.wfs.request.GetFeatureRequest.WFS20;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.gml2.bindings.GML2EncodingUtils;
 import org.geotools.xml.EMFUtils;
@@ -185,7 +192,14 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
 
                 querySet(eObject, "typeName", typeNames);
             } else {
-                throw new WFSException("The query should specify either typeName or a featureId filter", "MissingParameterValue");
+                //check for stored query id
+                if (kvp.containsKey("storedQueryId")) {
+                    buildStoredQueries(eObject, (List<URI>) kvp.get("storedQueryId"), kvp);
+                }
+                else {
+                    throw new WFSException("The query should specify either typeName, featureId filter" +
+                        ", or a stored query id", "MissingParameterValue");
+                }
             }
         }
         
@@ -395,5 +409,41 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
         }
 
         EMFUtils.set(query, property, values);
+    }
+    
+    protected void buildStoredQueries(EObject request, List<URI> storedQueryIds, Map kvp) {
+        GetFeatureRequest req = GetFeatureRequest.adapt(request);
+        req.getAdaptedQueries();
+        
+        if (!(req instanceof GetFeatureRequest.WFS20)) {
+            throw new WFSException("Stored queries only supported in WFS 2.0+");
+        }
+
+        StoredQueryProvider sqp = new StoredQueryProvider(catalog.getResourceLoader());
+        for (URI storedQueryId : storedQueryIds) {
+            StoredQuery sq = sqp.getStoredQuery(storedQueryId.toString());
+            if (sq == null) {
+                throw new WFSException("No such stored query: " + storedQueryId);
+            }
+    
+            //JD: since stored queries are 2.0 only we will create 2.0 model objects directly... once
+            // the next version of wfs comes out (and if they keep stored queries around) we will have
+            // to abstract stored query away with a request object adapter
+            Wfs20Factory factory = (Wfs20Factory) req.getFactory();
+            StoredQueryType storedQuery = factory.createStoredQueryType();
+            storedQuery.setId(storedQueryId.toString());
+            
+            //look for parameters in the kvp map
+            for (ParameterExpressionType p : sq.getQuery().getParameter()) {
+                if (kvp.containsKey(p.getName())) {
+                    ParameterType param = factory.createParameterType();
+                    param.setName(p.getName());
+                    param.setValue(kvp.get(p.getName()).toString());
+                    storedQuery.getParameter().add(param);
+                }
+            }
+            
+            req.getAdaptedQueries().add(storedQuery);
+        }
     }
 }
