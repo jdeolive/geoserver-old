@@ -1910,14 +1910,26 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 
                 //capacity constraints
                 constraint("PagingIsTransactionSafe", false);
+                constraint("QueryExpressions", "wfs:Query", "wfs:StoredQuery");
             }
-            
+
             void constraint(String name, boolean value) {
                 start("ows:Constraint", attributes(new String[]{"name", name}));
-                  element("NoValues", null);
-                  element("DefaultValue", String.valueOf(value).toUpperCase());
+                  element("ows:NoValues", null);
+                  element("ows:DefaultValue", String.valueOf(value).toUpperCase());
                 end("ows:Constraint");
             }
+
+            void constraint(String name, String... values) {
+                start("ows:Constraint", attributes(new String[]{"name", name}));
+                start("ows:AllowedValues");
+                for (String v : values) {
+                    element("ows:Value", v);
+                }
+                end("ows:AllowedValues");
+                end("ows:Constraint");
+            }
+
             void featureTypeList() {
                 start("FeatureTypeList");
                 
