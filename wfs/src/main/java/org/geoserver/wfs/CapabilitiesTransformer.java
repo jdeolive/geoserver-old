@@ -927,6 +927,10 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
              *
              */
             void serviceIdentification() {
+                serviceIdentification("1.1.0");
+            }
+            
+            void serviceIdentification(String version) {
                 start("ows:ServiceIdentification");
 
                 element("ows:Title", wfs.getTitle());
@@ -935,7 +939,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 keywords(wfs.getKeywords());
 
                 element("ows:ServiceType", "WFS");
-                element("ows:ServiceTypeVersion", "1.1.0");
+                element("ows:ServiceTypeVersion", version);
 
                 element("ows:Fees", wfs.getFees());
                 element("ows:AccessConstraints", wfs.getAccessConstraints());
@@ -1719,7 +1723,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
 
                 start("wfs:WFS_Capabilities", attributes);
 
-                delegate.serviceIdentification();
+                delegate.serviceIdentification("2.0.0");
                 delegate.serviceProvider(wfs.getGeoServer());
                 operationsMetadata();
                 featureTypeList();
