@@ -46,6 +46,10 @@ public abstract class RequestObjectAdapter {
     //
     
     public String getBaseURL() {
+        return getBaseUrl();
+    }
+    
+    public String getBaseUrl() {
         return eGet(adaptee, "baseUrl", String.class);
     }
     

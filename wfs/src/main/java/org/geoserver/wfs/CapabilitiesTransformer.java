@@ -23,10 +23,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import javax.xml.namespace.QName;
-
-import net.opengis.wfs.GetCapabilitiesType;
-
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
@@ -37,6 +33,7 @@ import org.geoserver.ows.xml.v1_0.OWS;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.CapabilitiesTransformer.WFS1_1.CapabilitiesTranslator1_1;
+import org.geoserver.wfs.request.GetCapabilitiesRequest;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.NameImpl;
 import org.geotools.filter.FunctionFactory;
@@ -118,7 +115,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
      * @param request
      * @throws ServiceException
      */
-    public void verifyUpdateSequence(GetCapabilitiesType request) throws ServiceException {
+    public void verifyUpdateSequence(GetCapabilitiesRequest request) throws ServiceException {
     	long reqUS = -1;
         if (request.getUpdateSequence() != null) {
 	        try {
@@ -237,14 +234,14 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
         }
 
         class CapabilitiesTranslator1_0 extends TranslatorSupport {
-            GetCapabilitiesType request;
+            GetCapabilitiesRequest request;
             
             public CapabilitiesTranslator1_0(ContentHandler handler) {
                 super(handler, null, null);
             }
 
             public void encode(Object object) throws IllegalArgumentException {
-                request = (GetCapabilitiesType)object;
+                request = GetCapabilitiesRequest.adapt(object);
                 
                 // Not used.  WFS 1.1 and 1.0 don't actually support updatesequence
                 //verifyUpdateSequence(request);
@@ -843,14 +840,14 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
 
         class CapabilitiesTranslator1_1 extends TranslatorSupport {
             private static final String GML_3_1_1_FORMAT = "text/xml; subtype=gml/3.1.1";
-            GetCapabilitiesType request;
+            GetCapabilitiesRequest request;
             
             public CapabilitiesTranslator1_1(ContentHandler handler) {
                 super(handler, null, null);
             }
 
             public void encode(Object object) throws IllegalArgumentException {
-                request = (GetCapabilitiesType)object;
+                request = GetCapabilitiesRequest.adapt(object);
                 
                 verifyUpdateSequence(request);
                 
@@ -1688,7 +1685,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
         
         class CapabilitiesTranslator2_0 extends TranslatorSupport {
 
-            net.opengis.wfs20.GetCapabilitiesType request;
+            GetCapabilitiesRequest request;
             WFS1_1.CapabilitiesTranslator1_1 delegate;
             
             public CapabilitiesTranslator2_0(ContentHandler handler) {
@@ -1705,7 +1702,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
             }
 
             public void encode(Object o) throws IllegalArgumentException {
-                request = (net.opengis.wfs20.GetCapabilitiesType) o;
+                request = GetCapabilitiesRequest.adapt(o);
                 
                 AttributesImpl attributes = attributes(new String[] { "version", "2.0.0", 
                     "xmlns:xsi", XSI_URI, "xmlns", WFS20_URI, "xmlns:wfs", WFS20_URI, 
