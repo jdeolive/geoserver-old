@@ -266,6 +266,11 @@
     <constructor-arg ref="geoServer"/>
     <constructor-arg ref="catalog"/>
 	</bean>
+  <bean id="typeName20KvpParser" class="org.geoserver.wfs.kvp.TypeNameKvpParser">
+    <constructor-arg value="typeNames"/>
+    <constructor-arg ref="geoServer"/>
+    <constructor-arg ref="catalog"/>
+  </bean>
   <bean id="getFeatureNamespaceKvpParser" class="org.geoserver.wfs.kvp.NamespaceKvpParser">
     <constructor-arg value="namespace"/>
     <property name="service"><value>WFS</value></property>
