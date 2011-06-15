@@ -105,6 +105,12 @@ public class GetFeatureTest extends WFS20TestSupport {
                 "//wfs:FeatureCollection/wfs:member/cite:NamedPlaces/@gml:id", doc);
     }
 
+    public void testGetWithBBOX() throws Exception {
+        Document dom = 
+            getAsDOM("wfs?request=GetFeature&version=2.0.0&typeName=sf:PrimitiveGeoFeature&BBOX=57.0,-4.5,62.0,1.0,EPSG:4326");
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//sf:PrimitiveGeoFeature)", dom);
+        XMLAssert.assertXpathExists("//sf:PrimitiveGeoFeature/gml:name[text() = 'name-f002']", dom);
+    }
     public void testPost() throws Exception {
 
         String xml = "<wfs:GetFeature " + "service='WFS' "
