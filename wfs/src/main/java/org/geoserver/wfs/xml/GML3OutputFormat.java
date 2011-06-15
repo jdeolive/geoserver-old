@@ -38,8 +38,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import net.opengis.wfs.FeatureCollectionType;
-
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
@@ -50,6 +48,7 @@ import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.WFSException;
 import org.geoserver.wfs.WFSGetFeatureOutputFormat;
 import org.geoserver.wfs.WFSInfo;
+import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.request.Query;
 import org.geoserver.wfs.xml.v1_1_0.WFS;
@@ -109,7 +108,7 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
         return "GML3";
     }
 
-    protected void write(FeatureCollectionType results, OutputStream output, Operation getFeature)
+    protected void write(FeatureCollectionResponse results, OutputStream output, Operation getFeature)
             throws ServiceException, IOException, UnsupportedEncodingException {
         List featureCollections = results.getFeature();
 
@@ -247,16 +246,16 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
         return new Encoder(configuration, configuration.schema());
     }
     
-    protected void encode(FeatureCollectionType results, OutputStream output, Encoder encoder)
+    protected void encode(FeatureCollectionResponse results, OutputStream output, Encoder encoder)
         throws IOException {
-        encoder.encode(results, org.geoserver.wfs.xml.v1_1_0.WFS.FEATURECOLLECTION, output);
+        encoder.encode(results.getAdaptee(), org.geoserver.wfs.xml.v1_1_0.WFS.FEATURECOLLECTION, output);
     }
     
     protected DOMSource getXSLT() {
         return GML3OutputFormat.xslt;
     }
 
-    private void complexFeatureStreamIntercept(FeatureCollectionType results, OutputStream output,
+    private void complexFeatureStreamIntercept(FeatureCollectionResponse results, OutputStream output,
             Encoder encoder) throws IOException {
         if (this.getXSLT() == null) {
             throw new FileNotFoundException("Unable to locate xslt resource file");
@@ -294,7 +293,7 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
         return "wfs/1.1.0/wfs.xsd";
     }
     
-    public static boolean isComplexFeature(FeatureCollectionType results) {
+    public static boolean isComplexFeature(FeatureCollectionResponse results) {
         boolean hasComplex = false;
         for (int fcIndex = 0; fcIndex < results.getFeature().size(); fcIndex++) {
             if (!(((FeatureCollection) results.getFeature().get(fcIndex)).getSchema() instanceof SimpleFeatureTypeImpl)) {

@@ -58,6 +58,8 @@ public abstract class GetFeatureRequest extends RequestObjectAdapter {
     
     public abstract Query createQuery();
     
+    public abstract FeatureCollectionResponse createResponse();
+    
     //
     // GetFeatureWithLock
     //
@@ -129,6 +131,12 @@ public abstract class GetFeatureRequest extends RequestObjectAdapter {
         public Query createQuery() {
             return new Query.WFS11(((WfsFactory)getFactory()).createQueryType());
         }
+        
+        @Override
+        public FeatureCollectionResponse createResponse() {
+            return new FeatureCollectionResponse.WFS11(
+                ((WfsFactory)getFactory()).createFeatureCollectionType());
+        }
     }
 
     public static class WFS20 extends GetFeatureRequest {
@@ -192,6 +200,12 @@ public abstract class GetFeatureRequest extends RequestObjectAdapter {
         @Override
         public Query createQuery() {
             return new Query.WFS20(((Wfs20Factory)getFactory()).createQueryType());
+        }
+        
+        @Override
+        public FeatureCollectionResponse createResponse() {
+            return new FeatureCollectionResponse.WFS20(
+                ((Wfs20Factory)getFactory()).createFeatureCollectionType());
         }
     }
 }

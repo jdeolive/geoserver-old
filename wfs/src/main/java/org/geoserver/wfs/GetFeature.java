@@ -9,28 +9,18 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
 import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 
 import net.opengis.wfs.AllSomeType;
-import net.opengis.wfs.FeatureCollectionType;
-import net.opengis.wfs.GetFeatureType;
-import net.opengis.wfs.GetFeatureWithLockType;
-import net.opengis.wfs.LockFeatureResponseType;
 import net.opengis.wfs.LockFeatureType;
 import net.opengis.wfs.LockType;
-import net.opengis.wfs.QueryType;
 import net.opengis.wfs.WfsFactory;
 import net.opengis.wfs.XlinkPropertyNameType;
-import net.opengis.wfs20.ParameterType;
 import net.opengis.wfs20.StoredQueryType;
 
 import org.geoserver.catalog.AttributeTypeInfo;
@@ -38,7 +28,7 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.feature.TypeNameExtractingVisitor;
-import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.request.LockFeatureRequest;
 import org.geoserver.wfs.request.LockFeatureResponse;
@@ -57,7 +47,6 @@ import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.LiteCoordinateSequenceFactory;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.xml.EMFUtils;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -71,9 +60,7 @@ import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.filter.spatial.BinarySpatialOperator;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.parameter.Parameter;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.springframework.context.ApplicationContext;
 import org.xml.sax.helpers.NamespaceSupport;
 
 /**
@@ -157,7 +144,7 @@ public class GetFeature {
         this.storedQueryProvider = storedQueryProvider;
     }
 
-    public FeatureCollectionType run(GetFeatureRequest request)
+    public FeatureCollectionResponse run(GetFeatureRequest request)
         throws WFSException {
         List<Query> queries = request.getQueries();
 
@@ -219,7 +206,25 @@ public class GetFeature {
         }
 
         int count = 0; //should probably be long
-        
+
+        // total count represents the total count of the features matched for this query in cases
+        // where the client has limited the result set size, as an optimization we only calculate
+        // this if the following conditions hold
+        // 1. the request is wfs 2.0
+        // 2. maxFeatures != Integer.MAX_VALUE
+        //TODO: we could actually add a third a optimization that when the count of features is 
+        // less than maxFeatures we don't have to calculate it since it is the same as count, but 
+        // this requires that we do that check post query loop which requires a bit of code 
+        // refactoring
+
+        int totalCount = 0;
+        if (!request.getVersion().startsWith("2")) {
+            totalCount = -1;
+        }
+        if (totalCount > -1 && maxFeatures == Integer.MAX_VALUE) {
+            totalCount = -1;
+        }
+
         //offset into result set in which to return features
         int offset = request.getStartIndex() != null ? request.getStartIndex().intValue() : -1;
 
@@ -473,6 +478,20 @@ public class GetFeature {
                     }
                 }
 
+                //numberMatched/totalSize
+                if (totalCount > -1) {
+                    //check maxFeatures and offset, if they are unset we can use the size we 
+                    // calculated above
+                    if (calculateSize && queryMaxFeatures == Integer.MAX_VALUE && offset == 0) {
+                        totalCount += size;
+                    }
+                    else {
+                        org.geotools.data.Query q2 = 
+                            toDataQuery(query, 0, Integer.MAX_VALUE, source, request, allPropNames, viewParam);
+                        totalCount += source.getFeatures(q2).size();
+                    }
+                }
+
                 // we may need to shave off geometries we did load only to make bounds
                 // computation happy
                 // TODO: support non-SimpleFeature geometry shaving
@@ -534,7 +553,7 @@ public class GetFeature {
             lockId = response.getLockId();
         }
 
-        return buildResults(count, results, lockId);
+        return buildResults(request, count, totalCount, results, lockId);
     }
 
     protected void processStoredQueries(GetFeatureRequest request) {
@@ -565,15 +584,13 @@ public class GetFeature {
     
     /**
      * Allows subclasses to alter the result generation
-     * @param count
-     * @param results
-     * @param lockId
-     * @return
      */
-    protected FeatureCollectionType buildResults(int count, List results,
-            String lockId) {
-        FeatureCollectionType result = WfsFactory.eINSTANCE.createFeatureCollectionType();
+    protected FeatureCollectionResponse buildResults(GetFeatureRequest request, int count, int total, 
+        List results, String lockId) {
+
+        FeatureCollectionResponse result = request.createResponse();
         result.setNumberOfFeatures(BigInteger.valueOf(count));
+        result.setTotalNumberOfFeatures(BigInteger.valueOf(total));
         result.setTimeStamp(Calendar.getInstance());
         result.setLockId(lockId);
         result.getFeature().addAll(results);

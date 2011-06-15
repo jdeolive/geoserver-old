@@ -17,12 +17,10 @@ import java.util.logging.Level;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.dom.DOMSource;
 
-import net.opengis.wfs.FeatureCollectionType;
-import net.opengis.wfs20.Wfs20Factory;
-
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.platform.Operation;
+import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.xml.v1_1_0.WFSConfiguration;
 import org.geotools.wfs.v2_0.WFS;
@@ -86,17 +84,9 @@ public class GML32OutputFormat extends GML3OutputFormat {
     }
     
     @Override
-    protected void encode(FeatureCollectionType results, OutputStream output, Encoder encoder)
+    protected void encode(FeatureCollectionResponse results, OutputStream output, Encoder encoder)
             throws IOException {
-        //convert to wfs 2.0 FeatureCollectionType
-        net.opengis.wfs20.FeatureCollectionType fc = Wfs20Factory.eINSTANCE.createFeatureCollectionType();
-        fc.setLockId(results.getLockId());
-        fc.setTimeStamp(results.getTimeStamp());
-        fc.setNumberReturned(results.getNumberOfFeatures());
-        fc.getMember().addAll(results.getFeature());
-        
-        //encoder.getNamespaces().declarePrefix("gml", GML.NAMESPACE);
-        encoder.encode(fc, WFS.FeatureCollection, output);
+        encoder.encode(results.getAdaptee(), WFS.FeatureCollection, output);
     }
     
     @Override

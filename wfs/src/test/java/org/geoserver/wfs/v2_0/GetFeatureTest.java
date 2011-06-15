@@ -48,6 +48,13 @@ public class GetFeatureTest extends WFS20TestSupport {
         testGetFifteenAll("wfs?request=GetFeature&typename=cdf:Fifteen&version=2.0.0&service=wfs");
     }
     
+    public void testGetWithCount() throws Exception {
+        Document dom = getAsDOM("wfs?request=GetFeature&typenames=cdf:Fifteen&version=2.0.0&service=wfs&count=5");
+        XMLAssert.assertXpathEvaluatesTo("5", "count(//cdf:Fifteen)", dom);
+        assertEquals("5", dom.getDocumentElement().getAttribute("numberReturned"));
+        assertEquals("15", dom.getDocumentElement().getAttribute("numberMatched"));
+    }
+    
     public void testGetPropertyNameEmpty() throws Exception {
     	testGetFifteenAll("wfs?request=GetFeature&typename=cdf:Fifteen&version=2.0.0&service=wfs&propertyname=");
     }

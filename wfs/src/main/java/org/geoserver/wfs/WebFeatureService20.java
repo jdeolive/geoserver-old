@@ -4,7 +4,6 @@
  */
 package org.geoserver.wfs;
 
-import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs20.CreateStoredQueryResponseType;
 import net.opengis.wfs20.CreateStoredQueryType;
 import net.opengis.wfs20.DescribeFeatureTypeType;
@@ -23,6 +22,7 @@ import net.opengis.wfs20.TransactionResponseType;
 import net.opengis.wfs20.TransactionType;
 
 import org.geoserver.catalog.FeatureTypeInfo;
+import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geotools.xml.transform.TransformerBase;
 
 /**
@@ -74,7 +74,7 @@ public interface WebFeatureService20 {
      *
      * @throws WFSException Any service exceptions.
      */
-    FeatureCollectionType getFeature(GetFeatureType request)
+    FeatureCollectionResponse getFeature(GetFeatureType request)
         throws WFSException;
     
     /**
@@ -86,7 +86,7 @@ public interface WebFeatureService20 {
      *
      * @throws WFSException Any service exceptions.
      */
-    FeatureCollectionType getFeatureWithLock(GetFeatureWithLockType request)
+    FeatureCollectionResponse getFeatureWithLock(GetFeatureWithLockType request)
         throws WFSException;
     
     /**

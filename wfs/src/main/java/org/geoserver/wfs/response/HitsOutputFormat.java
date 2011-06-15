@@ -22,6 +22,7 @@ import org.geoserver.ows.util.ResponseUtils;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.WFSInfo;
+import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.xml.GML3OutputFormat;
 import org.geoserver.wfs.xml.v1_1_0.WFSConfiguration;
 import org.geotools.feature.FeatureCollection;
@@ -45,7 +46,7 @@ public class HitsOutputFormat extends WFSResponse {
     Configuration configuration;
 
     public HitsOutputFormat(GeoServer gs, Configuration configuration) {
-        super(gs, FeatureCollectionType.class);
+        super(gs, FeatureCollectionResponse.class);
 
         this.configuration = configuration;
     }
@@ -72,7 +73,7 @@ public class HitsOutputFormat extends WFSResponse {
         throws IOException, ServiceException {
         WFSInfo wfs = getInfo();
         
-        FeatureCollectionType featureCollection = (FeatureCollectionType) value;
+        FeatureCollectionResponse featureCollection = (FeatureCollectionResponse) value;
 
         //create a new feautre collcetion type with just the numbers
         FeatureCollectionType hits = WfsFactory.eINSTANCE.createFeatureCollectionType();
@@ -92,7 +93,7 @@ public class HitsOutputFormat extends WFSResponse {
         encode(hits, output, wfs);
     }
     
-    private BigInteger countFeature(FeatureCollectionType fct) {
+    private BigInteger countFeature(FeatureCollectionResponse fct) {
         BigInteger count = BigInteger.valueOf(0);
         for (int fcIndex = 0; fcIndex < fct.getFeature().size(); fcIndex++) {
             FeatureIterator i = null;
