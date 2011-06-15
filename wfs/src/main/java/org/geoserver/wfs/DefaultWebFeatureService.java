@@ -5,7 +5,6 @@
 package org.geoserver.wfs;
 
 import net.opengis.wfs.DescribeFeatureTypeType;
-import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs.GetCapabilitiesType;
 import net.opengis.wfs.GetFeatureType;
 import net.opengis.wfs.GetFeatureWithLockType;
@@ -19,6 +18,7 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.wfs.request.DescribeFeatureTypeRequest;
+import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetCapabilitiesRequest;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.request.LockFeatureRequest;
@@ -113,7 +113,7 @@ public class DefaultWebFeatureService implements WebFeatureService, ApplicationC
      *
      * @throws WFSException Any service exceptions.
      */
-    public FeatureCollectionType getFeature(GetFeatureType request)
+    public FeatureCollectionResponse getFeature(GetFeatureType request)
         throws WFSException {
         GetFeature getFeature = new GetFeature(getServiceInfo(), catalog);
         getFeature.setFilterFactory(filterFactory);
@@ -130,7 +130,7 @@ public class DefaultWebFeatureService implements WebFeatureService, ApplicationC
      *
      * @throws WFSException Any service exceptions.
      */
-    public FeatureCollectionType getFeatureWithLock(GetFeatureWithLockType request)
+    public FeatureCollectionResponse getFeatureWithLock(GetFeatureWithLockType request)
         throws WFSException {
         return getFeature(request);
     }

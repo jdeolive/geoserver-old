@@ -13,6 +13,7 @@ import net.opengis.wfs.WfsFactory;
 import org.geoserver.data.test.MockData;
 import org.geoserver.platform.Operation;
 import org.geoserver.wfs.WFSTestSupport;
+import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
 import org.geotools.data.memory.MemoryDataStore;
@@ -78,7 +79,8 @@ public class CSVOutputFormatTest extends WFSTestSupport {
         GetFeatureType gft = WfsFactory.eINSTANCE.createGetFeatureType();
         Operation op = new Operation("GetFeature", getServiceDescriptor10(), null, new Object[] {gft});
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        FeatureCollectionType fct = WfsFactory.eINSTANCE.createFeatureCollectionType();
+        FeatureCollectionResponse fct = 
+            FeatureCollectionResponse.adapt(WfsFactory.eINSTANCE.createFeatureCollectionType());
         fct.getFeature().add(fs.getFeatures());
         
         // write out the results

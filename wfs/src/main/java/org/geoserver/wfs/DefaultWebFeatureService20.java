@@ -4,7 +4,6 @@
  */
 package org.geoserver.wfs;
 
-import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs20.CreateStoredQueryResponseType;
 import net.opengis.wfs20.CreateStoredQueryType;
 import net.opengis.wfs20.DescribeFeatureTypeType;
@@ -26,6 +25,7 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.wfs.request.DescribeFeatureTypeRequest;
+import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetCapabilitiesRequest;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.request.LockFeatureRequest;
@@ -87,7 +87,7 @@ public class DefaultWebFeatureService20 implements WebFeatureService20, Applicat
             .run(new DescribeFeatureTypeRequest.WFS20(request));
     }
 
-    public FeatureCollectionType getFeature(GetFeatureType request) throws WFSException {
+    public FeatureCollectionResponse getFeature(GetFeatureType request) throws WFSException {
         GetFeature gf = new GetFeature(getServiceInfo(), getCatalog());
         gf.setFilterFactory(filterFactory);
         gf.setStoredQueryProvider(getStoredQueryProvider());
@@ -95,7 +95,7 @@ public class DefaultWebFeatureService20 implements WebFeatureService20, Applicat
         return gf.run(new GetFeatureRequest.WFS20(request));
     }
     
-    public FeatureCollectionType getFeatureWithLock(GetFeatureWithLockType request)
+    public FeatureCollectionResponse getFeatureWithLock(GetFeatureWithLockType request)
             throws WFSException {
         return getFeature(request);
     }
