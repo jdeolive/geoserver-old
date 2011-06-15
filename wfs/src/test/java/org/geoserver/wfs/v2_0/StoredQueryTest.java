@@ -71,6 +71,17 @@ public class StoredQueryTest extends WFS20TestSupport {
         assertEquals("wfs:DescribeStoredQueriesResponse", dom.getDocumentElement().getNodeName());
         XMLAssert.assertXpathExists("//wfs:StoredQueryDescription[@id='myStoredQuery']", dom);
     }
+    
+    public void testDescribeStoredQueries2() throws Exception {
+        Document dom = getAsDOM("wfs?request=DescribeStoredQueries&storedQuery_Id=myStoredQuery");
+        assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
+        
+        testCreateStoredQuery();
+        
+        dom = getAsDOM("wfs?request=DescribeStoredQueries&storedQuery_Id=myStoredQuery");
+        assertEquals("wfs:DescribeStoredQueriesResponse", dom.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathExists("//wfs:StoredQueryDescription[@id='myStoredQuery']", dom);
+    }
 
     public void testDescribeDefaultStoredQuery() throws Exception {
         Document dom = getAsDOM("wfs?request=DescribeStoredQueries&storedQueryId=" + StoredQuery.DEFAULT.getName());
@@ -96,5 +107,18 @@ public class StoredQueryTest extends WFS20TestSupport {
         
         dom = getAsDOM("wfs?request=DropStoredQuery&id=myStoredQuery");
         assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());   
+    }
+    
+    public void testDropStoredQuery2() throws Exception {
+        Document dom = getAsDOM("wfs?request=DropStoredQuery&storedQuery_id=myStoredQuery");
+        assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
+        
+        testCreateStoredQuery();
+        dom = getAsDOM("wfs?request=DropStoredQuery&storedQuery_id=myStoredQuery");
+        assertEquals("wfs:DropStoredQueryResponse", dom.getDocumentElement().getNodeName());
+        assertEquals("OK", dom.getDocumentElement().getAttribute("status"));
+        
+        dom = getAsDOM("wfs?request=DropStoredQuery&storedQuery_id=myStoredQuery");
+        assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
     }
 }

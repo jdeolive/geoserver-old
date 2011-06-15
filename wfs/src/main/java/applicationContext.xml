@@ -365,6 +365,9 @@
   <bean id="storedQueryIdKvpParser" class="org.geoserver.wfs.kvp.URIKvpParser">
     <constructor-arg value="storedQueryId"/>
   </bean>
+  <bean id="storedQuery_IdKvpParser" class="org.geoserver.wfs.kvp.URIKvpParser">
+    <constructor-arg value="storedQuery_Id"/>
+  </bean>
     
 	<!-- kvp request readers -->
 	<bean id="wfsGetCapabilitiesKvpReader"  
