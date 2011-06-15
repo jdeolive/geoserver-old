@@ -1996,12 +1996,32 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                   element("fes:ResourceIdentifier", null, attributes(new String[]{"name", "fes:ResourceId"}));
                end("fes:Id_Capabilities");
                
+               start("fes:Scalar_Capabilities");
+                  element("fes:LogicalOperators", null);
+                  start("fes:ComparisonOperators");
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsLessThan"}));
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsGreaterThan"}));
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsLessThanOrEqualTo"}));
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsGreaterThanOrEqualTo"}));
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsEqualTo"}));
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsNotEqualTo"}));
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsLike"}));
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsBetween"}));
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsNull"}));
+                    //element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsNil"}));
+                  end("fes:ComparisonOperators");
+               end("fes:Scalar_Capabilities");
+               
                start("fes:Spatial_Capabilities");
                  start("fes:GeometryOperands");
                    element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:Envelope"}));
                    element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:Point"}));
+                   element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:MultiPoint"}));
                    element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:LineString"}));
+                   element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:MultiLineString"}));
                    element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:Polygon"}));
+                   element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:MultiPolygon"}));
+                   element("fes:GeometryOperand", null, attributes(new String[]{"name", "gml:MultiGeometry"}));
                  end("fes:GeometryOperands");
                  start("fes:SpatialOperators");
                    element("fes:SpatialOperator", null, attributes(new String[] { "name", "Disjoint" }));
@@ -2017,6 +2037,31 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                  end("fes:SpatialOperators");
                end("fes:Spatial_Capabilities");
 
+               start("fes:Temporal_Capabilities");
+                 start("fes:TemporalOperands");
+                   element("fes:TemporalOperand", null, attributes(new String[] { "name", "gml:TimeInstant" }));
+                   element("fes:TemporalOperand", null, attributes(new String[] { "name", "gml:TimePeriod" }));
+                   //element("fes:TemporalOperand", null, attributes(new String[] { "name", "gml:validTime" }));
+                   //element("fes:TemporalOperand", null, attributes(new String[] { "name", "gml:timePosition" }));
+                   //element("fes:TemporalOperand", null, attributes(new String[] { "name", "gml:timeInterval" }));
+                   //element("fes:TemporalOperand", null, attributes(new String[] { "name", "gml:duration" }));
+                 end("fes:TemporalOperands");
+                 start("fes:TemporalOperators");
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "After" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "Before" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "Begins" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "BegunBy" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "TContains" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "During" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "TEquals" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "TOverlaps" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "Meets" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "OverlappedBy" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "MetBy" }));
+                   element("fes:TemporalOperator", null, attributes(new String[] { "name", "EndedBy" }));
+                 end("fes:TemporalOperators");
+              end("fes:Temporal_Capabilities");
+               
                List<Schema> typeMappingProfiles = 
                    org.geotools.gml3.v3_2.GML.getInstance().getAllTypeMappingProfiles();
                
