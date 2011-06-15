@@ -133,6 +133,22 @@ public class GetFeatureTest extends WFS20TestSupport {
         }
     }
 
+    public void testPostMultipleQueriesDifferentNamespaces() throws Exception {
+        String xml = "<wfs:GetFeature " + "service='WFS' "
+                + "version='2.0.0' "
+                + "xmlns:cdf='http://www.opengis.net/cite/data' "
+                + "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
+                +   "<wfs:Query typeNames='cdf:Other'/> "
+                +   "<wfs:Query typeNames='sf:PrimitiveGeoFeature'/> "
+                + "</wfs:GetFeature>";
+
+        
+        Document doc = postAsDOM("wfs", xml);
+        print(doc);
+        assertGML32(doc);
+
+    }
+    
     public void testPostFormEncoded() throws Exception {
         String request = "wfs?service=WFS&version=2.0.0&request=GetFeature&typename=sf:PrimitiveGeoFeature"
                 + "&namespace=xmlns("
