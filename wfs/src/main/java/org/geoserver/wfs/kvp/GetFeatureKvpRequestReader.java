@@ -122,50 +122,25 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             List list = new ArrayList();
 
             for (Iterator itr = typeName.iterator(); itr.hasNext();) {
-                QName qName = (QName) itr.next();
-
-                // check the type name is known, otherwise complain
-                String namespaceURI = qName.getNamespaceURI();
-                String localPart = qName.getLocalPart();
-                String prefix = qName.getPrefix();
-                if (namespaces != null) {
-                    if (XMLConstants.DEFAULT_NS_PREFIX.equals(prefix)) {
-                        // request did not specify a namespace prefix for the typeName,
-                        // let's see if it speficied a default namespace
-                        String uri = namespaces.getURI(XMLConstants.DEFAULT_NS_PREFIX);
-                        if (!XMLConstants.NULL_NS_URI.equals(uri)) {
-                            // alright, request came with xmlns(http:...) to idicat the typeName's
-                            // namespace
-                            namespaceURI = uri;
-                        }
-                    } else if (namespaces.getURI(prefix) != null) {
-                        // so request used a custom prefix and declared the prefix:uri mapping?
-                        namespaceURI = namespaces.getURI(qName.getPrefix());
+                Object obj = itr.next();
+                
+                //we might get a list of qname, or a list of list of qname
+                if (obj instanceof QName) {
+                    QName qName = (QName) obj;
+                    qName = checkTypeName(qName, namespaces);
+                    
+                    List l = new ArrayList();
+                    l.add(qName);
+                    list.add(l);
+                }
+                else {
+                    List<QName> qNames = (List<QName>) obj;
+                    for (int i = 0; i < qNames.size(); i++) {
+                        qNames.set(i, checkTypeName(qNames.get(i), namespaces));
                     }
-                    NamespaceInfo ns = catalog.getNamespaceByURI(namespaceURI);
-                    if (ns == null) {
-                        throw new WFSException("Unknown namespace [" + qName.getPrefix() + "]",
-                                "InvalidParameterValue", "namespace");
-                    }
-                    prefix = ns.getPrefix();
-                    qName = new QName(namespaceURI, localPart, prefix);
-                }
 
-                if (!XMLConstants.DEFAULT_NS_PREFIX.equals(qName.getPrefix())
-                        && catalog.getNamespaceByPrefix(qName.getPrefix()) == null) {
-                    throw new WFSException("Unknown namespace [" + qName.getPrefix() + "]",
-                            "InvalidParameterValue", "namespace");
+                    list.add(qNames);
                 }
-
-                if (catalog.getFeatureTypeByName(namespaceURI, localPart) == null) {
-                    String name = qName.getPrefix() + ":" + qName.getLocalPart();
-                    throw new WFSException("Feature type " + name + " unknown",
-                            "InvalidParameterValue", "typeName");
-                }
-
-                List l = new ArrayList();
-                l.add(qName);
-                list.add(l);
             }
 
             kvp.put("typeName", list);
@@ -334,6 +309,48 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
         }
     }
 
+    QName checkTypeName(QName qName, NamespaceSupport namespaces) {
+     // check the type name is known, otherwise complain
+        String namespaceURI = qName.getNamespaceURI();
+        String localPart = qName.getLocalPart();
+        String prefix = qName.getPrefix();
+        if (namespaces != null) {
+            if (XMLConstants.DEFAULT_NS_PREFIX.equals(prefix)) {
+                // request did not specify a namespace prefix for the typeName,
+                // let's see if it speficied a default namespace
+                String uri = namespaces.getURI(XMLConstants.DEFAULT_NS_PREFIX);
+                if (!XMLConstants.NULL_NS_URI.equals(uri)) {
+                    // alright, request came with xmlns(http:...) to idicat the typeName's
+                    // namespace
+                    namespaceURI = uri;
+                }
+            } else if (namespaces.getURI(prefix) != null) {
+                // so request used a custom prefix and declared the prefix:uri mapping?
+                namespaceURI = namespaces.getURI(qName.getPrefix());
+            }
+            NamespaceInfo ns = catalog.getNamespaceByURI(namespaceURI);
+            if (ns == null) {
+                throw new WFSException("Unknown namespace [" + qName.getPrefix() + "]",
+                        "InvalidParameterValue", "namespace");
+            }
+            prefix = ns.getPrefix();
+            qName = new QName(namespaceURI, localPart, prefix);
+        }
+
+        if (!XMLConstants.DEFAULT_NS_PREFIX.equals(qName.getPrefix())
+                && catalog.getNamespaceByPrefix(qName.getPrefix()) == null) {
+            throw new WFSException("Unknown namespace [" + qName.getPrefix() + "]",
+                    "InvalidParameterValue", "namespace");
+        }
+
+        if (catalog.getFeatureTypeByName(namespaceURI, localPart) == null) {
+            String name = qName.getPrefix() + ":" + qName.getLocalPart();
+            throw new WFSException("Feature type " + name + " unknown",
+                    "InvalidParameterValue", "typeName");
+        }
+        return qName;
+    }
+    
     BBOX bboxFilter(QName typeName, Envelope bbox) throws Exception {
         FeatureTypeInfo featureTypeInfo = 
             catalog.getFeatureTypeByName(typeName.getNamespaceURI(), typeName.getLocalPart());
