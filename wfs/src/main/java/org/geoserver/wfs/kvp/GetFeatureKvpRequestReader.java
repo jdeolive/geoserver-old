@@ -204,12 +204,11 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             //set filter from bbox 
             Envelope bbox = (Envelope) kvp.get("bbox");
 
-            List queries = (List) EMFUtils.get(eObject, "query");
+            List<Query> queries = GetFeatureRequest.adapt(eObject).getQueries();
             List filters = new ArrayList();
 
-            for (Iterator it = queries.iterator(); it.hasNext();) {
-                Object query = it.next();
-                Query q = Query.adapt(query);
+            for (Iterator<Query> it = queries.iterator(); it.hasNext();) {
+                Query q = it.next();
                 
                 List typeName = q.getTypeNames();
                 Filter filter = null;
