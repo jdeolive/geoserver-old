@@ -122,8 +122,18 @@ public abstract class FeatureTypeSchemaBuilder {
         throws IOException {
         return build(new FeatureTypeInfo[] { featureTypeInfo }, baseUrl);
     }
+    
+    public XSDSchema build(FeatureTypeInfo featureTypeInfo, String baseUrl, boolean resolveAppSchemaImports)
+        throws IOException {
+        return build(new FeatureTypeInfo[] { featureTypeInfo }, baseUrl, resolveAppSchemaImports);
+    }
 
     public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl)
+        throws IOException {
+        return build(featureTypeInfos, baseUrl, false);
+    }
+    
+    public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl, boolean resolveAppSchemaImports) 
         throws IOException {
         XSDFactory factory = XSDFactory.eINSTANCE;
         XSDSchema schema = factory.createXSDSchema();
@@ -248,11 +258,41 @@ public abstract class FeatureTypeSchemaBuilder {
                     String schemaLocation = buildURL(baseUrl, "wfs", params, URLType.RESOURCE);
                     String namespace = catalog.getNamespaceByPrefix(prefix).getURI();
     
+                    //register the namespace prefix
+                    schema.getQNamePrefixToNamespaceMap().put(prefix, namespace);
+                    
                     XSDImport imprt = factory.createXSDImport();
                     imprt.setNamespace(namespace);
                     imprt.setSchemaLocation(schemaLocation);
     
+                    XSDSchema resolved = null;
+                    if (resolveAppSchemaImports) {
+                        //actually build the schema out for these types and set it as the resolved
+                        // schema for the import
+                        List<FeatureTypeInfo> featureTypes = new ArrayList();
+                        for (String typeName : typeNames.toString().split(",")) {
+                            featureTypes.add(catalog.getFeatureTypeByName(typeName));
+                        }
+
+                        resolved = build(featureTypes.toArray(
+                            new FeatureTypeInfo[featureTypes.size()]), baseUrl);
+                        
+                        //ensure we declare the wfs and gml namespaces as well
+                        schema.getQNamePrefixToNamespaceMap().put("gml", gmlNamespace);
+                        if (getWfsSchema() != null) {
+                            schema.getQNamePrefixToNamespaceMap().put("wfs", getWfsSchema().getTargetNamespace());
+                        }
+                    }
+                   
+                    if (resolved != null) {
+                        imprt.setResolvedSchema(resolved);
+                    }
+                    
                     schema.getContents().add(imprt);
+                    
+                    if (resolved != null) {
+                        ((XSDSchemaImpl)resolved).imported(imprt);
+                    }
                 }
             }
         }
