@@ -135,6 +135,7 @@
         <constructor-arg>
            <ref bean="wfsService-2.0"/>
         </constructor-arg>  
+        <property name="useServiceVersion" value="true"/>
     </bean>
 	
 	<!-- gml schema builders -->
