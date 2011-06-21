@@ -59,6 +59,7 @@ public class StoredQueryTest extends WFS20TestSupport {
     public void testDescribeStoredQueries() throws Exception {
         Document dom = getAsDOM("wfs?request=DescribeStoredQueries&storedQueryId=myStoredQuery");
         assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathExists("//ows:Exception[@exceptionCode = 'InvalidParameterValue']", dom);
         
         testCreateStoredQuery();
         
