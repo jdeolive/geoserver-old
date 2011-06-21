@@ -524,6 +524,12 @@ public class GetFeatureTest extends WFS20TestSupport {
         
         XMLAssert.assertXpathEvaluatesTo("1", "count(//sf:PrimitiveGeoFeature)", dom);
         XMLAssert.assertXpathExists("//sf:PrimitiveGeoFeature[@gml:id = 'PrimitiveGeoFeature.f001']", dom);
+        
+        dom = getAsDOM("wfs?request=GetFeature&version=2.0.0&storedQuery_Id=" + 
+                StoredQuery.DEFAULT.getName() + "&ID=PrimitiveGeoFeature.f001");
+            
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//sf:PrimitiveGeoFeature)", dom);
+        XMLAssert.assertXpathExists("//sf:PrimitiveGeoFeature[@gml:id = 'PrimitiveGeoFeature.f001']", dom);
     }
 
     public void testStoredQueryBBOX() throws Exception {
@@ -611,7 +617,14 @@ public class GetFeatureTest extends WFS20TestSupport {
         XMLAssert.assertXpathExists("//sf:PrimitiveGeoFeature[@gml:id = 'PrimitiveGeoFeature.f008']", dom);
         
     }
-    
+
+    public void testGetFeatureInvalidPropertyName() throws Exception {
+        Document dom = 
+            getAsDOM("wfs?version=2.0.0&service=wfs&request=GetFeature&typename=sf:PrimitiveGeoFeature&propertyName=foo");
+        assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathExists("//ows:Exception[@exceptionCode = 'InvalidParameterValue']", dom);
+        
+    }
     public static void main(String[] args) {
         TestRunner runner = new TestRunner();
         runner.run(GetFeatureTest.class);

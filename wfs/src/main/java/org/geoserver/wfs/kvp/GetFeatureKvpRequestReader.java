@@ -170,9 +170,17 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
 
                 querySet(eObject, "typeName", typeNames);
             } else {
-                //check for stored query id
-                if (kvp.containsKey("storedQueryId")) {
-                    buildStoredQueries(eObject, (List<URI>) kvp.get("storedQueryId"), kvp);
+                //check for stored query id, i have seen both storedQueryId and storedQuery_Id used
+                // so support both
+                List<URI> storedQueryId = null;
+                if (kvp.containsKey("storedQuery_Id")) {
+                    storedQueryId = (List<URI>) kvp.get("storedQuery_Id");
+                }
+                if (storedQueryId == null && kvp.containsKey("storedQueryId")) {
+                    storedQueryId = (List<URI>) kvp.get("storedQueryId");
+                }
+                if (storedQueryId != null) {
+                    buildStoredQueries(eObject, storedQueryId, kvp);
                 }
                 else {
                     throw new WFSException("The query should specify either typeName, featureId filter" +
