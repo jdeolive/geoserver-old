@@ -16,6 +16,7 @@ import org.geotools.filter.v2_0.FES;
 import org.geotools.gml3.v3_2.GML;
 
 import org.geotools.wfs.v2_0.WFS;
+import org.geotools.xml.XML;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -623,8 +624,22 @@ public class GetFeatureTest extends WFS20TestSupport {
             getAsDOM("wfs?version=2.0.0&service=wfs&request=GetFeature&typename=sf:PrimitiveGeoFeature&propertyName=foo");
         assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
         XMLAssert.assertXpathExists("//ows:Exception[@exceptionCode = 'InvalidParameterValue']", dom);
-        
     }
+    
+    public void testGetFeatureWithMultiplePropertyName() throws Exception {
+        Document dom = 
+            getAsDOM("wfs?version=2.0.0&service=wfs&request=GetFeature&typename=cdf:Fifteen,cdf:Seven");
+        
+        assertEquals("wfs:FeatureCollection", dom.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathEvaluatesTo("2", "count(wfs:FeatureCollection/wfs:member)", dom);
+        XMLAssert.assertXpathEvaluatesTo("2", "count(wfs:FeatureCollection/wfs:member/wfs:FeatureCollection)", dom);
+        
+        XMLAssert.assertXpathEvaluatesTo("15", 
+            "count(wfs:FeatureCollection/wfs:member[position() = 1]/wfs:FeatureCollection//cdf:Fifteen)", dom);
+        XMLAssert.assertXpathEvaluatesTo("7", 
+            "count(wfs:FeatureCollection/wfs:member[position() = 2]/wfs:FeatureCollection//cdf:Seven)", dom);
+    }
+
     public static void main(String[] args) {
         TestRunner runner = new TestRunner();
         runner.run(GetFeatureTest.class);
