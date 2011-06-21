@@ -638,6 +638,26 @@ public class GetFeatureTest extends WFS20TestSupport {
             "count(wfs:FeatureCollection/wfs:member[position() = 1]/wfs:FeatureCollection//cdf:Fifteen)", dom);
         XMLAssert.assertXpathEvaluatesTo("7", 
             "count(wfs:FeatureCollection/wfs:member[position() = 2]/wfs:FeatureCollection//cdf:Seven)", dom);
+        
+        String xml = "<wfs:GetFeature " + "service='WFS' "
+        + "version='2.0.0' "
+        + "xmlns:cdf='http://www.opengis.net/cite/data' "
+        + "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
+        + "<wfs:Query typeNames='cdf:Fifteen'/> "
+        + "<wfs:Query typeNames='cdf:Seven'/> "
+        +"</wfs:GetFeature>"; 
+        dom = 
+            getAsDOM("wfs?version=2.0.0&service=wfs&request=GetFeature&typename=cdf:Fifteen,cdf:Seven");
+        
+        assertEquals("wfs:FeatureCollection", dom.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathEvaluatesTo("2", "count(wfs:FeatureCollection/wfs:member)", dom);
+        XMLAssert.assertXpathEvaluatesTo("2", "count(wfs:FeatureCollection/wfs:member/wfs:FeatureCollection)", dom);
+        
+        XMLAssert.assertXpathEvaluatesTo("15", 
+            "count(wfs:FeatureCollection/wfs:member[position() = 1]/wfs:FeatureCollection//cdf:Fifteen)", dom);
+        XMLAssert.assertXpathEvaluatesTo("7", 
+            "count(wfs:FeatureCollection/wfs:member[position() = 2]/wfs:FeatureCollection//cdf:Seven)", dom);
+        
     }
 
     public static void main(String[] args) {
