@@ -33,6 +33,7 @@ import org.geoserver.wfs.GetFeature;
 import org.geoserver.wfs.StoredQuery;
 import org.geoserver.wfs.StoredQueryProvider;
 import org.geoserver.wfs.WFSException;
+import org.geoserver.wfs.WFSInfo;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.request.Query;
 import org.geoserver.wfs.request.GetFeatureRequest.WFS20;
@@ -87,17 +88,15 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
         if (!EMFUtils.isSet(eObject, "outputFormat")) {
             //set the default
             String version = (String) EMFUtils.get(eObject, "version");
-            
-            version = version != null ? version : "";
-            if (version.startsWith("1.0")) {
-                EMFUtils.set(eObject, "outputFormat", "GML2");
-            } 
-            else if (version.startsWith("1.1")){
-                EMFUtils.set(eObject, "outputFormat", "text/xml; subtype=gml/3.1.1");
-            }
-            else {
-                EMFUtils.set(eObject, "outputFormat", "text/xml; subtype=gml/3.2");
-            }
+            switch(WFSInfo.Version.negotiate(version)) {
+                case V_10:
+                    EMFUtils.set(eObject, "outputFormat", "GML2"); break;
+                case V_11:
+                    EMFUtils.set(eObject, "outputFormat", "text/xml; subtype=gml/3.1.1"); break;
+                case V_20:
+                default:
+                    EMFUtils.set(eObject, "outputFormat", "text/xml; subtype=gml/3.2");
+            };
         }
 
         // did the user supply alternate namespace prefixes?

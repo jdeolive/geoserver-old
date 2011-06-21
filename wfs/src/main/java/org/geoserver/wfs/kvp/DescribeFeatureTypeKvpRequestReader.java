@@ -16,6 +16,7 @@ import net.opengis.wfs.WfsFactory;
 
 import org.eclipse.emf.ecore.EFactory;
 import org.geoserver.catalog.Catalog;
+import org.geoserver.wfs.WFSInfo;
 import org.geoserver.wfs.request.DescribeFeatureTypeRequest;
 import org.xml.sax.helpers.NamespaceSupport;
 
@@ -43,16 +44,14 @@ public class DescribeFeatureTypeKvpRequestReader extends WFSKvpRequestReader {
         DescribeFeatureTypeRequest req = DescribeFeatureTypeRequest.adapt(request);
         
         if (!req.isSetOutputFormat()) {
-            if (req.getVersion().startsWith("2.0")) {
-                //set 2.0 default
-                req.setOutputFormat("text/xml; subtype=gml/3.2");
-            }
-            else if (req.getVersion().startsWith("1.1")) {
-                //set 1.1 default
-                req.setOutputFormat("text/xml; subtype=gml/3.1.1");
-            } else {
-                //set 1.0 default
-                req.setOutputFormat("XMLSCHEMA");
+            switch(WFSInfo.Version.negotiate(req.getVersion())) {
+                case V_10:
+                    req.setOutputFormat("XMLSCHEMA"); break;
+                case V_11:
+                    req.setOutputFormat("text/xml; subtype=gml/3.1.1"); break;
+                case V_20:
+                default:
+                    req.setOutputFormat("text/xml; subtype=gml/3.2");
             }
         }
 
