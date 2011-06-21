@@ -199,7 +199,9 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
         }
 
         //declare application schema namespaces
-        Map<String, String> params = params("service", "WFS", "version", "1.1.0", "request", "DescribeFeatureType");
+        
+        Map<String, String> params = params("service", "WFS", "version", request.getVersion(), 
+                "request", "DescribeFeatureType");
         for (Iterator i = ns2metas.entrySet().iterator(); i.hasNext();) {
             Map.Entry entry = (Map.Entry) i.next();
 
