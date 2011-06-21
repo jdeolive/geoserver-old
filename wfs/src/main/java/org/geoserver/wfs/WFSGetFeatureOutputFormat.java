@@ -132,7 +132,15 @@ public abstract class WFSGetFeatureOutputFormat extends WFSResponse {
      */
     public final void write(Object value, OutputStream output, Operation operation)
         throws IOException, ServiceException {
-        write((FeatureCollectionResponse) value, output, operation);
+        //for WFS 2.0 we changed the input object type to be the request object adapter, but there
+        // is other code (like WMS GetFeatureInfo) that passes in the old objects, so do a check 
+        if (value instanceof FeatureCollectionResponse) {
+            write((FeatureCollectionResponse) value, output, operation);
+        }
+        else {
+            write(FeatureCollectionResponse.adapt(value), output, operation);
+        }
+        
     }
 
     /**
