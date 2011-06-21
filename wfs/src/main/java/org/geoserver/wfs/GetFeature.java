@@ -272,7 +272,7 @@ public class GetFeature {
                                 mesg += "The possible propertyName values are: " + attNames;
                             }
     
-                            throw new WFSException(mesg);
+                            throw new WFSException(mesg, "InvalidParameterValue");
                         }
                         
                         propNames.add(propName);
