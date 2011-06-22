@@ -2008,7 +2008,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                     element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsLike"}));
                     element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsBetween"}));
                     element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsNull"}));
-                    //element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsNil"}));
+                    element("fes:ComparisonOperator", null, attributes(new String[]{"name", "PropertyIsNil"}));
                   end("fes:ComparisonOperators");
                end("fes:Scalar_Capabilities");
                
