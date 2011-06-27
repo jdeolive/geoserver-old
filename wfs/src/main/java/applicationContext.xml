@@ -271,6 +271,10 @@
     <constructor-arg value="typeNames"/>
     <constructor-arg ref="geoServer"/>
   </bean>
+  <bean id="aliasesKvpParser" class="org.geoserver.ows.NestedKvpParser">
+    <constructor-arg value="aliases"/>
+    <constructor-arg value="java.lang.String"/>
+  </bean>
   <bean id="getFeatureNamespaceKvpParser" class="org.geoserver.wfs.kvp.NamespaceKvpParser">
     <constructor-arg value="namespace"/>
     <property name="service"><value>WFS</value></property>
@@ -310,6 +314,10 @@
 		<property name="service"><value>WFS</value></property>
 		<property name="version"><value>1.1.0</value></property>
 	</bean>
+	<bean id="filter2_0_0_KvpParser" class="org.geoserver.wfs.kvp.Filter_2_0_0_KvpParser">
+        <property name="service"><value>WFS</value></property>
+        <property name="version"><value>2.0.0</value></property>
+    </bean>
 	<!-- the filter kvp parser to use when the version and/or service parameters are not supplied
 	     (they're mandatory, but we're lax, so without this default catch-all parser the dispatcher
 	     may not find out the one to use) -->

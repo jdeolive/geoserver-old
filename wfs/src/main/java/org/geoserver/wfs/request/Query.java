@@ -47,15 +47,17 @@ public abstract class Query extends RequestObjectAdapter {
     //public abstract boolean isTypeNamesUnset(List queries);
     
     public abstract List<QName> getTypeNames();
-    
+
+    public abstract List<String> getAliases();
+
     public abstract List<String> getPropertyNames();
-    
+
     public abstract Filter getFilter();
-    
+
     public abstract List<SortBy> getSortBy();
-    
+
     public abstract List<XlinkPropertyNameType> getXlinkPropertyNames();
-    
+
     public static class WFS11 extends Query {
 
         public WFS11(EObject adaptee) {
@@ -66,7 +68,12 @@ public abstract class Query extends RequestObjectAdapter {
         public List<QName> getTypeNames() {
             return eGet(adaptee, "typeName", List.class);
         }
-        
+
+        @Override
+        public List<String> getAliases() {
+            return new ArrayList();
+        }
+
         @Override
         public List<String> getPropertyNames() {
             return eGet(adaptee, "propertyName", List.class);
@@ -100,6 +107,11 @@ public abstract class Query extends RequestObjectAdapter {
             return eGet(adaptee, "typeNames", List.class);
         }
         
+        @Override
+        public List<String> getAliases() {
+            return eGet(adaptee, "aliases", List.class);
+        }
+
         @Override
         public List<String> getPropertyNames() {
             //WFS 2.0 has this as a list of QNAme, drop the qualified part

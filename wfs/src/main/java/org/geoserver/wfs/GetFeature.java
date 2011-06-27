@@ -27,6 +27,7 @@ import org.geoserver.catalog.AttributeTypeInfo;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
+import org.geoserver.catalog.ResourcePool;
 import org.geoserver.feature.TypeNameExtractingVisitor;
 import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetFeatureRequest;
@@ -35,13 +36,18 @@ import org.geoserver.wfs.request.LockFeatureResponse;
 import org.geoserver.wfs.request.Query;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
+import org.geotools.data.Join;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.Hints;
 import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureTypes;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.SchemaException;
+import org.geotools.filter.FilterCapabilities;
 import org.geotools.filter.expression.AbstractExpressionVisitor;
 import org.geotools.filter.visitor.AbstractFilterVisitor;
+import org.geotools.filter.visitor.IsFullySupportedFilterVisitor;
+import org.geotools.filter.visitor.PostPreProcessFilterSplittingVisitor;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.LiteCoordinateSequenceFactory;
@@ -52,13 +58,35 @@ import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.filter.And;
+import org.opengis.filter.ExcludeFilter;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.filter.Id;
+import org.opengis.filter.IncludeFilter;
+import org.opengis.filter.Not;
+import org.opengis.filter.PropertyIsBetween;
+import org.opengis.filter.PropertyIsLike;
+import org.opengis.filter.PropertyIsNull;
+import org.opengis.filter.expression.Add;
+import org.opengis.filter.expression.Divide;
 import org.opengis.filter.expression.ExpressionVisitor;
+import org.opengis.filter.expression.Multiply;
 import org.opengis.filter.expression.PropertyName;
+import org.opengis.filter.expression.Subtract;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
+import org.opengis.filter.spatial.Beyond;
 import org.opengis.filter.spatial.BinarySpatialOperator;
+import org.opengis.filter.spatial.Contains;
+import org.opengis.filter.spatial.Crosses;
+import org.opengis.filter.spatial.DWithin;
+import org.opengis.filter.spatial.Disjoint;
+import org.opengis.filter.spatial.Equals;
+import org.opengis.filter.spatial.Intersects;
+import org.opengis.filter.spatial.Overlaps;
+import org.opengis.filter.spatial.Touches;
+import org.opengis.filter.spatial.Within;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.helpers.NamespaceSupport;
@@ -80,6 +108,41 @@ public class GetFeature {
     
     /** Standard logging instance for class */
     private static final Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.vfny.geoserver.requests");
+
+    /**
+     * Describes the allowed filters we support for join queries.
+     */
+    private final static FilterCapabilities joinFilterCapabilities;
+    static {
+        joinFilterCapabilities = new FilterCapabilities();
+        
+        //simple comparisons
+        joinFilterCapabilities.addAll(FilterCapabilities.SIMPLE_COMPARISONS_OPENGIS);
+        
+        //simple comparisons
+        joinFilterCapabilities.addType(PropertyIsNull.class);
+        joinFilterCapabilities.addType(PropertyIsBetween.class);
+        joinFilterCapabilities.addType(Id.class);
+        joinFilterCapabilities.addType(IncludeFilter.class);
+        joinFilterCapabilities.addType(ExcludeFilter.class);
+        joinFilterCapabilities.addType(PropertyIsLike.class);
+
+        //spatial
+        joinFilterCapabilities.addType(BBOX.class);
+        joinFilterCapabilities.addType(Contains.class);
+        joinFilterCapabilities.addType(Crosses.class);
+        joinFilterCapabilities.addType(Disjoint.class);
+        joinFilterCapabilities.addType(Equals.class);
+        joinFilterCapabilities.addType(Intersects.class);
+        joinFilterCapabilities.addType(Overlaps.class);
+        joinFilterCapabilities.addType(Touches.class);
+        joinFilterCapabilities.addType(Within.class);
+        joinFilterCapabilities.addType(DWithin.class);
+        joinFilterCapabilities.addType(Beyond.class);
+
+        //we only support simple filters, and any of them And'ed together.
+        joinFilterCapabilities.addType(And.class);
+    }
 
     /** The catalog */
     protected Catalog catalog;
@@ -232,72 +295,88 @@ public class GetFeature {
         try {
             for (int i = 0; (i < queries.size()) && (count < maxFeatures); i++) {
                 Query query = queries.get(i);
-                
-                FeatureTypeInfo meta = null;
 
-                List<QName> typeNames = query.getTypeNames();
-                if (typeNames.size() == 1) {
-                    meta = featureTypeInfo((QName) typeNames.get(0));
-                } else {
-                    //TODO: a join is taking place
+                //alias sanity check
+                if (!query.getAliases().isEmpty()) {
+                    if (query.getAliases().size() != query.getTypeNames().size()) {
+                        throw new WFSException(String.format("Query specifies %d type names and %d " +
+                            "aliases, must be equal", query.getTypeNames().size(), query.getAliases().size())); 
+                    }
                 }
 
-                FeatureSource<? extends FeatureType, ? extends Feature> source = meta.getFeatureSource(null,null);
-              
-                //make sure property names are cool
+                List<FeatureTypeInfo> metas = new ArrayList();
+                for (QName typeName : query.getTypeNames()) {
+                    metas.add(featureTypeInfo(typeName));
+                }
+
+                //first is the primary feature type
+                FeatureTypeInfo meta = metas.get(0);
+
+                // parse the requested property names and distribute among requested types
+                List<List<String>> reqPropertyNames = parsePropertyNames(query, metas);
+
                 NamespaceSupport ns = getNamespaceSupport();
                 
-                List<PropertyName> propNames = null;
-                List<PropertyName> allPropNames = null;
+                List<List<PropertyName>> propNames = new ArrayList();
+                List<List<PropertyName>> allPropNames = new ArrayList();
                 
-                List<String> propertyNames = query.getPropertyNames();
-                if (!propertyNames.isEmpty()){
-                    
-                    propNames = new ArrayList<PropertyName>();
-                    
-                    for (Iterator iter = propertyNames.iterator(); iter.hasNext();) {
-                        PropertyName propName = createPropertyName((String) iter.next(), ns);
-    
-                        //if (!attNames.contains(propName)) {
-                        if ( propName.evaluate(meta.getFeatureType()) == null) {
-                            String mesg = "Requested property: " + propName + " is " + "not available "
-                                + "for " + typeNames + ".  ";
-                            
-                            if (meta.getFeatureType() instanceof SimpleFeatureType) {
-                                List<AttributeTypeInfo> atts = meta.attributes();
-                                List attNames = new ArrayList( atts.size() );
-                                for ( AttributeTypeInfo att : atts ) {
-                                    attNames.add( att.getName() );
+                for (int j = 0; j < metas.size(); j++) {
+                    List<String> propertyNames = reqPropertyNames.get(j);
+                    List<PropertyName> metaPropNames = null;
+                    List<PropertyName> metaAllPropNames = null;
+                    if (!propertyNames.isEmpty()){
+                        
+                         metaPropNames = new ArrayList<PropertyName>();
+                        
+                        for (Iterator iter = propertyNames.iterator(); iter.hasNext();) {
+                            PropertyName propName = createPropertyName((String) iter.next(), ns);
+        
+                            if ( propName.evaluate(meta.getFeatureType()) == null) {
+                                String mesg = "Requested property: " + propName + " is " + "not available "
+                                    + "for " + meta.getPrefixedName() + ".  ";
+                                
+                                if (meta.getFeatureType() instanceof SimpleFeatureType) {
+                                    List<AttributeTypeInfo> atts = meta.attributes();
+                                    List attNames = new ArrayList( atts.size() );
+                                    for ( AttributeTypeInfo att : atts ) {
+                                        attNames.add( att.getName() );
+                                    }
+                                    mesg += "The possible propertyName values are: " + attNames;
                                 }
-                                mesg += "The possible propertyName values are: " + attNames;
+        
+                                throw new WFSException(mesg, "InvalidParameterValue");
                             }
-    
-                            throw new WFSException(mesg, "InvalidParameterValue");
+                            
+                            metaPropNames.add(propName);
                         }
                         
-                        propNames.add(propName);
+                        // if we need to force feature bounds computation, we have to load 
+                        // all of the geometries, but we'll have to remove them in the 
+                        // returned feature type
+                        if(wfs.isFeatureBounding()) {
+                            metaAllPropNames = addGeometryProperties(meta, metaPropNames);
+                        } else {
+                            metaAllPropNames = metaPropNames;
+                        }     
+                        
+                        //we must also include any properties that are mandatory ( even if not requested ),
+                        // ie. those with minOccurs > 0
+                        //only do this for simple features, complex mandatory features are handled by app-schema
+                        if (meta.getFeatureType() instanceof SimpleFeatureType) {
+                            metaAllPropNames = 
+                                DataUtilities.addMandatoryProperties((SimpleFeatureType) meta.getFeatureType(), metaAllPropNames);
+                            metaPropNames = 
+                                DataUtilities.addMandatoryProperties((SimpleFeatureType) meta.getFeatureType(), metaPropNames);
+                        }
+                        //for complex features, mandatory properties need to be handled by datastore.
                     }
-                    
-                    // if we need to force feature bounds computation, we have to load 
-                    // all of the geometries, but we'll have to remove them in the 
-                    // returned feature type
-                    if(wfs.isFeatureBounding()) {
-                        allPropNames = addGeometryProperties(meta, propNames);                        
-                    } else {
-                        allPropNames = propNames;
-                    }     
-                    
-                    //we must also include any properties that are mandatory ( even if not requested ),
-                    // ie. those with minOccurs > 0
-                    //only do this for simple features, complex mandatory features are handled by app-schema
-                    if (meta.getFeatureType() instanceof SimpleFeatureType) {
-                        allPropNames = DataUtilities.addMandatoryProperties((SimpleFeatureType) meta.getFeatureType(), allPropNames);
-                        propNames = DataUtilities.addMandatoryProperties((SimpleFeatureType) meta.getFeatureType(), propNames);
-                    }
-                    //for complex features, mandatory properties need to be handled by datastore.
-                    
-                }                
+                    allPropNames.add(metaAllPropNames);
+                    propNames.add(metaPropNames);
+                }
 
+                //set up joins (if specified)
+                List<Join> joins = null;
+                
                 //make sure filters are sane
                 //
                 // Validation of filters on non-simple feature types is not yet supported.
@@ -305,121 +384,64 @@ public class GetFeature {
                 // need to consider xpath properties and how to configure namespace prefixes in
                 // GeoTools app-schema FeaturePropertyAccessorFactory.
                 Filter filter = query.getFilter();
-                if (filter != null && source.getSchema() instanceof SimpleFeatureType) {
-                    
-                    //1. ensure any property name refers to a property that 
-                    // actually exists
-                    final FeatureType featureType = source.getSchema();
-                    ExpressionVisitor visitor = new AbstractExpressionVisitor() {
-                            public Object visit(PropertyName name, Object data) {
-                                // case of multiple geometries being returned
-                                if (name.evaluate(featureType) == null) {
-                                    throw new WFSException("Illegal property name: "
-                                        + name.getPropertyName(), "InvalidParameterValue");
-                                }
-
-                                return name;
-                            }
-                            ;
-                        };
-                    filter.accept(new AbstractFilterVisitor(visitor), null);
-                    
-                    //2. ensure any spatial predicate is made against a property 
-                    // that is actually special
-                    AbstractFilterVisitor fvisitor = new AbstractFilterVisitor() {
-                      
-                        protected Object visit( BinarySpatialOperator filter, Object data ) {
-                            PropertyName name = null;
-                            if ( filter.getExpression1() instanceof PropertyName ) {
-                                name = (PropertyName) filter.getExpression1();
-                            }
-                            else if ( filter.getExpression2() instanceof PropertyName ) {
-                                name = (PropertyName) filter.getExpression2();
-                            }
-                            
-                            if ( name != null ) {
-                                //check against fetaure type to make sure its
-                                // a geometric type
-                                AttributeDescriptor att = (AttributeDescriptor) name.evaluate(featureType);
-                                if ( !( att instanceof GeometryDescriptor ) ) {
-                                    throw new WFSException("Property " + name + " is not geometric", "InvalidParameterValue");
-                                }
-                            }
-                            
-                            return filter;
-                        }
-                    };
-                    filter.accept(fvisitor, null);
-                    
-                    //3. ensure that any bounds specified as part of the query
-                    // are valid with respect to the srs defined on the query
-                    if ( wfs.isCiteCompliant() ) {
-                        
-                        if ( query.getSrsName() != null ) {
-                            final Query fquery = query;
-                            fvisitor = new AbstractFilterVisitor() {
-                                public Object visit(BBOX filter, Object data) {
-                                    if ( filter.getSRS() != null && 
-                                            !fquery.getSrsName().toString().equals( filter.getSRS() ) ) {
-                                        
-                                        //back project bounding box into geographic coordinates
-                                        CoordinateReferenceSystem geo = DefaultGeographicCRS.WGS84;
-                                        
-                                        GeneralEnvelope e = new GeneralEnvelope( 
-                                            new double[] { filter.getMinX(), filter.getMinY()},
-                                            new double[] { filter.getMaxX(), filter.getMaxY()}
-                                        );
-                                        CoordinateReferenceSystem crs = null;
-                                        try {
-                                            crs = CRS.decode( filter.getSRS() );
-                                            e = CRS.transform(CRS.findMathTransform(crs, geo, true), e);
-                                        } 
-                                        catch( Exception ex ) {
-                                            throw new WFSException( ex );
-                                        }
-                                        
-                                        //ensure within bounds defined by srs specified on 
-                                        // query
-                                        try {
-                                            crs = CRS.decode( fquery.getSrsName().toString() );
-                                        } 
-                                        catch( Exception ex ) {
-                                            throw new WFSException( ex );
-                                        }
-                                        
-                                        GeographicBoundingBox valid = 
-                                            (GeographicBoundingBox) crs.getDomainOfValidity()
-                                            .getGeographicElements().iterator().next();
-                                        
-                                        if ( e.getMinimum(0) < valid.getWestBoundLongitude() || 
-                                            e.getMinimum(0) > valid.getEastBoundLongitude() || 
-                                            e.getMaximum(0) < valid.getWestBoundLongitude() || 
-                                            e.getMaximum(0) > valid.getEastBoundLongitude() ||
-                                            e.getMinimum(1) < valid.getSouthBoundLatitude() || 
-                                            e.getMinimum(1) > valid.getNorthBoundLatitude() || 
-                                            e.getMaximum(1) < valid.getSouthBoundLatitude() || 
-                                            e.getMaximum(1) > valid.getNorthBoundLatitude() ) {
-                                                
-                                            throw new WFSException( "bounding box out of valid range of crs", "InvalidParameterValue");
-                                        }
-                                    }
-                                    
-                                    return data;
-                                } 
-                            };
-                            
-                            filter.accept(fvisitor, null);
-                        }
-                    }   
+                
+                if (filter == null && metas.size() > 1) {
+                    throw new WFSException("Join query must specify a filter");
                 }
+
+                if (filter != null && meta.getFeatureType() instanceof SimpleFeatureType) {
+                    if (metas.size() > 1) {
+                        //ensure that the filter is allowable
+                        if (!isValidJoinFilter(filter)) {
+                            throw new WFSException("Unable to preform join with specified filter: " + filter);
+                        }
+                        //join, need to separate the joining filter from other filters
+                        JoinExtractingVisitor extractor = 
+                            new JoinExtractingVisitor(metas, query.getAliases());
+                        filter.accept(extractor, null);
+
+                        joins = extractor.getJoins();
+                        if (joins.size() != metas.size()-1) {
+                            throw new WFSException(String.format("Query specified %d types but %d " +
+                                "join filters were found", metas.size(), extractor.getJoins().size()));
+                        }
+
+                        //validate the filter for each join
+                        for (int j = 1; j < metas.size(); j++) {
+                            Join join = joins.get(j-1);
+                            if (join.getFilter() != null) {
+                                validateFilter(join.getFilter(), query, metas.get(j));
+                            }
+                        }
+
+                        filter = extractor.getPrimaryFilter();
+                        if (filter != null) {
+                            validateFilter(filter, query, meta);
+                        }
+                    }
+                    else {
+                        validateFilter(filter, query, meta);
+                    }
+                }
+
+                // load primary feature source
+                Hints hints = null;
+                if (joins != null) {
+                    hints = new Hints(ResourcePool.JOINS, joins);
+                }
+                FeatureSource<? extends FeatureType, ? extends Feature> source = 
+                    metas.get(0).getFeatureSource(null, hints);
 
                 // handle local maximum
                 int queryMaxFeatures = maxFeatures - count;
-                if(meta.getMaxFeatures() > 0 && meta.getMaxFeatures() < queryMaxFeatures)
-                    queryMaxFeatures = meta.getMaxFeatures();
+                int metaMaxFeatures = maxFeatures(metas);
+                if (metaMaxFeatures > 0 && metaMaxFeatures < queryMaxFeatures) {
+                    queryMaxFeatures = metaMaxFeatures;
+                }
                 Map<String, String> viewParam = viewParams != null ? viewParams.get(i) : null;
-                org.geotools.data.Query gtQuery = toDataQuery(query, offset, queryMaxFeatures, source, request, allPropNames, viewParam);
-                
+                org.geotools.data.Query gtQuery = toDataQuery(query, filter, offset, queryMaxFeatures, 
+                    source, request, allPropNames.get(0), viewParam, joins);
+
                 LOGGER.fine("Query is " + query + "\n To gt2: " + gtQuery);
 
                 FeatureCollection<? extends FeatureType, ? extends Feature> features = getFeatures(request, source, gtQuery);
@@ -466,8 +488,8 @@ public class GetFeature {
                     else {
                         //no features might have been because of the offset that was specified, check 
                         // the size of the same query but with no offset
-                        org.geotools.data.Query q2 = 
-                            toDataQuery(query, 0, queryMaxFeatures, source, request, allPropNames, viewParam);
+                        org.geotools.data.Query q2 = toDataQuery(query, filter, 0, queryMaxFeatures, 
+                            source, request, allPropNames.get(0), viewParam, joins);
                         
                         //int size2 = getFeatures(request, source, q2).size();
                         int size2 = source.getCount(q2);
@@ -486,8 +508,8 @@ public class GetFeature {
                         totalCount += size;
                     }
                     else {
-                        org.geotools.data.Query q2 = 
-                            toDataQuery(query, 0, Integer.MAX_VALUE, source, request, allPropNames, viewParam);
+                        org.geotools.data.Query q2 = toDataQuery(query, filter, 0, Integer.MAX_VALUE, 
+                            source, request, allPropNames.get(0), viewParam, joins);
                         totalCount += source.getFeatures(q2).size();
                     }
                 }
@@ -495,9 +517,10 @@ public class GetFeature {
                 // we may need to shave off geometries we did load only to make bounds
                 // computation happy
                 // TODO: support non-SimpleFeature geometry shaving
-                if(features.getSchema() instanceof SimpleFeatureType && propNames!=null && propNames.size() < allPropNames.size()) {
-                    String[] residualNames = new String[propNames.size()];
-                    Iterator<PropertyName> it = propNames.iterator();
+                List<PropertyName> metaPropNames = propNames.get(0);
+                if(features.getSchema() instanceof SimpleFeatureType && metaPropNames!=null && metaPropNames.size() < allPropNames.get(0).size()) {
+                    String[] residualNames = new String[metaPropNames.size()];
+                    Iterator<PropertyName> it = metaPropNames.iterator();
                     int j =0;
                     while (it.hasNext()) {
                         residualNames[j] = it.next().getPropertyName();
@@ -629,16 +652,15 @@ public class GetFeature {
      * @return A Query for use with the FeatureSource interface
      *
      */
-    public org.geotools.data.Query toDataQuery(Query query, int offset, int maxFeatures,
-        FeatureSource<? extends FeatureType, ? extends Feature> source, GetFeatureRequest request, List<PropertyName> props, Map<String, String> viewParams) throws WFSException {
+    public org.geotools.data.Query toDataQuery(Query query, Filter filter, int offset, int maxFeatures,
+        FeatureSource<? extends FeatureType, ? extends Feature> source, GetFeatureRequest request, 
+        List<PropertyName> props, Map<String, String> viewParams, List<Join> joins) throws WFSException {
         
         String wfsVersion = request.getVersion();
         
         if (maxFeatures <= 0) {
             maxFeatures = org.geotools.data.Query.DEFAULT_MAX;
         }
-
-        Filter filter = query.getFilter();
 
         if (filter == null) {
             filter = Filter.INCLUDE;
@@ -751,9 +773,14 @@ public class GetFeature {
         //currently only used by app-schema, produce mandatory properties
         hints.put(org.geotools.data.Query.INCLUDE_MANDATORY_PROPS, true);
 
+        //add the joins, if specified
+        if (joins != null) {
+            dataQuery.getJoins().addAll(joins);
+        }
+
         //finally, set the hints
         dataQuery.setHints(hints);
-               
+
         return dataQuery;
     }
 
@@ -779,7 +806,14 @@ public class GetFeature {
         
         return traverseXlinkDepth;
     }
-    
+
+    boolean isValidJoinFilter(Filter filter) {
+        PostPreProcessFilterSplittingVisitor visitor = 
+            new PostPreProcessFilterSplittingVisitor(joinFilterCapabilities, null, null);
+        filter.accept(visitor, null);
+        return visitor.getFilterPost() == null || visitor.getFilterPost() == Filter.INCLUDE;
+    }
+
     FeatureTypeInfo featureTypeInfo(QName name) throws WFSException, IOException {
         FeatureTypeInfo meta = catalog.getFeatureTypeByName(name.getNamespaceURI(), name.getLocalPart());
 
@@ -790,8 +824,169 @@ public class GetFeature {
 
         return meta;
     }
+
+    List<List<String>> parsePropertyNames(Query query, List<FeatureTypeInfo> featureTypes) {
+        List<List<String>> propNames = new ArrayList();
+        for (FeatureTypeInfo featureType: featureTypes) {
+            propNames.add(new ArrayList());
+        }
+
+        if (featureTypes.size() == 1) {
+            //non join
+            propNames.get(0).addAll(query.getPropertyNames());
+            return propNames;
+        }
+
+        //go through all property names and distribute based on prefix accordingly
+O:      for (String propName : query.getPropertyNames()) {
+            //check for a full typename prefix
+            for (int j = 0; j < featureTypes.size(); j++) {
+                FeatureTypeInfo featureType = featureTypes.get(j);
+                if (propName.startsWith(featureType.getPrefixedName()+"/")) {
+                    propNames.get(j).add(propName.substring((featureType.getPrefixedName()+"/").length()));
+                    continue O;
+                }
+                if (propName.startsWith(featureType.getName()+"/")) {
+                    propNames.get(j).add(propName.substring((featureType.getName()+"/").length()));
+                    continue O;
+                }
+            }
+
+            if (query.getAliases().isEmpty()) {
+                //check for aliases
+                for (int j = 0; j < query.getAliases().size(); j++) {
+                    String alias = query.getAliases().get(j);
+                    if (propName.startsWith(alias+"/")) {
+                        propNames.get(j).add(propName.substring((alias+"/").length()));
+                        continue O;
+                    }
+                }
+            }
+
+            //fallback on first
+            propNames.get(0).add(propName);
+        }
+        
+        return propNames;
+    }
+
+    void validateFilter(Filter filter, Query query, FeatureTypeInfo meta) throws IOException {
+      //1. ensure any property name refers to a property that 
+        // actually exists
+        final FeatureType featureType = meta.getFeatureType();
+        ExpressionVisitor visitor = new AbstractExpressionVisitor() {
+                public Object visit(PropertyName name, Object data) {
+                    // case of multiple geometries being returned
+                    if (name.evaluate(featureType) == null) {
+                        throw new WFSException("Illegal property name: "
+                            + name.getPropertyName(), "InvalidParameterValue");
+                    }
+
+                    return name;
+                }
+                ;
+            };
+        filter.accept(new AbstractFilterVisitor(visitor), null);
+        
+        //2. ensure any spatial predicate is made against a property 
+        // that is actually special
+        AbstractFilterVisitor fvisitor = new AbstractFilterVisitor() {
+          
+            protected Object visit( BinarySpatialOperator filter, Object data ) {
+                PropertyName name = null;
+                if ( filter.getExpression1() instanceof PropertyName ) {
+                    name = (PropertyName) filter.getExpression1();
+                }
+                else if ( filter.getExpression2() instanceof PropertyName ) {
+                    name = (PropertyName) filter.getExpression2();
+                }
+                
+                if ( name != null ) {
+                    //check against fetaure type to make sure its
+                    // a geometric type
+                    AttributeDescriptor att = (AttributeDescriptor) name.evaluate(featureType);
+                    if ( !( att instanceof GeometryDescriptor ) ) {
+                        throw new WFSException("Property " + name + " is not geometric", "InvalidParameterValue");
+                    }
+                }
+                
+                return filter;
+            }
+        };
+        filter.accept(fvisitor, null);
+        
+        //3. ensure that any bounds specified as part of the query
+        // are valid with respect to the srs defined on the query
+        if ( wfs.isCiteCompliant() ) {
+            
+            if ( query.getSrsName() != null ) {
+                final Query fquery = query;
+                fvisitor = new AbstractFilterVisitor() {
+                    public Object visit(BBOX filter, Object data) {
+                        if ( filter.getSRS() != null && 
+                                !fquery.getSrsName().toString().equals( filter.getSRS() ) ) {
+                            
+                            //back project bounding box into geographic coordinates
+                            CoordinateReferenceSystem geo = DefaultGeographicCRS.WGS84;
+                            
+                            GeneralEnvelope e = new GeneralEnvelope( 
+                                new double[] { filter.getMinX(), filter.getMinY()},
+                                new double[] { filter.getMaxX(), filter.getMaxY()}
+                            );
+                            CoordinateReferenceSystem crs = null;
+                            try {
+                                crs = CRS.decode( filter.getSRS() );
+                                e = CRS.transform(CRS.findMathTransform(crs, geo, true), e);
+                            } 
+                            catch( Exception ex ) {
+                                throw new WFSException( ex );
+                            }
+                            
+                            //ensure within bounds defined by srs specified on 
+                            // query
+                            try {
+                                crs = CRS.decode( fquery.getSrsName().toString() );
+                            } 
+                            catch( Exception ex ) {
+                                throw new WFSException( ex );
+                            }
+                            
+                            GeographicBoundingBox valid = 
+                                (GeographicBoundingBox) crs.getDomainOfValidity()
+                                .getGeographicElements().iterator().next();
+                            
+                            if ( e.getMinimum(0) < valid.getWestBoundLongitude() || 
+                                e.getMinimum(0) > valid.getEastBoundLongitude() || 
+                                e.getMaximum(0) < valid.getWestBoundLongitude() || 
+                                e.getMaximum(0) > valid.getEastBoundLongitude() ||
+                                e.getMinimum(1) < valid.getSouthBoundLatitude() || 
+                                e.getMinimum(1) > valid.getNorthBoundLatitude() || 
+                                e.getMaximum(1) < valid.getSouthBoundLatitude() || 
+                                e.getMaximum(1) > valid.getNorthBoundLatitude() ) {
+                                    
+                                throw new WFSException( "bounding box out of valid range of crs", "InvalidParameterValue");
+                            }
+                        }
+                        
+                        return data;
+                    } 
+                };
+                
+                filter.accept(fvisitor, null);
+            }
+        }   
+    }
     
-    
+    int maxFeatures(List<FeatureTypeInfo> metas) {
+        int maxFeatures = Integer.MAX_VALUE;
+        for (FeatureTypeInfo meta : metas) {
+            if (meta.getMaxFeatures() > 0) {
+                maxFeatures = Math.min(maxFeatures, meta.getMaxFeatures());
+            }
+        }
+        return maxFeatures;
+    }
+
     protected PropertyName createPropertyName (String path, NamespaceSupport namespaceContext) {
         if (path.contains("/")) {
             return filterFactory.property(path, namespaceContext);

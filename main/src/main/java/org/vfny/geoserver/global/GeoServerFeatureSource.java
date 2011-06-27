@@ -5,6 +5,7 @@
 package org.vfny.geoserver.global;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -34,8 +35,10 @@ import org.geotools.filter.spatial.ReprojectingFilterVisitor;
 import org.geotools.feature.collection.MaxSimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.GeometryDescriptor;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
@@ -219,11 +222,22 @@ public class GeoServerFeatureSource implements SimpleFeatureSource {
         String[] propNames = null;
 
         if (query.retrieveAllProperties()) {
-            propNames = new String[schema.getAttributeCount()];
+            List<String> props = new ArrayList();
+            
 
             for (int i = 0; i < schema.getAttributeCount(); i++) {
-                propNames[i] = schema.getDescriptor(i).getLocalName();
+                AttributeDescriptor att = schema.getDescriptor(i);
+                
+                //if this is a joined attribute, don't include it
+                //TODO: make this a better check, actually verify it vs the query object
+                if (Feature.class.isAssignableFrom(att.getType().getBinding()) 
+                    && !query.getJoins().isEmpty()) {
+                    continue;
+                }
+                
+                props.add(att.getLocalName());
             }
+            propNames = props.toArray(new String[props.size()]);
         } else {
             String[] queriedAtts = query.getPropertyNames();
             int queriedAttCount = queriedAtts.length;
