@@ -239,6 +239,11 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             querySet(eObject, "filter", filters);
         }
 
+        //aliases
+        if (kvp.containsKey("aliases")) {
+            querySet(eObject, "aliases", (List) kvp.get("aliases"));
+        }
+
         //propertyName
         if (kvp.containsKey("propertyName")) {
             querySet(eObject, "propertyName", (List) kvp.get("propertyName"));
