@@ -51,7 +51,7 @@ public class DescribeStoredQueries {
             for (URI id : request.getStoredQueryId()) {
                 StoredQuery query = storedQueryProvider.getStoredQuery(id.toString());
                 if (query == null) {
-                    throw new WFSException("No such stored query: " + id, "InvalidParameterValue");
+                    throw new WFSException(request, "No such stored query: " + id, "InvalidParameterValue");
                 }
 
                 describeStoredQuery(query, response);

@@ -85,7 +85,7 @@ public class WFSWorkspaceQualifier extends WorkspaceQualifyingCallback {
                         Feature f = (Feature) j.next();
                         Name n = f.getType().getName();
                         if (n.getNamespaceURI() != null && !ns.getURI().equals(n.getNamespaceURI())) {
-                            throw new WFSException("No such feature type " + n);
+                            throw new WFSException(t, "No such feature type " + n);
                         }
                     }
                 }

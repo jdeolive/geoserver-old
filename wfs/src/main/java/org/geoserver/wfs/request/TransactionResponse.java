@@ -14,7 +14,7 @@ import net.opengis.wfs20.Wfs20Factory;
 import org.eclipse.emf.ecore.EObject;
 import org.opengis.filter.identity.FeatureId;
 
-public abstract class TransactionResponse extends RequestObjectAdapter {
+public abstract class TransactionResponse extends RequestObject {
 
     protected TransactionResponse(EObject adaptee) {
         super(adaptee);

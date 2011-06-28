@@ -9,7 +9,7 @@ import org.eclipse.emf.ecore.EObject;
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public abstract class DescribeFeatureTypeRequest extends RequestObjectAdapter {
+public abstract class DescribeFeatureTypeRequest extends RequestObject {
 
     public static DescribeFeatureTypeRequest adapt(Object request) {
         if (request instanceof DescribeFeatureTypeType) {

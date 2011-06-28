@@ -225,7 +225,7 @@ public class ShapeZipOutputFormat extends WFSGetFeatureOutputFormat implements A
             for (SimpleFeatureCollection curCollection : collections) {
                 
                 if(curCollection.getSchema().getGeometryDescriptor() == null) {
-                    throw new WFSException("Cannot write geometryless shapefiles, yet " 
+                    throw new WFSException(request, "Cannot write geometryless shapefiles, yet " 
                             + curCollection.getSchema() + " has no geometry field");
                 } 
                 Class geomType = curCollection.getSchema().getGeometryDescriptor().getType().getBinding();
@@ -321,7 +321,7 @@ public class ShapeZipOutputFormat extends WFSGetFeatureOutputFormat implements A
                 }
             }
         } catch(IOException e) {
-            throw new WFSException("Failed to dump the WFS request");
+            throw new WFSException(gft, "Failed to dump the WFS request");
         }
         
     }

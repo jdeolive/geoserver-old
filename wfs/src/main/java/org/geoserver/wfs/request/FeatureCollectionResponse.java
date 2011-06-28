@@ -14,7 +14,7 @@ import org.geotools.feature.FeatureCollection;
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public abstract class FeatureCollectionResponse extends RequestObjectAdapter {
+public abstract class FeatureCollectionResponse extends RequestObject {
 
     public static FeatureCollectionResponse adapt(Object adaptee) {
         if (adaptee instanceof FeatureCollectionType) {

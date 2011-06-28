@@ -128,7 +128,7 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
                     FeatureTypeInfo meta = catalog.getFeatureTypeByName(featureTypeName);
                     
                     if (meta == null) {
-                        throw new WFSException("Could not find feature type " + featureTypeName
+                        throw new WFSException(request, "Could not find feature type " + featureTypeName
                                 + " in the GeoServer catalog");
                     }
                     
@@ -149,7 +149,8 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
                 FeatureTypeInfo meta = catalog.getFeatureTypeByName(featureType.getName());
                 
                 if(meta == null)
-                    throw new WFSException("Could not find feature type " + featureType.getName() + " in the GeoServer catalog");
+                    throw new WFSException(request, "Could not find feature type " + 
+                        featureType.getName() + " in the GeoServer catalog");
 
                 //add it to the map
                 Set metas = (Set) ns2metas.get(namespaceURI);

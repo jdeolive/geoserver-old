@@ -70,7 +70,7 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
     public void checkValidity(TransactionElement element, Map<QName, FeatureTypeInfo> featureTypeInfos)
         throws WFSTransactionException {
         if (!getInfo().getServiceLevel().getOps().contains( WFSInfo.Operation.TRANSACTION_INSERT)) {
-            throw new WFSException("Transaction INSERT support is not enabled");
+            throw new WFSException(element, "Transaction INSERT support is not enabled");
         }
     }
 
@@ -120,7 +120,7 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
                 store = DataUtilities.simple((FeatureStore) featureStores.get(elementName));
 
                 if (store == null) {
-                    throw new WFSException("Could not locate FeatureStore for '" + elementName
+                    throw new WFSException(request, "Could not locate FeatureStore for '" + elementName
                         + "'");
                 }
 

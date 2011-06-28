@@ -78,11 +78,11 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
     public Object read(Object request, Map kvp, Map rawKvp) throws Exception {
         request = super.read(request, kvp, rawKvp);
         
-        // make sure the filter is specified in just one way
-        ensureMutuallyExclusive(kvp, new String[] { "featureId", "filter", "bbox", "cql_filter" });
-
         //get feature has some additional parsing requirements
         EObject eObject = (EObject) request;
+
+        // make sure the filter is specified in just one way
+        ensureMutuallyExclusive(kvp, new String[] { "featureId", "filter", "bbox", "cql_filter" }, eObject);
 
         //outputFormat
         if (!EMFUtils.isSet(eObject, "outputFormat")) {
@@ -126,7 +126,7 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
                 //we might get a list of qname, or a list of list of qname
                 if (obj instanceof QName) {
                     QName qName = (QName) obj;
-                    qName = checkTypeName(qName, namespaces);
+                    qName = checkTypeName(qName, namespaces, eObject);
                     
                     List l = new ArrayList();
                     l.add(qName);
@@ -135,7 +135,7 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
                 else {
                     List<QName> qNames = (List<QName>) obj;
                     for (int i = 0; i < qNames.size(); i++) {
-                        qNames.set(i, checkTypeName(qNames.get(i), namespaces));
+                        qNames.set(i, checkTypeName(qNames.get(i), namespaces, eObject));
                     }
 
                     list.add(qNames);
@@ -182,7 +182,7 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
                     buildStoredQueries(eObject, storedQueryId, kvp);
                 }
                 else {
-                    throw new WFSException("The query should specify either typeName, featureId filter" +
+                    throw new WFSException(eObject, "The query should specify either typeName, featureId filter" +
                         ", or a stored query id", "MissingParameterValue");
                 }
             }
@@ -291,7 +291,7 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
                 } else if(viewParams.size() != layerCount) {
                     String msg = layerCount + " feature types requested, but found " + viewParams.size()
                    + " view params specified. ";
-                    throw new WFSException(msg, getClass().getName());
+                    throw new WFSException(eObject, msg, getClass().getName());
                 }
             }
 
@@ -306,21 +306,21 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
      * @param kvp
      * @param keys
      */
-    private void ensureMutuallyExclusive(Map kvp, String[] keys) {
+    private void ensureMutuallyExclusive(Map kvp, String[] keys, EObject request) {
         for (int i = 0; i < keys.length; i++) {
             if (kvp.containsKey(keys[i])) {
                 for (int j = i + 1; j < keys.length; j++) {
                     if (kvp.containsKey(keys[j])) {
                         String msg = keys[i] + " and " + keys[j]
                             + " both specified but are mutually exclusive";
-                        throw new WFSException(msg);
+                        throw new WFSException(request, msg);
                     }
                 }
             }
         }
     }
 
-    QName checkTypeName(QName qName, NamespaceSupport namespaces) {
+    QName checkTypeName(QName qName, NamespaceSupport namespaces, EObject request) {
      // check the type name is known, otherwise complain
         String namespaceURI = qName.getNamespaceURI();
         String localPart = qName.getLocalPart();
@@ -435,7 +435,7 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             } else {
                 //illegal
                 String msg = "Specified " + m + " " + property + " for " + n + " queries.";
-                throw new WFSException(msg);
+                throw new WFSException(request, msg);
             }
         }
 
@@ -447,14 +447,14 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
         req.getAdaptedQueries();
         
         if (!(req instanceof GetFeatureRequest.WFS20)) {
-            throw new WFSException("Stored queries only supported in WFS 2.0+");
+            throw new WFSException(req, "Stored queries only supported in WFS 2.0+");
         }
 
         StoredQueryProvider sqp = new StoredQueryProvider(catalog.getResourceLoader());
         for (URI storedQueryId : storedQueryIds) {
             StoredQuery sq = sqp.getStoredQuery(storedQueryId.toString());
             if (sq == null) {
-                throw new WFSException("No such stored query: " + storedQueryId);
+                throw new WFSException(req, "No such stored query: " + storedQueryId);
             }
     
             //JD: since stored queries are 2.0 only we will create 2.0 model objects directly... once

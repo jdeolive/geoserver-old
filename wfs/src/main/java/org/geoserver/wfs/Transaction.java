@@ -104,7 +104,7 @@ public class Transaction {
         throws WFSException {
         // make sure server is supporting transactions
         if (!wfs.getServiceLevel().contains(WFSInfo.ServiceLevel.TRANSACTIONAL) ) {
-            throw new WFSException("Transaction support is not enabled");
+            throw new WFSException(request, "Transaction support is not enabled");
         }
 
         try {
@@ -114,7 +114,7 @@ public class Transaction {
             throw e;
         } catch (Throwable t) {
             abort(request); // release any locks
-            throw new WFSException(t);
+            throw new WFSException(request, t);
         }
     }
 
@@ -286,7 +286,7 @@ public class Transaction {
 
         if (authorizationID != null) {
             if (!wfs.getServiceLevel().getOps().contains( WFSInfo.Operation.LOCKFEATURE)) {
-                throw new WFSException("Lock support is not enabled");
+                throw new WFSException(request, "Lock support is not enabled");
             }
 
             LOGGER.finer("got lockId: " + authorizationID);
@@ -294,7 +294,7 @@ public class Transaction {
             if (!lockExists(authorizationID)) {
                 String mesg = "Attempting to use a lockID that does not exist"
                     + ", it has either expired or was entered wrong.";
-                throw new WFSException(mesg, "InvalidParameterValue");
+                throw new WFSException(request, mesg, "InvalidParameterValue");
             }
 
             try {
@@ -302,7 +302,7 @@ public class Transaction {
             } catch (IOException ioException) {
                 // This is a real failure - not associated with a element
                 //
-                throw new WFSException("Authorization ID '" + authorizationID + "' not useable",
+                throw new WFSException(request, "Authorization ID '" + authorizationID + "' not useable",
                     ioException);
             }
         }

@@ -137,7 +137,7 @@ public class DescribeFeatureType {
                         msg += ". \nStrict WFS protocol conformance is being applied.\n"
                                 + "Make sure the type name is correctly qualified";
                     }
-                    throw new WFSException(msg);
+                    throw new WFSException(request, msg);
                 }
             }
         }
