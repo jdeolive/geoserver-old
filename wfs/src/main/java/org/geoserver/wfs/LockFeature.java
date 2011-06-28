@@ -114,7 +114,7 @@ public class LockFeature {
 
             if ((locks == null) || locks.isEmpty()) {
                 String msg = "A LockFeature request must contain at least one LOCK element";
-                throw new WFSException(msg);
+                throw new WFSException(request, msg);
             }
 
             LOGGER.info("locks size is " + locks.size());
@@ -153,7 +153,7 @@ public class LockFeature {
                     meta = catalog.getFeatureTypeByName(typeName.getNamespaceURI(), typeName.getLocalPart());
 
                     if (meta == null) {
-                        throw new WFSException("Unknown feature type " + typeName.getPrefix() + ":"
+                        throw new WFSException(request, "Unknown feature type " + typeName.getPrefix() + ":"
                             + typeName.getLocalPart());
                     }
 
@@ -172,7 +172,7 @@ public class LockFeature {
                         ((FeatureLocking) source).setFeatureLock(fLock);
                     }
                 } catch (IOException e) {
-                    throw new WFSException(e);
+                    throw new WFSException(request, e);
                 }
 
                 Iterator reader = null;
@@ -226,7 +226,7 @@ public class LockFeature {
                         }
                     }
                 } catch (IOException ioe) {
-                    throw new WFSException(ioe);
+                    throw new WFSException(request, ioe);
                 } finally {
                     if (reader != null) {
                         features.close(reader);
@@ -250,12 +250,12 @@ public class LockFeature {
                             t.commit();
                         }
                     } catch (IOException e) {
-                        throw new WFSException(e);
+                        throw new WFSException(request, e);
                     } finally {
                         try {
                             t.close();
                         } catch(IOException e) {
-                            throw new WFSException(e);
+                            throw new WFSException(request, e);
                         }
                     }
                 }
@@ -270,7 +270,7 @@ public class LockFeature {
                 // I think we need to release and fail when lockAll fails
                 //
                 // abort will release the locks
-                throw new WFSException("Could not aquire locks for:" + notLocked);
+                throw new WFSException(request, "Could not aquire locks for:" + notLocked);
             }
 
             return response;

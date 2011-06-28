@@ -31,13 +31,13 @@ public class CreateStoredQuery {
     
     public CreateStoredQueryResponseType run(CreateStoredQueryType request) throws WFSException {
         for (StoredQueryDescriptionType sqd : request.getStoredQueryDefinition()) {
-            validateStoredQuery(sqd);
+            validateStoredQuery(request, sqd);
             
             try {
                 storedQueryProvider.createStoredQuery(sqd);
             }
             catch(Exception e) {
-                throw new WFSException("Error occured creating stored query", e);
+                throw new WFSException(request, "Error occured creating stored query", e);
             }
         }
 
@@ -47,14 +47,14 @@ public class CreateStoredQuery {
         return response;
     }
 
-    void validateStoredQuery(StoredQueryDescriptionType sq) throws WFSException {
+    void validateStoredQuery(CreateStoredQueryType request, StoredQueryDescriptionType sq) throws WFSException {
         if (sq.getQueryExpressionText().isEmpty()) {
-            throw new WFSException("Stored query does not specify any queries");
+            throw new WFSException(request, "Stored query does not specify any queries");
         }
         String language = sq.getQueryExpressionText().get(0).getLanguage();
         for (int i = 1; i < sq.getQueryExpressionText().size(); i++) {
             if (!language.equals(sq.getQueryExpressionText().get(i).getLanguage())) {
-                throw new WFSException("Stored query specifies queries with multiple languages. " +
+                throw new WFSException(request, "Stored query specifies queries with multiple languages. " +
                     "Not supported");
             }
         }

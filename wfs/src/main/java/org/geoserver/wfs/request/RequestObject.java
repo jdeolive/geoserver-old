@@ -16,14 +16,14 @@ import org.opengis.filter.Filter;
  * @author Justin Deoliveira, OpenGeo
  *
  */
-public abstract class RequestObjectAdapter {
+public abstract class RequestObject {
 
     /**
      * underlying request object
      */
     protected  EObject adaptee;
     
-    protected RequestObjectAdapter(EObject adaptee) {
+    protected RequestObject(EObject adaptee) {
         this.adaptee = adaptee;
     }
 

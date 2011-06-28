@@ -14,7 +14,7 @@ import org.eclipse.emf.ecore.EObject;
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public abstract class GetCapabilitiesRequest extends RequestObjectAdapter {
+public abstract class GetCapabilitiesRequest extends RequestObject {
 
     public static GetCapabilitiesRequest adapt(Object request) {
         if (request instanceof GetCapabilitiesType) {

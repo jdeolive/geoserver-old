@@ -26,7 +26,7 @@ import org.eclipse.emf.ecore.EObject;
  * @author Justin Deoliveira, OpenGeo
  *
  */
-public abstract class TransactionRequest extends RequestObjectAdapter {
+public abstract class TransactionRequest extends RequestObject {
 
     public static TransactionRequest adapt(Object request) {
         if (request instanceof TransactionType) {

@@ -78,7 +78,7 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
     public void checkValidity(TransactionElement delete, Map featureTypeInfos)
         throws WFSTransactionException {
         if (!getInfo().getServiceLevel().getOps().contains(WFSInfo.Operation.TRANSACTION_DELETE)) {
-            throw new WFSException("Transaction Delete support is not enabled");
+            throw new WFSException(delete, "Transaction Delete support is not enabled");
         }
 
         Filter f = delete.getFilter();
@@ -100,7 +100,7 @@ public class DeleteElementHandler extends AbstractTransactionElementHandler {
         SimpleFeatureStore store = DataUtilities.simple((FeatureStore) featureStores.get(elementName));
 
         if (store == null) {
-            throw new WFSException("Could not locate FeatureStore for '" + elementName + "'");
+            throw new WFSException(request, "Could not locate FeatureStore for '" + elementName + "'");
         }
 
         String typeName = store.getSchema().getTypeName();

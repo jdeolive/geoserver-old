@@ -31,6 +31,7 @@ import org.geoserver.catalog.ResourcePool;
 import org.geoserver.feature.TypeNameExtractingVisitor;
 import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetFeatureRequest;
+import org.geoserver.wfs.request.Lock;
 import org.geoserver.wfs.request.LockFeatureRequest;
 import org.geoserver.wfs.request.LockFeatureResponse;
 import org.geoserver.wfs.request.Query;
@@ -212,7 +213,7 @@ public class GetFeature {
         List<Query> queries = request.getQueries();
 
         if (queries.isEmpty()) {
-            throw new WFSException("No query specified");
+            throw new WFSException(request, "No query specified");
         }
 
         //stored queries, preprocess compile any stored queries into actual query objects
@@ -233,7 +234,7 @@ public class GetFeature {
 
                 if (q.getTypeNames().isEmpty()) {
                     String msg = "No feature types specified";
-                    throw new WFSException(msg);
+                    throw new WFSException(request, msg);
                 }
             }
         }
@@ -299,14 +300,14 @@ public class GetFeature {
                 //alias sanity check
                 if (!query.getAliases().isEmpty()) {
                     if (query.getAliases().size() != query.getTypeNames().size()) {
-                        throw new WFSException(String.format("Query specifies %d type names and %d " +
+                        throw new WFSException(request, String.format("Query specifies %d type names and %d " +
                             "aliases, must be equal", query.getTypeNames().size(), query.getAliases().size())); 
                     }
                 }
 
                 List<FeatureTypeInfo> metas = new ArrayList();
                 for (QName typeName : query.getTypeNames()) {
-                    metas.add(featureTypeInfo(typeName));
+                    metas.add(featureTypeInfo(typeName, request));
                 }
 
                 //first is the primary feature type
@@ -344,7 +345,7 @@ public class GetFeature {
                                     mesg += "The possible propertyName values are: " + attNames;
                                 }
         
-                                throw new WFSException(mesg, "InvalidParameterValue");
+                                throw new WFSException(request, mesg, "InvalidParameterValue");
                             }
                             
                             metaPropNames.add(propName);
@@ -386,14 +387,15 @@ public class GetFeature {
                 Filter filter = query.getFilter();
                 
                 if (filter == null && metas.size() > 1) {
-                    throw new WFSException("Join query must specify a filter");
+                    throw new WFSException(request, "Join query must specify a filter");
                 }
 
                 if (filter != null && meta.getFeatureType() instanceof SimpleFeatureType) {
                     if (metas.size() > 1) {
                         //ensure that the filter is allowable
                         if (!isValidJoinFilter(filter)) {
-                            throw new WFSException("Unable to preform join with specified filter: " + filter);
+                            throw new WFSException(request, 
+                                "Unable to preform join with specified filter: " + filter);
                         }
                         //join, need to separate the joining filter from other filters
                         JoinExtractingVisitor extractor = 
@@ -402,7 +404,7 @@ public class GetFeature {
 
                         joins = extractor.getJoins();
                         if (joins.size() != metas.size()-1) {
-                            throw new WFSException(String.format("Query specified %d types but %d " +
+                            throw new WFSException(request, String.format("Query specified %d types but %d " +
                                 "join filters were found", metas.size(), extractor.getJoins().size()));
                         }
 
@@ -410,17 +412,17 @@ public class GetFeature {
                         for (int j = 1; j < metas.size(); j++) {
                             Join join = joins.get(j-1);
                             if (join.getFilter() != null) {
-                                validateFilter(join.getFilter(), query, metas.get(j));
+                                validateFilter(join.getFilter(), query, metas.get(j), request);
                             }
                         }
 
                         filter = extractor.getPrimaryFilter();
                         if (filter != null) {
-                            validateFilter(filter, query, meta);
+                            validateFilter(filter, query, meta, request);
                         }
                     }
                     else {
-                        validateFilter(filter, query, meta);
+                        validateFilter(filter, query, meta, request);
                     }
                 }
 
@@ -542,37 +544,36 @@ public class GetFeature {
                 results.add(features);
             }
         } catch (IOException e) {
-            throw new WFSException("Error occurred getting features", e, request.getHandle());
+            throw new WFSException(request, "Error occurred getting features", e, request.getHandle());
         } catch (SchemaException e) {
-            throw new WFSException("Error occurred getting features", e, request.getHandle());
+            throw new WFSException(request, "Error occurred getting features", e, request.getHandle());
         }
 
         //locking
         String lockId = null;
         if (request.isLockRequest()) {
-            LockFeatureType lockRequest = WfsFactory.eINSTANCE.createLockFeatureType();
+            LockFeatureRequest lockRequest = request.createLockRequest();
             lockRequest.setExpiry(request.getExpiry());
             lockRequest.setHandle(request.getHandle());
-            lockRequest.setLockAction(AllSomeType.ALL_LITERAL);
-
+            lockRequest.setLockActionAll();
+            
             for (int i = 0; i < queries.size(); i++) {
                 Query query = queries.get(i);
 
-                LockType lock = WfsFactory.eINSTANCE.createLockType();
+                Lock lock = lockRequest.createLock();
                 lock.setFilter(query.getFilter());
                 lock.setHandle(query.getHandle());
 
                 //TODO: joins?
                 List<QName> typeNames = query.getTypeNames();
                 lock.setTypeName(typeNames.get(0));
-                lockRequest.getLock().add(lock);
+                lockRequest.addLock(lock);
             }
 
             LockFeature lockFeature = new LockFeature(wfs, catalog);
             lockFeature.setFilterFactory(filterFactory);
 
-            LockFeatureResponse response = lockFeature.lockFeature(
-                new LockFeatureRequest.WFS11(lockRequest));
+            LockFeatureResponse response = lockFeature.lockFeature(lockRequest);
             lockId = response.getLockId();
         }
 
@@ -586,7 +587,7 @@ public class GetFeature {
             if (obj instanceof StoredQueryType) {
                 
                 if (storedQueryProvider == null) {
-                    throw new WFSException("Stored query not supported");
+                    throw new WFSException(request, "Stored query not supported");
                 }
 
                 StoredQueryType sq = (StoredQueryType) obj;
@@ -594,7 +595,7 @@ public class GetFeature {
                 //look up the store query
                 StoredQuery storedQuery = storedQueryProvider.getStoredQuery(sq.getId());
                 if (storedQuery == null) {
-                    throw new WFSException("Stored query '" + sq.getId() + "' does not exist.");
+                    throw new WFSException(request, "Stored query '" + sq.getId() + "' does not exist.");
                 }
 
                 List<net.opengis.wfs20.QueryType> compiled = storedQuery.compile(sq);
@@ -695,7 +696,7 @@ public class GetFeature {
                 target = CRS.decode(srsName.toString());
             } catch (Exception e) {
                 String msg = "Unable to support srsName: " + srsName;
-                throw new WFSException(msg, e);
+                throw new WFSException(request, msg, e);
             }
         } else {
             target = declaredCRS;
@@ -814,12 +815,12 @@ public class GetFeature {
         return visitor.getFilterPost() == null || visitor.getFilterPost() == Filter.INCLUDE;
     }
 
-    FeatureTypeInfo featureTypeInfo(QName name) throws WFSException, IOException {
+    FeatureTypeInfo featureTypeInfo(QName name, GetFeatureRequest request) throws WFSException, IOException {
         FeatureTypeInfo meta = catalog.getFeatureTypeByName(name.getNamespaceURI(), name.getLocalPart());
 
         if (meta == null) {
             String msg = "Could not locate " + name + " in catalog.";
-            throw new WFSException(msg);
+            throw new WFSException(request, msg);
         }
 
         return meta;
@@ -870,7 +871,8 @@ O:      for (String propName : query.getPropertyNames()) {
         return propNames;
     }
 
-    void validateFilter(Filter filter, Query query, FeatureTypeInfo meta) throws IOException {
+    void validateFilter(Filter filter, Query query, FeatureTypeInfo meta, final GetFeatureRequest request) 
+        throws IOException {
       //1. ensure any property name refers to a property that 
         // actually exists
         final FeatureType featureType = meta.getFeatureType();
@@ -878,7 +880,7 @@ O:      for (String propName : query.getPropertyNames()) {
                 public Object visit(PropertyName name, Object data) {
                     // case of multiple geometries being returned
                     if (name.evaluate(featureType) == null) {
-                        throw new WFSException("Illegal property name: "
+                        throw new WFSException(request, "Illegal property name: "
                             + name.getPropertyName(), "InvalidParameterValue");
                     }
 
@@ -906,7 +908,7 @@ O:      for (String propName : query.getPropertyNames()) {
                     // a geometric type
                     AttributeDescriptor att = (AttributeDescriptor) name.evaluate(featureType);
                     if ( !( att instanceof GeometryDescriptor ) ) {
-                        throw new WFSException("Property " + name + " is not geometric", "InvalidParameterValue");
+                        throw new WFSException(request, "Property " + name + " is not geometric", "InvalidParameterValue");
                     }
                 }
                 
@@ -939,7 +941,7 @@ O:      for (String propName : query.getPropertyNames()) {
                                 e = CRS.transform(CRS.findMathTransform(crs, geo, true), e);
                             } 
                             catch( Exception ex ) {
-                                throw new WFSException( ex );
+                                throw new WFSException( request, ex );
                             }
                             
                             //ensure within bounds defined by srs specified on 
@@ -948,7 +950,7 @@ O:      for (String propName : query.getPropertyNames()) {
                                 crs = CRS.decode( fquery.getSrsName().toString() );
                             } 
                             catch( Exception ex ) {
-                                throw new WFSException( ex );
+                                throw new WFSException( request, ex );
                             }
                             
                             GeographicBoundingBox valid = 
@@ -964,7 +966,7 @@ O:      for (String propName : query.getPropertyNames()) {
                                 e.getMaximum(1) < valid.getSouthBoundLatitude() || 
                                 e.getMaximum(1) > valid.getNorthBoundLatitude() ) {
                                     
-                                throw new WFSException( "bounding box out of valid range of crs", "InvalidParameterValue");
+                                throw new WFSException(request, "bounding box out of valid range of crs", "InvalidParameterValue");
                             }
                         }
                         

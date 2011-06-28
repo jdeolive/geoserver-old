@@ -79,7 +79,7 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
         
         // check inserts are enabled
         if (!getInfo().getServiceLevel().getOps().contains(WFSInfo.Operation.TRANSACTION_UPDATE) ) {
-            throw new WFSException("Transaction Update support is not enabled");
+            throw new WFSException(element, "Transaction Update support is not enabled");
         }
 
         Update update = (Update) element;
@@ -104,7 +104,7 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
                     if ((attributeType != null) && (attributeType.getMinOccurs() > 0)) {
                         String msg = "Property '" + attributeType.getLocalName()
                             + "' is mandatory but no value specified.";
-                        throw new WFSException(msg, "MissingParameterValue");
+                        throw new WFSException(element, msg, "MissingParameterValue");
                     }
                 }
                 
@@ -121,7 +121,7 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
                 
                 if ( propertyName.evaluate( featureType ) == null ) {
                     String msg = "No such property: " + name;
-                    throw new WFSException( msg );
+                    throw new WFSException(element, msg );
                 }
             }
         } catch (IOException e) {
@@ -143,7 +143,7 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
         SimpleFeatureStore store = DataUtilities.simple((FeatureStore) featureStores.get(elementName));
 
         if (store == null) {
-            throw new WFSException("Could not locate FeatureStore for '" + elementName + "'");
+            throw new WFSException(request, "Could not locate FeatureStore for '" + elementName + "'");
         }
 
         LOGGER.finer("Transaction Update:" + update);
@@ -242,7 +242,7 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
                     fids.add(feature.getID());
                 }
             } catch (NoSuchElementException e) {
-                throw new WFSException("Could not aquire FeatureIDs", e);
+                throw new WFSException(request, "Could not aquire FeatureIDs", e);
             } finally {
                 features.close(preprocess);
             }

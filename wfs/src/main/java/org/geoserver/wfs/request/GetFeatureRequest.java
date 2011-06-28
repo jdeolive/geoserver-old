@@ -18,7 +18,7 @@ import org.geotools.xml.EMFUtils;
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public abstract class GetFeatureRequest extends RequestObjectAdapter {
+public abstract class GetFeatureRequest extends RequestObject {
 
     public static GetFeatureRequest adapt(Object request) {
         if (request instanceof GetFeatureType) {
@@ -57,6 +57,8 @@ public abstract class GetFeatureRequest extends RequestObjectAdapter {
     public abstract boolean isLockRequest();
     
     public abstract Query createQuery();
+    
+    public abstract LockFeatureRequest createLockRequest();
     
     public abstract FeatureCollectionResponse createResponse();
     
@@ -133,6 +135,11 @@ public abstract class GetFeatureRequest extends RequestObjectAdapter {
         }
         
         @Override
+        public LockFeatureRequest createLockRequest() {
+            return new LockFeatureRequest.WFS11(((WfsFactory)getFactory()).createLockFeatureType());
+        }
+
+        @Override
         public FeatureCollectionResponse createResponse() {
             return new FeatureCollectionResponse.WFS11(
                 ((WfsFactory)getFactory()).createFeatureCollectionType());
@@ -202,6 +209,11 @@ public abstract class GetFeatureRequest extends RequestObjectAdapter {
             return new Query.WFS20(((Wfs20Factory)getFactory()).createQueryType());
         }
         
+        @Override
+        public LockFeatureRequest createLockRequest() {
+            return new LockFeatureRequest.WFS20(((Wfs20Factory)getFactory()).createLockFeatureType());
+        }
+
         @Override
         public FeatureCollectionResponse createResponse() {
             return new FeatureCollectionResponse.WFS20(

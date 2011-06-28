@@ -10,7 +10,7 @@ import org.eclipse.emf.ecore.EObject;
  * @author Justin Deoliveira, OpenGeo
  *
  */
-public abstract class Property extends RequestObjectAdapter {
+public abstract class Property extends RequestObject {
 
     protected Property(EObject adaptee) {
         super(adaptee);

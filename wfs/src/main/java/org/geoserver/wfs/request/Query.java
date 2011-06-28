@@ -20,7 +20,7 @@ import org.opengis.filter.sort.SortBy;
  * @author Justin Deoliveira, OpenGeo
  *
  */
-public abstract class Query extends RequestObjectAdapter {
+public abstract class Query extends RequestObject {
 
     public static Query adapt(Object query) {
         if (query instanceof QueryType) {

@@ -15,7 +15,7 @@ import org.opengis.filter.identity.FeatureId;
  * @author Justin Deoliveira, OpenGeo
  *
  */
-public abstract class LockFeatureResponse extends RequestObjectAdapter {
+public abstract class LockFeatureResponse extends RequestObject {
 
     protected LockFeatureResponse(EObject adaptee) {
         super(adaptee);

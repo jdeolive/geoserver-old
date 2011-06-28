@@ -8,15 +8,17 @@ import net.opengis.wfs.AllSomeType;
 import net.opengis.wfs.LockFeatureType;
 import net.opengis.wfs.WfsFactory;
 import net.opengis.wfs20.Wfs20Factory;
+import net.opengis.wfs20.Wfs20Package;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.FeatureMap;
 
 /**
  * WFS LockFeature request.
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public abstract class LockFeatureRequest extends RequestObjectAdapter {
+public abstract class LockFeatureRequest extends RequestObject {
 
     public static LockFeatureRequest adapt(Object request) {
         if (request instanceof LockFeatureType) {
@@ -40,9 +42,17 @@ public abstract class LockFeatureRequest extends RequestObjectAdapter {
     
     public abstract List<Lock> getLocks();
     
+    public abstract void addLock(Lock lock);
+    
     public abstract boolean isLockActionSome();
     
+    public abstract void setLockActionSome();
+    
     public abstract boolean isLockActionAll();
+    
+    public abstract void setLockActionAll();
+    
+    public abstract Lock createLock();
     
     public abstract LockFeatureResponse createResponse();
     
@@ -60,17 +70,38 @@ public abstract class LockFeatureRequest extends RequestObjectAdapter {
             }
             return locks;
         }
+
+        @Override
+        public void addLock(Lock lock) {
+            eGet(adaptee, "lock", List.class).add(lock.getAdaptee());
+        }
         
         @Override
         public boolean isLockActionAll() {
             return ((LockFeatureType)adaptee).getLockAction() == AllSomeType.ALL_LITERAL;
         }
-        
+
+        @Override
+        public void setLockActionAll() {
+            ((LockFeatureType)adaptee).setLockAction(AllSomeType.ALL_LITERAL);
+        }
+
         @Override
         public boolean isLockActionSome() {
             return ((LockFeatureType)adaptee).getLockAction() == AllSomeType.SOME_LITERAL;
         }
-        
+
+        @Override
+        public void setLockActionSome() {
+            ((LockFeatureType)adaptee).setLockAction(AllSomeType.SOME_LITERAL);
+            
+        }
+
+        @Override
+        public Lock createLock() {
+            return new Lock.WFS11(((WfsFactory)getFactory()).createLockType());
+        }
+
         @Override
         public LockFeatureResponse createResponse() {
             return new LockFeatureResponse.WFS11(
@@ -92,11 +123,22 @@ public abstract class LockFeatureRequest extends RequestObjectAdapter {
             }
             return locks;
         }
-        
+
+        @Override
+        public void addLock(Lock lock) {
+            ((FeatureMap)eGet(adaptee, "abstractQueryExpressionGroup", List.class))
+                .add(Wfs20Package.Literals.DOCUMENT_ROOT__QUERY, lock.getAdaptee());
+        }
+
         @Override
         public boolean isLockActionAll() {
             return ((net.opengis.wfs20.LockFeatureType)adaptee).getLockAction() 
                 == net.opengis.wfs20.AllSomeType.ALL;
+        }
+
+        @Override
+        public void setLockActionAll() {
+            ((net.opengis.wfs20.LockFeatureType)adaptee).setLockAction(net.opengis.wfs20.AllSomeType.ALL); 
         }
         
         @Override
@@ -104,7 +146,17 @@ public abstract class LockFeatureRequest extends RequestObjectAdapter {
             return ((net.opengis.wfs20.LockFeatureType)adaptee).getLockAction() 
                 == net.opengis.wfs20.AllSomeType.SOME;
         }
-        
+
+        @Override
+        public void setLockActionSome() {
+            ((net.opengis.wfs20.LockFeatureType)adaptee).setLockAction(net.opengis.wfs20.AllSomeType.SOME);
+        }
+
+        @Override
+        public Lock createLock() {
+            return new Lock.WFS20(((Wfs20Factory)getFactory()).createQueryType());
+        }
+
         @Override
         public LockFeatureResponse createResponse() {
             return new LockFeatureResponse.WFS20(
@@ -112,5 +164,4 @@ public abstract class LockFeatureRequest extends RequestObjectAdapter {
         } 
         
     }
-
 }

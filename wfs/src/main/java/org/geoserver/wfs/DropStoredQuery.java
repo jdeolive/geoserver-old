@@ -31,7 +31,7 @@ public class DropStoredQuery {
     public ExecutionStatusType run(DropStoredQueryType request) throws WFSException {
         
         if (request.getId() == null) {
-            throw new WFSException("No stored query id specified");
+            throw new WFSException(request, "No stored query id specified");
         }
         
         StoredQuery query = storedQueryProvider.getStoredQuery(request.getId());
@@ -39,7 +39,7 @@ public class DropStoredQuery {
             storedQueryProvider.removeStoredQuery(query);
         }
         else {
-            throw new WFSException(String.format("Stored query %s does not exist.", request.getId()));
+            throw new WFSException(request, String.format("Stored query %s does not exist.", request.getId()));
         }
         
         Wfs20Factory factory = Wfs20Factory.eINSTANCE;

@@ -71,7 +71,8 @@ public class GML2OutputFormat2 extends WFSGetFeatureOutputFormat {
             String namespaceURI = featureType.getName().getNamespaceURI();
             FeatureTypeInfo meta = catalog.getFeatureTypeByName( namespaceURI, featureType.getTypeName() );
             if(meta == null)
-                throw new WFSException("Could not find feature type " + namespaceURI + ":" + featureType.getTypeName() + " in the GeoServer catalog");
+                throw new WFSException(gft, "Could not find feature type " + namespaceURI + ":" 
+                    + featureType.getTypeName() + " in the GeoServer catalog");
 
             NamespaceInfo ns = catalog.getNamespaceByURI( namespaceURI );
             ns2metas.put( ns, meta );

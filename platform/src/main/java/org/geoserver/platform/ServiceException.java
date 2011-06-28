@@ -31,12 +31,12 @@ public class ServiceException extends RuntimeException {
     /**
      * Application specfic code.
      */
-    String code;
+    protected String code;
 
     /**
      * Application specific locator
      */
-    String locator;
+    protected String locator;
 
     /**
      * List of text recording information about the exception

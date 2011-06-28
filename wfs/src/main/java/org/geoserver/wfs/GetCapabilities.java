@@ -54,7 +54,7 @@ public class GetCapabilities {
         // our more lax approach and just ignore it when not doint the cite thing
         if (wfs.isCiteCompliant()) {
             if (request.getUpdateSequence() != null) {
-                throw new WFSException("Invalid update sequence", "InvalidUpdateSequence");
+                throw new WFSException(request, "Invalid update sequence", "InvalidUpdateSequence");
             }
         }
 
@@ -88,7 +88,7 @@ public class GetCapabilities {
         }else if ("2.0.0".equals(version)) {
             capsTransformer = new CapabilitiesTransformer.WFS2_0(wfs, catalog);
         }else{
-            throw new WFSException("Could not understand version:" + version);
+            throw new WFSException(request, "Could not understand version:" + version);
         }
         capsTransformer.setEncoding(Charset.forName( wfs.getGeoServer().getGlobal().getCharset() ));
         return capsTransformer;
