@@ -1900,8 +1900,8 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 constraint("ImplementsInheritance", false);
                 constraint("ImplementsRemoteResolve", false);
                 constraint("ImplementsResultPaging", true);
-                constraint("ImplementsStandardJoins", false);
-                constraint("ImplementsSpatialJoins", false);
+                constraint("ImplementsStandardJoins", true);
+                constraint("ImplementsSpatialJoins", true);
                 constraint("ImplementsTemporalJoins", false);
                 constraint("ImplementsFeatureVersioning", false);
                 constraint("ManageStoredQueries", true);
