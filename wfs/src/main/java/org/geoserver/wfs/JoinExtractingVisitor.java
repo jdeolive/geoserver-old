@@ -19,6 +19,10 @@ import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Id;
 import org.opengis.filter.IncludeFilter;
 import org.opengis.filter.Not;
+import org.opengis.filter.PropertyIsBetween;
+import org.opengis.filter.PropertyIsLike;
+import org.opengis.filter.PropertyIsNil;
+import org.opengis.filter.PropertyIsNull;
 import org.opengis.filter.expression.Expression;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.filter.spatial.BinarySpatialOperator;
@@ -63,6 +67,22 @@ public class JoinExtractingVisitor extends FilterVisitorSupport {
     }
 
     public Object visit(Not filter, Object extraData) {
+        return handleOther(filter, extraData);
+    }
+
+    public Object visit(PropertyIsBetween filter, Object extraData) {
+        return handleOther(filter, extraData);
+    }
+
+    public Object visit(PropertyIsLike filter, Object extraData) {
+        return handleOther(filter, extraData);
+    }
+
+    public Object visit(PropertyIsNull filter, Object extraData) {
+        return handleOther(filter, extraData);
+    }
+
+    public Object visit(PropertyIsNil filter, Object extraData) {
         return handleOther(filter, extraData);
     }
 
@@ -276,8 +296,9 @@ O:      for (Filter f : filters) {
     }
     
     PropertyName[] names(Filter f) {
-        Expression e1;
-        Expression e2;
+        //TODO: use a filter visitor
+        Expression e1 = null;
+        Expression e2 = null;
         if (f instanceof BinaryComparisonOperator) {
             e1 = ((BinaryComparisonOperator) f).getExpression1();
             e2 = ((BinaryComparisonOperator) f).getExpression2();
@@ -290,8 +311,20 @@ O:      for (Filter f : filters) {
             e1 = ((BinaryTemporalOperator) f).getExpression1();
             e2 = ((BinaryTemporalOperator) f).getExpression2();
         }
-        else {
-            throw new IllegalArgumentException();
+        else if (f instanceof PropertyIsNil){
+            e1 = ((PropertyIsNil) f).getExpression();
+        }
+        else if (f instanceof PropertyIsNull) {
+            e1 = ((PropertyIsNull) f).getExpression();
+        }
+        else if (f instanceof PropertyIsLike) {
+            e1 = ((PropertyIsLike) f).getExpression();
+        }
+        else if (f instanceof PropertyIsBetween) {
+            e1 = ((PropertyIsBetween) f).getExpression();
+        }
+        else {   
+            throw new IllegalStateException();
         }
         
         return new PropertyName[]{e1 instanceof PropertyName ? (PropertyName) e1 : null, 
@@ -307,15 +340,31 @@ O:      for (Filter f : filters) {
         }
 
         public Object visit(ExcludeFilter filter, Object extraData) {
-            return null;
+            return handle(filter, extraData);
         }
 
         public Object visit(IncludeFilter filter, Object extraData) {
-            return null;
+            return handle(filter, extraData);
         }
 
         public Object visit(Id filter, Object extraData) {
-            return null;
+            return handle(filter, extraData);
+        }
+
+        public Object visit(PropertyIsBetween filter, Object extraData) {
+            return handle(filter, extraData);
+        }
+
+        public Object visit(PropertyIsLike filter, Object extraData) {
+            return handle(filter, extraData);
+        }
+
+        public Object visit(PropertyIsNil filter, Object extraData) {
+            return handle(filter, extraData);
+        }
+
+        public Object visit(PropertyIsNull filter, Object extraData) {
+            return handle(filter, extraData);
         }
 
         public Object visit(Not filter, Object extraData) {
@@ -334,22 +383,24 @@ O:      for (Filter f : filters) {
 
         @Override
         protected Object visit(BinaryComparisonOperator op, Object extraData) {
-            unrolled.add(op);
-            return null;
+            return handle(op, extraData);
         }
 
         @Override
         protected Object visit(BinarySpatialOperator op, Object extraData) {
-            unrolled.add(op);
-            return null;
+            return handle(op, extraData);
         }
 
         @Override
         protected Object visit(BinaryTemporalOperator op, Object extraData) {
-            unrolled.add(op);
-            return null;
+            return handle(op, extraData);
         }
         
+        protected Object handle(Filter filter, Object extraData) {
+            unrolled.add(filter);
+            return extraData;
+        }
+
         public List<Filter> getFilters() {
             return unrolled;
         }
