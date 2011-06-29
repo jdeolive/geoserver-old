@@ -368,6 +368,8 @@ public class GetFeature {
                 int queryMaxFeatures = maxFeatures - count;
                 if(meta.getMaxFeatures() > 0 && meta.getMaxFeatures() < queryMaxFeatures)
                     queryMaxFeatures = meta.getMaxFeatures();
+                
+                Map<String, String> viewParam = viewParams != null ? viewParams.get(i) : null;
                 org.geotools.data.Query gtQuery = toDataQuery(query, offset, queryMaxFeatures, source, request, allPropNames, viewParam);
                 
                 LOGGER.fine("Query is " + query + "\n To gt2: " + gtQuery);
@@ -417,7 +419,7 @@ public class GetFeature {
                         //no features might have been because of the offset that was specified, check 
                         // the size of the same query but with no offset
                         Query q2 = 
-                            toDataQuery(query, 0, queryMaxFeatures, source, request, allPropNames); 
+                            toDataQuery(query, 0, queryMaxFeatures, source, request, allPropNames, viewParam); 
 
                         //int size2 = getFeatures(request, source, q2).size();
                         int size2 = source.getCount(q2);
