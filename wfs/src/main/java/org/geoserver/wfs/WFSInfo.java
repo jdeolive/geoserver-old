@@ -87,6 +87,11 @@ public interface WFSInfo extends ServiceInfo {
             public int getCode() {
                 return 16;
             }
+        }, 
+        TRANSACTION_REPLACE {
+            public int getCode() {
+                return 32;
+            }
         };
         
         abstract public int getCode();
@@ -125,7 +130,7 @@ public interface WFSInfo extends ServiceInfo {
                     Operation.GETCAPABILITIES,Operation.DESCRIBEFEATURETYPE,
                     Operation.GETFEATURE, Operation.TRANSACTION_INSERT, 
                     Operation.TRANSACTION_UPDATE, Operation.TRANSACTION_DELETE,
-                    Operation.LOCKFEATURE
+                    Operation.TRANSACTION_REPLACE, Operation.LOCKFEATURE
                 );
             }
         };

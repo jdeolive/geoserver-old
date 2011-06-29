@@ -63,10 +63,14 @@
     <bean id="wfsDeleteElementHandler" class="org.geoserver.wfs.DeleteElementHandler">
       <constructor-arg ref="geoServer"/>
     </bean>
+
+    <bean id="wfsReplaceElementHandler" class="org.geoserver.wfs.ReplaceElementHandler">
+      <constructor-arg ref="geoServer"/>
+    </bean>
     
     <bean id="wfsNativeElementHandler" class="org.geoserver.wfs.NativeElementHandler">
     </bean>
-    
+
 	<!-- service descriptors -->
 	<bean id="wfsService-1.0.0" class="org.geoserver.platform.Service">
 		<constructor-arg index="0" value="wfs"/>

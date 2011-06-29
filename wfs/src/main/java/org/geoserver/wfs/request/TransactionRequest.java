@@ -15,6 +15,7 @@ import net.opengis.wfs.UpdateElementType;
 import net.opengis.wfs.WfsFactory;
 import net.opengis.wfs20.DeleteType;
 import net.opengis.wfs20.InsertType;
+import net.opengis.wfs20.ReplaceType;
 import net.opengis.wfs20.UpdateType;
 import net.opengis.wfs20.Wfs20Factory;
 
@@ -160,6 +161,9 @@ public abstract class TransactionRequest extends RequestObject {
                 }
                 else if (el instanceof UpdateType) {
                     list.add(new Update.WFS20(el));
+                }
+                else if (el instanceof ReplaceType) {
+                    list.add(new Replace.WFS20(el));
                 }
                 else if (el instanceof net.opengis.wfs20.NativeType) {
                     list.add(new Native.WFS20(el));

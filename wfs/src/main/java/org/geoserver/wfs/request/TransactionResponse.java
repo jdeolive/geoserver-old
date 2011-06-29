@@ -44,6 +44,13 @@ public abstract class TransactionResponse extends RequestObject {
         eSet(adaptee, "transactionSummary.totalDeleted", deleted);
     }
 
+    public BigInteger getTotalReplaced() {
+        return eGet(adaptee, "transactionSummary.totalReplaced", BigInteger.class);
+    }
+    
+    public void setTotalReplaced(BigInteger replaced) {
+        eSet(adaptee, "transactionSummary.totalReplaced", replaced);
+    }
     public List getInsertedFeatures() {
         return eGet(adaptee, "insertResults.feature", List.class);
     }
@@ -53,6 +60,8 @@ public abstract class TransactionResponse extends RequestObject {
     public abstract void addInsertedFeature(String handle, FeatureId id);
     
     public abstract void addUpdatedFeatures(String handle, Collection<FeatureId> ids);
+    
+    public abstract void addReplacedFeatures(String handle, Collection<FeatureId> ids);
     
     public abstract void addAction(String code, String locator, String message);
 
@@ -80,6 +89,11 @@ public abstract class TransactionResponse extends RequestObject {
             // no-op
         }
         
+        @Override
+        public void addReplacedFeatures(String handle, Collection<FeatureId> ids) {
+            // no-op
+        }
+
         @Override
         public void addAction(String code, String locator, String message) {
             // transaction failed, rollback
@@ -134,6 +148,22 @@ public abstract class TransactionResponse extends RequestObject {
             }
             
             tr.getUpdateResults().getFeature().add(updated);
+        }
+        
+        @Override
+        public void addReplacedFeatures(String handle, Collection<FeatureId>  ids) {
+            CreatedOrModifiedFeatureType updated = 
+                ((Wfs20Factory)getFactory()).createCreatedOrModifiedFeatureType();
+            updated.setHandle(handle);
+            updated.getResourceId().addAll(ids);
+            
+            net.opengis.wfs20.TransactionResponseType tr = 
+                (net.opengis.wfs20.TransactionResponseType) adaptee;
+            if (tr.getReplaceResults() == null) {
+                tr.setReplaceResults(((Wfs20Factory)getFactory()).createActionResultsType());
+            }
+            
+            tr.getReplaceResults().getFeature().add(updated);
         }
 
         @Override

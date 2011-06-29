@@ -663,4 +663,52 @@ public class TransactionTest extends WFS20TestSupport {
        assertEquals( "1", updated.getFirstChild().getNodeValue());
    }
 
+   public void testReplace() throws Exception {
+       Document dom = getAsDOM("wfs?service=wfs&version=2.0.0&request=getfeature&typename=cite:RoadSegments" +
+           "&cql_filter=FID+EQ+'102'");
+       XMLAssert.assertXpathExists("//cite:RoadSegments/cite:FID[text() = '102']", dom);
+       
+       String xml =
+           "<wfs:Transaction service=\"WFS\" version=\"2.0.0\"" + 
+            " xmlns:fes='" + FES.NAMESPACE + "' " +  
+            " xmlns:wfs='" + WFS.NAMESPACE + "' " + 
+            " xmlns:gml='" + GML.NAMESPACE + "' " + 
+            " xmlns:cite='http://www.opengis.net/cite'>" + 
+           " <wfs:Replace>" + 
+           "  <cite:RoadSegments gml:id='RoadSegments.1107532045088'> " + 
+           "      <cite:the_geom> " + 
+           "         <gml:MultiCurve srsDimension='2' srsName='urn:x-ogc:def:crs:EPSG:4326'> " + 
+           "          <gml:curveMember> " + 
+           "            <gml:LineString> " + 
+           "              <gml:posList>1 2 3 5 6 7</gml:posList> " + 
+           "            </gml:LineString> " + 
+           "          </gml:curveMember> " + 
+           "        </gml:MultiCurve> " + 
+           "      </cite:the_geom> " + 
+           "      <cite:FID>1234</cite:FID> " + 
+           "      <cite:NAME>Route 1234</cite:NAME> " + 
+           "   </cite:RoadSegments> " + 
+
+           "   <fes:Filter>" + 
+           "     <fes:PropertyIsEqualTo>" +
+           "       <fes:ValueReference>FID</fes:ValueReference>" + 
+           "       <fes:Literal>102</fes:Literal>" + 
+           "     </fes:PropertyIsEqualTo>" + 
+           "   </fes:Filter>" +
+           " </wfs:Replace>" +
+          "</wfs:Transaction>";
+       
+       dom = postAsDOM("wfs", xml);
+       assertEquals("wfs:TransactionResponse", dom.getDocumentElement().getNodeName());
+       XMLAssert.assertXpathExists("//wfs:totalReplaced[text() = 1]", dom);
+       XMLAssert.assertXpathExists("//wfs:ReplaceResults/wfs:Feature/fes:ResourceId", dom);
+
+       dom = getAsDOM("wfs?service=wfs&version=2.0.0&request=getfeature&typename=cite:RoadSegments" +
+               "&cql_filter=FID+EQ+'102'");
+       XMLAssert.assertXpathNotExists("//cite:RoadSegments/cite:FID[text() = '102']", dom);
+       
+       dom = getAsDOM("wfs?service=wfs&version=2.0.0&request=getfeature&typename=cite:RoadSegments" +
+               "&cql_filter=FID+EQ+'1234'");
+       XMLAssert.assertXpathExists("//cite:RoadSegments/cite:FID[text() = '1234']", dom);
+   }
 }
