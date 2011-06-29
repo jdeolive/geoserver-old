@@ -124,6 +124,9 @@ public abstract class RequestObject {
             if (obj == null) {
                 return null;
             }
+            if (!EMFUtils.has((EObject)obj, prop)) {
+                return null;
+            }
             obj = EMFUtils.get((EObject) obj, prop); 
         }
         return (T) obj;
