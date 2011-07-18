@@ -69,6 +69,10 @@ public abstract class RequestObject {
         eSet(adaptee, "metadata", metadata);
     }
 
+    public Map getExtendedProperties() {
+        return eGet(adaptee, "extendedProperties", Map.class);
+    }
+
     public Map getFormatOptions() {
         return eGet(adaptee, "formatOptions", Map.class);
     }

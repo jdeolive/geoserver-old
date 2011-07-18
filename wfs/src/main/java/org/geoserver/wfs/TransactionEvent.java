@@ -8,6 +8,7 @@ import javax.xml.namespace.QName;
 
 import net.opengis.wfs.DeleteElementType;
 import net.opengis.wfs.InsertElementType;
+import net.opengis.wfs.TransactionType;
 import net.opengis.wfs.UpdateElementType;
 
 import org.geoserver.wfs.request.TransactionRequest;
@@ -94,7 +95,7 @@ public class TransactionEvent {
         return source;
     }
 
-    public TransactionRequest getRequest() {
-        return request;
+    public TransactionType getRequest() {
+        return TransactionRequest.WFS11.unadapt(request);
     }
 }
