@@ -105,6 +105,12 @@ public abstract class TransactionResponse extends RequestObject {
             ((TransactionResponseType)adaptee).getTransactionResults().getAction().add(action);
         }
 
+        public static TransactionResponseType unadapt(TransactionResponse response) {
+            if (response instanceof WFS11) {
+                return (TransactionResponseType) response.getAdaptee();
+            }
+            return null;
+        }
     }
 
     public static class WFS20 extends TransactionResponse {

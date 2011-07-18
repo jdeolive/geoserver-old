@@ -420,20 +420,20 @@ public class Transaction {
         // response = build;
     }
 
-    void fireAfterTransaction(Object request, Object result, boolean committed, TransactionPlugin tp) {
-        TransactionType tx = toTransaction11(request);
-        TransactionResponseType tr = toTransactionResponse11(result);
+    void fireAfterTransaction(TransactionRequest request, TransactionResponse result, boolean committed, TransactionPlugin tp) {
+        TransactionType tx = TransactionRequest.WFS11.unadapt(request);
+        TransactionResponseType tr = TransactionResponse.WFS11.unadapt(result);
         
         if (tx != null && tr != null) tp.afterTransaction(tx, tr, committed);
     }
 
-    void fireBeforeCommit(Object request, TransactionPlugin tp) {
-        TransactionType tx = toTransaction11(request);
+    void fireBeforeCommit(TransactionRequest request, TransactionPlugin tp) {
+        TransactionType tx = TransactionRequest.WFS11.unadapt(request);
         if (tx != null) tp.beforeCommit(tx);
     }
 
-    void fireBeforeTransaction(Object request, TransactionPlugin tp) {
-        TransactionType tx = toTransaction11(request);
+    void fireBeforeTransaction(TransactionRequest request, TransactionPlugin tp) {
+        TransactionType tx = TransactionRequest.WFS11.unadapt(request);
         if (tx != null) tp.beforeTransaction(tx);
     }
 
@@ -597,26 +597,6 @@ public class Transaction {
     private void lockRefresh(String lockId) throws Exception {
         LockFeature lockFeature = new LockFeature(wfs, catalog);
         lockFeature.refresh(lockId);
-    }
-
-    TransactionType toTransaction11(Object request) {
-        if (request instanceof TransactionRequest.WFS11) {
-            return (TransactionType) ((TransactionRequest.WFS11) request).getAdaptee();
-        }
-        
-        //TODO: support transaction plugins in wfs 2.0... deprecate the old api and add the new 
-        // methods
-        return null;
-    }
-
-    TransactionResponseType toTransactionResponse11(Object result) {
-        if (result instanceof TransactionResponse.WFS11) {
-            return (TransactionResponseType) ((TransactionResponse.WFS11) result).getAdaptee();
-        }
-
-        //TODO: support transaction plugins in wfs 2.0... deprecate the old api and add the new 
-        // methods
-        return null;
     }
 
     /**

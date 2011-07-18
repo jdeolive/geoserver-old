@@ -122,6 +122,15 @@ public abstract class TransactionRequest extends RequestObject {
             
             return new TransactionResponse.WFS11(tr);
         }
+        
+        public static TransactionType unadapt(TransactionRequest request) {
+            if (request instanceof WFS11) {
+                return (TransactionType) request.getAdaptee();
+            }
+
+            //TODO: create one
+            throw new IllegalArgumentException();
+        }
     }
     
     public static class WFS20 extends TransactionRequest {
