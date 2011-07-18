@@ -70,6 +70,6 @@ public interface TransactionElementHandler {
      *            each change performed against the data stores
      */
     @SuppressWarnings("rawtypes")
-    void execute(TransactionElement element, TransactionRequest request, Map featureStores, 
+    void execute(TransactionElement element, TransactionRequest request, Map<QName, FeatureStore> featureStores, 
         TransactionResponse response, TransactionListener listener) throws WFSTransactionException;
 }
