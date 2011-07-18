@@ -5,7 +5,6 @@
 package org.geoserver.wfs;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -19,18 +18,9 @@ import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 
-import net.opengis.wfs.ActionType;
-import net.opengis.wfs.AllSomeType;
-import net.opengis.wfs.InsertedFeatureType;
 import net.opengis.wfs.TransactionResponseType;
 import net.opengis.wfs.TransactionType;
-import net.opengis.wfs.WfsFactory;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.util.FeatureMap;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.platform.GeoServerExtensions;
@@ -41,11 +31,13 @@ import org.geoserver.wfs.request.TransactionResponse;
 import org.geotools.data.DefaultTransaction;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
-import org.geotools.xml.EMFUtils;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.FilterFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Web Feature Service Transaction operation.
@@ -384,7 +376,7 @@ public class Transaction {
         // inform plugins we're done
         for (Iterator it = transactionPlugins.iterator(); it.hasNext();) {
             TransactionPlugin tp = (TransactionPlugin) it.next();
-            fireAfterTransaction(request, committed, tp);
+            fireAfterTransaction(request, result, committed, tp);
         }
 
         //        
@@ -428,9 +420,11 @@ public class Transaction {
         // response = build;
     }
 
-    void fireAfterTransaction(Object request, boolean committed, TransactionPlugin tp) {
+    void fireAfterTransaction(Object request, Object result, boolean committed, TransactionPlugin tp) {
         TransactionType tx = toTransaction11(request);
-        if (tx != null) tp.afterTransaction(tx, committed);
+        TransactionResponseType tr = toTransactionResponse11(result);
+        
+        if (tx != null && tr != null) tp.afterTransaction(tx, tr, committed);
     }
 
     void fireBeforeCommit(Object request, TransactionPlugin tp) {
@@ -606,13 +600,25 @@ public class Transaction {
     }
 
     TransactionType toTransaction11(Object request) {
-        if (request instanceof TransactionType) {
-            return (TransactionType) request;
+        if (request instanceof TransactionRequest.WFS11) {
+            return (TransactionType) ((TransactionRequest.WFS11) request).getAdaptee();
         }
         
-        //TODO: copy the new transactionType object into the old
+        //TODO: support transaction plugins in wfs 2.0... deprecate the old api and add the new 
+        // methods
         return null;
     }
+
+    TransactionResponseType toTransactionResponse11(Object result) {
+        if (result instanceof TransactionResponse.WFS11) {
+            return (TransactionResponseType) ((TransactionResponse.WFS11) result).getAdaptee();
+        }
+
+        //TODO: support transaction plugins in wfs 2.0... deprecate the old api and add the new 
+        // methods
+        return null;
+    }
+
     /**
      * Bounces the single callback we got from transaction event handlers to all
      * registered listeners

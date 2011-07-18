@@ -20,8 +20,6 @@ import org.geoserver.wfs.request.Native;
 import org.geoserver.wfs.request.TransactionElement;
 import org.geoserver.wfs.request.TransactionRequest;
 import org.geoserver.wfs.request.TransactionResponse;
->>>>>>> refactoring RequestObjectHandler into multiple classes, an object model adapting the wfs 1.1  and 2.0 object models
-
 
 /**
  * Processes native elements as unrecognized ones, and checks wheter they can be
@@ -64,9 +62,9 @@ public class NativeElementHandler implements TransactionElementHandler {
 
     /**
      * @return an empty array.
-     * @see org.geoserver.wfs.TransactionElementHandler#getTypeNames(org.eclipse.emf.ecore.EObject)
+     * @see org.geoserver.wfs.TransactionElementHandler#getTypeNames(TransactionElement)
      */
-    public QName[] getTypeNames(EObject element) throws WFSTransactionException {
+    public QName[] getTypeNames(TransactionElement element) throws WFSTransactionException {
         // we don't handle this
         return EMPTY_QNAMES;
     }

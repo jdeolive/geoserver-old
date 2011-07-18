@@ -74,7 +74,7 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
         super(gs);
     }
 
-    public void checkValidity(TransactionElement element, Map typeInfos)
+    public void checkValidity(TransactionElement element, Map<QName, FeatureTypeInfo> typeInfos)
         throws WFSTransactionException {
         
         // check inserts are enabled
