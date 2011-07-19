@@ -304,6 +304,10 @@
 		<constructor-arg index="0" value="featureId"/>
 		<constructor-arg index="1" value="java.lang.String"/>
 	</bean>
+	<bean id="resourceIdKvpParser" class="org.geoserver.ows.FlatKvpParser">
+        <constructor-arg index="0" value="resourceId"/>
+        <constructor-arg index="1" value="java.lang.String"/>
+    </bean>
 	
 	<bean id="bboxKvpParser" class="org.geoserver.wfs.kvp.BBoxKvpParser"/>
 	<bean id="filter1_0_0_KvpParser" class="org.geoserver.wfs.kvp.Filter_1_0_0_KvpParser">
