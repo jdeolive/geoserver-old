@@ -295,6 +295,20 @@ public class GetFeatureTest extends WFS20TestSupport {
                 "numberReturned"));
     }
 
+    public void testResultTypeHitsNumReturnedMatched() throws Exception {
+        String xml = "<wfs:GetFeature service='WFS' version='2.0.0' outputFormat='text/xml; subtype=gml/3.2' "
+                + "xmlns:cdf=\"http://www.opengis.net/cite/data\" "
+                + "xmlns:wfs='" + WFS.NAMESPACE + "' "
+                + "resultType='hits'> "
+                + "<wfs:Query typeNames=\"cdf:Seven\"/> " + "</wfs:GetFeature>";
+
+        Document doc = postAsDOM("wfs", xml);
+        assertGML32(doc);
+
+        assertEquals("7", doc.getDocumentElement().getAttribute("numberMatched"));
+        assertEquals("0", doc.getDocumentElement().getAttribute("numberReturned"));
+    }
+
     public void testWithSRS() throws Exception {
         String xml = "<wfs:GetFeature version='2.0.0' service='WFS' xmlns:wfs='"+WFS.NAMESPACE+"' >"
                 + "<wfs:Query xmlns:cdf='http://www.opengis.net/cite/data' typeNames='cdf:Other' " +
