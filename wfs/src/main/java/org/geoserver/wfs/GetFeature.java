@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -16,11 +17,8 @@ import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 
-import net.opengis.wfs.AllSomeType;
-import net.opengis.wfs.LockFeatureType;
-import net.opengis.wfs.LockType;
-import net.opengis.wfs.WfsFactory;
 import net.opengis.wfs.XlinkPropertyNameType;
+import net.opengis.wfs20.ResultTypeType;
 import net.opengis.wfs20.StoredQueryType;
 
 import org.geoserver.catalog.AttributeTypeInfo;
@@ -29,6 +27,10 @@ import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.catalog.ResourcePool;
 import org.geoserver.feature.TypeNameExtractingVisitor;
+import org.geoserver.ows.Dispatcher;
+import org.geoserver.ows.Request;
+import org.geoserver.ows.URLMangler.URLType;
+import org.geoserver.ows.util.KvpMap;
 import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geoserver.wfs.request.GetFeatureRequest;
 import org.geoserver.wfs.request.Lock;
@@ -41,19 +43,20 @@ import org.geotools.data.Join;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.Hints;
 import org.geotools.feature.FeatureCollection;
-import org.geotools.feature.FeatureTypes;
 import org.geotools.feature.NameImpl;
 import org.geotools.feature.SchemaException;
 import org.geotools.filter.FilterCapabilities;
 import org.geotools.filter.expression.AbstractExpressionVisitor;
+import org.geotools.filter.v2_0.FES;
+import org.geotools.filter.v2_0.FESConfiguration;
 import org.geotools.filter.visitor.AbstractFilterVisitor;
-import org.geotools.filter.visitor.IsFullySupportedFilterVisitor;
 import org.geotools.filter.visitor.PostPreProcessFilterSplittingVisitor;
 import org.geotools.filter.visitor.SimplifyingFilterVisitor;
 import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.LiteCoordinateSequenceFactory;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.xml.Encoder;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.AttributeDescriptor;
@@ -65,16 +68,11 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Id;
 import org.opengis.filter.IncludeFilter;
-import org.opengis.filter.Not;
 import org.opengis.filter.PropertyIsBetween;
 import org.opengis.filter.PropertyIsLike;
 import org.opengis.filter.PropertyIsNull;
-import org.opengis.filter.expression.Add;
-import org.opengis.filter.expression.Divide;
 import org.opengis.filter.expression.ExpressionVisitor;
-import org.opengis.filter.expression.Multiply;
 import org.opengis.filter.expression.PropertyName;
-import org.opengis.filter.expression.Subtract;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.filter.spatial.Beyond;
@@ -92,6 +90,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.helpers.NamespaceSupport;
 
+import static org.geoserver.ows.util.ResponseUtils.buildURL;
 /**
  * Web Feature Service GetFeature operation.
  * <p>
@@ -290,7 +289,8 @@ public class GetFeature {
         }
 
         //offset into result set in which to return features
-        int offset = request.getStartIndex() != null ? request.getStartIndex().intValue() : -1;
+        int totalOffset = request.getStartIndex() != null ? request.getStartIndex().intValue() : -1;
+        int offset = totalOffset;
 
         List results = new ArrayList();
         try {
@@ -577,7 +577,7 @@ public class GetFeature {
             lockId = response.getLockId();
         }
 
-        return buildResults(request, count, totalCount, results, lockId);
+        return buildResults(request, totalOffset, maxFeatures, count, totalCount, results, lockId);
     }
 
     protected void processStoredQueries(GetFeatureRequest request) {
@@ -609,8 +609,8 @@ public class GetFeature {
     /**
      * Allows subclasses to alter the result generation
      */
-    protected FeatureCollectionResponse buildResults(GetFeatureRequest request, int count, int total, 
-        List results, String lockId) {
+    protected FeatureCollectionResponse buildResults(GetFeatureRequest request, int offset, int maxFeatures, 
+        int count, int total, List results, String lockId) {
 
         FeatureCollectionResponse result = request.createResponse();
         result.setNumberOfFeatures(BigInteger.valueOf(count));
@@ -618,7 +618,183 @@ public class GetFeature {
         result.setTimeStamp(Calendar.getInstance());
         result.setLockId(lockId);
         result.getFeature().addAll(results);
+
+        if (offset > 0 || count < Integer.MAX_VALUE) {
+            //paged request, set the values of previous and next
+
+            //get the Request thread local since we need to know about the request, whether it is 
+            // GET or POST some kvp information if the former
+            Request req = Dispatcher.REQUEST.get();
+            
+            //grab the original kvp params if this is a GET request
+            //for POST, do nothing, make the client post the same content
+            //TODO: try to encode the request as best we can in a GET request, only issue should
+            // be the filter and encoding it property... especially for joins that might be 
+            // tricky, and it also may cause the request to be too large for a get request
+            //TODO: figure out what the spec says about this... 
+            Map<String,String> kvp = null; 
+            if (req.isGet()) {
+                kvp = new KvpMap(req.getRawKvp()); 
+            }
+            else {
+                //generate kvp map from request object
+                kvp = buildKvpFromRequest(request);
+            }
+
+            if (offset > 0) {
+                //previous
+                
+                //previous offset calculated as the current offset - maxFeatures, or 0 if this is a 
+                // negative value
+                int prevOffset = Math.max(offset - maxFeatures, 0);
+                kvp.put("startIndex", String.valueOf(prevOffset));
+                
+                //previous count should be current offset - previousOffset
+                kvp.put("count", String.valueOf(offset - prevOffset));
+                result.setPrevious(buildURL(request.getBaseUrl(), "wfs", kvp, URLType.SERVICE));
+            }
+
+            if (count > 0) {
+                //next
+
+                //calculate the count of the next result set 
+                int nextCount = total - (offset + count);
+                if (nextCount > 0) {
+                    kvp.put("startIndex", String.valueOf(offset > 0 ? offset + count : count));
+                    //kvp.put("count", String.valueOf(nextCount));
+                    kvp.put("count", String.valueOf(maxFeatures));
+                    result.setNext(buildURL(request.getBaseUrl(), "wfs", kvp, URLType.SERVICE));
+                }
+            }
+        }
+
         return result;
+    }
+
+    KvpMap buildKvpFromRequest(GetFeatureRequest request) {
+        
+        // FILTER_LANGUAGE
+        // RESOURCEID
+        // BBOX
+        // STOREDQUERY_ID
+        KvpMap kvp = new KvpMap();
+        
+        // SERVICE
+        // VERSION
+        // REQUEST
+        kvp.put("SERVICE", "WFS");
+        kvp.put("REQUEST", "GetFeature");
+        kvp.put("VERSION", request.getVersion());
+        
+        // OUTPUTFORMAT
+        // RESULTTYPE
+        kvp.put("OUTPUTFORMAT", request.getOutputFormat());
+        kvp.put("RESULTTYPE", request.isResultTypeHits() 
+            ? ResultTypeType.HITS.name() : ResultTypeType.RESULTS.name());
+
+        // TYPENAMES
+        // PROPERTYNAME
+        // ALIASES
+        // SRSNAME
+        // FILTER
+        // SORTBY
+        List<Query> queries = request.getQueries();
+        Query q = queries.get(0);
+        if (q.getSrsName() != null) {
+            kvp.put("SRSNAME", q.getSrsName().toString());
+        }
+
+        StringBuilder typeNames = new StringBuilder();
+        StringBuilder propertyName = !q.getPropertyNames().isEmpty() ? new StringBuilder() : null;
+        StringBuilder aliases = !q.getAliases().isEmpty() ? new StringBuilder() : null;
+        StringBuilder filter = q.getFilter() != null && q.getFilter() != Filter.INCLUDE ? 
+            new StringBuilder() : null;
+        
+        encodeQueryAsKvp(q, typeNames, propertyName, aliases, filter, true);
+        if (queries.size() > 1) {
+            for (int i = 1; i < queries.size(); i++) {
+                encodeQueryAsKvp(queries.get(i), typeNames, propertyName, aliases, filter, true);
+            }
+        }
+
+        kvp.put("TYPENAMES", typeNames.toString());
+        if (propertyName != null) {
+            kvp.put("PROPERTYNAME", propertyName.toString());
+        }
+        if (aliases != null) {
+            kvp.put("ALIASES", aliases.toString());
+        }
+        if (filter != null) {
+            kvp.put("FILTER", filter.toString());
+        }
+        return kvp;
+    }
+
+    void encodeQueryAsKvp(Query q, StringBuilder typeNames, StringBuilder propertyName, 
+        StringBuilder aliases, StringBuilder filter, boolean useDelim) {
+
+        //typenames
+        if (useDelim) {
+            typeNames.append("(");
+        }
+        for (QName qName : q.getTypeNames()) {
+            typeNames.append(qName.getPrefix()).append(":").append(qName.getLocalPart()).append(",");
+        }
+        typeNames.setLength(typeNames.length()-1);
+        if (useDelim) {
+            typeNames.append(")");
+        }
+
+        //propertynames
+        if (propertyName != null) {
+            if (useDelim) {
+                propertyName.append("(");
+            }
+            for (String pName : q.getPropertyNames()) {
+                propertyName.append(pName).append(",");
+            }
+            propertyName.setLength(propertyName.length()-1);
+            if (useDelim) {
+                propertyName.append(")");
+            }
+        }
+        
+        //aliases
+        if (aliases != null) {
+            if (useDelim) {
+                aliases.append("(");
+            }
+            for (String alias : q.getAliases()) {
+                aliases.append(alias).append(",");
+            }
+            aliases.setLength(aliases.length()-1);
+            if (useDelim) {
+                aliases.append(")");
+            }
+        }
+
+        //filter
+        if (filter != null) {
+            //TODO: check the length of the encoded filter and ensure it does not put us over the 
+            // edge of the limit for a GET request
+            Filter f = q.getFilter();
+
+            if (useDelim) {
+                filter.append("(");
+            }
+            try {
+                Encoder e = new Encoder(new FESConfiguration());
+                e.setOmitXMLDeclaration(true);
+                filter.append(e.encodeAsString(q.getFilter(), FES.Filter));
+            } 
+            catch (Exception e) {
+                throw new RuntimeException("Unable to encode filter " + f, e);
+            }
+            
+            if (useDelim) {
+                filter.append(")");
+            }
+        }
     }
 
     /**
