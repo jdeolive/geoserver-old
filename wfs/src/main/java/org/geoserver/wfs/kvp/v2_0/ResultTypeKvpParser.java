@@ -19,7 +19,7 @@ public class ResultTypeKvpParser extends KvpParser {
 
     @Override
     public Object parse(String value) throws Exception {
-        return ResultTypeType.get(value);
+        return ResultTypeType.get(value.toLowerCase());
     }
 
 }
