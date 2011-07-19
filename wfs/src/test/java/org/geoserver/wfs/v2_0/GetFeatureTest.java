@@ -266,6 +266,27 @@ public class GetFeatureTest extends WFS20TestSupport {
         assertEquals(1, features.getLength());
     }
 
+    public void testPostWithFunctionFilter() throws Exception {
+        String xml = 
+            "<wfs:GetFeature service='WFS' version='2.0.0'  outputFormat='text/xml; subtype=gml/3.2' "
+            + "xmlns:sf='http://cite.opengeospatial.org/gmlsf' "
+            + "xmlns:wfs='" + WFS.NAMESPACE + "' xmlns:fes='" + FES.NAMESPACE + "' "
+            + "xmlns:gml='" + GML.NAMESPACE + "'>"
+            + "<wfs:Query typeNames=\"sf:PrimitiveGeoFeature\">"
+            + "<fes:Filter>"
+             + "<fes:PropertyIsLessThan>"
+              + "<fes:Function name='random'>"
+              + "</fes:Function>"
+              + "<fes:Literal>0.5</fes:Literal>"
+             + "</fes:PropertyIsLessThan>"
+            + "</fes:Filter>"
+            + "</wfs:Query>"
+            + "</wfs:GetFeature>";
+        
+        Document doc = postAsDOM("wfs", xml);
+        assertGML32(doc);
+    }
+
     public void testResultTypeHitsGet() throws Exception {
         Document doc = getAsDOM("wfs?request=GetFeature&typename=cdf:Fifteen&version=2.0.0&resultType=hits&service=wfs");
         print(doc);
@@ -465,6 +486,11 @@ public class GetFeatureTest extends WFS20TestSupport {
     public void testGML32OutputFormat() throws Exception {
         testGetFifteenAll(
             "wfs?request=getfeature&typename=cdf:Fifteen&version=2.0.0&service=wfs&outputFormat=gml32");
+    }
+    
+    public void testGML32OutputFormatAlternate() throws Exception {
+        testGetFifteenAll(
+                "wfs?request=getfeature&typename=cdf:Fifteen&version=2.0.0&service=wfs&outputFormat=application/gml%2Bxml; version%3D3.2");
     }
 
     public void testGMLAttributeMapping() throws Exception {
