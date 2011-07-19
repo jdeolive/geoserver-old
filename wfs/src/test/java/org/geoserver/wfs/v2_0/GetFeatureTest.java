@@ -106,6 +106,26 @@ public class GetFeatureTest extends WFS20TestSupport {
                 "//wfs:FeatureCollection/wfs:member/cite:NamedPlaces/@gml:id", doc);
     }
 
+    public void testGetWithResourceId() throws Exception {
+        Document doc = 
+                getAsDOM("wfs?request=GetFeature&typeName=cdf:Fifteen&version=2.0.0&service=wfs&resourceid=Fifteen.2");
+        assertGML32(doc);
+        
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//wfs:FeatureCollection/wfs:member/cdf:Fifteen)",
+                doc);
+        XMLAssert.assertXpathEvaluatesTo("Fifteen.2",
+                "//wfs:FeatureCollection/wfs:member/cdf:Fifteen/@gml:id", doc);
+
+        doc = getAsDOM("wfs?request=GetFeature&typeName=cite:NamedPlaces&version=2.0.0&service=wfs&resourceid=NamedPlaces.1107531895891");
+
+        //super.print(doc);
+        assertEquals("wfs:FeatureCollection", doc.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//wfs:FeatureCollection/wfs:member/cite:NamedPlaces)",
+                doc);
+        XMLAssert.assertXpathEvaluatesTo("NamedPlaces.1107531895891",
+                "//wfs:FeatureCollection/wfs:member/cite:NamedPlaces/@gml:id", doc);
+    }
+
     public void testGetWithBBOX() throws Exception {
         Document dom = 
             getAsDOM("wfs?request=GetFeature&version=2.0.0&typeName=sf:PrimitiveGeoFeature&BBOX=57.0,-4.5,62.0,1.0,EPSG:4326");

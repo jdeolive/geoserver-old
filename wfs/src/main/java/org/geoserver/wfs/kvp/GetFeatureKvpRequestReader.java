@@ -82,7 +82,7 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
         EObject eObject = (EObject) request;
 
         // make sure the filter is specified in just one way
-        ensureMutuallyExclusive(kvp, new String[] { "featureId", "filter", "bbox", "cql_filter" }, eObject);
+        ensureMutuallyExclusive(kvp, new String[] { "featureId", "resourceId", "filter", "bbox", "cql_filter" }, eObject);
 
         //outputFormat
         if (!EMFUtils.isSet(eObject, "outputFormat")) {
@@ -146,10 +146,12 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             querySet(eObject, "typeName", list);
         } else {
             //check for featureId and infer typeName
-            if (kvp.containsKey("featureId")) {
+            // in WFS 2.0 it is resourceId
+            if (kvp.containsKey("featureId") || kvp.containsKey("resourceId")) {
                 //use featureId to infer type Names
                 List featureId = (List) kvp.get("featureId");
-
+                featureId = featureId != null ? featureId : (List) kvp.get("resourceId");
+                
                 ArrayList typeNames = new ArrayList();
 
                 QNameKvpParser parser = new QNameKvpParser("typeName", catalog);
@@ -193,9 +195,10 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             querySet(eObject, "filter", (List) kvp.get("filter"));
         } else if (kvp.containsKey("cql_filter")) {
             querySet(eObject, "filter", (List) kvp.get("cql_filter"));
-        } else if (kvp.containsKey("featureId")) {
+        } else if (kvp.containsKey("featureId") || kvp.containsKey("resourceId")) {
             //set filter from featureId
             List featureIdList = (List) kvp.get("featureId");
+            featureIdList = featureIdList != null ? featureIdList : (List) kvp.get("resourceId"); 
             Set ids = new HashSet();
 
             for (Iterator i = featureIdList.iterator(); i.hasNext();) {
