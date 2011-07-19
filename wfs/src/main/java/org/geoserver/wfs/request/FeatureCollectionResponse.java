@@ -49,6 +49,12 @@ public abstract class FeatureCollectionResponse extends RequestObject {
     
     public abstract BigInteger getTotalNumberOfFeatures();
     public abstract void setTotalNumberOfFeatures(BigInteger n);
+
+    public abstract void setPrevious(String previous);
+    public abstract String getPrevious();
+
+    public abstract void setNext(String next);
+    public abstract String getNext();
     
     public abstract List<FeatureCollection> getFeatures();
     
@@ -80,7 +86,29 @@ public abstract class FeatureCollectionResponse extends RequestObject {
         public void setTotalNumberOfFeatures(BigInteger n) {
             //noop
         }
-        
+
+        @Override
+        public String getPrevious() {
+            //noop
+            return null;
+        }
+
+        @Override
+        public void setPrevious(String previous) {
+            //noop
+        }
+
+        @Override
+        public String getNext() {
+            //noop
+            return null;
+        }
+
+        @Override
+        public void setNext(String next) {
+            //noop
+        }
+
         @Override
         public List<FeatureCollection> getFeatures() {
             return eGet(adaptee, "feature", List.class);
@@ -110,7 +138,27 @@ public abstract class FeatureCollectionResponse extends RequestObject {
         public void setTotalNumberOfFeatures(BigInteger n) {
             eSet(adaptee, "numberMatched", n);
         }
-        
+
+        @Override
+        public String getPrevious() {
+            return eGet(adaptee, "previous", String.class);
+        }
+
+        @Override
+        public void setPrevious(String previous) {
+            eSet(adaptee, "previous", previous);
+        }
+
+        @Override
+        public String getNext() {
+            return eGet(adaptee, "next", String.class);
+        }
+
+        @Override
+        public void setNext(String next) {
+            eSet(adaptee, "next", next);
+        }
+
         @Override
         public List<FeatureCollection> getFeatures() {
             return eGet(adaptee, "member", List.class);
