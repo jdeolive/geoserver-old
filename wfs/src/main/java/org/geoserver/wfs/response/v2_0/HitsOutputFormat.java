@@ -6,6 +6,7 @@ package org.geoserver.wfs.response.v2_0;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 
 import net.opengis.wfs.FeatureCollectionType;
@@ -44,7 +45,8 @@ public class HitsOutputFormat extends org.geoserver.wfs.response.HitsOutputForma
         
         net.opengis.wfs20.FeatureCollectionType fc = 
             Wfs20Factory.eINSTANCE.createFeatureCollectionType();
-        fc.setNumberReturned(hits.getNumberOfFeatures());
+        fc.setNumberMatched(hits.getNumberOfFeatures());
+        fc.setNumberReturned(BigInteger.valueOf(0));
         fc.setTimeStamp(hits.getTimeStamp());
         
         e.encode(fc, WFS.FeatureCollection, output);
