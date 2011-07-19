@@ -205,14 +205,14 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
         return atts;
     }
 
-    Map.Entry parameter(final String name, final String[] values) {
+    Map.Entry parameter(final String name, final Object value) {
         return new Map.Entry() {
                 public Object getKey() {
                     return name;
                 }
 
                 public Object getValue() {
-                    return values;
+                    return value;
                 }
 
                 public Object setValue(Object value) {
@@ -1758,7 +1758,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 end("ows:OperationsMetadata");
             }
             
-            void operation(String name, Map.Entry[] parameters, boolean get, boolean post) {
+            void operation(String name, Map.Entry[] parameters, Map.Entry[] constraints, boolean get, boolean post) {
                 start("ows:Operation", attributes(new String[] { "name", name }));
 
                 String serviceURL = buildURL(request.getBaseUrl(), "wfs", null, URLType.SERVICE);
@@ -1781,7 +1781,17 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                     end("ows:Parameter");
                 }
                 
+                //constraints
+                for (int i = 0; constraints != null && i < constraints.length; i++) {
+                    String cname = (String) constraints[i].getKey();
+                    
+                    constraint(cname, constraints[i].getValue());
+                }
                 end("ows:Operation");
+            }
+            
+            void operation(String name, Map.Entry[] parameters, boolean get, boolean post) {
+                operation(name, parameters, null, get, post);
             }
             
             /**
@@ -1815,12 +1825,14 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                     parameter("resultType", new String[] { "results", "hits" }),
                     parameter("outputFormat", oflist)
                 };
-                    
-//                Map.Entry[] constraints = new Map.Entry[] {
-//                    parameter("LocalTraverseXLinkScope", new String[]{ "2" } )
-//                };
-                
-                operation("GetFeature", parameters, true, true);
+                operation("GetFeature", parameters, getFeatureConstraints(), true, true);
+            }
+
+            Map.Entry[] getFeatureConstraints() {
+                return new Map.Entry[] {
+                    parameter("PagingIsTransactionSafe", false), 
+                    parameter("CountDefault", wfs.getMaxFeatures())
+                };
             }
             
             /**
@@ -1833,7 +1845,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                     parameter("outputFormat", oflist)
                 };
     
-                operation("GetFeatureWithLock", parameters, true, true);
+                operation("GetFeatureWithLock", parameters, getFeatureConstraints(), true, true);
             }
 
             /**
@@ -1908,17 +1920,30 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 
                 //capacity constraints
                 constraint("PagingIsTransactionSafe", false);
-                constraint("QueryExpressions", "wfs:Query", "wfs:StoredQuery");
+                constraint("QueryExpressions", new String[]{"wfs:Query", "wfs:StoredQuery"});
             }
 
+            void constraint(String name, Object value) {
+                if (value instanceof Boolean) {
+                    constraint(name, ((Boolean)value).booleanValue());
+                }
+                else {
+                    constraint(name, (String) value.toString());
+                }
+            }
+            
             void constraint(String name, boolean value) {
+                constraint(name, String.valueOf(value).toUpperCase());
+            }
+            
+            void constraint(String name, String value) {
                 start("ows:Constraint", attributes(new String[]{"name", name}));
                   element("ows:NoValues", null);
-                  element("ows:DefaultValue", String.valueOf(value).toUpperCase());
+                  element("ows:DefaultValue", value);
                 end("ows:Constraint");
             }
 
-            void constraint(String name, String... values) {
+            void constraint(String name, String[] values) {
                 start("ows:Constraint", attributes(new String[]{"name", name}));
                 start("ows:AllowedValues");
                 for (String v : values) {
