@@ -103,7 +103,7 @@ public class StoredQueryProvider {
      */
     public void removeStoredQuery(StoredQuery query) {
         try {
-            File f = new File(storedQueryDir(), query.getName()+".xml");
+            File f = new File(storedQueryDir(), toFilename(query.getName()));
             if (f.exists()) {
                 f.delete();
             }
@@ -127,7 +127,7 @@ public class StoredQueryProvider {
 
         try {
             File dir = storedQueryDir();
-            File f = new File(dir, name + ".xml");
+            File f = new File(dir, toFilename(name));
             
             if (!f.exists()) {
                 return null;
@@ -148,7 +148,7 @@ public class StoredQueryProvider {
     public void putStoredQuery(StoredQuery query) {
         try {
             File dir = storedQueryDir();
-            File f = new File(dir, query.getName()+".xml");
+            File f = new File(dir, toFilename(query.getName()) );
             if (f.exists()) {
                 //TODO: back up the old file in case there is an error during encoding
             }
@@ -169,8 +169,16 @@ public class StoredQueryProvider {
         }
     }
     
+    String toFilename(String name) {
+        //remove any special characters... like ':'
+        return name.replaceAll("\\W", "") +".xml";
+    }
+
     File storedQueryDir() throws IOException {
-        return loader.findOrCreateDirectory("wfs", "query");
+        File dir = loader.find("wfs", "query");
+        if (dir != null) return dir;
+        
+        return loader.findOrCreateDirectory("wfs", "stored_queries");
     }
     
     StoredQuery parseStoredQuery(File file) throws Exception {
