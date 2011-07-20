@@ -1954,6 +1954,10 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
             }
 
             void featureTypeList() {
+                if (catalog.getFeatureTypes().isEmpty()) {
+                    return;
+                }
+                
                 start("FeatureTypeList");
                 
                 //TODO: namespace filtering
