@@ -1889,7 +1889,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
              * Encodes the CreateStoredQuery ows:Operation element.
              */
             void createStoredQuery() {
-                operation("CreateStoredQuery", null, true, true);
+                operation("CreateStoredQuery", null, false, true);
             }
 
             /**
