@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.geoserver.catalog.Catalog;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geotools.util.logging.Logging;
 import org.geotools.wfs.v2_0.WFS;
@@ -40,11 +41,15 @@ public class StoredQueryProvider {
     /** logger */
     static Logger LOGGER = Logging.getLogger(StoredQueryProvider.class);
     
+    /** catalog */
+    Catalog catalog;
+    
     /** file system access */
     GeoServerResourceLoader loader;
     
-    public StoredQueryProvider(GeoServerResourceLoader loader) {
-        this.loader = loader;
+    public StoredQueryProvider(Catalog catalog) {
+        this.catalog = catalog;
+        this.loader = catalog.getResourceLoader();
     }
 
     /**
@@ -91,8 +96,20 @@ public class StoredQueryProvider {
      * @param def The stored query definition.
      */
     public StoredQuery createStoredQuery(StoredQueryDescriptionType query) {
-        StoredQuery sq = new StoredQuery(query);
-        putStoredQuery(sq);
+        return createStoredQuery(query, true);
+    }
+    
+    /**
+     * Creates a new stored query specifying whether to persist the query to disk or not.
+     * 
+     * @param def The stored query definition.
+     * @param store Whether to persist the query or not.
+     */
+    public StoredQuery createStoredQuery(StoredQueryDescriptionType query, boolean store) {
+        StoredQuery sq = new StoredQuery(query, catalog);
+        if (store) {
+            putStoredQuery(sq);
+        }
         return sq;
     }
 

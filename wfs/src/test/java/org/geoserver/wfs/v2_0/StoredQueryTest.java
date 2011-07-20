@@ -34,7 +34,7 @@ public class StoredQueryTest extends WFS20TestSupport {
         "           returnFeatureTypes='sf:PrimitiveGeoFeature' " + 
         "           language='urn:ogc:def:queryLanguage:OGC-WFS::WFS_QueryExpression' " + 
         "           isPrivate='false'> " + 
-        "         <wfs:Query typeNames='myns:Parks'> " + 
+        "         <wfs:Query typeNames='sf:PrimitiveGeoFeature'> " + 
         "            <fes:Filter> " + 
         "               <fes:Within> " + 
         "                  <fes:ValueReference>pointProperty</fes:ValueReference> " + 
@@ -54,6 +54,45 @@ public class StoredQueryTest extends WFS20TestSupport {
         XMLAssert.assertXpathEvaluatesTo("2", "count(//wfs:StoredQuery)", dom);
         XMLAssert.assertXpathExists("//wfs:StoredQuery[@id = 'myStoredQuery']", dom);
         XMLAssert.assertXpathExists("//wfs:ReturnFeatureType[text() = 'sf:PrimitiveGeoFeature']", dom);
+    }
+    
+    public void testCreateStoredQueryMismatchingTypes() throws Exception {
+        String xml = 
+            "<wfs:ListStoredQueries service='WFS' version='2.0.0' " +
+            " xmlns:wfs='" + WFS.NAMESPACE + "'/>";
+        Document dom = postAsDOM("wfs", xml);
+        assertEquals("wfs:ListStoredQueriesResponse", dom.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//wfs:StoredQuery)", dom);
+        
+        xml = 
+        "<wfs:CreateStoredQuery service='WFS' version='2.0.0' " +
+        "   xmlns:wfs='http://www.opengis.net/wfs/2.0' " + 
+        "   xmlns:fes='http://www.opengis.org/fes/2.0' " + 
+        "   xmlns:gml='http://www.opengis.net/gml/3.2' " + 
+        "   xmlns:sf='" + MockData.SF_URI + "'>" + 
+        "   <wfs:StoredQueryDefinition id='myStoredQuery'> " + 
+        "      <wfs:Parameter name='AreaOfInterest' type='gml:Polygon'/> " + 
+        "      <wfs:QueryExpressionText " + 
+        "           returnFeatureTypes='sf:PrimitiveGeoFeature' " + 
+        "           language='urn:ogc:def:queryLanguage:OGC-WFS::WFS_QueryExpression' " + 
+        "           isPrivate='false'> " + 
+        "         <wfs:Query typeNames='sf:AggregateGeoFeature'> " + 
+        "            <fes:Filter> " + 
+        "               <fes:Within> " + 
+        "                  <fes:ValueReference>pointProperty</fes:ValueReference> " + 
+        "                  ${AreaOfInterest} " + 
+        "               </fes:Within> " + 
+        "            </fes:Filter> " + 
+        "         </wfs:Query> " + 
+        "      </wfs:QueryExpressionText> " + 
+        "   </wfs:StoredQueryDefinition> " + 
+        "</wfs:CreateStoredQuery>"; 
+        
+        dom = postAsDOM("wfs", xml);
+        assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
+        
+        dom = getAsDOM("wfs?request=ListStoredQueries");
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//wfs:StoredQuery)", dom);
     }
     
     public void testDescribeStoredQueries() throws Exception {

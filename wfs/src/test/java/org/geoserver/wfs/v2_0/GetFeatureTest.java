@@ -323,7 +323,7 @@ public class GetFeatureTest extends WFS20TestSupport {
         assertEquals(0, features.getLength());
 
         assertEquals("15", doc.getDocumentElement().getAttribute(
-                "numberReturned"));
+                "numberMatched"));
     }
 
     public void testResultTypeHitsPost() throws Exception {
@@ -340,7 +340,7 @@ public class GetFeatureTest extends WFS20TestSupport {
         assertEquals(0, features.getLength());
 
         assertEquals("7", doc.getDocumentElement().getAttribute(
-                "numberReturned"));
+                "numberMatched"));
     }
 
     public void testResultTypeHitsNumReturnedMatched() throws Exception {
@@ -555,7 +555,7 @@ public class GetFeatureTest extends WFS20TestSupport {
                 "   <wfs:StoredQueryDefinition id='myStoredQuery'> " + 
                 "      <wfs:Parameter name='integers' type='xs:integer'/> " + 
                 "      <wfs:QueryExpressionText " + 
-                "           returnFeatureTypes='sf:PrimitiveGeoFeature' " + 
+                "           returnFeatureTypes='cdf:Other' " + 
                 "           language='urn:ogc:def:queryLanguage:OGC-WFS::WFS_QueryExpression' " + 
                 "           isPrivate='false'> "
                     + "<wfs:Query typeNames=\"cdf:Other\"> " 
