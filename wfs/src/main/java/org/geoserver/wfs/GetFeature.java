@@ -872,7 +872,7 @@ public class GetFeature {
                 target = CRS.decode(srsName.toString());
             } catch (Exception e) {
                 String msg = "Unable to support srsName: " + srsName;
-                throw new WFSException(request, msg, e);
+                throw new WFSException(request, msg, e, "InvalidParameterValue").locator("srsName");
             }
         } else {
             target = declaredCRS;
