@@ -1713,7 +1713,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                     "xsi:schemaLocation", WFS20_URI + " " +
                         (wfs.isCanonicalSchemaLocation()?
                                 org.geoserver.wfs.xml.v1_1_0.WFS.CANONICAL_SCHEMA_LOCATION:
-                                    (buildSchemaURL(request.getBaseUrl(), "wfs/2.0.0/wfs.xsd")))
+                                    (buildSchemaURL(request.getBaseUrl(), "wfs/2.0/wfs.xsd")))
                 });
 
                 registerNamespaces(attributes);
