@@ -20,9 +20,14 @@ import org.geotools.data.DataStore;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.FeatureIterator;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.filter.v2_0.FESConfiguration;
 import org.geotools.xml.Parser;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
@@ -54,10 +59,12 @@ public class GetFeaturePagingTest extends WFS20TestSupport {
         SimpleFeatureTypeBuilder tb = new SimpleFeatureTypeBuilder();
         
         tb.init((SimpleFeatureType) fs1.getSchema());
+        tb.add("num", Integer.class);
         tb.remove("boundedBy");
         store.createSchema(tb.buildFeatureType());
         
         tb.init((SimpleFeatureType) fs2.getSchema());
+        tb.add("num", Integer.class);
         tb.remove("boundedBy");
         store.createSchema(tb.buildFeatureType());
         
@@ -65,16 +72,40 @@ public class GetFeaturePagingTest extends WFS20TestSupport {
         cb.setStore(ds);
         
         FeatureStore fs = (FeatureStore) store.getFeatureSource("Fifteen");
-        fs.addFeatures(fs1.getFeatures());
+        addFeatures(fs, fs1.getFeatures());
+        
         FeatureTypeInfo ft = cb.buildFeatureType(fs);
         cat.add(ft);
         
         fs = (FeatureStore) store.getFeatureSource("Seven");
-        fs.addFeatures(fs2.getFeatures());
+        addFeatures(fs, fs2.getFeatures());
+        
         ft = cb.buildFeatureType(fs);
         cat.add(ft);
     }
 
+    void addFeatures(FeatureStore fs, FeatureCollection features) throws Exception {
+        SimpleFeatureBuilder b = new SimpleFeatureBuilder((SimpleFeatureType) fs.getSchema());
+        
+        DefaultFeatureCollection toAdd = new DefaultFeatureCollection(null, null);
+        FeatureIterator it = features.features();
+        try {
+            SimpleFeature f = null;
+            int i = 0;
+            while(it.hasNext()) {
+                f = (SimpleFeature) it.next();
+                b.init(f);
+                b.add(f.getAttribute("pointProperty"));
+                b.add(i++);
+                toAdd.add(b.buildFeature(null));
+            }
+        }
+        finally {
+            it.close();
+        }
+        fs.addFeatures(toAdd);
+    }
+    
     public void testSingleType() throws Exception {
         doTestSingleType("gs:Fifteen");
         doTestSingleType("cdf:Fifteen");
@@ -430,5 +461,13 @@ public class GetFeaturePagingTest extends WFS20TestSupport {
             map.put(kvp.split("=")[0], kvp.split("=")[1]);
         }
         return map;
+    }
+    
+    public void testSortingGET() throws Exception {
+        Document dom = getAsDOM("wfs?service=WFS&version=2.0.0&request=GetFeature&typeName=gs:Fifteen&sortBy=num ASC&count=1");
+        XMLAssert.assertXpathExists("//gs:Fifteen/gs:num[text() = '0']", dom);
+        
+        dom = getAsDOM("wfs?service=WFS&version=2.0.0&request=GetFeature&typeName=gs:Fifteen&sortBy=num DESC&count=1");
+        XMLAssert.assertXpathExists("//gs:Fifteen/gs:num[text() = '14']", dom);
     }
 }
