@@ -51,12 +51,24 @@ public class CreateStoredQuery {
         if (sq.getQueryExpressionText().isEmpty()) {
             throw new WFSException(request, "Stored query does not specify any queries");
         }
+
+        //check for multiple languages
         String language = sq.getQueryExpressionText().get(0).getLanguage();
         for (int i = 1; i < sq.getQueryExpressionText().size(); i++) {
             if (!language.equals(sq.getQueryExpressionText().get(i).getLanguage())) {
                 throw new WFSException(request, "Stored query specifies queries with multiple languages. " +
                     "Not supported");
             }
+        }
+
+        try {
+            storedQueryProvider.createStoredQuery(sq, false).validate();
+        }
+        catch(WFSException e) {
+            throw new WFSException(request, e.getMessage(), e, e.getCode());
+        }
+        catch(Exception e) {
+            throw new WFSException(request, "Error validating stored query", e);
         }
     }
 }
