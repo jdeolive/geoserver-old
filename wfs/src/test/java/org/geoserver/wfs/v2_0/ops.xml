@@ -1,0 +1,3 @@
+<ops>
+  <op name="Op" namespace="http://foo.org" schema="Op.xsd" template="Op.ftl"/>
+</ops>

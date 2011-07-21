@@ -73,6 +73,20 @@ public class GeoServerDataDirectory {
     public File root() {
         return resourceLoader.getBaseDirectory();
     }
+
+    /**
+     * Returns a directory under the {@link #root()} directory, if the directory does not exist 
+     * it will be created.
+     */
+    public File findOrCreateDir(String... location) throws IOException {
+        return dir(true, location);
+    }
+    
+    protected File dir( boolean create, String... location ) throws IOException {
+        return create ? 
+            resourceLoader.findOrCreateDirectory(location) : resourceLoader.find(location);
+    }
+
     
     /**
      * Returns the root of the directory which contains spatial data files, if the directory does
