@@ -1,5 +1,6 @@
 package org.geoserver.wfs.v2_0;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +22,8 @@ import org.geotools.xml.Parser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class GetCapabilitiesTest extends WFS20TestSupport {
     
@@ -202,5 +205,27 @@ public class GetCapabilitiesTest extends WFS20TestSupport {
         //assertEquals(7, xpath.getMatchingNodes("//ows:Post[contains(@xlink:href,'sf/PrimitiveGeoFeature/wfs')]", doc).getLength());
         
         //TODO: test with a non existing workspace
+    }
+    
+    public void testSOAP() throws Exception {
+        String xml = 
+           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+                " <soap:Header/> " + 
+                " <soap:Body>" +
+                "<GetCapabilities service=\"WFS\" "
+                + " xmlns=\"http://www.opengis.net/wfs/2.0\" "
+                + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                + " xsi:schemaLocation=\"http://www.opengis.net/wfs/2.0 "
+                + " http://schemas.opengis.net/wfs/2.0/wfs.xsd\"/>" + 
+                " </soap:Body> " + 
+            "</soap:Envelope> "; 
+
+        MockHttpServletResponse resp = postAsServletResponse("wfs", xml, "application/soap+xml");
+        assertEquals("application/soap+xml", resp.getContentType());
+        
+        Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
+        
+        assertEquals("soap:Envelope", dom.getDocumentElement().getNodeName());
+        assertEquals(1, dom.getElementsByTagName("wfs:WFS_Capabilities").getLength());
     }
 }

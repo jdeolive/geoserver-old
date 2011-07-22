@@ -1,5 +1,6 @@
 package org.geoserver.wfs.v2_0;
 
+import java.io.ByteArrayInputStream;
 import java.net.URLEncoder;
 
 import javax.xml.namespace.QName;
@@ -17,6 +18,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class DescribeFeatureTypeTest extends WFS20TestSupport {
 
@@ -254,5 +257,27 @@ public class DescribeFeatureTypeTest extends WFS20TestSupport {
         assertSchema(dom, MockData.PRIMITIVEGEOFEATURE);
         XMLAssert.assertXpathExists("//xsd:element[@name = 'name']", dom);
         XMLAssert.assertXpathExists("//xsd:element[@name = 'description']", dom);
+    }
+
+    public void testSOAP() throws Exception {
+        String xml = 
+           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+                " <soap:Header/> " + 
+                " <soap:Body>"
+                + "<wfs:DescribeFeatureType service='WFS' version='2.0.0' "
+                + "xmlns:wfs='http://www.opengis.net/wfs/2.0' " 
+                + "xmlns:sf='" + MockData.PRIMITIVEGEOFEATURE.getNamespaceURI() + "'>" 
+                + " <wfs:TypeName>" + getLayerId(MockData.PRIMITIVEGEOFEATURE) + "</wfs:TypeName>"
+                + "</wfs:DescribeFeatureType>" + 
+                " </soap:Body> " + 
+            "</soap:Envelope> "; 
+              
+        MockHttpServletResponse resp = postAsServletResponse("wfs", xml, "application/soap+xml");
+        assertEquals("application/soap+xml", resp.getContentType());
+        
+        Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
+        
+        assertEquals("soap:Envelope", dom.getDocumentElement().getNodeName());
+        assertEquals(1, dom.getElementsByTagName("xsd:schema").getLength());
     }
 }

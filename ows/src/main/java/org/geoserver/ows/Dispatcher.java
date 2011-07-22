@@ -6,6 +6,8 @@ package org.geoserver.ows;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,6 +33,15 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.eclipse.emf.ecore.EObject;
 import org.geoserver.ows.util.EncodingInfo;
@@ -50,6 +61,10 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.AbstractController;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -134,7 +149,27 @@ public class Dispatcher extends AbstractController {
      * list of callbacks 
      */
     List<DispatcherCallback> callbacks = Collections.EMPTY_LIST;
+
+    /** SOAP namespace */
+    static final String SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/";
     
+    /** SOAP mime type */
+    static final String SOAP_MIME = "application/soap+xml";
+
+    /**
+     * document builder, used to parse SOAP requests
+     */
+    DocumentBuilder db;
+    {
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            db = dbf.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Sets the flag to control wether the dispatcher is cite compliante.
      * <p>
@@ -230,6 +265,12 @@ public class Dispatcher extends AbstractController {
             //dispatch the operation
             Operation operation = dispatch(request, service);
 
+            if (request.isSOAP()) {
+                //let the request object know that this is a SOAP request, since it effects
+                // often how the request will be encoded
+                flagAsSOAP(operation);
+            }
+
             //execute it
             Object result = execute(request, operation);
 
@@ -250,6 +291,20 @@ public class Dispatcher extends AbstractController {
         return null;
     }
 
+    void flagAsSOAP(Operation op) {
+        for (Object reqObj : op.getParameters()) {
+            if (OwsUtils.has(reqObj, "formatOptions")) {
+                OwsUtils.put(reqObj, "formatOptions", "SOAP", true);
+            }
+            if (OwsUtils.has(reqObj, "extendedProperties")) {
+                OwsUtils.put(reqObj, "extendedProperties", "SOAP", true);
+            }
+            if (OwsUtils.has(reqObj, "metadata")) {
+                OwsUtils.put(reqObj, "metadata", "SOAP", true);
+            }
+        }
+    }
+
     void fireFinishedCallback(Request req) {
         for ( DispatcherCallback cb : callbacks ) {
             cb.finished( req );
@@ -267,8 +322,17 @@ public class Dispatcher extends AbstractController {
         parseKVP(request);
         
         if ( !request.isGet() ) { // && httpRequest.getInputStream().available() > 0) {
-            //wrap the input stream in a buffered input stream
-            request.setInput(reader(httpRequest));
+            //check for a SOAP request, if so we need to unwrap the SOAP stuff
+            if (httpRequest.getContentType() != null && 
+                httpRequest.getContentType().startsWith(SOAP_MIME)) {
+                request.setSOAP(true);
+                request.setInput(soapReader(httpRequest));
+            }
+            else {
+                //regular XML POST
+                //wrap the input stream in a buffered input stream
+                request.setInput(reader(httpRequest));
+            }
 
             char[] req = new char[xmlPostRequestLogBufferSize];
             int read = request.getInput().read(req, 0, xmlPostRequestLogBufferSize);
@@ -330,7 +394,51 @@ public class Dispatcher extends AbstractController {
         }
         return req;
     }
-    
+
+    BufferedReader soapReader(HttpServletRequest httpRequest) throws IOException {
+        //in order to pull out the payload we have to parse the entire request and then reencode it
+        // not nice... but then again neither is using SOAP
+        Document dom = null;
+        try {
+            dom = db.parse(httpRequest.getInputStream());
+            
+        } catch (SAXException e) {
+            throw new IOException("Error parsing SOAP request", e);
+        }
+
+        //find the soap:Body element
+        NodeList list = dom.getElementsByTagNameNS(SOAP_NS, "Body");
+        if (list.getLength() != 1) {
+            throw new IOException("SOAP requests should specify a single Body element");
+        }
+        Element body = (Element) list.item(0);
+
+        //pull out the first element child
+        Element payload = null;
+        for (int i = 0; payload == null && i < body.getChildNodes().getLength(); i++) {
+            Node n = body.getChildNodes().item(i);
+            if (n instanceof Element) {
+                payload = (Element) n;
+            }
+        }
+
+        if (payload == null) {
+            throw new IOException("Could not find payload in SOAP request");
+        }
+
+        //transform the payload back into an input stream so we can parse it as usual
+        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+        try {
+            TransformerFactory.newInstance().newTransformer().transform(
+                new DOMSource(payload), new StreamResult(bout));
+        } catch (Exception e) {
+            throw new IOException("Error encoding payload of SOAP request", e);
+        }
+
+        return RequestUtils.getBufferedXMLReader(
+            new ByteArrayInputStream(bout.toByteArray()), XML_LOOKAHEAD);
+    }
+
     BufferedReader reader(HttpServletRequest httpRequest) throws IOException {
        return RequestUtils.getBufferedXMLReader(httpRequest.getInputStream(), XML_LOOKAHEAD);
     }
@@ -767,7 +875,15 @@ public class Dispatcher extends AbstractController {
             }
 
             //set the mime type
-            req.getHttpResponse().setContentType(response.getMimeType(result, opDescriptor));
+            String mimeType = response.getMimeType(result, opDescriptor);
+
+            //check for SOAP request
+            if (req.isSOAP()) {
+                req.getHttpResponse().setContentType(SOAP_MIME);
+            }
+            else {
+                req.getHttpResponse().setContentType(mimeType);
+            }
 
             setHeaders(req,opDescriptor,result,response);
             
@@ -830,7 +946,41 @@ public class Dispatcher extends AbstractController {
                 // override any existing header
                 req.getHttpResponse().setHeader("Content-Disposition", disp);
             }
+            
+            OutputStream output = outputStrategy.getDestination(req.getHttpResponse());
+            
+            if (req.isSOAP()) {
+                //SOAP request, start the SOAP wrapper
+                startSOAPEnvelope(output);
+            }
+
+            // actually write out the response
+            response.write(result, output, opDescriptor);
+
+            if (req.isSOAP()) {
+                //SOAP request, start the SOAP wrapper
+                endSOAPEnvelope(output);
+            }
+
+            // flush the output with detection of client shutting the door in our face
+            try {
+                outputStrategy.flush(req.getHttpResponse());
+            } catch(IOException e) {
+                throw new ClientStreamAbortedException(e);
+            }
+
+            //flush the underlying out stream for good meaure
+            req.getHttpResponse().getOutputStream().flush();
         }
+    }
+
+    void startSOAPEnvelope(OutputStream output) throws IOException {
+        output.write(
+            ("<soap:Envelope xmlns:soap='" + SOAP_NS + "'><soap:Header/><soap:Body>").getBytes());
+    }
+
+    void endSOAPEnvelope(OutputStream output) throws IOException {
+        output.write(("</soap:Body></soap:Envelope>").getBytes());
     }
 
     Response fireResponseDispatchedCallback(Request req, Operation op, Object result, Response response ) {
@@ -1434,6 +1584,14 @@ public class Dispatcher extends AbstractController {
         if (handler == null) {
             //none found, fall back on default
             handler = new DefaultServiceExceptionHandler();
+        }
+
+        //if SOAP request use special SOAP exception handler, but only for OWS requests because
+        // there could be other service exception handlers (like WMS for instance) that do not 
+        // output XML
+        if (request.isSOAP() && handler instanceof OWS10ServiceExceptionHandler || 
+                handler instanceof OWS11ServiceExceptionHandler) {
+            handler = new SOAPServiceExceptionHandler(handler);
         }
 
         handler.handleServiceException(se, request);

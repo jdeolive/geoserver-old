@@ -1,10 +1,14 @@
 package org.geoserver.wfs.v2_0;
 
+import java.io.ByteArrayInputStream;
+
 import org.custommonkey.xmlunit.XMLAssert;
 import org.geoserver.data.test.MockData;
 import org.geoserver.wfs.StoredQuery;
 import org.geotools.wfs.v2_0.WFS;
 import org.w3c.dom.Document;
+
+import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class StoredQueryTest extends WFS20TestSupport {
 
@@ -161,4 +165,105 @@ public class StoredQueryTest extends WFS20TestSupport {
         dom = getAsDOM("wfs?request=DropStoredQuery&storedQuery_id=myStoredQuery");
         assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
     }
+
+    public void testCreateStoredQuerySOAP() throws Exception {
+        String xml = 
+           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+                " <soap:Header/> " + 
+                " <soap:Body>" + 
+                "<wfs:CreateStoredQuery service='WFS' version='2.0.0' " +
+                "   xmlns:wfs='http://www.opengis.net/wfs/2.0' " + 
+                "   xmlns:fes='http://www.opengis.org/fes/2.0' " + 
+                "   xmlns:gml='http://www.opengis.net/gml/3.2' " + 
+                "   xmlns:myns='http://www.someserver.com/myns' " + 
+                "   xmlns:sf='" + MockData.SF_URI + "'>" + 
+                "   <wfs:StoredQueryDefinition id='myStoredQuery'> " + 
+                "      <wfs:Parameter name='AreaOfInterest' type='gml:Polygon'/> " + 
+                "      <wfs:QueryExpressionText " + 
+                "           returnFeatureTypes='sf:PrimitiveGeoFeature' " + 
+                "           language='urn:ogc:def:queryLanguage:OGC-WFS::WFS_QueryExpression' " + 
+                "           isPrivate='false'> " + 
+                "         <wfs:Query typeNames='sf:PrimitiveGeoFeature'> " + 
+                "            <fes:Filter> " + 
+                "               <fes:Within> " + 
+                "                  <fes:ValueReference>pointProperty</fes:ValueReference> " + 
+                "                  ${AreaOfInterest} " + 
+                "               </fes:Within> " + 
+                "            </fes:Filter> " + 
+                "         </wfs:Query> " + 
+                "      </wfs:QueryExpressionText> " + 
+                "   </wfs:StoredQueryDefinition> " + 
+                "</wfs:CreateStoredQuery>" + 
+                " </soap:Body> " + 
+            "</soap:Envelope> "; 
+              
+        MockHttpServletResponse resp = postAsServletResponse("wfs", xml, "application/soap+xml");
+        assertEquals("application/soap+xml", resp.getContentType());
+        
+        Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
+        assertEquals("soap:Envelope", dom.getDocumentElement().getNodeName());
+        assertEquals(1, dom.getElementsByTagName("wfs:CreateStoredQueryResponse").getLength());
+    }
+    
+    public void testDescribeStoredQueriesSOAP() throws Exception {
+        testCreateStoredQuery();
+        
+        String xml = 
+           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+                " <soap:Header/> " + 
+                " <soap:Body>" + 
+                    "<wfs:DescribeStoredQueries xmlns:wfs='" + WFS.NAMESPACE + "' service='WFS'>" + 
+                      "<wfs:StoredQueryId>myStoredQuery</wfs:StoredQueryId>" + 
+                    "</wfs:DescribeStoredQueries>" + 
+                " </soap:Body> " + 
+            "</soap:Envelope> "; 
+              
+        MockHttpServletResponse resp = postAsServletResponse("wfs", xml, "application/soap+xml");
+        assertEquals("application/soap+xml", resp.getContentType());
+        
+        Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
+        assertEquals("soap:Envelope", dom.getDocumentElement().getNodeName());
+        assertEquals(1, dom.getElementsByTagName("wfs:DescribeStoredQueriesResponse").getLength());
+    }
+    
+    public void testListStoredQueriesSOAP() throws Exception {
+        testCreateStoredQuery();
+        
+        String xml = 
+           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+                " <soap:Header/> " + 
+                " <soap:Body>" + 
+                "<wfs:ListStoredQueries service='WFS' version='2.0.0' " +
+                  " xmlns:wfs='" + WFS.NAMESPACE + "'/>" +  
+                " </soap:Body> " + 
+            "</soap:Envelope> "; 
+              
+        MockHttpServletResponse resp = postAsServletResponse("wfs", xml, "application/soap+xml");
+        assertEquals("application/soap+xml", resp.getContentType());
+        
+        Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
+        assertEquals("soap:Envelope", dom.getDocumentElement().getNodeName());
+        assertEquals(1, dom.getElementsByTagName("wfs:ListStoredQueriesResponse").getLength());
+    }
+
+    public void testDropStoredQuerySOAP() throws Exception {
+        testCreateStoredQuery();
+        
+        String xml = 
+           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+                " <soap:Header/> " + 
+                " <soap:Body>" + 
+                "<wfs:DropStoredQuery service='WFS' version='2.0.0' " +
+                  " xmlns:wfs='" + WFS.NAMESPACE + "' id='myStoredQuery'/>" +  
+                " </soap:Body> " + 
+            "</soap:Envelope> "; 
+              
+        MockHttpServletResponse resp = postAsServletResponse("wfs", xml, "application/soap+xml");
+        assertEquals("application/soap+xml", resp.getContentType());
+        
+        Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
+        assertEquals("soap:Envelope", dom.getDocumentElement().getNodeName());
+        assertEquals(1, dom.getElementsByTagName("wfs:DropStoredQueryResponse").getLength());
+    }
+
 }

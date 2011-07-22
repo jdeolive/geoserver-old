@@ -9,7 +9,14 @@ import java.io.OutputStream;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.eclipse.xsd.XSDSchema;
+import org.eclipse.xsd.util.DefaultJAXPConfiguration;
 import org.eclipse.xsd.util.XSDResourceImpl;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
@@ -22,6 +29,7 @@ import org.geoserver.wfs.WFSDescribeFeatureTypeOutputFormat;
 import org.geoserver.wfs.request.DescribeFeatureTypeRequest;
 import org.geoserver.wfs.xml.FeatureTypeSchemaBuilder;
 import org.geotools.xml.Schemas;
+import org.w3c.dom.Element;
 
 
 public class XmlSchemaEncoder extends WFSDescribeFeatureTypeOutputFormat {
@@ -73,7 +81,23 @@ public class XmlSchemaEncoder extends WFSDescribeFeatureTypeOutputFormat {
         //serialize
         schema.updateElement();
         final String encoding = global.getCharset();
-        XSDResourceImpl.serialize(output, schema.getElement(), encoding);
+        
+        serialize(output, schema.getElement(), encoding, req);
+    }
+    
+    void serialize(OutputStream output, Element element, String encoding, DescribeFeatureTypeRequest req) throws IOException {
+        try {
+            Transformer tx = new DefaultJAXPConfiguration().createTransformer(encoding);
+            
+            if (Boolean.TRUE.equals(req.getExtendedProperties().get("SOAP"))) {
+                tx.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+            }
+
+            tx.transform(new DOMSource(element), new StreamResult(output));
+        } 
+        catch(Exception e) {
+            throw new IOException("Error serializing schema", e);
+        }
     }
     
     public static class V20 extends XmlSchemaEncoder {

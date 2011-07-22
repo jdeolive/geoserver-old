@@ -48,7 +48,12 @@ public abstract class WFSResponse extends org.geoserver.wfs.response.WFSResponse
         Encoder encoder = new Encoder(new WFSConfiguration());
         encoder.setEncoding(Charset.forName( getInfo().getGeoServer().getGlobal().getCharset()) );
 
-        String baseURL = (String) EMFUtils.get((EObject)operation.getParameters()[0], "baseUrl");
+        EObject eObj = (EObject)operation.getParameters()[0];
+        if (Boolean.TRUE.equals(EMFUtils.getFromMapSafe(eObj, "extendedProperties", "SOAP"))) {
+            encoder.setOmitXMLDeclaration(true);
+        }
+
+        String baseURL = (String) EMFUtils.get(eObj, "baseUrl");
         
         encoder.setSchemaLocation(WFS.NAMESPACE, buildSchemaURL(baseURL, "wfs/2.0/wfs.xsd"));
         encode(encoder, value, output);
