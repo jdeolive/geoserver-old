@@ -4,6 +4,7 @@
  */
 package org.geoserver.wfs.v2_0;
 
+import java.io.ByteArrayInputStream;
 import java.util.Collections;
 
 import javax.xml.namespace.QName;
@@ -17,6 +18,8 @@ import org.geotools.wfs.v2_0.WFS;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class TransactionTest extends WFS20TestSupport {
 
@@ -710,5 +713,37 @@ public class TransactionTest extends WFS20TestSupport {
        dom = getAsDOM("wfs?service=wfs&version=2.0.0&request=getfeature&typename=cite:RoadSegments" +
                "&cql_filter=FID+EQ+'1234'");
        XMLAssert.assertXpathExists("//cite:RoadSegments/cite:FID[text() = '1234']", dom);
+   }
+
+   public void testSOAP() throws Exception {
+       String xml = 
+          "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+               " <soap:Header/> " + 
+               " <soap:Body>"
+                 +  "<wfs:Transaction service='WFS' version='2.0.0' "
+                       + "xmlns:cgf=\"http://www.opengis.net/cite/geometry\" "
+                       + "xmlns:fes='" + FES.NAMESPACE + "' "
+                       + "xmlns:wfs='" + WFS.NAMESPACE + "' "
+                       + "xmlns:gml='" + GML.NAMESPACE + "'> " 
+                       + "<wfs:Insert > " 
+                         + "<cgf:Points>"
+                           + "<cgf:pointProperty>" 
+                             + "<gml:Point>" 
+                             + "<gml:pos>20 40</gml:pos>"
+                             + "</gml:Point>" 
+                           + "</cgf:pointProperty>"
+                         + "<cgf:id>t0002</cgf:id>"
+                       + "</cgf:Points>" 
+                     + "</wfs:Insert>" 
+                  + "</wfs:Transaction>" + 
+               " </soap:Body> " + 
+           "</soap:Envelope> "; 
+             
+       MockHttpServletResponse resp = postAsServletResponse("wfs", xml, "application/soap+xml");
+       assertEquals("application/soap+xml", resp.getContentType());
+       
+       Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
+       assertEquals("soap:Envelope", dom.getDocumentElement().getNodeName());
+       assertEquals(1, dom.getElementsByTagName("wfs:TransactionResponse").getLength());
    }
 }

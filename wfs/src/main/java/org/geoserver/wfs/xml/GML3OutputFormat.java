@@ -191,6 +191,9 @@ public class GML3OutputFormat extends WFSGetFeatureOutputFormat {
         
         Encoder encoder = createEncoder(configuration, ns2metas, gft);
         encoder.setEncoding(Charset.forName( global.getCharset() ));
+        if (Boolean.TRUE.equals(request.getExtendedProperties().get("SOAP"))) {
+            encoder.setOmitXMLDeclaration(true);
+        }
 
         if (wfs.isCanonicalSchemaLocation()) {
             encoder.setSchemaLocation(getWfsNamespace(), getCanonicalWfsSchemaLocation());

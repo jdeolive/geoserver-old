@@ -1,5 +1,6 @@
 package org.geoserver.wfs.v2_0;
 
+import java.io.ByteArrayInputStream;
 import java.net.URLEncoder;
 import java.util.Collections;
 
@@ -20,6 +21,8 @@ import org.geotools.xml.XML;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class GetFeatureTest extends WFS20TestSupport {
     
@@ -724,7 +727,56 @@ public class GetFeatureTest extends WFS20TestSupport {
             "count(wfs:FeatureCollection/wfs:member[position() = 1]/wfs:FeatureCollection//cdf:Fifteen)", dom);
         XMLAssert.assertXpathEvaluatesTo("7", 
             "count(wfs:FeatureCollection/wfs:member[position() = 2]/wfs:FeatureCollection//cdf:Seven)", dom);
+    }
+
+    public void testSOAP() throws Exception {
+        String xml = 
+           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+                " <soap:Header/> " + 
+                " <soap:Body>"
+                + "<wfs:GetFeature " + "service='WFS' "
+                +   "version='2.0.0' "
+                +   "xmlns:cdf='http://www.opengis.net/cite/data' "
+                +   "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
+                +   "<wfs:Query typeNames='cdf:Other'> "
+                +     "<wfs:PropertyName>cdf:string2</wfs:PropertyName> "
+                +   "</wfs:Query> " 
+                + "</wfs:GetFeature>" + 
+                " </soap:Body> " + 
+            "</soap:Envelope> "; 
+              
+        MockHttpServletResponse resp = postAsServletResponse("wfs", xml, "application/soap+xml");
+        assertEquals("application/soap+xml", resp.getContentType());
         
+        Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
+
+        assertEquals("soap:Envelope", dom.getDocumentElement().getNodeName());
+        assertEquals(1, dom.getElementsByTagName("wfs:FeatureCollection").getLength());
+    }
+
+    public void testSOAPFault() throws Exception {
+        String xml = 
+                "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+                     " <soap:Header/> " + 
+                     " <soap:Body>"
+                     + "<wfs:GetFeature " + "service='WFS' "
+                     +   "version='2.0.0' "
+                     +   "xmlns:cdf='http://www.opengis.net/cite/data' "
+                     +   "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
+                     +   "<wfs:Query typeNames='foo'> "
+                     +     "<wfs:PropertyName>cdf:string2</wfs:PropertyName> "
+                     +   "</wfs:Query> " 
+                     + "</wfs:GetFeature>" + 
+                     " </soap:Body> " + 
+                 "</soap:Envelope> "; 
+                   
+             MockHttpServletResponse resp = postAsServletResponse("wfs", xml, "application/soap+xml");
+             assertEquals("application/soap+xml", resp.getContentType());
+             
+             Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
+             
+             assertEquals("soap:Fault", dom.getDocumentElement().getNodeName());
+             assertEquals(1, dom.getElementsByTagName("ows:ExceptionReport").getLength());
     }
 
     public static void main(String[] args) {

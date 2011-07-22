@@ -91,6 +91,9 @@ public class GetCapabilities {
             throw new WFSException(request, "Could not understand version:" + version);
         }
         capsTransformer.setEncoding(Charset.forName( wfs.getGeoServer().getGlobal().getCharset() ));
+        if (Boolean.TRUE.equals(request.getExtendedProperties().get("SOAP"))) {
+            capsTransformer.setOmitXMLDeclaration(true);
+        }
         return capsTransformer;
     }
     
