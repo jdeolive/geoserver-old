@@ -67,10 +67,10 @@ public class WFSExtendedOperatorFactory implements ExtendedOperatorFactory, Func
 
     static FeatureWrapper featureWrapper = new FeatureWrapper();
 
-    transient GeoServerDataDirectory dataDir;
-    transient File opRoot;
-    transient OpIndexFileWatcher opIndexWatcher;
-    transient Map<Name,Operator> opIndex;
+    volatile GeoServerDataDirectory dataDir;
+    volatile File opRoot;
+    volatile OpIndexFileWatcher opIndexWatcher;
+    volatile Map<Name,Operator> opIndex;
 
     @Override
     public List<Name> getOperatorNames() {
