@@ -1,5 +1,7 @@
 package org.geoserver.wfs.v2_0;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 import junit.framework.Test;
@@ -43,11 +45,12 @@ public class GetFeatureJoinTest extends WFS20TestSupport {
         
         Map params = ds.getConnectionParameters(); 
         params.put("dbtype", "h2");
-        params.put("database", getTestData().getDataDirectoryRoot().getAbsolutePath());
+        params.put("database", getTestData().getDataDirectoryRoot().getAbsolutePath()+"/foo");
         cat.add(ds);
         
         FeatureSource fs1 = getFeatureSource(MockData.FORESTS);
         FeatureSource fs2 = getFeatureSource(MockData.LAKES);
+        FeatureSource fs3 = getFeatureSource(MockData.PRIMITIVEGEOFEATURE);
         
         DataStore store = (DataStore) ds.getDataStore(null);
         SimpleFeatureTypeBuilder tb = new SimpleFeatureTypeBuilder();
@@ -58,6 +61,12 @@ public class GetFeatureJoinTest extends WFS20TestSupport {
         
         tb.init((SimpleFeatureType) fs2.getSchema());
         //tb.remove("boundedBy");
+        store.createSchema(tb.buildFeatureType());
+        
+        tb.init((SimpleFeatureType) fs3.getSchema());
+        tb.remove("surfaceProperty");
+        tb.remove("curveProperty");
+        tb.remove("uriProperty");
         store.createSchema(tb.buildFeatureType());
         
         CatalogBuilder cb = new CatalogBuilder(cat);
@@ -80,6 +89,40 @@ public class GetFeatureJoinTest extends WFS20TestSupport {
             "103", "Green Lake");
         addFeature(fs, "POLYGON ((0.0007938800267961 -0.0056175636045986, 0.0011573084862925 -0.0051229419555271, 0.0017412204815544 -0.0049337922722299, 0.0023617041415903 -0.0050976945961703, 0.0029728059060882 -0.0055503031602247, 0.0034289873678372 -0.0063805324543033, 0.0035801692478343 -0.0074485059825999, 0.0034823709081135 -0.008013559804892, 0.0032473247836666 -0.008318888359415, 0.0029142821960289 -0.0085126790755088, 0.0023413406005588 -0.0085369332611115, 0.0011766812981572 -0.0078593563537122, 0.0006397573417165 -0.0067622385244755, 0.0007938800267961 -0.0056175636045986))",
             "110", "Black Lake");
+        ft = cb.buildFeatureType(fs);
+        cat.add(ft);
+        
+        fs = (FeatureStore) store.getFeatureSource("PrimitiveGeoFeature");
+        fs.addFeatures(fs3.getFeatures());
+        ft = cb.buildFeatureType(fs);
+        cat.add(ft);
+        
+        tb = new SimpleFeatureTypeBuilder();
+        tb.setName("TimeFeature");
+        tb.add("name", String.class);
+        tb.add("dateTime", Date.class);
+        
+        SimpleFeatureType timeFeatureType = tb.buildFeatureType(); 
+        store.createSchema(timeFeatureType);
+        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+        DefaultFeatureCollection features = new DefaultFeatureCollection(null, null);
+        SimpleFeatureBuilder fb = new SimpleFeatureBuilder(timeFeatureType);
+        fb.add("one");
+        fb.add(dateFormat.parseObject("2006-04-04 22:00:00"));
+        features.add(fb.buildFeature(null));
+        
+        fb.add("two");
+        fb.add(dateFormat.parseObject("2006-05-05 20:00:00"));
+        features.add(fb.buildFeature(null));
+        
+        fb.add("three");
+        fb.add(dateFormat.parseObject("2006-06-28 18:00:00"));
+        features.add(fb.buildFeature(null));
+        
+        fs = (FeatureStore) store.getFeatureSource("TimeFeature");
+        fs.addFeatures(features);
         ft = cb.buildFeatureType(fs);
         cat.add(ft);
     }
@@ -258,8 +301,30 @@ public class GetFeatureJoinTest extends WFS20TestSupport {
              "</wfs:GetFeature>";
 
            Document dom = postAsDOM("wfs", xml);
-           print(dom);
            
            XMLAssert.assertXpathEvaluatesTo("6", "count(//wfs:Tuple)", dom);
+    }
+    
+    public void testTemporalJoin() throws Exception {
+        String xml = 
+             "<wfs:GetFeature xmlns:wfs='" + WFS.NAMESPACE + "' xmlns:fes='" + FES.NAMESPACE + "'" +
+                  " xmlns:gs='" + MockData.DEFAULT_URI + "' version='2.0.0'>" + 
+                   "<wfs:Query typeNames='gs:PrimitiveGeoFeature gs:TimeFeature' aliases='a b'>" +
+                    "<fes:Filter> " +
+                      "<And>" +
+                        "<After>" +
+                          "<ValueReference>a/dateTimeProperty</ValueReference>" +
+                          "<ValueReference>b/dateTime</ValueReference>" + 
+                        "</After>" +
+                        "<PropertyIsEqualTo>" +
+                          "<ValueReference>a/name</ValueReference>" +
+                          "<Literal>name-f008</Literal>" + 
+                        "</PropertyIsEqualTo>" +
+                      "</And>" +
+                    "</fes:Filter> " + 
+                   "</wfs:Query>" + 
+                 "</wfs:GetFeature>";
+        Document dom = postAsDOM("wfs", xml);
+        XMLAssert.assertXpathEvaluatesTo("2", "count(//wfs:Tuple)", dom);
     }
 }
