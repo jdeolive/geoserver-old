@@ -86,6 +86,15 @@ import org.opengis.filter.spatial.Intersects;
 import org.opengis.filter.spatial.Overlaps;
 import org.opengis.filter.spatial.Touches;
 import org.opengis.filter.spatial.Within;
+import org.opengis.filter.temporal.After;
+import org.opengis.filter.temporal.Before;
+import org.opengis.filter.temporal.Begins;
+import org.opengis.filter.temporal.BegunBy;
+import org.opengis.filter.temporal.During;
+import org.opengis.filter.temporal.EndedBy;
+import org.opengis.filter.temporal.Ends;
+import org.opengis.filter.temporal.TContains;
+import org.opengis.filter.temporal.TEquals;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.helpers.NamespaceSupport;
@@ -139,6 +148,17 @@ public class GetFeature {
         joinFilterCapabilities.addType(Within.class);
         joinFilterCapabilities.addType(DWithin.class);
         joinFilterCapabilities.addType(Beyond.class);
+        
+        //temporal
+        joinFilterCapabilities.addType(After.class);
+        joinFilterCapabilities.addType(Before.class);
+        joinFilterCapabilities.addType(Begins.class);
+        joinFilterCapabilities.addType(BegunBy.class);
+        joinFilterCapabilities.addType(During.class);
+        joinFilterCapabilities.addType(Ends.class);
+        joinFilterCapabilities.addType(EndedBy.class);
+        joinFilterCapabilities.addType(TContains.class);
+        joinFilterCapabilities.addType(TEquals.class);
 
         //we only support simple filters, and any of them And'ed together.
         joinFilterCapabilities.addType(And.class);
