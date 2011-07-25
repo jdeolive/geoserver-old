@@ -1561,8 +1561,8 @@ public class Dispatcher extends AbstractController {
         //if SOAP request use special SOAP exception handler, but only for OWS requests because
         // there could be other service exception handlers (like WMS for instance) that do not 
         // output XML
-        if (request.isSOAP() && handler instanceof OWS10ServiceExceptionHandler || 
-                handler instanceof OWS11ServiceExceptionHandler) {
+        if (request.isSOAP() && (handler instanceof OWS10ServiceExceptionHandler || 
+                handler instanceof OWS11ServiceExceptionHandler)) {
             handler = new SOAPServiceExceptionHandler(handler);
         }
 
