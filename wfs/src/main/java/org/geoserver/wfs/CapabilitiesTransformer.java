@@ -1916,7 +1916,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 constraint("ImplementsLockingWFS", true);
                 constraint("KVPEncoding", true);
                 constraint("XMLEncoding", true);
-                constraint("SOAPEncoding", false);
+                constraint("SOAPEncoding", true);
                 constraint("ImplementsInheritance", false);
                 constraint("ImplementsRemoteResolve", false);
                 constraint("ImplementsResultPaging", true);
