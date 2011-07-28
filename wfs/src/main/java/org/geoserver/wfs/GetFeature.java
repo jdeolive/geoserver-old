@@ -1027,7 +1027,7 @@ public class GetFeature {
 
         if (meta == null) {
             String msg = "Could not locate " + name + " in catalog.";
-            throw new WFSException(request, msg);
+            throw new WFSException(request, msg, "InvalidParameterValue").locator("typeName");
         }
 
         return meta;
