@@ -4,12 +4,13 @@
  */
 package org.geoserver.wfs;
 
+import static org.geoserver.ows.util.ResponseUtils.buildURL;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -98,8 +99,6 @@ import org.opengis.filter.temporal.TEquals;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.helpers.NamespaceSupport;
-
-import static org.geoserver.ows.util.ResponseUtils.buildURL;
 /**
  * Web Feature Service GetFeature operation.
  * <p>

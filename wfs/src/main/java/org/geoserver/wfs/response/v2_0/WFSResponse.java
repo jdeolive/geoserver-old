@@ -56,9 +56,11 @@ public abstract class WFSResponse extends org.geoserver.wfs.response.WFSResponse
         String baseURL = (String) EMFUtils.get(eObj, "baseUrl");
         
         encoder.setSchemaLocation(WFS.NAMESPACE, buildSchemaURL(baseURL, "wfs/2.0/wfs.xsd"));
-        encode(encoder, value, output);
+        encode(encoder, value, output, operation);
     }
 
-    protected abstract void encode(Encoder encoder, Object value, OutputStream output) 
-        throws IOException, ServiceException;
+    protected void encode(Encoder encoder, Object value, OutputStream output, Operation operation) 
+        throws IOException, ServiceException {
+        
+    }
 }
