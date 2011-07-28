@@ -151,7 +151,7 @@ public class Dispatcher extends AbstractController {
     List<DispatcherCallback> callbacks = Collections.EMPTY_LIST;
 
     /** SOAP namespace */
-    static final String SOAP_NS = "http://schemas.xmlsoap.org/soap/envelope/";
+    static final String SOAP_NS = "http://www.w3.org/2003/05/soap-envelope";
     
     /** SOAP mime type */
     static final String SOAP_MIME = "application/soap+xml";
@@ -923,7 +923,7 @@ public class Dispatcher extends AbstractController {
             
             if (req.isSOAP()) {
                 //SOAP request, start the SOAP wrapper
-                startSOAPEnvelope(output);
+                startSOAPEnvelope(output, response);
             }
 
             // actually write out the response
@@ -946,9 +946,16 @@ public class Dispatcher extends AbstractController {
         }
     }
 
-    void startSOAPEnvelope(OutputStream output) throws IOException {
-        output.write(
-            ("<soap:Envelope xmlns:soap='" + SOAP_NS + "'><soap:Header/><soap:Body>").getBytes());
+    void startSOAPEnvelope(OutputStream output, Response response) throws IOException {
+        output.write(("<soap:Envelope xmlns:soap='" + SOAP_NS + "'><soap:Header/>").getBytes());
+        output.write("<soap:Body".getBytes());
+        if (response != null && response instanceof SOAPAwareResponse) {
+            String type = ((SOAPAwareResponse)response).getBodyType();
+            if (type != null) {
+                output.write((" type='" + type + "'").getBytes());
+            }
+        }
+        output.write(">".getBytes());
     }
 
     void endSOAPEnvelope(OutputStream output) throws IOException {
