@@ -2,9 +2,11 @@ package org.geoserver.wfs.v2_0;
 
 import java.io.ByteArrayInputStream;
 import java.net.URLEncoder;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 
+import org.apache.commons.codec.binary.Base64;
 import org.custommonkey.xmlunit.XMLAssert;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.DataStoreInfo;
@@ -23,6 +25,12 @@ import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class DescribeFeatureTypeTest extends WFS20TestSupport {
 
+    @Override
+    protected void setUpNamespaces(Map<String, String> namespaces) {
+        super.setUpNamespaces(namespaces);
+        namespaces.put("soap", "http://www.w3.org/2003/05/soap-envelope");
+    }
+    
     @Override
     protected void setUpInternal()throws Exception{
       getTestData().disableDataStore(MockData.CITE_PREFIX);  
@@ -261,7 +269,7 @@ public class DescribeFeatureTypeTest extends WFS20TestSupport {
 
     public void testSOAP() throws Exception {
         String xml = 
-           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+           "<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'> " + 
                 " <soap:Header/> " + 
                 " <soap:Body>"
                 + "<wfs:DescribeFeatureType service='WFS' version='2.0.0' "
@@ -276,8 +284,14 @@ public class DescribeFeatureTypeTest extends WFS20TestSupport {
         assertEquals("application/soap+xml", resp.getContentType());
         
         Document dom = dom(new ByteArrayInputStream(resp.getOutputStreamContent().getBytes()));
-        
         assertEquals("soap:Envelope", dom.getDocumentElement().getNodeName());
-        assertEquals(1, dom.getElementsByTagName("xsd:schema").getLength());
+        XMLAssert.assertXpathEvaluatesTo("xsd:base64", "//soap:Body/@type", dom);
+        assertEquals(1, dom.getElementsByTagName("wfs:DescribeFeatureTypeResponse").getLength());
+        
+        String base64 = dom.getElementsByTagName("wfs:DescribeFeatureTypeResponse").item(0)
+            .getFirstChild().getNodeValue();
+        byte[] decoded = Base64.decodeBase64(base64.getBytes());
+        dom = dom(new ByteArrayInputStream(decoded));
+        assertEquals("xsd:schema", dom.getDocumentElement().getNodeName());
     }
 }

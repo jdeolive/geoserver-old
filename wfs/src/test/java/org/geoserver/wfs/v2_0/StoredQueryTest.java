@@ -177,7 +177,7 @@ public class StoredQueryTest extends WFS20TestSupport {
 
     public void testCreateStoredQuerySOAP() throws Exception {
         String xml = 
-           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+           "<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'> " + 
                 " <soap:Header/> " + 
                 " <soap:Body>" + 
                 "<wfs:CreateStoredQuery service='WFS' version='2.0.0' " +
@@ -218,7 +218,7 @@ public class StoredQueryTest extends WFS20TestSupport {
         testCreateStoredQuery();
         
         String xml = 
-           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+           "<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'> " + 
                 " <soap:Header/> " + 
                 " <soap:Body>" + 
                     "<wfs:DescribeStoredQueries xmlns:wfs='" + WFS.NAMESPACE + "' service='WFS'>" + 
@@ -239,7 +239,7 @@ public class StoredQueryTest extends WFS20TestSupport {
         testCreateStoredQuery();
         
         String xml = 
-           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+           "<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'> " + 
                 " <soap:Header/> " + 
                 " <soap:Body>" + 
                 "<wfs:ListStoredQueries service='WFS' version='2.0.0' " +
@@ -259,7 +259,7 @@ public class StoredQueryTest extends WFS20TestSupport {
         testCreateStoredQuery();
         
         String xml = 
-           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+           "<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'> " + 
                 " <soap:Header/> " + 
                 " <soap:Body>" + 
                 "<wfs:DropStoredQuery service='WFS' version='2.0.0' " +

@@ -717,7 +717,7 @@ public class TransactionTest extends WFS20TestSupport {
 
    public void testSOAP() throws Exception {
        String xml = 
-          "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+          "<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'> " + 
                " <soap:Header/> " + 
                " <soap:Body>"
                  +  "<wfs:Transaction service='WFS' version='2.0.0' "

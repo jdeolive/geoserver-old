@@ -12,6 +12,7 @@ import net.opengis.wfs.FeatureCollectionType;
 
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
+import org.geoserver.ows.SOAPAwareResponse;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.response.WFSResponse;
@@ -30,7 +31,7 @@ import org.geoserver.wfs.response.WFSResponse;
  * @author Justin Deoliveira, The Open Planning Project
  *
  */
-public abstract class WFSDescribeFeatureTypeOutputFormat extends WFSResponse {
+public abstract class WFSDescribeFeatureTypeOutputFormat extends WFSResponse implements SOAPAwareResponse {
     /**
      * Constructor which sets the outputFormat.
      *
@@ -64,11 +65,17 @@ public abstract class WFSDescribeFeatureTypeOutputFormat extends WFSResponse {
         return false;
     }
 
+    @Override
+    public String getBodyType() {
+        return "xsd:base64";
+    }
+
     /**
      * Calls through to {@link #write(FeatureTypeInfo[], OutputStream, Operation)}.
      */
     public final void write(Object value, OutputStream output, Operation operation)
         throws IOException, ServiceException {
+
         write((FeatureTypeInfo[]) value, output, operation);
     }
 

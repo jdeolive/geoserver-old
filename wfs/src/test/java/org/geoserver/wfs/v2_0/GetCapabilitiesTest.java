@@ -209,7 +209,7 @@ public class GetCapabilitiesTest extends WFS20TestSupport {
     
     public void testSOAP() throws Exception {
         String xml = 
-           "<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/'> " + 
+           "<soap:Envelope xmlns:soap='http://www.w3.org/2003/05/soap-envelope'> " + 
                 " <soap:Header/> " + 
                 " <soap:Body>" +
                 "<GetCapabilities service=\"WFS\" "

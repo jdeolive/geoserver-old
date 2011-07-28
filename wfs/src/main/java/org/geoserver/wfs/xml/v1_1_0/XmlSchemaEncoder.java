@@ -4,6 +4,7 @@
  */
 package org.geoserver.wfs.xml.v1_1_0;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.LinkedHashSet;
@@ -15,6 +16,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.codec.binary.Base64;
 import org.eclipse.xsd.XSDSchema;
 import org.eclipse.xsd.util.DefaultJAXPConfiguration;
 import org.eclipse.xsd.util.XSDResourceImpl;
@@ -22,10 +24,12 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.config.GeoServerInfo;
+import org.geoserver.ows.Dispatcher;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geoserver.platform.Operation;
 import org.geoserver.platform.ServiceException;
 import org.geoserver.wfs.WFSDescribeFeatureTypeOutputFormat;
+import org.geoserver.wfs.WFSInfo;
 import org.geoserver.wfs.request.DescribeFeatureTypeRequest;
 import org.geoserver.wfs.xml.FeatureTypeSchemaBuilder;
 import org.w3c.dom.Element;
@@ -66,9 +70,35 @@ public class XmlSchemaEncoder extends WFSDescribeFeatureTypeOutputFormat {
         //return "text/xml; subtype=gml/3.1.1";
     }
 
+    protected String getWFSNamespaceURI() {
+        return WFS.NAMESPACE;
+    }
+
     protected void write(FeatureTypeInfo[] featureTypeInfos, OutputStream output,
         Operation describeFeatureType) throws IOException {
         
+        //hack for SOAP request, when encoding as SOAP response the schema is actually required
+        // to be encoded in base64
+        if (Dispatcher.REQUEST.get() != null && Dispatcher.REQUEST.get().isSOAP()) {
+            
+            
+            output.write(("<wfs:DescribeFeatureTypeResponse xmlns:wfs='" 
+                + getWFSNamespaceURI() + "'>").getBytes());
+            
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            doWrite(featureTypeInfos, bout, describeFeatureType);
+            output.write(Base64.encodeBase64(bout.toByteArray()));
+            
+            output.write("</wfs:DescribeFeatureTypeResponse>".getBytes());
+        }
+        else {
+            //normal write
+            doWrite(featureTypeInfos, output, describeFeatureType);
+        }
+    }
+    
+    protected void doWrite(FeatureTypeInfo[] featureTypeInfos, OutputStream output,
+            Operation describeFeatureType) throws IOException {
         GeoServerInfo global = gs.getGlobal();
 
         //create the schema
@@ -109,6 +139,10 @@ public class XmlSchemaEncoder extends WFSDescribeFeatureTypeOutputFormat {
             super(MIME_TYPES, gs, new FeatureTypeSchemaBuilder.GML32(gs));
         }
         
+        @Override
+        protected String getWFSNamespaceURI() {
+            return org.geotools.wfs.v2_0.WFS.NAMESPACE;
+        }
     }
     
     public static class V11 extends XmlSchemaEncoder {
