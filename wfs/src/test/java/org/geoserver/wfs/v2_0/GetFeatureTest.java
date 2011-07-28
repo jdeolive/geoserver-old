@@ -779,6 +779,43 @@ public class GetFeatureTest extends WFS20TestSupport {
              assertEquals(1, dom.getElementsByTagName("ows:ExceptionReport").getLength());
     }
 
+    public void testBogusSrsName() throws Exception {
+        String xml = 
+            "<wfs:GetFeature service='WFS' version='2.0.0' "
+            +   "xmlns:cdf='http://www.opengis.net/cite/data' "
+            +   "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
+            +   "<wfs:Query typeNames='cdf:Other' srsName='EPSG:XYZ'> "
+            +     "<wfs:PropertyName>cdf:string2</wfs:PropertyName> "
+            +   "</wfs:Query> " 
+            + "</wfs:GetFeature>";
+        Document dom = postAsDOM("wfs", xml);
+        assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathEvaluatesTo("InvalidParameterValue", "//ows:Exception/@exceptionCode", dom);
+        XMLAssert.assertXpathEvaluatesTo("srsName", "//ows:Exception/@locator", dom);
+        
+        dom = getAsDOM("wfs?service=WFS&version=2.0.0&request=getFeature&typeName=cdf:Other&srsName=EPSG:XYZ");assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathEvaluatesTo("InvalidParameterValue", "//ows:Exception/@exceptionCode", dom);
+        XMLAssert.assertXpathEvaluatesTo("srsName", "//ows:Exception/@locator", dom);
+    }
+
+    public void testQueryHandleInExceptionReport() throws Exception {
+        String xml = 
+                "<wfs:GetFeature service='WFS' version='2.0.0' "
+                +   "xmlns:cdf='http://www.opengis.net/cite/data' "
+                +   "xmlns:fes='http://www.opengis.net/fes/2.0' "
+                +   "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
+                +   "<wfs:Query typeNames='cdf:Other' srsName='EPSG:XYZ' handle='myHandle'> "
+                +     "<fes:Filter>"
+                +       "<fes:PropertyIsEqualTo>"
+                +         "<fes:ValueReference>foobar</fes:ValueReference>"
+                +         "<fes:Literal>xyz</fes:Literal>"
+                +       "</fes:PropertyIsEqualTo>"
+                +     "</fes:Filter>"
+                +   "</wfs:Query> " 
+                + "</wfs:GetFeature>";
+        Document dom = postAsDOM("wfs", xml);
+        XMLAssert.assertXpathEvaluatesTo("myHandle", "//ows:Exception/@locator", dom);
+    }
     public static void main(String[] args) {
         TestRunner runner = new TestRunner();
         runner.run(GetFeatureTest.class);

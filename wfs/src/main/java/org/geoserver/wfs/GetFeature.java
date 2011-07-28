@@ -314,8 +314,9 @@ public class GetFeature {
         List results = new ArrayList();
         try {
             for (int i = 0; (i < queries.size()) && (count < maxFeatures); i++) {
-                Query query = queries.get(i);
 
+                Query query = queries.get(i);
+                try {
                 //alias sanity check
                 if (!query.getAliases().isEmpty()) {
                     if (query.getAliases().size() != query.getTypeNames().size()) {
@@ -561,7 +562,18 @@ public class GetFeature {
                 //encoding if it was a lock request. may be after ensuring the lock
                 //succeed?
                 results.add(features);
+                }
+                catch(WFSException e) {
+                    //intercept and set locator to query handle if one was set, or if it simply set
+                    // to GetFeature, which is the default
+                    if (query.getHandle() != null && 
+                        (e.getLocator() == null || "GetFeature".equalsIgnoreCase(e.getLocator()))) {
+                        e.setLocator(query.getHandle());
+                    }
+                    throw e;
+                }
             }
+            
         } catch (IOException e) {
             throw new WFSException(request, "Error occurred getting features", e, request.getHandle());
         } catch (SchemaException e) {
