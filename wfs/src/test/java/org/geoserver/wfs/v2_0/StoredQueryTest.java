@@ -12,9 +12,18 @@ import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class StoredQueryTest extends WFS20TestSupport {
 
-    public void testListStoredQuery() throws Exception {
+    public void testListStoredQueries() throws Exception {
         Document dom = getAsDOM("wfs?request=ListStoredQueries&service=wfs&version=2.0.0");
         XMLAssert.assertXpathExists("//wfs:StoredQuery[@id = '" + StoredQuery.DEFAULT.getName() + "']", dom);
+    }
+
+    public void testListStoredQueries2() throws Exception {
+        testCreateStoredQuery();
+        
+        Document dom = getAsDOM("wfs?request=ListStoredQueries&service=wfs&version=2.0.0");
+        XMLAssert.assertXpathEvaluatesTo("2", "count(//wfs:StoredQuery)", dom);
+        XMLAssert.assertXpathExists("//wfs:StoredQuery[@id = '" + StoredQuery.DEFAULT.getName() + "']", dom);
+        XMLAssert.assertXpathExists("//wfs:StoredQuery[@id = 'myStoredQuery']", dom);
     }
 
     public void testCreateStoredQuery() throws Exception {
