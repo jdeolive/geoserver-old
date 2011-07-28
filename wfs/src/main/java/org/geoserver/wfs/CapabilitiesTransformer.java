@@ -1736,6 +1736,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 getCapabilities();
                 describeFeatureType();
                 getFeature();
+                getPropertyValue();
                 
                 //TODO: make whether to support stored queries optional like transations
                 listStoredQueries();
@@ -1848,6 +1849,13 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 operation("GetFeatureWithLock", parameters, getFeatureConstraints(), true, true);
             }
 
+            void getPropertyValue() {
+                Map.Entry[] parameters = new Map.Entry[] {
+                    parameter("resolve", new String[] { "none" }),
+                };
+                operation("GetPropertyValue", parameters, true, true);
+            }
+            
             /**
              * Encodes the LockFeature ows:Operation element.
              */

@@ -115,6 +115,7 @@
             <value>DescribeFeatureType</value>
             <value>GetFeature</value>
             <value>GetFeatureWithLock</value>
+            <value>GetPropertyValue</value>
             <value>LockFeature</value>
             <value>Transaction</value>
             <value>ListStoredQueries</value>
@@ -223,6 +224,11 @@
         <constructor-arg ref="geoServer"/>
     </bean>
 	
+	<bean id="getPropertyValueResponse-2.0" 
+       class="org.geoserver.wfs.response.v2_0.GetPropertyValueResponse">
+        <constructor-arg ref="geoServer"/>
+    </bean>
+
 	<!-- cite compliance hack -->
 	<bean id="citeComplianceHack" class="org.geoserver.wfs.CiteComplianceHack">
 		<constructor-arg ref="geoServer"/>
@@ -381,6 +387,10 @@
   <bean id="storedQuery_IdKvpParser" class="org.geoserver.wfs.kvp.URIKvpParser">
     <constructor-arg value="storedQuery_Id"/>
   </bean>
+  <bean id="resolveKvpParser" class="org.geoserver.ows.kvp.EnumKvpParser">
+    <constructor-arg value="resolve"/>
+    <constructor-arg value="net.opengis.wfs20.ResolveValueType"/>
+  </bean>
     
 	<!-- kvp request readers -->
 	<bean id="wfsGetCapabilitiesKvpReader"  
@@ -429,6 +439,11 @@
     <bean id="dropStoredQuery20KvpReader" 
        class="org.geoserver.wfs.kvp.v2_0.DropStoredQueryKvpRequestReader"/>
 	
+	<bean id="getPropertyValue20KvpReader" class="org.geoserver.wfs.kvp.v2_0.GetPropertyValueKvpRequestReader">
+        <constructor-arg ref="catalog"/>
+        <constructor-arg ref="filterFactory"/>
+    </bean>
+    
 	<!-- 1.0 xml readers -->
 	<bean id="xmlReader-1.0.0" class="org.geoserver.wfs.xml.v1_0_0.WfsXmlReader" abstract="true">
 		<constructor-arg index="1" ref="xmlConfiguration-1.0"/>
@@ -519,6 +534,9 @@
     </bean>
     <bean id="dropStoredQueryXmlReader-2.0" parent="xmlReader-2.0">
         <constructor-arg value="DropStoredQuery"/>
+    </bean>
+    <bean id="getPropertyValueXmlReader-2.0" parent="xmlReader-2.0">
+        <constructor-arg value="GetPropertyValue"/>
     </bean>
     
 	<!-- default feature type encoders -->

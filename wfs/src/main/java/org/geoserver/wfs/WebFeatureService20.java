@@ -14,12 +14,14 @@ import net.opengis.wfs20.ExecutionStatusType;
 import net.opengis.wfs20.GetCapabilitiesType;
 import net.opengis.wfs20.GetFeatureType;
 import net.opengis.wfs20.GetFeatureWithLockType;
+import net.opengis.wfs20.GetPropertyValueType;
 import net.opengis.wfs20.ListStoredQueriesResponseType;
 import net.opengis.wfs20.ListStoredQueriesType;
 import net.opengis.wfs20.LockFeatureResponseType;
 import net.opengis.wfs20.LockFeatureType;
 import net.opengis.wfs20.TransactionResponseType;
 import net.opengis.wfs20.TransactionType;
+import net.opengis.wfs20.ValueCollectionType;
 
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.wfs.request.FeatureCollectionResponse;
@@ -88,7 +90,18 @@ public interface WebFeatureService20 {
      */
     FeatureCollectionResponse getFeatureWithLock(GetFeatureWithLockType request)
         throws WFSException;
-    
+
+    /**
+     * WFS GetPropertyValue operation.
+     *
+     * @param request The get property value request.
+     *
+      * @return A value collection type instance.
+     *
+     * @throws WFSException Any service exceptions.
+     */
+    ValueCollectionType getPropertyValue(GetPropertyValueType requets) throws WFSException;
+
     /**
      * WFS LockFeatureType operation.
      *

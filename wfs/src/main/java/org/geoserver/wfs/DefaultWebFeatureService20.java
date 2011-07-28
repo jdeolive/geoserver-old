@@ -14,12 +14,14 @@ import net.opengis.wfs20.ExecutionStatusType;
 import net.opengis.wfs20.GetCapabilitiesType;
 import net.opengis.wfs20.GetFeatureType;
 import net.opengis.wfs20.GetFeatureWithLockType;
+import net.opengis.wfs20.GetPropertyValueType;
 import net.opengis.wfs20.ListStoredQueriesResponseType;
 import net.opengis.wfs20.ListStoredQueriesType;
 import net.opengis.wfs20.LockFeatureResponseType;
 import net.opengis.wfs20.LockFeatureType;
 import net.opengis.wfs20.TransactionResponseType;
 import net.opengis.wfs20.TransactionType;
+import net.opengis.wfs20.ValueCollectionType;
 
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
@@ -99,7 +101,12 @@ public class DefaultWebFeatureService20 implements WebFeatureService20, Applicat
             throws WFSException {
         return getFeature(request);
     }
-    
+
+    @Override
+    public ValueCollectionType getPropertyValue(GetPropertyValueType request) throws WFSException {
+        return new GetPropertyValue(getServiceInfo(), getCatalog()).run(request);
+    }
+
     public LockFeatureResponseType lockFeature(LockFeatureType request) throws WFSException {
         LockFeature lockFeature = new LockFeature(getServiceInfo(), getCatalog(), filterFactory);
         return (LockFeatureResponseType) 
