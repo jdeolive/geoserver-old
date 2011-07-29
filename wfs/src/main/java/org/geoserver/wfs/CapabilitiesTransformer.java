@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.geoserver.wfs.CapabilitiesTransformer.WFS1_1.CapabilitiesTranslator1_
 import org.geoserver.wfs.request.GetCapabilitiesRequest;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.NameImpl;
+import org.geotools.filter.ExtendedOperatorFactory;
 import org.geotools.filter.FunctionFactory;
 import org.geotools.filter.v1_0.OGC;
 import org.geotools.filter.v2_0.FES;
@@ -53,6 +55,7 @@ import org.opengis.parameter.Parameter;
 import org.vfny.geoserver.global.FeatureTypeInfoTitleComparator;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.helpers.AttributesImpl;
+import org.xml.sax.helpers.NamespaceSupport;
 
 import com.vividsolutions.jts.geom.Envelope;
 
@@ -2143,7 +2146,40 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                }
                
                end("fes:Functions");
+
+               //extended operators
+               //TODO: eventually use all extended operator vactories... but for now just use
+               // the WFS one because it gives some custom api for namespace stuff...
                
+               WFSExtendedOperatorFactory wfsExtOpsFactory = new WFSExtendedOperatorFactory();
+               if (!wfsExtOpsFactory.getFunctionNames().isEmpty()) {
+                   start("fes:ExtendedCapabilities");
+
+                   //declare the necessary namespaces
+                   NamespaceSupport extOpNamespaces = wfsExtOpsFactory.getNamespaces(); 
+                   Enumeration prefixes = extOpNamespaces.getDeclaredPrefixes();
+                   
+                   List<String> xmlns = new ArrayList();
+                   while(prefixes.hasMoreElements()) {
+                       String prefix = (String) prefixes.nextElement();
+                       if ("".equals(prefix) || "xml".equals(prefix)) {
+                           continue;
+                       }
+                       xmlns.add("xmlns:" + prefix);
+                       xmlns.add(extOpNamespaces.getURI(prefix));
+                   }
+                   
+                   start("fes:AdditionalOperators", attributes(xmlns.toArray(new String[xmlns.size()])));
+                   for (Name extOp : wfsExtOpsFactory.getOperatorNames()) {
+                       String prefix = extOpNamespaces.getPrefix(extOp.getNamespaceURI());
+                       String qName = prefix != null ? prefix + ":" + extOp.getLocalPart() : 
+                           extOp.getLocalPart();
+
+                       element("fes:Operator", null, attributes(new String[]{"name", qName}));
+                   }
+                   end("fes:AdditionalOperators");
+                   end("fes:ExtendedCapabilities");
+               }
              end("fes:Filter_Capabilities");
             }
         }
