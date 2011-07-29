@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -43,8 +44,11 @@ import org.opengis.filter.expression.Function;
 import org.opengis.filter.expression.Literal;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.NamespaceSupport;
 
 import freemarker.template.Configuration;
 import freemarker.template.SimpleHash;
@@ -71,6 +75,20 @@ public class WFSExtendedOperatorFactory implements ExtendedOperatorFactory, Func
     volatile File opRoot;
     volatile OpIndexFileWatcher opIndexWatcher;
     volatile Map<Name,Operator> opIndex;
+    volatile NamespaceSupport namespaces;
+
+    DocumentBuilder db;
+    {
+        try {
+            db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public NamespaceSupport getNamespaces() {
+        return namespaces();
+    }
 
     @Override
     public List<Name> getOperatorNames() {
@@ -157,6 +175,61 @@ public class WFSExtendedOperatorFactory implements ExtendedOperatorFactory, Func
         return null;
     }
 
+    NamespaceSupport namespaces() {
+        if (namespaces == null) {
+            synchronized (this) {
+                if (namespaces == null) {
+                    int x = 0; // used for generating namespace prefixes
+                    
+                    namespaces = new NamespaceSupport();
+                    Map<Name,Operator> opIndex = opIndex();
+                    for (Map.Entry<Name, Operator> e: opIndex.entrySet()) {
+                        Name name = e.getKey();
+                        if (namespaces.getPrefix(name.getNamespaceURI()) != null) {
+                            continue;
+                        }
+
+                        //check the schema
+                        Document schema = null;
+                        try {
+                            schema = e.getValue().schema();
+                        } catch (IOException e1) {
+                            LOGGER.log(Level.WARNING, "Error parsing xsd for operator: " + name, e);
+                        }
+
+                        String prefix = null;
+                        if (schema != null) {
+                            NamedNodeMap atts = schema.getDocumentElement().getAttributes();
+                            for (int i = 0; i < atts.getLength(); i++) {
+                                Node att = atts.item(i);
+                                if (att.getNodeValue().equals(e.getKey().getNamespaceURI())) {
+                                    String xmlns = att.getNodeName();
+                                    String[] split = xmlns.split(":");
+                                    if (split.length == 2) {
+                                        prefix = split[1];
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (prefix == null && schema != null) {
+                            LOGGER.warning("Could not find prefix mapping for: " + name.getNamespaceURI());
+                        }
+
+                        if (prefix == null) {
+                            //make up one
+                            prefix = "ns" + x++;
+                        }
+                    
+                        namespaces.declarePrefix(prefix, name.getNamespaceURI());
+                    }
+                }
+            }
+        }
+        return namespaces;
+    }
+
     Map<Name, Operator> opIndex() {
         try {
             OpIndexFileWatcher opIndexWatcher = opIndexWatcher();
@@ -221,7 +294,7 @@ public class WFSExtendedOperatorFactory implements ExtendedOperatorFactory, Func
             try {
                 Template t = null;
                 synchronized (templateConfig) {
-                    t = templateConfig.getTemplate(op.template.getName());
+                    t = templateConfig.getTemplate(op.templateFile.getName());
                 }
                 
                 //create the template model
@@ -254,18 +327,36 @@ public class WFSExtendedOperatorFactory implements ExtendedOperatorFactory, Func
         }
     }
 
-    static class Operator {
+    class Operator {
         Name name;
-        File schema;
-        File template;
+        File schemaFile;
+        File templateFile;
+        private volatile SoftReference<Document> schema;  
+
+        Document schema() throws IOException {
+            if (!schemaFile.exists()) return null;
+            
+            if (schema == null || schema.get() == null) {
+                synchronized (this) {
+                    if (schema == null || schema.get() == null) {
+                        try {
+                            schema = new SoftReference<Document>(db.parse(schemaFile));
+                        } catch (SAXException e) {
+                            throw new IOException(e);
+                        }
+                    }
+                }
+            }
+            return schema.get();
+        }
 
         @Override
         public int hashCode() {
             final int prime = 31;
             int result = 1;
             result = prime * result + ((name == null) ? 0 : name.hashCode());
-            result = prime * result + ((schema == null) ? 0 : schema.hashCode());
-            result = prime * result + ((template == null) ? 0 : template.hashCode());
+            result = prime * result + ((schemaFile == null) ? 0 : schemaFile.hashCode());
+            result = prime * result + ((templateFile == null) ? 0 : templateFile.hashCode());
             return result;
         }
 
@@ -283,15 +374,15 @@ public class WFSExtendedOperatorFactory implements ExtendedOperatorFactory, Func
                     return false;
             } else if (!name.equals(other.name))
                 return false;
-            if (schema == null) {
-                if (other.schema != null)
+            if (schemaFile == null) {
+                if (other.schemaFile != null)
                     return false;
-            } else if (!schema.equals(other.schema))
+            } else if (!schemaFile.equals(other.schemaFile))
                 return false;
-            if (template == null) {
-                if (other.template != null)
+            if (templateFile == null) {
+                if (other.templateFile != null)
                     return false;
-            } else if (!template.equals(other.template))
+            } else if (!templateFile.equals(other.templateFile))
                 return false;
             return true;
         }
@@ -299,16 +390,8 @@ public class WFSExtendedOperatorFactory implements ExtendedOperatorFactory, Func
 
     class OpIndexFileWatcher extends FileWatcher<Map<Name,Operator>> {
 
-        DocumentBuilder db;
-
         public OpIndexFileWatcher(File file) throws IOException {
             super(file);
-
-            try {
-                db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-            } catch (ParserConfigurationException e) {
-                throw new IOException(e);
-            }
         }
 
         @Override
@@ -331,8 +414,8 @@ public class WFSExtendedOperatorFactory implements ExtendedOperatorFactory, Func
                 Operator op = new Operator();
                 op.name = 
                     new NameImpl(opElement.getAttribute("namespace"),opElement.getAttribute("name"));
-                op.schema = new File(opRoot(), opElement.getAttribute("schema"));
-                op.template = new File(opRoot(), opElement.getAttribute("template"));
+                op.schemaFile = new File(opRoot(), opElement.getAttribute("schema"));
+                op.templateFile = new File(opRoot(), opElement.getAttribute("template"));
 
                 index.put(op.name, op);
             }
