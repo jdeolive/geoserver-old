@@ -1,4 +1,4 @@
-package org.geoserver.wfs.versioning;
+package org.geoserver.wfs.v2_0.versioning;
 
 import junit.framework.TestCase;
 
