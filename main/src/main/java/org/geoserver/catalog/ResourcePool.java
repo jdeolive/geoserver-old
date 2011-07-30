@@ -123,14 +123,18 @@ public class ResourcePool {
     static Class VERSIONING_FS = null;
     static Class GS_VERSIONING_FS = null;
     
+    static final Class WFS_VERSIONING_FS;
     static {
+        Class wfsv = null;
         try {
             // only support versioning if on classpath
             VERSIONING_FS = Class.forName("org.geotools.data.VersioningFeatureSource");
             GS_VERSIONING_FS = Class.forName("org.vfny.geoserver.global.GeoServerVersioningFeatureSource");
+            wfsv = Class.forName("org.geoserver.wfs.versioning.VersioningFeatureSourceFactory");
         } catch (ClassNotFoundException e) {
             //fall through
         }
+        WFS_VERSIONING_FS = wfsv;
     }
     
     /**
@@ -933,8 +937,21 @@ public class ResourcePool {
             }
 
             //return a normal 
-            return GeoServerFeatureLocking.create(fs, schema,
+            fs = GeoServerFeatureLocking.create(fs, schema,
                     info.getFilter(), resultCRS, info.getProjectionPolicy().getCode());
+            
+            if (WFS_VERSIONING_FS != null
+                    && Boolean.TRUE.equals(info.getMetadata().get("wfs_versioning", Boolean.class))) {
+                LOGGER.info("Creating versioning wrapper for FeatureSource " + typeName);
+                try {
+                    @SuppressWarnings("unchecked")
+                    Method m = WFS_VERSIONING_FS.getMethod("create", FeatureSource.class);
+                    fs = (SimpleFeatureSource) m.invoke(null, fs);
+                } catch (Exception e) {
+                    throw new DataSourceException("Creation of a versioning wrapper failed", e);
+                }
+            }
+            return fs;
         }
     }
     
