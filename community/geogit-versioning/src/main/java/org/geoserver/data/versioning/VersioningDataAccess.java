@@ -1,13 +1,16 @@
 package org.geoserver.data.versioning;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.geogit.api.GeoGIT;
+import org.geogit.api.ObjectId;
 import org.geogit.api.RevCommit;
+import org.geogit.api.RevTree;
 import org.geogit.repository.Repository;
 import org.geotools.data.DataAccess;
 import org.geotools.data.FeatureLocking;
@@ -16,7 +19,6 @@ import org.geotools.data.FeatureStore;
 import org.geotools.data.Query;
 import org.geotools.data.ServiceInfo;
 import org.geotools.feature.FeatureCollection;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
@@ -111,25 +113,23 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
         return unversioned.getSchema(name);
     }
 
-    public ReferencedEnvelope getBounds(Name name, Id versioningFilter, Query query) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public int getCount(Name name, Id versioningFilter, Query query) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
     /**
+     * @precondition {@code typeName != null && versioningFilter != null}
+     * @precondition {@code versioningFilter.getIdentifiers().size() > 0}
+     * @postcondition {@code $return != null}
+     * 
      * @param typeName
      * @param versioningFilter
-     * @param query
+     * @param extraQuery
      * @return
      * @throws IOException
      */
-    public FeatureCollection<FeatureType, Feature> getFeatures(Name typeName, Id versioningFilter,
-            Query query) throws IOException {
+    public FeatureCollection<FeatureType, Feature> getFeatures(final Name typeName,
+            final Id versioningFilter, final Query extraQuery) throws IOException {
+        Assert.notNull(typeName);
+        Assert.notNull(versioningFilter);
+        Assert.isTrue(versioningFilter.getIdentifiers().size() > 0);
+
         final Set<Identifier> identifiers = versioningFilter.getIdentifiers();
         final Set<ResourceId> resourceIds = new HashSet<ResourceId>();
         for (Identifier id : identifiers) {
@@ -143,21 +143,61 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
         }
 
         final FeatureType featureType = this.getSchema(typeName);
-        // return new ResourceIdFeatureCollector(repository, featureType, resourceIds, query);
+        ResourceIdFeatureCollector versionQuery;
+        versionQuery = new ResourceIdFeatureCollector(repository, featureType, resourceIds);
+
         return null;
     }
 
-    public String getCurrentVersion() {
+    /**
+     * @return the object id of the current HEAD's commit
+     */
+    public ObjectId getCurrentVersion() {
         // assume HEAD is at MASTER
         try {
             Iterator<RevCommit> lastCommit = new GeoGIT(repository).log().setLimit(1).call();
             if (lastCommit.hasNext()) {
-                return lastCommit.next().getId().toString();
+                return lastCommit.next().getId();
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    /**
+     * Finds out the version (Fearture hash) of the Feature addressed by {@code typeName/featureId}
+     * at the commit {@code commitId}
+     * 
+     * @param typeName
+     * @param featureId
+     * @param commitId
+     * @return
+     */
+    public String getFeatureVersion(final Name typeName, final String featureId,
+            final ObjectId commitId) {
+
+        final RevCommit commit = repository.getCommit(commitId);
+        if (commit.getTreeId().isNull()) {
+            return null;
+        }
+        final RevTree tree = repository.getTree(commit.getTreeId());
+        final List<String> path = path(typeName, featureId);
+        ObjectId featureObjectId = repository.getTreeChildId(tree, path);
+        return featureObjectId == null ? null : featureObjectId.toString();
+    }
+
+    private List<String> path(final Name typeName, final String featureId) {
+
+        List<String> path = new ArrayList<String>(3);
+
+        if (null != typeName.getNamespaceURI()) {
+            path.add(typeName.getNamespaceURI());
+        }
+        path.add(typeName.getLocalPart());
+        path.add(featureId);
+
+        return path;
     }
 
 }

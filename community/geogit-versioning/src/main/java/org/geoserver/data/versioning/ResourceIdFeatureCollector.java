@@ -1,18 +1,25 @@
 package org.geoserver.data.versioning;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.geogit.api.GeoGIT;
 import org.geogit.api.LogOp;
+import org.geogit.api.ObjectId;
+import org.geogit.api.Ref;
+import org.geogit.api.RevTree;
 import org.geogit.repository.Repository;
 import org.geotools.util.Range;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.Name;
 import org.opengis.filter.identity.ResourceId;
 import org.opengis.filter.identity.Version;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 
 public class ResourceIdFeatureCollector implements Iterable<Feature> {
@@ -33,27 +40,36 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
     @Override
     public Iterator<Feature> iterator() {
 
-        Iterator<Feature> iterator = Iterators.emptyIterator();
+        Iterator<Ref> featureRefs = Iterators.emptyIterator();
 
         GeoGIT ggit = new GeoGIT(repository);
         for (ResourceId rid : resourceIds) {
-            Iterator<Feature> ridIterator = query(ggit, rid);
-            iterator = Iterators.concat(iterator, ridIterator);
+            Iterator<Ref> ridIterator = query(ggit, rid);
+            featureRefs = Iterators.concat(featureRefs, ridIterator);
         }
 
-        return iterator;
+        Iterator<Feature> features = Iterators.transform(featureRefs, new RefToFeature(repository,
+                featureType));
+
+        return features;
     }
 
-    private Iterator<Feature> query(GeoGIT ggit, ResourceId rid) {
-        final String featureId = rid.getRid();
+    private Iterator<Ref> query(final GeoGIT ggit, final ResourceId id) {
+        final String rid = id.getRid();
+        final String featureId = featureId(rid);
+        final String ridVersion = extractRequestedVersion(ggit, rid);
         // previousRid is for reporting, not for querying, so not needed here
         // String previousRid = rid.getPreviousRid();
-        final Version version = rid.getVersion();
+        final Version version = id.getVersion();
 
         LogOp logOp = ggit.log();
-        if (rid.getStartTime() != null || rid.getEndTime() != null) {
-            Date startTime = rid.getStartTime() == null ? new Date(0L) : rid.getStartTime();
-            Date endTime = rid.getEndTime() == null ? new Date(Long.MAX_VALUE) : rid.getEndTime();
+
+        List<String> path = path(featureId);
+        logOp.addPath(path);
+
+        if (id.getStartTime() != null || id.getEndTime() != null) {
+            Date startTime = id.getStartTime() == null ? new Date(0L) : id.getStartTime();
+            Date endTime = id.getEndTime() == null ? new Date(Long.MAX_VALUE) : id.getEndTime();
             boolean isMinIncluded = true;
             boolean isMaxIncluded = true;
 
@@ -64,4 +80,70 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
         }
         return null;
     }
+
+    /**
+     * Extracts the feature version from the given {@code rid} if supplied, or finds out the current
+     * feature version from the feature id otherwise.
+     * 
+     * @param ggit
+     * @param rid
+     *            {@code <featureId>[@<featureVersion>]}
+     * @return
+     */
+    private String extractRequestedVersion(final GeoGIT ggit, final String rid) {
+        final int idx = rid.indexOf('@');
+        if (idx > 0) {
+            return rid.substring(idx + 1);
+        }
+        // no version specified, find out the latest
+        final String featureId = rid;
+        RevTree rootTree = repository.getRootTree();
+        List<String> path = path(featureId);
+        ObjectId currFeatureObjectId = repository.getTreeChildId(rootTree, path);
+        if (currFeatureObjectId == null) {
+            // feature does not exist at the current repository state
+            return null;
+        }
+        return currFeatureObjectId.toString();
+    }
+
+    private String featureId(final String rid) {
+        final int idx = rid.indexOf('@');
+        return idx == -1 ? rid : rid.substring(0, idx);
+    }
+
+    private List<String> path(final String featureId) {
+        Name typeName = featureType.getName();
+        List<String> path = new ArrayList<String>(3);
+
+        if (null != typeName.getNamespaceURI()) {
+            path.add(typeName.getNamespaceURI());
+        }
+        path.add(typeName.getLocalPart());
+        path.add(featureId);
+
+        return path;
+    }
+
+    private static class RefToFeature implements Function<Ref, Feature> {
+
+        private final Repository repo;
+
+        private final FeatureType type;
+
+        public RefToFeature(final Repository repo, final FeatureType type) {
+            this.repo = repo;
+            this.type = type;
+        }
+
+        @Override
+        public Feature apply(final Ref featureRef) {
+            String featureId = featureRef.getName();
+            ObjectId contentId = featureRef.getObjectId();
+            Feature feature = repo.getFeature(type, featureId, contentId);
+            return feature;
+        }
+
+    }
+
 }
