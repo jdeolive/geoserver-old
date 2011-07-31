@@ -35,7 +35,7 @@ public class VersioningAdapterFactory {
         final Repository versioningRepo = GEOGIT.get().getRepository();
 
         if (subject instanceof DataStore) {
-            return new VersioningDataStore((DataStore) subject, versioningRepo);
+            return new VersioningDataAccess((DataStore) subject, versioningRepo);
         }
 
         LOGGER.fine("Versioning not supported for DataAccess yet, only for DataStore. "

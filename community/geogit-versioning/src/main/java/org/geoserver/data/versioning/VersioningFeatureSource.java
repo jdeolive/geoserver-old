@@ -10,25 +10,26 @@ import java.util.Set;
 
 import org.geotools.data.DataAccess;
 import org.geotools.data.FeatureListener;
+import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
 import org.geotools.data.QueryCapabilities;
 import org.geotools.data.ResourceInfo;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.feature.Feature;
+import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Id;
 
-public class VersioningFeatureSource implements SimpleFeatureSource {
+@SuppressWarnings({ "rawtypes", "unchecked" })
+public class VersioningFeatureSource implements FeatureSource<FeatureType, Feature> {
 
-    protected final SimpleFeatureSource unversioned;
+    protected final FeatureSource unversioned;
 
-    protected final VersioningDataStore store;
+    protected final VersioningDataAccess store;
 
-    public VersioningFeatureSource(SimpleFeatureSource unversioned, VersioningDataStore store) {
+    public VersioningFeatureSource(FeatureSource unversioned, VersioningDataAccess store) {
         this.unversioned = unversioned;
         this.store = store;
     }
@@ -41,7 +42,7 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
      * @see org.geotools.data.FeatureSource#getDataStore()
      */
     @Override
-    public DataAccess<SimpleFeatureType, SimpleFeature> getDataStore() {
+    public DataAccess<FeatureType, Feature> getDataStore() {
         return store;
     }
 
@@ -72,15 +73,11 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
     }
 
     /**
-     * @see org.geotools.data.simple.SimpleFeatureSource#getFeatures(org.opengis.filter.Filter)
+     * @see org.geotools.data.FeatureSource#getFeatures(org.opengis.filter.Filter)
      */
     @Override
-    public SimpleFeatureCollection getFeatures(Filter filter) throws IOException {
-        Id versioningFilter;
-        if (!isVersioned() || null == (versioningFilter = getVersioningFilter(filter))) {
-            return unversioned.getFeatures(filter);
-        }
-        return store.getFeatures(getName(), versioningFilter, namedQuery(filter));
+    public FeatureCollection<FeatureType, Feature> getFeatures(Filter filter) throws IOException {
+        return getFeatures(namedQuery(filter));
     }
 
     private Query namedQuery(Filter filter) {
@@ -100,13 +97,22 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
     }
 
     /**
-     * @see org.geotools.data.simple.SimpleFeatureSource#getFeatures(org.geotools.data.Query)
+     * @see org.geotools.data.FeatureSource#getFeatures(org.geotools.data.Query)
      */
     @Override
-    public SimpleFeatureCollection getFeatures(Query query) throws IOException {
+    public FeatureCollection<FeatureType, Feature> getFeatures(Query query) throws IOException {
         Id versioningFilter;
-        if (!isVersioned() || null == (versioningFilter = getVersioningFilter(query.getFilter()))) {
-            return unversioned.getFeatures(query);
+        if (!isVersioned()) {
+            return unversioned.getFeatures(query.getFilter());
+        }
+        versioningFilter = getVersioningFilter(query.getFilter());
+        if (versioningFilter == null) {
+            FeatureCollection<FeatureType, Feature> delegate = unversioned.getFeatures(query);
+            final String versionId = store.getCurrentVersion();
+            if (versionId == null) {
+                return delegate;
+            }
+            return new ResourceIdAssigningFeatureCollection(delegate, versionId);
         }
         return store.getFeatures(getName(), versioningFilter, query);
     }
@@ -139,7 +145,7 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
     }
 
     @Override
-    public SimpleFeatureType getSchema() {
+    public FeatureType getSchema() {
         return unversioned.getSchema();
     }
 
@@ -154,7 +160,7 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
     }
 
     @Override
-    public SimpleFeatureCollection getFeatures() throws IOException {
+    public FeatureCollection<FeatureType, Feature> getFeatures() throws IOException {
         return unversioned.getFeatures();
     }
 
