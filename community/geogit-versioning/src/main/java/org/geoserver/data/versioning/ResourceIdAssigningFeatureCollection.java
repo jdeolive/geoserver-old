@@ -3,36 +3,49 @@ package org.geoserver.data.versioning;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.geogit.api.ObjectId;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.collection.DecoratingFeatureCollection;
 import org.opengis.feature.Feature;
-import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
+import org.opengis.feature.type.Name;
+import org.opengis.filter.identity.ResourceId;
 
 import com.google.common.collect.AbstractIterator;
 
+/**
+ * FeatureCollectionDecorator that assigns as {@link ResourceId} as each Feature
+ * {@link Feature#getIdentifier() identifier} from the {@link ObjectId} of the current state of the
+ * Feature.
+ * 
+ * @author groldan
+ * 
+ */
 public class ResourceIdAssigningFeatureCollection extends
         DecoratingFeatureCollection<FeatureType, Feature> implements
         FeatureCollection<FeatureType, Feature> {
 
-    private final String versionId;
+    private final ObjectId commitId;
 
-    protected ResourceIdAssigningFeatureCollection(
-            final FeatureCollection<FeatureType, Feature> delegate, final String versionId) {
+    private final VersioningDataAccess store;
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected ResourceIdAssigningFeatureCollection(final FeatureCollection delegate,
+            final VersioningDataAccess store, final ObjectId commitId) {
+
         super(delegate);
-        this.versionId = versionId;
+
+        this.store = store;
+        this.commitId = commitId;
     }
 
-    private static class ResourceIdAssigningIterator extends AbstractIterator<Feature> {
+    private class ResourceIdAssigningIterator extends AbstractIterator<Feature> {
 
         private final Iterator<Feature> iterator;
 
-        private final String versionId;
-
-        public ResourceIdAssigningIterator(Iterator<Feature> iterator, String versionId) {
+        public ResourceIdAssigningIterator(final Iterator<Feature> iterator) {
             this.iterator = iterator;
-            this.versionId = versionId;
         }
 
         @Override
@@ -40,7 +53,11 @@ public class ResourceIdAssigningFeatureCollection extends
             if (!iterator.hasNext()) {
                 return endOfData();
             }
-            return new VersionedFeatureWrapper((SimpleFeature) iterator.next(), versionId);
+            Feature next = iterator.next();
+            Name typeName = next.getType().getName();
+            String featureId = next.getIdentifier().getID();
+            String versionId = store.getFeatureVersion(typeName, featureId, commitId);
+            return VersionedFeatureWrapper.wrap(next, versionId);
         }
 
     }
@@ -49,7 +66,7 @@ public class ResourceIdAssigningFeatureCollection extends
     public Iterator<Feature> iterator() {
         @SuppressWarnings("deprecation")
         Iterator<Feature> iterator = delegate.iterator();
-        return new ResourceIdAssigningIterator(iterator, versionId);
+        return new ResourceIdAssigningIterator(iterator);
     }
 
     @Override
@@ -67,7 +84,10 @@ public class ResourceIdAssigningFeatureCollection extends
             @Override
             public Feature next() throws NoSuchElementException {
                 Feature next = features.next();
-                return new VersionedFeatureWrapper((SimpleFeature) next, versionId);
+                Name typeName = next.getType().getName();
+                String featureId = next.getIdentifier().getID();
+                String versionId = store.getFeatureVersion(typeName, featureId, commitId);
+                return VersionedFeatureWrapper.wrap(next, versionId);
             }
 
             @Override
