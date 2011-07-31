@@ -1,4 +1,4 @@
-package org.geoserver.wfs.versioning;
+package org.geoserver.data.versioning;
 
 import java.io.IOException;
 import java.util.List;

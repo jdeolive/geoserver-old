@@ -700,6 +700,16 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>geogit</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.geoserver.community</groupId>
+          <artifactId>geogit-versioning</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
 
  </profiles>
 

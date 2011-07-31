@@ -123,18 +123,23 @@ public class ResourcePool {
     static Class VERSIONING_FS = null;
     static Class GS_VERSIONING_FS = null;
     
-    static final Class WFS_VERSIONING_FS;
+    static final Class<?> GEOGIT_VERSIONING_FS;
     static {
-        Class wfsv = null;
         try {
             // only support versioning if on classpath
             VERSIONING_FS = Class.forName("org.geotools.data.VersioningFeatureSource");
             GS_VERSIONING_FS = Class.forName("org.vfny.geoserver.global.GeoServerVersioningFeatureSource");
-            wfsv = Class.forName("org.geoserver.wfs.versioning.VersioningFeatureSourceFactory");
         } catch (ClassNotFoundException e) {
             //fall through
         }
-        WFS_VERSIONING_FS = wfsv;
+        Class<?> geogitVersioning = null;
+        try {
+            // only support versioning if on classpath
+            geogitVersioning = Class.forName("org.geoserver.data.versioning.VersioningAdapterFactory");
+        } catch (ClassNotFoundException e) {
+            //fall through
+        }
+        GEOGIT_VERSIONING_FS = geogitVersioning;
     }
     
     /**
@@ -295,6 +300,7 @@ public class ResourcePool {
      * 
      * @throws IOException Any errors that occur connecting to the resource.
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public DataAccess<? extends FeatureType, ? extends Feature> getDataStore( DataStoreInfo info ) throws IOException {
         try {
             String id = info.getId();
@@ -365,6 +371,17 @@ public class ResourcePool {
                         
                         if ( dataStore == null ) {
                             throw new NullPointerException("Could not acquire data access '" + info.getName() + "'");
+                        }
+                        
+                        if (GEOGIT_VERSIONING_FS != null) {
+                            LOGGER.fine("Creating versioning wrapper for DataStore " + info.getName()
+                                    + ". Whether or not version info is available is FeatureTypeInfo dependant.");
+                            try {
+                                Method m = GEOGIT_VERSIONING_FS.getMethod("create", DataAccess.class);
+                                dataStore = (DataAccess) m.invoke(null, dataStore);
+                            } catch (Exception e) {
+                                throw new DataSourceException("Creation of a versioning wrapper failed", e);
+                            }
                         }
                         
                         // cache only if the id is not null, no need to cache the stores
@@ -940,17 +957,17 @@ public class ResourcePool {
             fs = GeoServerFeatureLocking.create(fs, schema,
                     info.getFilter(), resultCRS, info.getProjectionPolicy().getCode());
             
-            if (WFS_VERSIONING_FS != null
-                    && Boolean.TRUE.equals(info.getMetadata().get("wfs_versioning", Boolean.class))) {
-                LOGGER.info("Creating versioning wrapper for FeatureSource " + typeName);
-                try {
-                    @SuppressWarnings("unchecked")
-                    Method m = WFS_VERSIONING_FS.getMethod("create", FeatureSource.class);
-                    fs = (SimpleFeatureSource) m.invoke(null, fs);
-                } catch (Exception e) {
-                    throw new DataSourceException("Creation of a versioning wrapper failed", e);
-                }
-            }
+//            if (GEOGIT_VERSIONING_FS != null) {
+//                LOGGER.fine("Creating versioning wrapper for FeatureSource " + typeName
+//                        + ". Whether or not version info is available is FeatureTypeInfo dependant");
+//                try {
+//                    @SuppressWarnings("unchecked")
+//                    Method m = GEOGIT_VERSIONING_FS.getMethod("create", FeatureSource.class);
+//                    fs = (SimpleFeatureSource) m.invoke(null, fs);
+//                } catch (Exception e) {
+//                    throw new DataSourceException("Creation of a versioning wrapper failed", e);
+//                }
+//            }
             return fs;
         }
     }
