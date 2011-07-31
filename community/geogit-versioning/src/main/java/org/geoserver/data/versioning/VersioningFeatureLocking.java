@@ -3,59 +3,52 @@ package org.geoserver.data.versioning;
 import java.io.IOException;
 
 import org.geotools.data.FeatureLock;
+import org.geotools.data.FeatureLocking;
 import org.geotools.data.Query;
-import org.geotools.data.simple.SimpleFeatureLocking;
-import org.geotools.data.simple.SimpleFeatureSource;
+import org.opengis.feature.Feature;
+import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.Filter;
 
+@SuppressWarnings("rawtypes")
 public class VersioningFeatureLocking extends VersioningFeatureStore implements
-        SimpleFeatureLocking {
+        FeatureLocking<FeatureType, Feature> {
 
-    public VersioningFeatureLocking(SimpleFeatureSource unversioned, VersioningDataStore store) {
+    public VersioningFeatureLocking(FeatureLocking unversioned, VersioningDataAccess store) {
         super(unversioned, store);
     }
 
     @Override
+    public void setFeatureLock(FeatureLock lock) {
+        ((FeatureLocking) unversioned).setFeatureLock(lock);
+    }
+
+    @Override
     public int lockFeatures(Query query) throws IOException {
-        // REVISIT: can this query contain a versioning predicate?
-        //return ((SimpleFeatureLocking) unversioned).lockFeatures();
-        throw new UnsupportedOperationException("do versioning!");
+        return ((FeatureLocking) unversioned).lockFeatures(query);
     }
 
     @Override
     public int lockFeatures(Filter filter) throws IOException {
-        // REVISIT: can this query contain a versioning predicate?
-        //return ((SimpleFeatureLocking) unversioned).lockFeatures(filter);
-        throw new UnsupportedOperationException("do versioning!");
-    }
-
-    @Override
-    public void unLockFeatures(Filter filter) throws IOException {
-        // REVISIT: can this query contain a versioning predicate?
-        //((SimpleFeatureLocking) unversioned).unLockFeatures(filter);
-        throw new UnsupportedOperationException("do versioning!");
-    }
-
-    @Override
-    public void unLockFeatures(Query query) throws IOException {
-        // REVISIT: can this query contain a versioning predicate?
-        //((SimpleFeatureLocking) unversioned).unLockFeatures(query);
-        throw new UnsupportedOperationException("do versioning!");
-    }
-
-    @Override
-    public void setFeatureLock(FeatureLock lock) {
-        ((SimpleFeatureLocking) unversioned).setFeatureLock(lock);
+        return ((FeatureLocking) unversioned).lockFeatures(filter);
     }
 
     @Override
     public int lockFeatures() throws IOException {
-        return ((SimpleFeatureLocking) unversioned).lockFeatures();
+        return ((FeatureLocking) unversioned).lockFeatures();
     }
 
     @Override
     public void unLockFeatures() throws IOException {
-        ((SimpleFeatureLocking) unversioned).unLockFeatures();
+        ((FeatureLocking) unversioned).unLockFeatures();
     }
 
+    @Override
+    public void unLockFeatures(Filter filter) throws IOException {
+        ((FeatureLocking) unversioned).unLockFeatures(filter);
+    }
+
+    @Override
+    public void unLockFeatures(Query query) throws IOException {
+        ((FeatureLocking) unversioned).unLockFeatures(query);
+    }
 }
