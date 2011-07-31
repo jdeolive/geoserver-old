@@ -7,13 +7,14 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
+import org.custommonkey.xmlunit.XMLUnit;
+import org.custommonkey.xmlunit.XpathEngine;
 import org.geogit.api.RevCommit;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.data.test.MockData;
-import org.geoserver.gss.GSSTestSupport;
-import org.geoserver.gss.impl.AuthenticationResolver;
-import org.geoserver.gss.impl.GSS;
+import org.geoserver.geogit.GEOGIT;
 import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.wfs.v2_0.WFS20TestSupport;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
@@ -60,20 +61,25 @@ import com.vividsolutions.jts.io.WKTReader;
  * @author groldan
  * 
  */
-public abstract class VersioningTestSupport extends GSSTestSupport {
+public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
 
-    protected static final Logger LOGGER = Logging.getLogger("org.geoserver.gss.functional");
+    protected static final Logger LOGGER = Logging.getLogger(WFS20VersioningTestSupport.class);
 
     protected static final Name CITE_BRIDGES = new NameImpl(MockData.BRIDGES);
 
     protected static final Name CITE_BUILDINGS = new NameImpl(MockData.BUILDINGS);
 
+    protected static final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
+
+    private XpathEngine xpath;
+
     @Override
     public void oneTimeSetUp() throws Exception {
         super.oneTimeSetUp();
-
-        GSS gss = GeoServerExtensions.bean(GSS.class, applicationContext);
-        gss.setAuthenticationResolver(new AuthenticationResolver() {
+        xpath = XMLUnit.newXpathEngine();
+        
+        GEOGIT ggitFacade = GeoServerExtensions.bean(GEOGIT.class, applicationContext);
+        ggitFacade.setAuthenticationResolver(new org.geoserver.geogit.AuthenticationResolver() {
             @Override
             public String getCurrentUserName() {
                 return "admin";
@@ -81,10 +87,10 @@ public abstract class VersioningTestSupport extends GSSTestSupport {
         });
 
         // insert the single bridge in cite:Bridges
-        assertTrue(makeVersioned(gss, CITE_BRIDGES) instanceof RevCommit);
+        assertTrue(makeVersioned(ggitFacade, CITE_BRIDGES) instanceof RevCommit);
 
         // insert the two buildings in cite:Buildings
-        assertTrue(makeVersioned(gss, CITE_BUILDINGS) instanceof RevCommit);
+        assertTrue(makeVersioned(ggitFacade, CITE_BUILDINGS) instanceof RevCommit);
 
         GeometryFactory gf = new GeometryFactory();
 
@@ -99,7 +105,7 @@ public abstract class VersioningTestSupport extends GSSTestSupport {
                 (Object) gf.createPoint(new Coordinate(0.0001, 0.0006)));
         commitMessage = "Change Cam Bridge";
         filter = Filter.INCLUDE;
-        recordUpdateCommit(gss, CITE_BRIDGES, filter, properties, newValues, commitMessage);
+        recordUpdateCommit(ggitFacade, CITE_BRIDGES, filter, properties, newValues, commitMessage);
 
         FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
         // update second building
@@ -110,15 +116,15 @@ public abstract class VersioningTestSupport extends GSSTestSupport {
         properties = Arrays.asList("the_geom");
         newValues = Arrays.asList((Object) movedBuilding);
         commitMessage = "Moved building";
-        recordUpdateCommit(gss, CITE_BUILDINGS, filter, properties, newValues, commitMessage);
+        recordUpdateCommit(ggitFacade, CITE_BUILDINGS, filter, properties, newValues, commitMessage);
 
         // delete first building
         filter = ff.id(Collections.singleton(ff.featureId("Buildings.1107531701010")));
-        recordDeleteCommit(gss, CITE_BUILDINGS, filter, "Deleted building");
+        recordDeleteCommit(ggitFacade, CITE_BUILDINGS, filter, "Deleted building");
 
     }
 
-    private void recordDeleteCommit(final GSS gss, final Name typeName, final Filter filter,
+    private void recordDeleteCommit(final GEOGIT facade, final Name typeName, final Filter filter,
             final String commitMessage) throws Exception {
 
         FeatureTypeInfo typeInfo = getCatalog().getFeatureTypeByName(typeName);
@@ -129,15 +135,15 @@ public abstract class VersioningTestSupport extends GSSTestSupport {
         assertTrue("affectedFeatures" + affectedFeatures.size(), affectedFeatures.size() > 0);
 
         LOGGER.info("Creating commit '" + commitMessage + "'");
-        gss.stageDelete("d1", typeName, filter, affectedFeatures);
+        facade.stageDelete("d1", typeName, filter, affectedFeatures);
 
         store.removeFeatures(filter);
 
-        assertNotNull(gss.commitChangeSet("d1", commitMessage));
+        assertNotNull(facade.commitChangeSet("d1", commitMessage));
         LOGGER.info("Delete committed");
     }
 
-    private void recordUpdateCommit(final GSS gss, final Name typeName, final Filter filter,
+    private void recordUpdateCommit(final GEOGIT facade, final Name typeName, final Filter filter,
             final List<String> properties, final List<Object> newValues, final String commitMessage)
             throws Exception {
 
@@ -155,17 +161,17 @@ public abstract class VersioningTestSupport extends GSSTestSupport {
                 newValues.toArray(), filter);
 
         LOGGER.info("Creating commit '" + commitMessage + "'");
-        gss.stageUpdate("t1", typeName, filter, updatedProperties, newValues, affectedFeatures);
+        facade.stageUpdate("t1", typeName, filter, updatedProperties, newValues, affectedFeatures);
 
-        assertNotNull(gss.commitChangeSet("t1", commitMessage));
+        assertNotNull(facade.commitChangeSet("t1", commitMessage));
         LOGGER.info("Update committed");
     }
 
-    private Object makeVersioned(final GSS gss, final Name featureTypeName) throws Exception {
+    private Object makeVersioned(final GEOGIT facade, final Name featureTypeName) throws Exception {
         LOGGER.info("Importing FeatureType as versioned: " + featureTypeName);
-        Future<?> future = gss.initialize(featureTypeName);
+        Future<?> future = facade.initialize(featureTypeName);
         future.get();// lock until imported
-        assertTrue(gss.isReplicated(featureTypeName));
+        assertTrue(facade.isReplicated(featureTypeName));
         return future.get();
     }
 
