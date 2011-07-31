@@ -1,4 +1,4 @@
-package org.geoserver.wfs.versioning;
+package org.geoserver.data.versioning;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,10 +16,12 @@ import org.geotools.data.ServiceInfo;
 import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
+import org.opengis.filter.Id;
 import org.springframework.util.Assert;
 
 public class VersioningDataStore implements DataStore {
@@ -36,6 +38,15 @@ public class VersioningDataStore implements DataStore {
         this.versioningRepo = versioningRepo;
     }
 
+    public boolean isVersioned(Name name) {
+        boolean isVersioned = versioningRepo.getWorkingTree().hasRoot(name);
+        return isVersioned;
+    }
+
+
+    /**
+     * @see org.geotools.data.DataAccess#dispose()
+     */
     @Override
     public void dispose() {
         if (unversioned != null) {
@@ -96,7 +107,10 @@ public class VersioningDataStore implements DataStore {
     @Override
     public FeatureWriter<SimpleFeatureType, SimpleFeature> getFeatureWriter(String typeName,
             Filter filter, Transaction transaction) throws IOException {
-        throw new UnsupportedOperationException("do versioning!");
+
+        FeatureWriter<SimpleFeatureType, SimpleFeature> writer;
+        writer = unversioned.getFeatureWriter(typeName, filter, transaction);
+        return new VersioningFeatureWriter<SimpleFeatureType, SimpleFeature>(writer, this);
     }
 
     /**
@@ -106,7 +120,10 @@ public class VersioningDataStore implements DataStore {
     @Override
     public FeatureWriter<SimpleFeatureType, SimpleFeature> getFeatureWriter(String typeName,
             Transaction transaction) throws IOException {
-        throw new UnsupportedOperationException("do versioning!");
+
+        FeatureWriter<SimpleFeatureType, SimpleFeature> writer;
+        writer = unversioned.getFeatureWriter(typeName, transaction);
+        return new VersioningFeatureWriter<SimpleFeatureType, SimpleFeature>(writer, this);
     }
 
     /**
@@ -117,7 +134,9 @@ public class VersioningDataStore implements DataStore {
     public FeatureWriter<SimpleFeatureType, SimpleFeature> getFeatureWriterAppend(String typeName,
             Transaction transaction) throws IOException {
 
-        throw new UnsupportedOperationException("do versioning!");
+        FeatureWriter<SimpleFeatureType, SimpleFeature> writer;
+        writer = unversioned.getFeatureWriterAppend(typeName, transaction);
+        return new VersioningFeatureWriter<SimpleFeatureType, SimpleFeature>(writer, this);
     }
 
     @Override
@@ -164,6 +183,21 @@ public class VersioningDataStore implements DataStore {
     public LockingManager getLockingManager() {
 
         return unversioned.getLockingManager();
+    }
+
+    public ReferencedEnvelope getBounds(Name name, Id versioningFilter, Query query) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public int getCount(Name name, Id versioningFilter, Query query) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    public SimpleFeatureCollection getFeatures(Name name, Id versioningFilter, Query query) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

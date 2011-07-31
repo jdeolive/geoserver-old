@@ -1,7 +1,11 @@
-package org.geoserver.wfs.versioning;
+package org.geoserver.data.versioning;
+
+import static org.geoserver.data.versioning.ResourceIdFilterExtractor.getVersioningFilter;
 
 import java.awt.RenderingHints.Key;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Set;
 
 import org.geotools.data.DataAccess;
@@ -16,6 +20,7 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
+import org.opengis.filter.Id;
 
 public class VersioningFeatureSource implements SimpleFeatureSource {
 
@@ -26,6 +31,10 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
     public VersioningFeatureSource(SimpleFeatureSource unversioned, VersioningDataStore store) {
         this.unversioned = unversioned;
         this.store = store;
+    }
+
+    public boolean isVersioned() {
+        return store.isVersioned(getName());
     }
 
     /**
@@ -39,12 +48,15 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
     /**
      * @see org.geotools.data.FeatureSource#getBounds(org.geotools.data.Query)
      */
-    /**
-     * @see org.geotools.data.FeatureSource#getBounds(org.geotools.data.Query)
-     */
     @Override
     public ReferencedEnvelope getBounds(Query query) throws IOException {
-        throw new UnsupportedOperationException("do versioning!");
+
+        Id versioningFilter;
+        if (!isVersioned() || null == (versioningFilter = getVersioningFilter(query.getFilter()))) {
+            return unversioned.getBounds(query);
+        }
+
+        return store.getBounds(getName(), versioningFilter, query);
     }
 
     /**
@@ -52,7 +64,11 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
      */
     @Override
     public int getCount(Query query) throws IOException {
-        throw new UnsupportedOperationException("do versioning!");
+        Id versioningFilter;
+        if (!isVersioned() || null == (versioningFilter = getVersioningFilter(query.getFilter()))) {
+            return unversioned.getCount(query);
+        }
+        return store.getCount(getName(), versioningFilter, query);
     }
 
     /**
@@ -60,7 +76,27 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
      */
     @Override
     public SimpleFeatureCollection getFeatures(Filter filter) throws IOException {
-        throw new UnsupportedOperationException("do versioning!");
+        Id versioningFilter;
+        if (!isVersioned() || null == (versioningFilter = getVersioningFilter(filter))) {
+            return unversioned.getFeatures(filter);
+        }
+        return store.getFeatures(getName(), versioningFilter, namedQuery(filter));
+    }
+
+    private Query namedQuery(Filter filter) {
+        Name name = getName();
+        String typeName = name.getLocalPart();
+        URI namespace;
+        try {
+            namespace = new URI(name.getNamespaceURI());
+        } catch (URISyntaxException e) {
+            namespace = null;
+        }
+        int maxFeartures = Integer.MAX_VALUE;
+        String[] propNames = null;
+        String handle = null;
+        Query query = new Query(typeName, namespace, filter, maxFeartures, propNames, handle);
+        return query;
     }
 
     /**
@@ -68,7 +104,11 @@ public class VersioningFeatureSource implements SimpleFeatureSource {
      */
     @Override
     public SimpleFeatureCollection getFeatures(Query query) throws IOException {
-        throw new UnsupportedOperationException("do versioning!");
+        Id versioningFilter;
+        if (!isVersioned() || null == (versioningFilter = getVersioningFilter(query.getFilter()))) {
+            return unversioned.getFeatures(query);
+        }
+        return store.getFeatures(getName(), versioningFilter, query);
     }
 
     // / directly deferred methods
