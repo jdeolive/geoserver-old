@@ -2013,7 +2013,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                    end("fes:Constraint");
                    start("fes:Constraint", attributes(new String[]{"name", "ImplementsTemporalFilter"}));
                       element("ows:NoValues", null);
-                      element("ows:DefaultValue", "FALSE");
+                      element("ows:DefaultValue", "TRUE");
                    end("fes:Constraint");
                    start("fes:Constraint", attributes(new String[]{"name", "ImplementsVersionNav"}));
                       element("ows:NoValues", null);
