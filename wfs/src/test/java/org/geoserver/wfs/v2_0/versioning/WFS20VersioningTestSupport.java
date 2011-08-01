@@ -79,7 +79,7 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
         xpath = XMLUnit.newXpathEngine();
         
         GEOGIT ggitFacade = GeoServerExtensions.bean(GEOGIT.class, applicationContext);
-        ggitFacade.setAuthenticationResolver(new org.geoserver.geogit.AuthenticationResolver() {
+        ggitFacade.setAuthenticationResolver(new org.geoserver.geogit.GeoServerAuthenticationResolver() {
             @Override
             public String getCurrentUserName() {
                 return "admin";
