@@ -27,6 +27,8 @@ import org.opengis.filter.identity.Identifier;
 import org.opengis.filter.identity.ResourceId;
 import org.springframework.util.Assert;
 
+import com.google.common.base.Throwables;
+
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
 
@@ -86,6 +88,14 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
     @Override
     public void createSchema(FeatureType featureType) throws IOException {
         unversioned.createSchema(featureType);
+        try {
+            repository.getWorkingTree().init(featureType);
+            GeoGIT ggit = new GeoGIT(repository);
+            ggit.add().call();
+            ggit.commit().call();
+        } catch (Exception e) {
+            Throwables.propagate(e);
+        }
     }
 
     /**
@@ -198,6 +208,10 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
         path.add(featureId);
 
         return path;
+    }
+
+    public VersioningTransactionState newTransactionState() {
+        return new VersioningTransactionState(new GeoGIT(repository));
     }
 
 }

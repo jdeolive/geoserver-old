@@ -66,7 +66,7 @@ public class GEOGIT implements DisposableBean {
 
     public GEOGIT(final Catalog catalog, final GeoServerDataDirectory dataDir) throws IOException {
         this.catalog = catalog;
-        this.authResolver = new AuthenticationResolver();
+        this.authResolver = new GeoServerAuthenticationResolver();
         final File geogitRepo = dataDir.findOrCreateDataDir(VERSIONING_DATA_ROOT, GEOGIT_REPO);
 
         EnvironmentBuilder esb = new EnvironmentBuilder(new EntityStoreConfig());
