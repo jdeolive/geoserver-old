@@ -5,6 +5,12 @@ import org.geotools.data.DataAccess;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
+/**
+ * Base class for versioning tests.
+ * 
+ * @author groldan
+ * 
+ */
 public class VersioningTestSupport extends RepositoryTestCase {
 
     protected DataAccess<SimpleFeatureType, SimpleFeature> unversionedStore;
