@@ -34,9 +34,9 @@ import org.opengis.filter.identity.ResourceId;
  * 
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class VersioningFeatureSource implements FeatureSource<FeatureType, Feature> {
+public class VersioningFeatureSource<T extends FeatureType, F extends Feature> implements FeatureSource<T, F> {
 
-    protected final FeatureSource unversioned;
+    protected final FeatureSource<T,F> unversioned;
 
     protected final VersioningDataAccess store;
 
@@ -56,7 +56,7 @@ public class VersioningFeatureSource implements FeatureSource<FeatureType, Featu
      * @see org.geotools.data.FeatureSource#getDataStore()
      */
     @Override
-    public DataAccess<FeatureType, Feature> getDataStore() {
+    public DataAccess<T, F> getDataStore() {
         return store;
     }
 
@@ -87,7 +87,7 @@ public class VersioningFeatureSource implements FeatureSource<FeatureType, Featu
      * @see #getFeatures(Query)
      */
     @Override
-    public FeatureCollection<FeatureType, Feature> getFeatures() throws IOException {
+    public FeatureCollection<T, F> getFeatures() throws IOException {
         return getFeatures(Query.ALL);
     }
 
@@ -96,7 +96,7 @@ public class VersioningFeatureSource implements FeatureSource<FeatureType, Featu
      * @see #getFeatures(Query)
      */
     @Override
-    public FeatureCollection<FeatureType, Feature> getFeatures(Filter filter) throws IOException {
+    public FeatureCollection<T, F> getFeatures(Filter filter) throws IOException {
         return getFeatures(namedQuery(filter));
     }
 
@@ -132,25 +132,29 @@ public class VersioningFeatureSource implements FeatureSource<FeatureType, Featu
      * @see org.geotools.data.FeatureSource#getFeatures(org.geotools.data.Query)
      */
     @Override
-    public FeatureCollection<FeatureType, Feature> getFeatures(Query query) throws IOException {
+    public FeatureCollection<T, F> getFeatures(Query query) throws IOException {
         Id versioningFilter;
         if (!isVersioned()) {
             return unversioned.getFeatures(query.getFilter());
         }
         versioningFilter = getVersioningFilter(query.getFilter());
         if (versioningFilter == null) {
-            FeatureCollection<FeatureType, Feature> delegate = unversioned.getFeatures(query);
+            FeatureCollection<T, F> delegate = unversioned.getFeatures(query);
             final ObjectId currentCommitId = store.getCurrentVersion();
             if (currentCommitId == null) {
                 return delegate;
             }
-            return new ResourceIdAssigningFeatureCollection(delegate, store, currentCommitId);
+            return createFeatureCollection(delegate, store, currentCommitId);
         }
         return store.getFeatures(getName(), versioningFilter, query);
     }
 
-    // / directly deferred methods
+    protected FeatureCollection<T, F> createFeatureCollection(FeatureCollection<T, F> delegate,
+            VersioningDataAccess store, ObjectId currentCommitId) {
+        return new ResourceIdAssigningFeatureCollection(delegate, store, currentCommitId);
+    }
 
+    // / directly deferred methods
     /**
      * Defers to the same method on the wrapped unversioned FeatureSource
      * 
@@ -207,7 +211,7 @@ public class VersioningFeatureSource implements FeatureSource<FeatureType, Featu
      * @see org.geotools.data.FeatureSource#getSchema()
      */
     @Override
-    public FeatureType getSchema() {
+    public T getSchema() {
         return unversioned.getSchema();
     }
 

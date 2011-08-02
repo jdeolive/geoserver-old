@@ -26,8 +26,8 @@ import org.opengis.filter.identity.Identifier;
 import com.google.common.base.Throwables;
 
 @SuppressWarnings("rawtypes")
-public class VersioningFeatureStore extends VersioningFeatureSource implements
-        FeatureStore<FeatureType, Feature> {
+public class VersioningFeatureStore<T extends FeatureType, F extends Feature> extends VersioningFeatureSource<T,F> 
+    implements FeatureStore<T, F> {
 
     public VersioningFeatureStore(final FeatureStore unversioned, final VersioningDataAccess store) {
         super(unversioned, store);
@@ -49,14 +49,13 @@ public class VersioningFeatureStore extends VersioningFeatureSource implements
     }
 
     @SuppressWarnings("unchecked")
-    private FeatureStore<FeatureType, Feature> getStore() {
-        return ((FeatureStore<FeatureType, Feature>) unversioned);
+    private FeatureStore<T, F> getStore() {
+        return ((FeatureStore<T, F>) unversioned);
     }
 
     @Override
-    public List<FeatureId> addFeatures(FeatureCollection<FeatureType, Feature> collection)
-            throws IOException {
-        final FeatureStore<FeatureType, Feature> unversioned = getStore();
+    public List<FeatureId> addFeatures(FeatureCollection<T, F> collection) throws IOException {
+        final FeatureStore<T, F> unversioned = getStore();
         List<FeatureId> featureIds = unversioned.addFeatures(collection);
 
         if (isVersioned()) {
@@ -73,11 +72,11 @@ public class VersioningFeatureStore extends VersioningFeatureSource implements
 
     @Override
     public void removeFeatures(Filter filter) throws IOException {
-        final FeatureStore<FeatureType, Feature> unversioned = getStore();
+        final FeatureStore<T, F> unversioned = getStore();
         if (isVersioned()) {
             checkTransaction();
 
-            FeatureCollection<FeatureType, Feature> removed = unversioned.getFeatures(filter);
+            FeatureCollection<T, F> removed = unversioned.getFeatures(filter);
             try {
                 Name typeName = getSchema().getName();
                 getVersioningState().stageDelete(typeName, filter, removed);
@@ -91,15 +90,14 @@ public class VersioningFeatureStore extends VersioningFeatureSource implements
     @Override
     public void modifyFeatures(Name[] attributeNames, Object[] attributeValues, Filter filter)
             throws IOException {
-        final FeatureStore<FeatureType, Feature> unversioned = getStore();
+        final FeatureStore<T, F> unversioned = getStore();
         final boolean versioned = isVersioned();
         Id affectedFeaturesFitler = null;
         if (versioned) {
             checkTransaction();
             final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
-            FeatureCollection<FeatureType, Feature> affectedFeatures = getStore().getFeatures(
-                    filter);
-            FeatureIterator<Feature> iterator = affectedFeatures.features();
+            FeatureCollection<T, F> affectedFeatures = getStore().getFeatures(filter);
+            FeatureIterator<F> iterator = affectedFeatures.features();
             Set<Identifier> affectedIds = new HashSet<Identifier>();
             try {
                 while (iterator.hasNext()) {
@@ -163,8 +161,8 @@ public class VersioningFeatureStore extends VersioningFeatureSource implements
      * @see org.geotools.data.FeatureStore#setFeatures(org.geotools.data.FeatureReader)
      */
     @Override
-    public void setFeatures(FeatureReader<FeatureType, Feature> reader) throws IOException {
-        final FeatureStore<FeatureType, Feature> unversioned = getStore();
+    public void setFeatures(FeatureReader<T, F> reader) throws IOException {
+        final FeatureStore<T, F> unversioned = getStore();
         unversioned.setFeatures(reader);
         if (isVersioned()) {
             checkTransaction();

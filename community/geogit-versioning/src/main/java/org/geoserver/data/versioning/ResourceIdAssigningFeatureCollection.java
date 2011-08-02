@@ -22,13 +22,12 @@ import com.google.common.collect.AbstractIterator;
  * @author groldan
  * 
  */
-public class ResourceIdAssigningFeatureCollection extends
-        DecoratingFeatureCollection<FeatureType, Feature> implements
-        FeatureCollection<FeatureType, Feature> {
+public class ResourceIdAssigningFeatureCollection<T extends FeatureType, F extends Feature> extends
+        DecoratingFeatureCollection<T, F> implements FeatureCollection<T, F> {
 
     private final ObjectId commitId;
 
-    private final VersioningDataAccess store;
+    private final VersioningDataAccess<T,F> store;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected ResourceIdAssigningFeatureCollection(final FeatureCollection delegate,
@@ -40,16 +39,16 @@ public class ResourceIdAssigningFeatureCollection extends
         this.commitId = commitId;
     }
 
-    private class ResourceIdAssigningIterator extends AbstractIterator<Feature> {
+    private class ResourceIdAssigningIterator extends AbstractIterator<F> {
 
-        private final Iterator<Feature> iterator;
+        private final Iterator<F> iterator;
 
-        public ResourceIdAssigningIterator(final Iterator<Feature> iterator) {
+        public ResourceIdAssigningIterator(final Iterator<F> iterator) {
             this.iterator = iterator;
         }
 
         @Override
-        protected Feature computeNext() {
+        protected F computeNext() {
             if (!iterator.hasNext()) {
                 return endOfData();
             }
@@ -57,49 +56,53 @@ public class ResourceIdAssigningFeatureCollection extends
             Name typeName = next.getType().getName();
             String featureId = next.getIdentifier().getID();
             String versionId = store.getFeatureVersion(typeName, featureId, commitId);
-            return VersionedFeatureWrapper.wrap(next, versionId);
+            return (F) VersionedFeatureWrapper.wrap(next, versionId);
         }
 
     }
 
     @Override
-    public Iterator<Feature> iterator() {
+    public Iterator<F> iterator() {
         @SuppressWarnings("deprecation")
-        Iterator<Feature> iterator = delegate.iterator();
+        Iterator<F> iterator = delegate.iterator();
         return new ResourceIdAssigningIterator(iterator);
     }
 
+    protected class ResourceIdAssigningFeatureIterator<G extends F> implements FeatureIterator<G> {
+
+        protected FeatureIterator<G> features;
+
+        protected ResourceIdAssigningFeatureIterator(FeatureIterator<G> features) {
+            this.features = features;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return features.hasNext();
+        }
+
+        @Override
+        public G next() throws NoSuchElementException {
+            Feature next = features.next();
+            Name typeName = next.getType().getName();
+            String featureId = next.getIdentifier().getID();
+            String versionId = store.getFeatureVersion(typeName, featureId, commitId);
+            return (G) VersionedFeatureWrapper.wrap(next, versionId);
+        }
+
+        @Override
+        public void close() {
+            features.close();
+        }
+    }
     @Override
-    public FeatureIterator<Feature> features() {
-
-        final FeatureIterator<Feature> features = delegate.features();
-
-        return new FeatureIterator<Feature>() {
-
-            @Override
-            public boolean hasNext() {
-                return features.hasNext();
-            }
-
-            @Override
-            public Feature next() throws NoSuchElementException {
-                Feature next = features.next();
-                Name typeName = next.getType().getName();
-                String featureId = next.getIdentifier().getID();
-                String versionId = store.getFeatureVersion(typeName, featureId, commitId);
-                return VersionedFeatureWrapper.wrap(next, versionId);
-            }
-
-            @Override
-            public void close() {
-                features.close();
-            }
-        };
+    public FeatureIterator<F> features() {
+        return new ResourceIdAssigningFeatureIterator(delegate.features());
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void close(Iterator<Feature> close) {
+    public void close(Iterator<F> close) {
         delegate.close(((ResourceIdAssigningIterator) close).iterator);
     }
 }
