@@ -5,6 +5,7 @@ import java.lang.reflect.Proxy;
 import java.util.logging.Logger;
 
 import org.geogit.repository.Repository;
+import org.geoserver.data.versioning.simple.VersioningDataStore;
 import org.geoserver.geogit.GEOGIT;
 import org.geotools.data.DataAccess;
 import org.geotools.data.DataStore;
@@ -35,12 +36,9 @@ public class VersioningAdapterFactory {
         final Repository versioningRepo = GEOGIT.get().getRepository();
 
         if (subject instanceof DataStore) {
-            return new VersioningDataAccess((DataStore) subject, versioningRepo);
+            return new VersioningDataStore((DataStore) subject, versioningRepo);
         }
 
-        LOGGER.fine("Versioning not supported for DataAccess yet, only for DataStore. "
-                + "Returning unproxied DataAccess");
-
-        return subject;
+        return new VersioningDataAccess((DataStore) subject, versioningRepo);
     }
 }

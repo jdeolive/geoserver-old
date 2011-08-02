@@ -10,8 +10,8 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.Filter;
 
 @SuppressWarnings("rawtypes")
-public class VersioningFeatureLocking extends VersioningFeatureStore implements
-        FeatureLocking<FeatureType, Feature> {
+public class VersioningFeatureLocking<T extends FeatureType,F extends Feature> extends VersioningFeatureStore<T,F> 
+    implements FeatureLocking<T, F> {
 
     public VersioningFeatureLocking(FeatureLocking unversioned, VersioningDataAccess store) {
         super(unversioned, store);

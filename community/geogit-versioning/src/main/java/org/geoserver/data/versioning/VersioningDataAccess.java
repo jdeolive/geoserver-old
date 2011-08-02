@@ -18,8 +18,10 @@ import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
 import org.geotools.data.Query;
 import org.geotools.data.ServiceInfo;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Id;
@@ -30,11 +32,11 @@ import org.springframework.util.Assert;
 import com.google.common.base.Throwables;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
+public class VersioningDataAccess<T extends FeatureType, F extends Feature> implements DataAccess<T,F> {
 
-    private DataAccess unversioned;
+    protected DataAccess<T,F> unversioned;
 
-    private Repository repository;
+    protected Repository repository;
 
     public VersioningDataAccess(DataAccess unversioned, Repository versioningRepo) {
         Assert.notNull(unversioned);
@@ -64,14 +66,14 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
      * @see org.geotools.data.DataAccess#getFeatureSource(org.opengis.feature.type.Name)
      */
     @Override
-    public FeatureSource getFeatureSource(Name typeName) throws IOException {
+    public FeatureSource<T,F> getFeatureSource(Name typeName) throws IOException {
         FeatureSource source = unversioned.getFeatureSource(typeName);
         if (source instanceof FeatureLocking) {
-            return new VersioningFeatureLocking((FeatureLocking) source, this);
+            return createFeatureLocking((FeatureLocking) source);
         } else if (source instanceof FeatureStore) {
-            return new VersioningFeatureStore((FeatureStore) source, this);
+            return createFeatureStore((FeatureStore) source);
         }
-        return new VersioningFeatureSource(source, this);
+        return createFeatureSource(source);
     }
 
     /**
@@ -86,7 +88,7 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
      * @see org.geotools.data.DataAccess#createSchema(org.opengis.feature.type.FeatureType)
      */
     @Override
-    public void createSchema(FeatureType featureType) throws IOException {
+    public void createSchema(T featureType) throws IOException {
         unversioned.createSchema(featureType);
         try {
             repository.getWorkingTree().init(featureType);
@@ -103,7 +105,7 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
      *      org.opengis.feature.type.FeatureType)
      */
     @Override
-    public void updateSchema(Name typeName, FeatureType featureType) throws IOException {
+    public void updateSchema(Name typeName, T featureType) throws IOException {
         unversioned.updateSchema(typeName, featureType);
     }
 
@@ -119,7 +121,7 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
      * @see org.geotools.data.DataAccess#getSchema(org.opengis.feature.type.Name)
      */
     @Override
-    public FeatureType getSchema(Name name) throws IOException {
+    public T getSchema(Name name) throws IOException {
         return unversioned.getSchema(name);
     }
 
@@ -156,6 +158,10 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
         ResourceIdFeatureCollector versionQuery;
         versionQuery = new ResourceIdFeatureCollector(repository, featureType, resourceIds);
 
+        DefaultFeatureCollection features = new DefaultFeatureCollection(null, null);
+        for (Feature f : versionQuery) {
+            features.add((SimpleFeature) f);
+        }
         return null;
     }
 
@@ -214,4 +220,15 @@ public class VersioningDataAccess implements DataAccess<FeatureType, Feature> {
         return new VersioningTransactionState(new GeoGIT(repository));
     }
 
+    protected FeatureSource<T,F> createFeatureSource(FeatureSource<T,F> source) {
+        return new VersioningFeatureSource(source, this);
+    }
+    
+    protected FeatureStore<T,F> createFeatureStore(FeatureStore<T,F> store) {
+        return new VersioningFeatureStore(store, this);
+    }
+    
+    protected FeatureLocking<T,F> createFeatureLocking(FeatureLocking<T,F> locking) {
+        return new VersioningFeatureLocking(locking, this);
+    }
 }
