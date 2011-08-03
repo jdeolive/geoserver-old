@@ -2,7 +2,6 @@ package org.geoserver.data.versioning;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -28,9 +27,9 @@ public class VersioningTransactionState implements Transaction.State {
     public static final VersioningTransactionState VOID = new VersioningTransactionState(null) {
 
         @Override
-        public List<String> stageInsert(final Name typeName, FeatureCollection affectedFeatures)
+        public void stageInsert(final Name typeName, FeatureCollection affectedFeatures)
                 throws Exception {
-            return Collections.emptyList();
+
         }
 
         @Override
@@ -141,15 +140,13 @@ public class VersioningTransactionState implements Transaction.State {
      * @return the list of feature ids of the inserted features, in the order they were added
      * @throws Exception
      */
-    public List<String> stageInsert(final Name typeName, FeatureCollection affectedFeatures)
+    public void stageInsert(final Name typeName, FeatureCollection affectedFeatures)
             throws Exception {
 
         // geoGit.checkout().setName(id).call();
         WorkingTree workingTree = geoGit.getRepository().getWorkingTree();
-        List<String> insertedFids = workingTree.insert(affectedFeatures, NULL_PROGRESS_LISTENER);
+        workingTree.insert(affectedFeatures, NULL_PROGRESS_LISTENER);
         geoGit.add().call();
-
-        return insertedFids;
     }
 
     public void stageUpdate(final FeatureCollection newValues) throws Exception {
