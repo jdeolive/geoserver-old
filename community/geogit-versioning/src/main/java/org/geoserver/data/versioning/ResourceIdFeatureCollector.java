@@ -1,25 +1,33 @@
 package org.geoserver.data.versioning;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import org.geogit.api.GeoGIT;
 import org.geogit.api.LogOp;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
+import org.geogit.api.RevCommit;
+import org.geogit.api.RevObject.TYPE;
 import org.geogit.repository.Repository;
 import org.geotools.util.Range;
+import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.identity.ResourceId;
 import org.opengis.filter.identity.Version;
+import org.opengis.filter.identity.VersionAction;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
 
 public class ResourceIdFeatureCollector implements Iterable<Feature> {
+
+    private static final Logger LOGGER = Logging.getLogger(ResourceIdFeatureCollector.class);
 
     private final Repository repository;
 
@@ -40,9 +48,14 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
         Iterator<Ref> featureRefs = Iterators.emptyIterator();
 
         GeoGIT ggit = new GeoGIT(repository);
-        for (ResourceId rid : resourceIds) {
-            Iterator<Ref> ridIterator = query(ggit, rid);
-            featureRefs = Iterators.concat(featureRefs, ridIterator);
+        try {
+            for (ResourceId rid : resourceIds) {
+                Iterator<Ref> ridIterator;
+                ridIterator = query(ggit, rid);
+                featureRefs = Iterators.concat(featureRefs, ridIterator);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
         Iterator<Feature> features = Iterators.transform(featureRefs, new RefToFeature(repository,
@@ -51,19 +64,40 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
         return features;
     }
 
-    private Iterator<Ref> query(final GeoGIT ggit, final ResourceId id) {
+    /**
+     * @param ggit
+     * @param id
+     * @return an iterator for all the requested versions of a given feature, or the empty iterator
+     *         if no such feature is found.
+     * @throws Exception
+     */
+    private Iterator<Ref> query(final GeoGIT ggit, final ResourceId id) throws Exception {
         final String rid = id.getRid();
         final String featureId = featureId(rid);
-        final String ridVersion = extractRequestedVersion(ggit, rid);
+        final Ref ridVersion = extractRequestedVersion(ggit, rid);
+        if (ridVersion == null) {
+            LOGGER.finest("Resource id didn't match any versioned Feature: " + rid);
+            return Iterators.emptyIterator();
+        }
+
+        if (id.getEndTime() == null && id.getStartTime() == null && id.getVersion() == null) {
+            // easy, no extra constraints specified
+            return Iterators.singletonIterator(ridVersion);
+        }
+
+        Set<Ref> result = new HashSet<Ref>();
         // previousRid is for reporting, not for querying, so not needed here
         // String previousRid = rid.getPreviousRid();
         final Version version = id.getVersion();
+        final Date validAsOf = version.getDateTime();
+        final VersionAction versionAction = version.getVersionAction();
 
         LogOp logOp = ggit.log();
 
         String[] path = path(featureId);
         logOp.addPath(path);
 
+        // limit by resource id time range, if speficied
         if (id.getStartTime() != null || id.getEndTime() != null) {
             Date startTime = id.getStartTime() == null ? new Date(0L) : id.getStartTime();
             Date endTime = id.getEndTime() == null ? new Date(Long.MAX_VALUE) : id.getEndTime();
@@ -75,7 +109,14 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
 
             logOp.setTimeRange(timeRange);
         }
-        return null;
+
+        Iterator<RevCommit> commitRange = logOp.call();
+        // limit as per resource id valid date
+        if (validAsOf != null) {
+
+        }
+
+        return result.iterator();
     }
 
     /**
@@ -85,22 +126,33 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
      * @param ggit
      * @param rid
      *            {@code <featureId>[@<featureVersion>]}
-     * @return
+     * @return the version identifier of the feature given by {@code rid}, or at the current geogit
+     *         HEAD if {@code rid} doesn't contain the version info, or {@code null} if such a
+     *         feature does not exist.
      */
-    private String extractRequestedVersion(final GeoGIT ggit, final String rid) {
+    private Ref extractRequestedVersion(final GeoGIT ggit, final String rid) {
         final int idx = rid.indexOf('@');
         if (idx > 0) {
-            return rid.substring(idx + 1);
+            String version = rid.substring(idx + 1);
+            ObjectId versionedId = ObjectId.valueOf(version);
+            final String featureId = rid.substring(0, idx);
+            // verify the object exists
+            boolean exists = repository.getObjectDatabase().exists(versionedId);
+            Ref rootTreeChild = repository.getRootTreeChild(path(featureId));
+            //if (exists) {
+                return new Ref(featureId, versionedId, TYPE.BLOB);
+            //}
+            //return null;
         }
         // no version specified, find out the latest
         final String featureId = rid;
         String[] path = path(featureId);
-        Ref currFeatureObjectId = repository.getRootTreeChild(path);
-        if (currFeatureObjectId == null) {
+        Ref currFeatureRef = repository.getRootTreeChild(path);
+        if (currFeatureRef == null) {
             // feature does not exist at the current repository state
             return null;
         }
-        return currFeatureObjectId.toString();
+        return currFeatureRef;
     }
 
     private String featureId(final String rid) {
@@ -137,7 +189,7 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
             String featureId = featureRef.getName();
             ObjectId contentId = featureRef.getObjectId();
             Feature feature = repo.getFeature(type, featureId, contentId);
-            return feature;
+            return VersionedFeatureWrapper.wrap(feature, featureRef.getObjectId().toString());
         }
 
     }

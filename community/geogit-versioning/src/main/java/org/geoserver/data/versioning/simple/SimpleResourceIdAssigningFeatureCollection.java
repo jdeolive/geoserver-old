@@ -20,36 +20,45 @@ import org.opengis.filter.sort.SortBy;
  * @author groldan
  * 
  */
-public class SimpleResourceIdAssigningFeatureCollection 
-    extends ResourceIdAssigningFeatureCollection<SimpleFeatureType, SimpleFeature>
-    implements SimpleFeatureCollection {
+public class SimpleResourceIdAssigningFeatureCollection extends
+        ResourceIdAssigningFeatureCollection<SimpleFeatureType, SimpleFeature> implements
+        SimpleFeatureCollection {
 
     public SimpleResourceIdAssigningFeatureCollection(SimpleFeatureCollection delegate,
-        VersioningDataStore store, ObjectId commitId) {
+            VersioningDataStore store, ObjectId commitId) {
         super(delegate, store, commitId);
     }
 
+    /**
+     * @see SimpleFeatureCollection#features()
+     */
     @Override
     public SimpleFeatureIterator features() {
         return new SimpleResourceIdAssigningFeatureIterator(delegate.features());
     }
 
+    /**
+     * @see SimpleFeatureCollection#subCollection(Filter)
+     */
     @Override
     public SimpleFeatureCollection subCollection(Filter filter) {
         return (SimpleFeatureCollection) super.subCollection(filter);
     }
 
+    /**
+     * @see SimpleFeatureCollection#sort(SortBy)
+     */
     @Override
     public SimpleFeatureCollection sort(SortBy order) {
         return (SimpleFeatureCollection) super.sort(order);
     }
 
-    class SimpleResourceIdAssigningFeatureIterator extends ResourceIdAssigningFeatureIterator<SimpleFeature> 
-        implements SimpleFeatureIterator {
+    class SimpleResourceIdAssigningFeatureIterator extends
+            ResourceIdAssigningFeatureIterator<SimpleFeature> implements SimpleFeatureIterator {
 
         SimpleResourceIdAssigningFeatureIterator(FeatureIterator<SimpleFeature> features) {
             super(features);
         }
-        
+
     }
 }

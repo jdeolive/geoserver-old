@@ -4,10 +4,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.filter.identity.ResourceIdImpl;
 import org.geotools.filter.visitor.AbstractFinderFilterVisitor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterVisitor;
 import org.opengis.filter.Id;
+import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.Identifier;
 import org.opengis.filter.identity.ResourceId;
 
@@ -21,16 +23,19 @@ public class ResourceIdFilterExtractor {
         final FilterVisitor ridFinder = new AbstractFinderFilterVisitor() {
             @Override
             public Object visit(final Id filter, final Object data) {
-                Set<ResourceId> resourceIds = null;
+                Set<ResourceId> resourceIds = new HashSet<ResourceId>();
                 for (Identifier id : filter.getIdentifiers()) {
                     if (id instanceof ResourceId) {
-                        if (resourceIds == null) {
-                            resourceIds = new HashSet<ResourceId>();
-                        }
                         resourceIds.add((ResourceId) id);
+                    } else if (id instanceof FeatureId) {
+                        FeatureId fid = (FeatureId) id;
+                        int idx = fid.getID().indexOf('@');
+                        if (idx > 0) {
+                            resourceIds.add(new ResourceIdImpl(fid.getID()));
+                        }
                     }
                 }
-                if (resourceIds != null && resourceIds.size() > 0) {
+                if (resourceIds.size() > 0) {
                     found = true;
                     return CommonFactoryFinder.getFilterFactory2(null).id(resourceIds);
                 }
