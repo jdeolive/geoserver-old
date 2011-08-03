@@ -23,6 +23,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Id;
@@ -138,8 +139,8 @@ public class VersioningDataAccess<T extends FeatureType, F extends Feature> impl
      * @return
      * @throws IOException
      */
-    public FeatureCollection<FeatureType, Feature> getFeatures(final Name typeName,
-            final Id versioningFilter, final Query extraQuery) throws IOException {
+    public FeatureCollection getFeatures(final Name typeName, final Id versioningFilter,
+            final Query extraQuery) throws IOException {
         Assert.notNull(typeName);
         Assert.notNull(versioningFilter);
         Assert.isTrue(versioningFilter.getIdentifiers().size() > 0);
@@ -160,11 +161,12 @@ public class VersioningDataAccess<T extends FeatureType, F extends Feature> impl
         ResourceIdFeatureCollector versionQuery;
         versionQuery = new ResourceIdFeatureCollector(repository, featureType, resourceIds);
 
-        DefaultFeatureCollection features = new DefaultFeatureCollection(null, null);
+        DefaultFeatureCollection features = new DefaultFeatureCollection(null,
+                (SimpleFeatureType) featureType);
         for (Feature f : versionQuery) {
             features.add((SimpleFeature) f);
         }
-        return null;
+        return features;
     }
 
     /**

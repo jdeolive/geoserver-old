@@ -48,7 +48,6 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
 
     }
 
-    @SuppressWarnings("unchecked")
     private FeatureStore<T, F> getStore() {
         return ((FeatureStore<T, F>) unversioned);
     }
@@ -88,7 +87,7 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
     }
 
     @Override
-    public void modifyFeatures(Name[] attributeNames, Object[] attributeValues, Filter filter)
+    public void modifyFeatures(final Name[] attributeNames, final Object[] attributeValues, final Filter filter)
             throws IOException {
         final FeatureStore<T, F> unversioned = getStore();
         final boolean versioned = isVersioned();
