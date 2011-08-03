@@ -29,14 +29,11 @@ import org.geoserver.task.LongTaskMonitor;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
 import org.geotools.data.Query;
-import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.NullProgressListener;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.type.Name;
-import org.opengis.filter.Filter;
 import org.opengis.filter.Id;
-import org.opengis.filter.expression.PropertyName;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.util.Assert;
 
@@ -153,47 +150,6 @@ public class GEOGIT implements DisposableBean {
         // branch master
         geoGit.checkout().setName("master").call();
         geoGit.branchCreate().setName(transactionID).call();
-    }
-
-    /**
-     * @param transactionID
-     * @param typeName
-     * @param affectedFeatures
-     * @return the list of feature ids of the inserted features, in the order they were added
-     * @throws Exception
-     */
-    @SuppressWarnings("rawtypes")
-    public List<String> stageInsert(final String transactionID, final Name typeName,
-            FeatureCollection affectedFeatures) throws Exception {
-
-        // geoGit.checkout().setName(transactionID).call();
-        WorkingTree workingTree = geoGit.getRepository().getWorkingTree();
-        List<String> insertedFids = workingTree.insert(affectedFeatures, NULL_PROGRESS_LISTENER);
-        geoGit.add().call();
-
-        return insertedFids;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public void stageUpdate(final String transactionID, final Name typeName, final Filter filter,
-            final List<PropertyName> updatedProperties, final List<Object> newValues,
-            final FeatureCollection affectedFeatures) throws Exception {
-
-        geoGit.checkout().setName(transactionID).call();
-        WorkingTree workingTree = geoGit.getRepository().getWorkingTree();
-        workingTree.update(filter, updatedProperties, newValues, affectedFeatures,
-                NULL_PROGRESS_LISTENER);
-        geoGit.add().call();
-    }
-
-    @SuppressWarnings("rawtypes")
-    public void stageDelete(final String transactionID, Name typeName, Filter filter,
-            FeatureCollection affectedFeatures) throws Exception {
-
-        geoGit.checkout().setName(transactionID).call();
-        WorkingTree workingTree = geoGit.getRepository().getWorkingTree();
-        workingTree.delete(typeName, filter, affectedFeatures);
-        geoGit.add().call();
     }
 
     public void stageRename(final Name typeName, final String oldFid, final String newFid) {
