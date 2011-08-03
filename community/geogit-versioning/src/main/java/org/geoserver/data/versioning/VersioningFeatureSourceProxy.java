@@ -63,7 +63,7 @@ public class VersioningFeatureSourceProxy implements InvocationHandler {
                 filter = (Filter) args[0];
             }
 
-            Id versioningFilter = ResourceIdFilterExtractor.getVersioningFilter(filter);
+            Id versioningFilter = VersionFilters.getVersioningFilter(filter);
             return versioningFilter;
         }
 

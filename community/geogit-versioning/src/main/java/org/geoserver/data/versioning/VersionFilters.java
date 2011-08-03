@@ -6,6 +6,7 @@ import java.util.Set;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.identity.ResourceIdImpl;
 import org.geotools.filter.visitor.AbstractFinderFilterVisitor;
+import org.geotools.filter.visitor.DuplicatingFilterVisitor;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterVisitor;
 import org.opengis.filter.Id;
@@ -13,9 +14,41 @@ import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.Identifier;
 import org.opengis.filter.identity.ResourceId;
 
-public class ResourceIdFilterExtractor {
+public class VersionFilters {
+
+    /**
+     * @return a copy of {@code filter} with any {@link ResourceId} stripped off and converted to
+     *         normal {@link FeatureId} with no version information.
+     */
+    public static final Filter getUnversioningFilter(Filter filter) {
+        if (filter == null || Filter.INCLUDE.equals(filter) || Filter.EXCLUDE.equals(filter)) {
+            return filter;
+        }
+        DuplicatingFilterVisitor visitor = new DuplicatingFilterVisitor() {
+            @Override
+            public Object visit(final Id filter, final Object data) {
+                Set<Identifier> featureIds = new HashSet<Identifier>();
+                for (Identifier id : filter.getIdentifiers()) {
+                    if (id instanceof FeatureId) {// covers FeatureId and ResourceId
+                        String rid = ((FeatureId) id).getID();
+                        int idx = rid.indexOf('@');
+                        if (idx > 0) {
+                            String fid = rid.substring(0, idx);
+                            featureIds.add(getFactory(data).featureId(fid));
+                        } else {
+                            featureIds.add(id);
+                        }
+                    }
+                }
+                return getFactory(data).id(featureIds);
+            }
+        };
+
+        return (Filter) filter.accept(visitor, null);
+    }
 
     public static final Id getVersioningFilter(Filter filter) {
+
         if (filter == null || Filter.INCLUDE.equals(filter) || Filter.EXCLUDE.equals(filter)) {
             return null;
         }

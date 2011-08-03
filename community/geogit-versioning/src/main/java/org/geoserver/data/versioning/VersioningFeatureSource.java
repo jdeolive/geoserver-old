@@ -1,6 +1,6 @@
 package org.geoserver.data.versioning;
 
-import static org.geoserver.data.versioning.ResourceIdFilterExtractor.getVersioningFilter;
+import static org.geoserver.data.versioning.VersionFilters.getVersioningFilter;
 
 import java.awt.RenderingHints.Key;
 import java.io.IOException;
