@@ -58,6 +58,8 @@ public class GEOGIT implements DisposableBean {
 
     private static final String GEOGIT_REPO = "geogit_repo";
 
+    private static final String GEOGIT_INDEX = "geogit_index";
+
     private AuthenticationResolver authResolver;
 
     private final Catalog catalog;
@@ -68,12 +70,15 @@ public class GEOGIT implements DisposableBean {
         this.catalog = catalog;
         this.authResolver = new GeoServerAuthenticationResolver();
         final File geogitRepo = dataDir.findOrCreateDataDir(VERSIONING_DATA_ROOT, GEOGIT_REPO);
+        final File indexRepo = dataDir.findOrCreateDataDir(VERSIONING_DATA_ROOT, GEOGIT_INDEX);
 
         EnvironmentBuilder esb = new EnvironmentBuilder(new EntityStoreConfig());
 
         Properties bdbEnvProperties = null;
-        Environment geogitEnvironment = esb.buildEnvironment(geogitRepo, bdbEnvProperties);
-        RepositoryDatabase ggitRepoDb = new JERepositoryDatabase(geogitEnvironment);
+        Environment geogitEnv = esb.buildEnvironment(geogitRepo, bdbEnvProperties);
+        Environment indexEnv = esb.buildEnvironment(indexRepo, bdbEnvProperties);
+
+        RepositoryDatabase ggitRepoDb = new JERepositoryDatabase(geogitEnv, indexEnv);
 
         // RepositoryDatabase ggitRepoDb = new FileSystemRepositoryDatabase(geogitRepo);
 
@@ -170,10 +175,9 @@ public class GEOGIT implements DisposableBean {
     }
 
     @SuppressWarnings("rawtypes")
-    public void stageUpdate(final String transactionID, final Name typeName,
-            final Filter filter, final List<PropertyName> updatedProperties,
-            final List<Object> newValues, final FeatureCollection affectedFeatures)
-            throws Exception {
+    public void stageUpdate(final String transactionID, final Name typeName, final Filter filter,
+            final List<PropertyName> updatedProperties, final List<Object> newValues,
+            final FeatureCollection affectedFeatures) throws Exception {
 
         geoGit.checkout().setName(transactionID).call();
         WorkingTree workingTree = geoGit.getRepository().getWorkingTree();
@@ -245,8 +249,7 @@ public class GEOGIT implements DisposableBean {
         // TODO: implement ResetOp instead?!
         geoGit.getRepository().getIndex().reset();
 
-        String deletedBranch = geoGit.branchDelete().setName(transactionID).setForce(true)
-                .call();
+        String deletedBranch = geoGit.branchDelete().setName(transactionID).setForce(true).call();
         if (deletedBranch == null) {
             LOGGER.info("Tried to delete branch " + transactionID + " but it didn't exist");
         }

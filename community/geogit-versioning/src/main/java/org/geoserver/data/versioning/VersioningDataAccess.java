@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.geogit.api.GeoGIT;
 import org.geogit.api.ObjectId;
+import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
 import org.geogit.repository.Repository;
@@ -32,9 +33,10 @@ import org.springframework.util.Assert;
 import com.google.common.base.Throwables;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class VersioningDataAccess<T extends FeatureType, F extends Feature> implements DataAccess<T,F> {
+public class VersioningDataAccess<T extends FeatureType, F extends Feature> implements
+        DataAccess<T, F> {
 
-    protected DataAccess<T,F> unversioned;
+    protected DataAccess<T, F> unversioned;
 
     protected Repository repository;
 
@@ -66,7 +68,7 @@ public class VersioningDataAccess<T extends FeatureType, F extends Feature> impl
      * @see org.geotools.data.DataAccess#getFeatureSource(org.opengis.feature.type.Name)
      */
     @Override
-    public FeatureSource<T,F> getFeatureSource(Name typeName) throws IOException {
+    public FeatureSource<T, F> getFeatureSource(Name typeName) throws IOException {
         FeatureSource source = unversioned.getFeatureSource(typeName);
         if (source instanceof FeatureLocking) {
             return createFeatureLocking((FeatureLocking) source);
@@ -182,7 +184,7 @@ public class VersioningDataAccess<T extends FeatureType, F extends Feature> impl
     }
 
     /**
-     * Finds out the version (Fearture hash) of the Feature addressed by {@code typeName/featureId}
+     * Finds out the version (Feature hash) of the Feature addressed by {@code typeName/featureId}
      * at the commit {@code commitId}
      * 
      * @param typeName
@@ -199,8 +201,8 @@ public class VersioningDataAccess<T extends FeatureType, F extends Feature> impl
         }
         final RevTree tree = repository.getTree(commit.getTreeId());
         final List<String> path = path(typeName, featureId);
-        ObjectId featureObjectId = repository.getTreeChildId(tree, path);
-        return featureObjectId == null ? null : featureObjectId.toString();
+        Ref featureObjectRef = repository.getObjectDatabase().getTreeChild(tree, path);
+        return featureObjectRef == null ? null : featureObjectRef.getObjectId().toString();
     }
 
     private List<String> path(final Name typeName, final String featureId) {
@@ -220,15 +222,15 @@ public class VersioningDataAccess<T extends FeatureType, F extends Feature> impl
         return new VersioningTransactionState(new GeoGIT(repository));
     }
 
-    protected FeatureSource<T,F> createFeatureSource(FeatureSource<T,F> source) {
+    protected FeatureSource<T, F> createFeatureSource(FeatureSource<T, F> source) {
         return new VersioningFeatureSource(source, this);
     }
-    
-    protected FeatureStore<T,F> createFeatureStore(FeatureStore<T,F> store) {
+
+    protected FeatureStore<T, F> createFeatureStore(FeatureStore<T, F> store) {
         return new VersioningFeatureStore(store, this);
     }
-    
-    protected FeatureLocking<T,F> createFeatureLocking(FeatureLocking<T,F> locking) {
+
+    protected FeatureLocking<T, F> createFeatureLocking(FeatureLocking<T, F> locking) {
         return new VersioningFeatureLocking(locking, this);
     }
 }
