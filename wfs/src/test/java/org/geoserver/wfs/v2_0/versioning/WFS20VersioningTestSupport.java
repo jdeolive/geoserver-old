@@ -135,7 +135,7 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
         assertTrue("affectedFeatures" + affectedFeatures.size(), affectedFeatures.size() > 0);
 
         LOGGER.info("Creating commit '" + commitMessage + "'");
-        facade.stageDelete("d1", typeName, filter, affectedFeatures);
+        //facade.stageDelete("d1", typeName, filter, affectedFeatures);
 
         store.removeFeatures(filter);
 
@@ -161,7 +161,7 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
                 newValues.toArray(), filter);
 
         LOGGER.info("Creating commit '" + commitMessage + "'");
-        facade.stageUpdate("t1", typeName, filter, updatedProperties, newValues, affectedFeatures);
+        //facade.stageUpdate("t1", typeName, filter, updatedProperties, newValues, affectedFeatures);
 
         assertNotNull(facade.commitChangeSet("t1", commitMessage));
         LOGGER.info("Update committed");
