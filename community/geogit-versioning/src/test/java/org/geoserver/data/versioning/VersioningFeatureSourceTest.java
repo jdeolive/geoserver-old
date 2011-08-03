@@ -72,7 +72,7 @@ public class VersioningFeatureSourceTest extends VersioningTestSupport {
         tx.commit();
 
         CollectIdsVisitor visitor = new CollectIdsVisitor();
-        repo.getRootTree().accept(visitor);
+        repo.getHeadTree().accept(visitor);
 
         initialFeatureVersions = new HashMap<String, String>(visitor.fidToVersionHash);
         assertEquals(3, initialFeatureVersions.size());

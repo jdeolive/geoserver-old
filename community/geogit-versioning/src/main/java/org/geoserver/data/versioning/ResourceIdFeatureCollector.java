@@ -1,16 +1,13 @@
 package org.geoserver.data.versioning;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.geogit.api.GeoGIT;
 import org.geogit.api.LogOp;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
-import org.geogit.api.RevTree;
 import org.geogit.repository.Repository;
 import org.geotools.util.Range;
 import org.opengis.feature.Feature;
@@ -64,7 +61,7 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
 
         LogOp logOp = ggit.log();
 
-        List<String> path = path(featureId);
+        String[] path = path(featureId);
         logOp.addPath(path);
 
         if (id.getStartTime() != null || id.getEndTime() != null) {
@@ -97,9 +94,8 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
         }
         // no version specified, find out the latest
         final String featureId = rid;
-        RevTree rootTree = repository.getRootTree();
-        List<String> path = path(featureId);
-        ObjectId currFeatureObjectId = repository.getTreeChildId(rootTree, path);
+        String[] path = path(featureId);
+        Ref currFeatureObjectId = repository.getRootTreeChild(path);
         if (currFeatureObjectId == null) {
             // feature does not exist at the current repository state
             return null;
@@ -112,15 +108,15 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
         return idx == -1 ? rid : rid.substring(0, idx);
     }
 
-    private List<String> path(final String featureId) {
+    private String[] path(final String featureId) {
         Name typeName = featureType.getName();
-        List<String> path = new ArrayList<String>(3);
+        String[] path;
 
         if (null != typeName.getNamespaceURI()) {
-            path.add(typeName.getNamespaceURI());
+            path = new String[] { typeName.getNamespaceURI(), typeName.getLocalPart(), featureId };
+        } else {
+            path = new String[] { typeName.getLocalPart(), featureId };
         }
-        path.add(typeName.getLocalPart());
-        path.add(featureId);
 
         return path;
     }
