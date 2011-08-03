@@ -482,7 +482,62 @@ public class TransactionTest extends WFS20TestSupport {
         assertEquals( 4.2584, Double.parseDouble( pos[2] ), 1E-4 );
         assertEquals( 52.0648, Double.parseDouble( pos[3] ), 1E-4 );
     }
-    
+
+    public void testInsert3() throws Exception {
+        String xml = "<wfs:Transaction service=\"WFS\" version=\"2.0.0\" "
+                + " xmlns:wfs='" + WFS.NAMESPACE + "' "
+                + " xmlns:gml='" + GML.NAMESPACE + "' "
+                + " xmlns:cite=\"http://www.opengis.net/cite\">"
+                + "<wfs:Insert>"
+                + " <cite:Buildings>"
+                + "  <cite:the_geom>" + 
+                "<gml:MultiSurface> " + 
+                " <gml:surfaceMember> " + 
+                "  <gml:Polygon> " + 
+                "   <gml:exterior> " + 
+                "    <gml:LinearRing> " + 
+                "     <gml:posList>-123.9 40.0 -124.0 39.9 -124.1 40.0 -124.0 40.1 -123.9 40.0</gml:posList>" + 
+                "    </gml:LinearRing> " + 
+                "   </gml:exterior> " + 
+                "  </gml:Polygon> " + 
+                " </gml:surfaceMember> " + 
+                "</gml:MultiSurface> " 
+                + "  </cite:the_geom>"
+                + "  <cite:FID>115</cite:FID>"
+                + "  <cite:ADDRESS>987 Foo St</cite:ADDRESS>" 
+                + " </cite:Buildings>"
+                + "</wfs:Insert>"
+                + "</wfs:Transaction>";
+        
+        Document dom = postAsDOM( "wfs", xml );
+        assertEquals("wfs:TransactionResponse", dom.getDocumentElement().getNodeName());
+        assertEquals( "1", getFirstElementByTagName(dom, "wfs:totalInserted").getFirstChild().getNodeValue());
+
+        dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings&srsName=EPSG:4326&" +
+            "cql_filter=FID%3D'115'");
+        assertEquals( "wfs:FeatureCollection", dom.getDocumentElement().getNodeName() );
+
+        assertEquals( 1, dom.getElementsByTagName("cite:Buildings").getLength() );
+        XMLAssert.assertXpathExists("//gml:Polygon",dom);
+        
+        Element posList = getFirstElementByTagName( dom.getDocumentElement(), "gml:posList" );
+        String[] pos = posList.getFirstChild().getTextContent().split( " " );
+
+        assertEquals( 10, pos.length );
+        assertEquals( -123.9, Double.parseDouble( pos[0] ), 1E-1 );
+        assertEquals( 40.0, Double.parseDouble( pos[1] ), 1E-1 );
+        assertEquals( -124.0, Double.parseDouble( pos[2] ), 1E-1 );
+        assertEquals( 39.9, Double.parseDouble( pos[3] ), 1E-1 );
+        
+        assertEquals( -124.1, Double.parseDouble( pos[4] ), 1E-1 );
+        assertEquals( 40.0, Double.parseDouble( pos[5] ), 1E-1 );
+        assertEquals( -124.0, Double.parseDouble( pos[6] ), 1E-1 );
+        assertEquals( 40.1, Double.parseDouble( pos[7] ), 1E-1 );
+        
+        assertEquals( -123.9, Double.parseDouble( pos[8] ), 1E-1 );
+        assertEquals( 40.0, Double.parseDouble( pos[9] ), 1E-1 );
+    }
+
     public void testUpdateForcedSRS() throws Exception {
         testUpdate("srsName=\"EPSG:4326\"");
     }
