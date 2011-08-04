@@ -29,9 +29,9 @@ public class VersionFilters {
             public Object visit(final Id filter, final Object data) {
                 Set<Identifier> featureIds = new HashSet<Identifier>();
                 for (Identifier id : filter.getIdentifiers()) {
-                    if (id instanceof FeatureId) {// covers FeatureId and ResourceId
+                    if (id instanceof FeatureId && !(id instanceof ResourceId)) {
                         String rid = ((FeatureId) id).getID();
-                        int idx = rid.indexOf('@');
+                        int idx = rid.indexOf(ResourceId.VERSION_SEPARATOR);
                         if (idx > 0) {
                             String fid = rid.substring(0, idx);
                             featureIds.add(getFactory(data).featureId(fid));
@@ -62,9 +62,11 @@ public class VersionFilters {
                         resourceIds.add((ResourceId) id);
                     } else if (id instanceof FeatureId) {
                         FeatureId fid = (FeatureId) id;
-                        int idx = fid.getID().indexOf('@');
+                        int idx = fid.getID().indexOf(ResourceId.VERSION_SEPARATOR);
                         if (idx > 0) {
-                            resourceIds.add(new ResourceIdImpl(fid.getID()));
+                            String featureId = fid.getID().substring(0, idx);
+                            String versionId = fid.getID().substring(idx + 1);
+                            resourceIds.add(new ResourceIdImpl(featureId, versionId));
                         }
                     }
                 }

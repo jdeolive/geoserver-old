@@ -205,7 +205,7 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             for (Iterator<String> i = featureIdList.iterator(); i.hasNext();) {
                 String fid = i.next();
                 //FeatureId featureId = filterFactory.featureId(fid);
-                FeatureId featureId = filterFactory.resourceId(fid);
+                FeatureId featureId = filterFactory.resourceId(fid, null);
                 ids.add(featureId);
             }
             // build a single feature id filter

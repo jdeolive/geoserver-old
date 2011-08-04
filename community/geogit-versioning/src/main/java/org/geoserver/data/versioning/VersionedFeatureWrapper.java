@@ -27,7 +27,7 @@ class VersionedFeatureWrapper {
 
         @Override
         public FeatureId getIdentifier() {
-            ResourceId rid = new ResourceIdImpl(super.getID() + '@' + versionId);
+            ResourceId rid = new ResourceIdImpl(super.getID(), versionId);
             return rid;
         }
 

@@ -129,8 +129,7 @@ public class VersioningTransactionState implements Transaction.State {
 
     @Override
     public void rollback() throws IOException {
-        // TODO Auto-generated method stub
-
+        geoGit.getRepository().getIndex().reset();
     }
 
     /**
