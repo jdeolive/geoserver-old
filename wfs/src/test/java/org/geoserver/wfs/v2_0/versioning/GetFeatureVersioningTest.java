@@ -95,7 +95,7 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
             assertEquals(2, split.length);
 
             assertTrue(split[0].matches("Buildings\\.\\d+"));
-            
+
             //TODO: assert version is locatable... look up in geogit?
         }
     }
