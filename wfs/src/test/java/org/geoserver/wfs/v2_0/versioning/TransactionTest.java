@@ -17,7 +17,7 @@ public class TransactionTest extends WFS20VersioningTestSupport {
     public void testInsert() throws Exception {
         Document dom = getAsDOM("wfs?request=GetFeature&version=2.0.0&typeName="+"cite:Buildings");
 
-        XMLAssert.assertXpathEvaluatesTo("2", "count(//"+"cite:Buildings"+")", dom);
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//"+"cite:Buildings"+")", dom);
 
         //do an insert
         String xml = "<wfs:Transaction service=\"WFS\" version=\"2.0.0\" "
@@ -45,9 +45,15 @@ public class TransactionTest extends WFS20VersioningTestSupport {
                 + "</wfs:Insert>"
                 + "</wfs:Transaction>";
 
+        dom = postAsDOM( "wfs", xml );
+        //print(dom);
+        
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//" + "wfs:totalInserted" + ")", dom);
+        
         //get the feature id
         dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings&srsName=EPSG:4326&" +
                 "cql_filter=FID%3D'115'");
+        print(dom);
         assertEquals( "wfs:FeatureCollection", dom.getDocumentElement().getNodeName() );
         XMLAssert.assertXpathEvaluatesTo("1", "count(//" + "cite:Buildings" + ")", dom);
 

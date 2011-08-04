@@ -12,9 +12,12 @@ import org.custommonkey.xmlunit.XpathEngine;
 import org.geogit.api.RevCommit;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.data.test.MockData;
+import org.geoserver.data.versioning.GeoToolsAuthenticationResolver;
 import org.geoserver.geogit.GEOGIT;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.wfs.v2_0.WFS20TestSupport;
+import org.geotools.data.DefaultTransaction;
+import org.geotools.data.Transaction;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
@@ -23,7 +26,6 @@ import org.geotools.util.logging.Logging;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
-import org.opengis.filter.expression.PropertyName;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -77,14 +79,8 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
     public void oneTimeSetUp() throws Exception {
         super.oneTimeSetUp();
         xpath = XMLUnit.newXpathEngine();
-        
+
         GEOGIT ggitFacade = GeoServerExtensions.bean(GEOGIT.class, applicationContext);
-        ggitFacade.setAuthenticationResolver(new org.geoserver.geogit.GeoServerAuthenticationResolver() {
-            @Override
-            public String getCurrentUserName() {
-                return "admin";
-            }
-        });
 
         // insert the single bridge in cite:Bridges
         assertTrue(makeVersioned(ggitFacade, CITE_BRIDGES) instanceof RevCommit);
@@ -129,18 +125,26 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
 
         FeatureTypeInfo typeInfo = getCatalog().getFeatureTypeByName(typeName);
         SimpleFeatureStore store = (SimpleFeatureStore) typeInfo.getFeatureSource(null, null);
+        Transaction tx = new DefaultTransaction();
+        tx.putProperty(GeoToolsAuthenticationResolver.GEOGIT_COMMIT_MESSAGE, commitMessage);
+        store.setTransaction(tx);
+        try {
+            @SuppressWarnings("rawtypes")
+            FeatureCollection affectedFeatures = store.getFeatures(filter);
+            assertTrue("affectedFeatures" + affectedFeatures.size(), affectedFeatures.size() > 0);
 
-        @SuppressWarnings("rawtypes")
-        FeatureCollection affectedFeatures = store.getFeatures(filter);
-        assertTrue("affectedFeatures" + affectedFeatures.size(), affectedFeatures.size() > 0);
+            LOGGER.info("Creating commit '" + commitMessage + "'");
 
-        LOGGER.info("Creating commit '" + commitMessage + "'");
-        //facade.stageDelete("d1", typeName, filter, affectedFeatures);
+            store.removeFeatures(filter);
 
-        store.removeFeatures(filter);
-
-        assertNotNull(facade.commitChangeSet("d1", commitMessage));
-        LOGGER.info("Delete committed");
+            tx.commit();
+            LOGGER.info("Delete committed");
+        } catch (Exception e) {
+            tx.rollback();
+            throw e;
+        } finally {
+            tx.close();
+        }
     }
 
     private void recordUpdateCommit(final GEOGIT facade, final Name typeName, final Filter filter,
@@ -149,22 +153,28 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
 
         FeatureTypeInfo typeInfo = getCatalog().getFeatureTypeByName(typeName);
         SimpleFeatureStore store = (SimpleFeatureStore) typeInfo.getFeatureSource(null, null);
+        Transaction tx = new DefaultTransaction();
+        tx.putProperty(GeoToolsAuthenticationResolver.GEOGIT_COMMIT_MESSAGE, commitMessage);
+        store.setTransaction(tx);
+        try {
 
-        @SuppressWarnings("rawtypes")
-        FeatureCollection affectedFeatures = store.getFeatures(filter);
-        assertTrue("affectedFeatures" + affectedFeatures.size(), affectedFeatures.size() > 0);
+            @SuppressWarnings("rawtypes")
+            FeatureCollection affectedFeatures = store.getFeatures(filter);
+            assertTrue("affectedFeatures" + affectedFeatures.size(), affectedFeatures.size() > 0);
 
-        List<PropertyName> updatedProperties = Arrays.asList(ff.property("NAME"),
-                ff.property("the_geom"));
+            store.modifyFeatures(properties.toArray(new String[properties.size()]),
+                    newValues.toArray(), filter);
 
-        store.modifyFeatures(properties.toArray(new String[properties.size()]),
-                newValues.toArray(), filter);
+            LOGGER.info("Creating commit '" + commitMessage + "'");
 
-        LOGGER.info("Creating commit '" + commitMessage + "'");
-        //facade.stageUpdate("t1", typeName, filter, updatedProperties, newValues, affectedFeatures);
-
-        assertNotNull(facade.commitChangeSet("t1", commitMessage));
-        LOGGER.info("Update committed");
+            tx.commit();
+            LOGGER.info("Update committed");
+        } catch (Exception e) {
+            tx.rollback();
+            throw e;
+        } finally {
+            tx.close();
+        }
     }
 
     private Object makeVersioned(final GEOGIT facade, final Name featureTypeName) throws Exception {

@@ -19,18 +19,14 @@ class ImportVersionedLayerTask extends LongTask<RevCommit> {
 
     final GeoGIT geoGit;
 
-    final String user;
-
     @SuppressWarnings("rawtypes")
     private final FeatureSource featureSource;
 
     private final Name featureTypeName;
 
     @SuppressWarnings("rawtypes")
-    public ImportVersionedLayerTask(final String user, final FeatureSource featureSource,
-            final GeoGIT geoGit) {
+    public ImportVersionedLayerTask(final FeatureSource featureSource, final GeoGIT geoGit) {
         super();
-        this.user = user;
         this.featureSource = featureSource;
         this.geoGit = geoGit;
 
@@ -73,8 +69,7 @@ class ImportVersionedLayerTask extends LongTask<RevCommit> {
             // don't want to commit them all
             // geoGit.add().addPattern(pattern).call();
             geoGit.add().call();
-            revCommit = geoGit.commit().setAuthor(user).setCommitter(user)
-                    .setMessage(commitMessage).call();
+            revCommit = geoGit.commit().setMessage(commitMessage).call();
             LOGGER.info("Initial commit of " + featureTypeName + ": " + revCommit.getId());
         }
         return revCommit;

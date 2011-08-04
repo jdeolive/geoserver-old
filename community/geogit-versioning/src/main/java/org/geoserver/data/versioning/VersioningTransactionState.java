@@ -80,9 +80,7 @@ public class VersioningTransactionState implements Transaction.State {
 
     @Override
     public void commit() throws IOException {
-        final String userName = getCurrentUserName();
-        final String commitMsg = getCommitMessage();
-        LOGGER.info("Committing changeset " + id + " by user " + userName);
+        LOGGER.info("Committing changeset " + id);
 
         // final Ref branch = geoGit.checkout().setName(transactionID).call();
         // commit to the branch
@@ -94,8 +92,9 @@ public class VersioningTransactionState implements Transaction.State {
         // TODO: check mergeResult is success?
         // geoGit.branchDelete().setName(transactionID).call();
         try {
-            CommitOp commitOp = geoGit.commit().setAuthor(userName).setCommitter("geoserver")
-                    .setMessage(commitMsg);
+            CommitOp commitOp = geoGit.commit().setAuthenticationResolver(
+                    new GeoToolsAuthenticationResolver(transaction));
+
             commit = commitOp.call();
         } catch (IOException e) {
             throw e;
@@ -103,28 +102,6 @@ public class VersioningTransactionState implements Transaction.State {
             Throwables.propagate(e);
         }
         LOGGER.info("New commit: " + commit);
-    }
-
-    private String getCommitMessage() {
-        String message = (String) transaction.getProperty("GEOGIT_COMMIT_MESSAGE");
-        if (message == null) {
-            message = (String) transaction.getProperty("VersioningCommitMessage");
-        }
-        if (message == null) {
-            message = "No commit message provided";
-        }
-        return message;
-    }
-
-    private String getCurrentUserName() {
-        String user = (String) transaction.getProperty("GEOGIT_USER_NAME");
-        if (user == null) {
-            user = (String) transaction.getProperty("VersioningCommitAuthor");
-        }
-        if (user == null) {
-            user = "anonymous";
-        }
-        return user;
     }
 
     @Override

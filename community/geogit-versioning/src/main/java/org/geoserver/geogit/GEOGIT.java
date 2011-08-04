@@ -57,15 +57,12 @@ public class GEOGIT implements DisposableBean {
 
     private static final String GEOGIT_INDEX = "geogit_index";
 
-    private AuthenticationResolver authResolver;
-
     private final Catalog catalog;
 
     private final GeoGIT geoGit;
 
     public GEOGIT(final Catalog catalog, final GeoServerDataDirectory dataDir) throws IOException {
         this.catalog = catalog;
-        this.authResolver = new GeoServerAuthenticationResolver();
         final File geogitRepo = dataDir.findOrCreateDataDir(VERSIONING_DATA_ROOT, GEOGIT_REPO);
         final File indexRepo = dataDir.findOrCreateDataDir(VERSIONING_DATA_ROOT, GEOGIT_INDEX);
 
@@ -119,8 +116,6 @@ public class GEOGIT implements DisposableBean {
      */
     @SuppressWarnings("rawtypes")
     public Future<?> initialize(final Name featureTypeName) throws Exception {
-        final String user = getCurrentUserName();
-        Assert.notNull(user, "This operation shall be invoked by a logged in user");
 
         final FeatureTypeInfo featureTypeInfo = catalog.getFeatureTypeByName(featureTypeName);
         Assert.notNull(featureTypeInfo, "No FeatureType named " + featureTypeName
@@ -136,7 +131,7 @@ public class GEOGIT implements DisposableBean {
         }
 
         ImportVersionedLayerTask importTask;
-        importTask = new ImportVersionedLayerTask(user, featureSource, geoGit);
+        importTask = new ImportVersionedLayerTask(featureSource, geoGit);
         LongTaskMonitor monitor = GeoServerExtensions.bean(LongTaskMonitor.class);
         Future<RevCommit> future = monitor.dispatch(importTask);
         return future;
@@ -144,12 +139,6 @@ public class GEOGIT implements DisposableBean {
 
     public boolean isReplicated(final Name featureTypeName) {
         return geoGit.getRepository().getWorkingTree().hasRoot(featureTypeName);
-    }
-
-    public void initChangeSet(final String transactionID) throws Exception {
-        // branch master
-        geoGit.checkout().setName("master").call();
-        geoGit.branchCreate().setName(transactionID).call();
     }
 
     public void stageRename(final Name typeName, final String oldFid, final String newFid) {
@@ -163,67 +152,6 @@ public class GEOGIT implements DisposableBean {
         List<String> to = Arrays.asList(namespaceURI, localPart, newFid);
 
         index.renamed(from, to);
-    }
-
-    /**
-     * Merges branch named after {@code transactionID} back to master and commits.
-     * 
-     * @param transactionID
-     * @param commitMsg
-     * @return
-     * @throws Exception
-     */
-    public RevCommit commitChangeSet(final String transactionID, final String commitMsg)
-            throws Exception {
-        String userName = getCurrentUserName();
-        LOGGER.info("Committing changeset " + transactionID + " by user " + userName);
-
-        // final Ref branch = geoGit.checkout().setName(transactionID).call();
-        // commit to the branch
-        RevCommit commit;
-        // checkout master
-        // final Ref master = geoGit.checkout().setName("master").call();
-        // merge branch to master
-        // MergeResult mergeResult = geoGit.merge().include(branch).call();
-        // TODO: check mergeResult is success?
-        // geoGit.branchDelete().setName(transactionID).call();
-        commit = geoGit.commit().setAuthor(userName).setCommitter("geoserver")
-                .setMessage(commitMsg).call();
-        return commit;
-    }
-
-    /**
-     * Discards branch named after {@code transactionID}.
-     * 
-     * @param transactionID
-     * @throws Exception
-     */
-    public void rollBackChangeSet(final String transactionID) throws Exception {
-        String userName = getCurrentUserName();
-        System.err.println("Rolling back changeset " + transactionID + " by user " + userName);
-
-        // TODO: implement ResetOp instead?!
-        geoGit.getRepository().getIndex().reset();
-
-        String deletedBranch = geoGit.branchDelete().setName(transactionID).setForce(true).call();
-        if (deletedBranch == null) {
-            LOGGER.info("Tried to delete branch " + transactionID + " but it didn't exist");
-        }
-    }
-
-    /**
-     * @return {@code null} if annonymous, the name of the current user otherwise
-     */
-    public String getCurrentUserName() {
-        return authResolver.getCurrentUserName();
-    }
-
-    /**
-     * Set an alternate auth resolver, mainly used to aid in unit testing code that depends on this
-     * class.
-     */
-    public void setAuthenticationResolver(AuthenticationResolver resolver) {
-        this.authResolver = resolver;
     }
 
     public GeoGIT getGeoGit() {
