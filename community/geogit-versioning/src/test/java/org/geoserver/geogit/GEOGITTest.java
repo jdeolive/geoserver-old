@@ -13,7 +13,6 @@ import org.geogit.api.GeoGIT;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServerDataDirectory;
-import org.geoserver.geogit.GEOGIT;
 import org.geotools.feature.NameImpl;
 import org.opengis.feature.type.Name;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

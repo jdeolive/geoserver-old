@@ -34,13 +34,14 @@ public class NewVersionedLayerPageProvider extends GeoServerDataProvider<Version
         }
     };
 
-    public static final Property<VersionedLayerInfo> PUBLISHED = new BeanProperty<VersionedLayerInfo>("status",
-            "published");
+    public static final Property<VersionedLayerInfo> PUBLISHED = new BeanProperty<VersionedLayerInfo>(
+            "status", "published");
 
-    public static final Property<VersionedLayerInfo> NAME = new BeanProperty<VersionedLayerInfo>("name", "name");
+    public static final Property<VersionedLayerInfo> NAME = new BeanProperty<VersionedLayerInfo>(
+            "name", "name");
 
-    public static final Property<VersionedLayerInfo> GEOMTYPE = new BeanProperty<VersionedLayerInfo>("type",
-            "geometryType") {
+    public static final Property<VersionedLayerInfo> GEOMTYPE = new BeanProperty<VersionedLayerInfo>(
+            "type", "geometryType") {
 
         @Override
         public Comparator<VersionedLayerInfo> getComparator() {

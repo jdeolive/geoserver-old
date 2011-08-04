@@ -177,7 +177,8 @@ public class VersionedLayersPage extends GeoServerSecuredPage implements IHeader
         return header;
     }
 
-    private final class GeoSynchronizedTypesTablePanel extends GeoServerTablePanel<VersionedLayerInfo> {
+    private final class GeoSynchronizedTypesTablePanel extends
+            GeoServerTablePanel<VersionedLayerInfo> {
         private static final long serialVersionUID = 1L;
 
         private GeoSynchronizedTypesTablePanel(final String id,
@@ -187,8 +188,8 @@ public class VersionedLayersPage extends GeoServerSecuredPage implements IHeader
 
         @Override
         protected void onSelectionUpdate(AjaxRequestTarget target) {
-            VersionedLayersPage.this.removalLink
-                    .setEnabled(publishedLayersTable.getSelection().size() > 0);
+            VersionedLayersPage.this.removalLink.setEnabled(publishedLayersTable.getSelection()
+                    .size() > 0);
             target.addComponent(removalLink);
         }
 
@@ -228,8 +229,8 @@ public class VersionedLayersPage extends GeoServerSecuredPage implements IHeader
 
         private static final long serialVersionUID = 1L;
 
-        public VersionedLayerSelectionRemovalLink(String string, GeoServerTablePanel<VersionedLayerInfo> table,
-                GeoServerDialog dialog) {
+        public VersionedLayerSelectionRemovalLink(String string,
+                GeoServerTablePanel<VersionedLayerInfo> table, GeoServerDialog dialog) {
             super(string);
         }
 
@@ -243,8 +244,8 @@ public class VersionedLayersPage extends GeoServerSecuredPage implements IHeader
 
         private static final long serialVersionUID = 4641819017764643297L;
 
-        static final Property<VersionedLayerInfo> TYPE = new BeanProperty<VersionedLayerInfo>("type",
-                "geometryType") {
+        static final Property<VersionedLayerInfo> TYPE = new BeanProperty<VersionedLayerInfo>(
+                "type", "geometryType") {
 
             private static final long serialVersionUID = 1L;
 
@@ -267,7 +268,8 @@ public class VersionedLayersPage extends GeoServerSecuredPage implements IHeader
             }
         };
 
-        static final Property<VersionedLayerInfo> NAME = new BeanProperty<VersionedLayerInfo>("name", "name");
+        static final Property<VersionedLayerInfo> NAME = new BeanProperty<VersionedLayerInfo>(
+                "name", "name");
 
         @SuppressWarnings("unchecked")
         static final List<Property<VersionedLayerInfo>> PROPERTIES = Arrays.asList(TYPE, NAME);

@@ -2,6 +2,7 @@ package org.geoserver.data.versioning.simple;
 
 import org.geogit.api.ObjectId;
 import org.geoserver.data.versioning.ResourceIdAssigningFeatureCollection;
+import org.geoserver.data.versioning.VersioningFeatureSource;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.FeatureIterator;
@@ -25,8 +26,8 @@ public class SimpleResourceIdAssigningFeatureCollection extends
         SimpleFeatureCollection {
 
     public SimpleResourceIdAssigningFeatureCollection(SimpleFeatureCollection delegate,
-            VersioningDataStore store, ObjectId commitId) {
-        super(delegate, store, commitId);
+            VersioningFeatureSource source, ObjectId commitId) {
+        super(delegate, source, commitId);
     }
 
     /**

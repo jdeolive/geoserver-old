@@ -225,14 +225,14 @@ public class VersioningDataAccess<T extends FeatureType, F extends Feature> impl
     }
 
     protected FeatureSource<T, F> createFeatureSource(FeatureSource<T, F> source) {
-        return new VersioningFeatureSource(source, this);
+        return new VersioningFeatureSource(source, repository);
     }
 
     protected FeatureStore<T, F> createFeatureStore(FeatureStore<T, F> store) {
-        return new VersioningFeatureStore(store, this);
+        return new VersioningFeatureStore(store, repository);
     }
 
     protected FeatureLocking<T, F> createFeatureLocking(FeatureLocking<T, F> locking) {
-        return new VersioningFeatureLocking(locking, this);
+        return new VersioningFeatureLocking(locking, repository);
     }
 }

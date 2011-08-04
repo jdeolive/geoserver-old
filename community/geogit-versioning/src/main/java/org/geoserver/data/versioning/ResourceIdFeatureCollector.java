@@ -139,10 +139,10 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
             // verify the object exists
             boolean exists = repository.getObjectDatabase().exists(versionedId);
             Ref rootTreeChild = repository.getRootTreeChild(path(featureId));
-            //if (exists) {
-                return new Ref(featureId, versionedId, TYPE.BLOB);
-            //}
-            //return null;
+            // if (exists) {
+            return new Ref(featureId, versionedId, TYPE.BLOB);
+            // }
+            // return null;
         }
         // no version specified, find out the latest
         final String featureId = rid;

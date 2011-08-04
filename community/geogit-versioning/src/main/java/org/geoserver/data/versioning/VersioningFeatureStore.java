@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.geogit.api.GeoGIT;
+import org.geogit.repository.Repository;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureStore;
 import org.geotools.data.Transaction;
@@ -29,8 +31,8 @@ import com.google.common.base.Throwables;
 public class VersioningFeatureStore<T extends FeatureType, F extends Feature> extends
         VersioningFeatureSource<T, F> implements FeatureStore<T, F> {
 
-    public VersioningFeatureStore(final FeatureStore unversioned, final VersioningDataAccess store) {
-        super(unversioned, store);
+    public VersioningFeatureStore(final FeatureStore unversioned, final Repository repo) {
+        super(unversioned, repo);
     }
 
     @Override
@@ -193,7 +195,7 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
         Object key = "WHAT_WOULD_BE_A_GOOD_KEY?";
         VersioningTransactionState state = (VersioningTransactionState) transaction.getState(key);
         if (state == null) {
-            state = store.newTransactionState();
+            state = new VersioningTransactionState(new GeoGIT(repository));
             transaction.putState(key, state);
         }
         return state;

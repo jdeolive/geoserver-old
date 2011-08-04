@@ -373,16 +373,16 @@ public class ResourcePool {
                             throw new NullPointerException("Could not acquire data access '" + info.getName() + "'");
                         }
                         
-                        if (GEOGIT_VERSIONING_FS != null) {
-                            LOGGER.fine("Creating versioning wrapper for DataStore " + info.getName()
-                                    + ". Whether or not version info is available is FeatureTypeInfo dependant.");
-                            try {
-                                Method m = GEOGIT_VERSIONING_FS.getMethod("create", DataAccess.class);
-                                dataStore = (DataAccess) m.invoke(null, dataStore);
-                            } catch (Exception e) {
-                                throw new DataSourceException("Creation of a versioning wrapper failed", e);
-                            }
-                        }
+//                        if (GEOGIT_VERSIONING_FS != null) {
+//                            LOGGER.fine("Creating versioning wrapper for DataStore " + info.getName()
+//                                    + ". Whether or not version info is available is FeatureTypeInfo dependant.");
+//                            try {
+//                                Method m = GEOGIT_VERSIONING_FS.getMethod("create", DataAccess.class);
+//                                dataStore = (DataAccess) m.invoke(null, dataStore);
+//                            } catch (Exception e) {
+//                                throw new DataSourceException("Creation of a versioning wrapper failed", e);
+//                            }
+//                        }
                         
                         // cache only if the id is not null, no need to cache the stores
                         // returned from un-saved DataStoreInfo objects (it would be actually
@@ -957,17 +957,16 @@ public class ResourcePool {
             fs = GeoServerFeatureLocking.create(fs, schema,
                     info.getFilter(), resultCRS, info.getProjectionPolicy().getCode());
             
-//            if (GEOGIT_VERSIONING_FS != null) {
-//                LOGGER.fine("Creating versioning wrapper for FeatureSource " + typeName
-//                        + ". Whether or not version info is available is FeatureTypeInfo dependant");
-//                try {
-//                    @SuppressWarnings("unchecked")
-//                    Method m = GEOGIT_VERSIONING_FS.getMethod("create", FeatureSource.class);
-//                    fs = (SimpleFeatureSource) m.invoke(null, fs);
-//                } catch (Exception e) {
-//                    throw new DataSourceException("Creation of a versioning wrapper failed", e);
-//                }
-//            }
+            if (GEOGIT_VERSIONING_FS != null) {
+                LOGGER.fine("Creating versioning wrapper for FeatureSource " + typeName
+                        + ". Whether or not version info is available is FeatureTypeInfo dependant");
+                try {
+                    Method m = GEOGIT_VERSIONING_FS.getMethod("create", FeatureSource.class);
+                    fs = (SimpleFeatureSource) m.invoke(null, fs);
+                } catch (Exception e) {
+                    throw new DataSourceException("Creation of a versioning wrapper failed", e);
+                }
+            }
             return fs;
         }
     }

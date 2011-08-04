@@ -2,6 +2,7 @@ package org.geoserver.data.versioning;
 
 import java.io.IOException;
 
+import org.geogit.repository.Repository;
 import org.geotools.data.FeatureLock;
 import org.geotools.data.FeatureLocking;
 import org.geotools.data.Query;
@@ -10,11 +11,11 @@ import org.opengis.feature.type.FeatureType;
 import org.opengis.filter.Filter;
 
 @SuppressWarnings("rawtypes")
-public class VersioningFeatureLocking<T extends FeatureType,F extends Feature> extends VersioningFeatureStore<T,F> 
-    implements FeatureLocking<T, F> {
+public class VersioningFeatureLocking<T extends FeatureType, F extends Feature> extends
+        VersioningFeatureStore<T, F> implements FeatureLocking<T, F> {
 
-    public VersioningFeatureLocking(FeatureLocking unversioned, VersioningDataAccess store) {
-        super(unversioned, store);
+    public VersioningFeatureLocking(FeatureLocking unversioned, Repository repo) {
+        super(unversioned, repo);
     }
 
     @Override

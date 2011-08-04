@@ -6,24 +6,38 @@ import java.awt.RenderingHints.Key;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
+import org.geogit.api.GeoGIT;
 import org.geogit.api.ObjectId;
+import org.geogit.api.Ref;
+import org.geogit.api.RevCommit;
+import org.geogit.api.RevTree;
+import org.geogit.repository.Repository;
 import org.geotools.data.DataAccess;
 import org.geotools.data.FeatureListener;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
 import org.geotools.data.QueryCapabilities;
 import org.geotools.data.ResourceInfo;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.opengis.feature.Feature;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.feature.type.FeatureType;
 import org.opengis.feature.type.Name;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Id;
 import org.opengis.filter.identity.FeatureId;
+import org.opengis.filter.identity.Identifier;
 import org.opengis.filter.identity.ResourceId;
+import org.springframework.util.Assert;
 
 /**
  * Provides support for {@link ResourceId} filtering by means of wrapping an unversioned feature
@@ -34,22 +48,82 @@ import org.opengis.filter.identity.ResourceId;
  * 
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class VersioningFeatureSource<T extends FeatureType, F extends Feature> implements FeatureSource<T, F> {
+public class VersioningFeatureSource<T extends FeatureType, F extends Feature> implements
+        FeatureSource<T, F> {
 
-    protected final FeatureSource<T,F> unversioned;
+    protected final FeatureSource<T, F> unversioned;
 
-    protected final VersioningDataAccess store;
+    protected final Repository repository;
 
-    public VersioningFeatureSource(final FeatureSource unversioned, final VersioningDataAccess store) {
+    public VersioningFeatureSource(final FeatureSource unversioned, final Repository repository) {
         this.unversioned = unversioned;
-        this.store = store;
+        this.repository = repository;
     }
 
     /**
      * @return {@code true} if this is a versioned Feature Type, {@code false} otherwise.
      */
     public boolean isVersioned() {
-        return store.isVersioned(getName());
+        final Name name = getSchema().getName();
+        boolean isVersioned = repository.getWorkingTree().hasRoot(name);
+        return isVersioned;
+    }
+
+    /**
+     * @return the object id of the current HEAD's commit
+     */
+    public ObjectId getCurrentVersion() {
+        // assume HEAD is at MASTER
+        try {
+            Iterator<RevCommit> lastCommit = new GeoGIT(repository).log().setLimit(1).call();
+            if (lastCommit.hasNext()) {
+                return lastCommit.next().getId();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    /**
+     * @precondition {@code typeName != null && versioningFilter != null}
+     * @precondition {@code versioningFilter.getIdentifiers().size() > 0}
+     * @postcondition {@code $return != null}
+     * 
+     * @param typeName
+     * @param versioningFilter
+     * @param extraQuery
+     * @return
+     * @throws IOException
+     */
+    protected FeatureCollection getFeatures(final Name typeName, final Id versioningFilter,
+            final Query extraQuery) throws IOException {
+        Assert.notNull(typeName);
+        Assert.notNull(versioningFilter);
+        Assert.isTrue(versioningFilter.getIdentifiers().size() > 0);
+
+        final Set<Identifier> identifiers = versioningFilter.getIdentifiers();
+        final Set<ResourceId> resourceIds = new HashSet<ResourceId>();
+        for (Identifier id : identifiers) {
+            if (id instanceof ResourceId) {
+                resourceIds.add((ResourceId) id);
+            }
+        }
+        if (resourceIds.size() == 0) {
+            throw new IllegalArgumentException("At least one " + ResourceId.class.getName()
+                    + " should be provided: " + identifiers);
+        }
+
+        final FeatureType featureType = getSchema();
+        ResourceIdFeatureCollector versionQuery;
+        versionQuery = new ResourceIdFeatureCollector(repository, featureType, resourceIds);
+
+        DefaultFeatureCollection features = new DefaultFeatureCollection(null,
+                (SimpleFeatureType) featureType);
+        for (Feature f : versionQuery) {
+            features.add((SimpleFeature) f);
+        }
+        return features;
     }
 
     /**
@@ -57,7 +131,7 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
      */
     @Override
     public DataAccess<T, F> getDataStore() {
-        return store;
+        return unversioned.getDataStore();
     }
 
     /**
@@ -140,18 +214,53 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
         versioningFilter = getVersioningFilter(query.getFilter());
         if (versioningFilter == null) {
             FeatureCollection<T, F> delegate = unversioned.getFeatures(query);
-            final ObjectId currentCommitId = store.getCurrentVersion();
+            final ObjectId currentCommitId = getCurrentVersion();
             if (currentCommitId == null) {
                 return delegate;
             }
-            return createFeatureCollection(delegate, store, currentCommitId);
+            return createFeatureCollection(delegate, currentCommitId);
         }
-        return store.getFeatures(getName(), versioningFilter, query);
+        return getFeatures(getName(), versioningFilter, query);
+    }
+
+    /**
+     * Finds out the version (Feature hash) of the Feature addressed by {@code typeName/featureId}
+     * at the commit {@code commitId}
+     * 
+     * @param typeName
+     * @param featureId
+     * @param commitId
+     * @return
+     */
+    public String getFeatureVersion(final Name typeName, final String featureId,
+            final ObjectId commitId) {
+
+        final RevCommit commit = repository.getCommit(commitId);
+        if (commit.getTreeId().isNull()) {
+            return null;
+        }
+        final RevTree tree = repository.getTree(commit.getTreeId());
+        final List<String> path = path(typeName, featureId);
+        Ref featureObjectRef = repository.getObjectDatabase().getTreeChild(tree, path);
+        return featureObjectRef == null ? null : featureObjectRef.getObjectId().toString();
+    }
+
+    private List<String> path(final Name typeName, final String featureId) {
+
+        List<String> path = new ArrayList<String>(3);
+
+        if (null != typeName.getNamespaceURI()) {
+            path.add(typeName.getNamespaceURI());
+        }
+        path.add(typeName.getLocalPart());
+        path.add(featureId);
+
+        return path;
     }
 
     protected FeatureCollection<T, F> createFeatureCollection(FeatureCollection<T, F> delegate,
-            VersioningDataAccess store, ObjectId currentCommitId) {
-        return new ResourceIdAssigningFeatureCollection(delegate, store, currentCommitId);
+            ObjectId currentCommitId) {
+        return new ResourceIdAssigningFeatureCollection(delegate, this, currentCommitId);
     }
 
     // / directly deferred methods

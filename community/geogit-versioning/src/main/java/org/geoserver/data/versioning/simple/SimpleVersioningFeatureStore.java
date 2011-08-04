@@ -3,7 +3,7 @@ package org.geoserver.data.versioning.simple;
 import java.io.IOException;
 
 import org.geogit.api.ObjectId;
-import org.geoserver.data.versioning.VersioningDataAccess;
+import org.geogit.repository.Repository;
 import org.geoserver.data.versioning.VersioningFeatureStore;
 import org.geotools.data.Query;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -22,8 +22,8 @@ public class SimpleVersioningFeatureStore extends
      * @param unversioned
      * @param store
      */
-    public SimpleVersioningFeatureStore(SimpleFeatureStore unversioned, VersioningDataStore store) {
-        super(unversioned, store);
+    public SimpleVersioningFeatureStore(SimpleFeatureStore unversioned, Repository repo) {
+        super(unversioned, repo);
     }
 
     /**
@@ -34,7 +34,7 @@ public class SimpleVersioningFeatureStore extends
     public void modifyFeatures(String name, Object attributeValue, Filter filter)
             throws IOException {
 
-        Name attributeName = new NameImpl(getSchema().getName().getNamespaceURI(), name);
+        Name attributeName = new NameImpl(name);
         super.modifyFeatures(attributeName, attributeValue, filter);
     }
 
@@ -49,7 +49,7 @@ public class SimpleVersioningFeatureStore extends
         Name[] attributeNames = new Name[names.length];
         for (int i = 0; i < names.length; i++) {
             String name = names[i];
-            attributeNames[i] = new NameImpl(getSchema().getName().getNamespaceURI(), name);
+            attributeNames[i] = new NameImpl(name);
         }
         super.modifyFeatures(attributeNames, attributeValues, filter);
     }
@@ -84,9 +84,9 @@ public class SimpleVersioningFeatureStore extends
      */
     @Override
     protected FeatureCollection<SimpleFeatureType, SimpleFeature> createFeatureCollection(
-            FeatureCollection<SimpleFeatureType, SimpleFeature> delegate,
-            VersioningDataAccess store, ObjectId currentCommitId) {
+            FeatureCollection<SimpleFeatureType, SimpleFeature> delegate, ObjectId currentCommitId) {
+
         return new SimpleResourceIdAssigningFeatureCollection((SimpleFeatureCollection) delegate,
-                (VersioningDataStore) store, currentCommitId);
+                this, currentCommitId);
     }
 }

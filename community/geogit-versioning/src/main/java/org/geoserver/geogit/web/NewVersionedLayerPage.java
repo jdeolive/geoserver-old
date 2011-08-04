@@ -116,7 +116,8 @@ public class NewVersionedLayerPage extends GeoServerSecuredPage {
 
             @Override
             public List<VersionedLayerInfo> getSelection() {
-                List<VersionedLayerInfo> selection = new ArrayList<VersionedLayerInfo>(super.getSelection());
+                List<VersionedLayerInfo> selection = new ArrayList<VersionedLayerInfo>(
+                        super.getSelection());
                 for (ListIterator<VersionedLayerInfo> li = selection.listIterator(); li.hasNext();) {
                     VersionedLayerInfo next = li.next();
                     if (next.isPublished() || next.isReadOnly()) {
@@ -158,7 +159,8 @@ public class NewVersionedLayerPage extends GeoServerSecuredPage {
                 }
                 if (property == NewVersionedLayerPageProvider.GEOMTYPE) {
                     final CatalogIconFactory icons = CatalogIconFactory.get();
-                    final ResourceReference icon = icons.getVectorIcon(versionedType.getGeometryType());
+                    final ResourceReference icon = icons.getVectorIcon(versionedType
+                            .getGeometryType());
                     Fragment f = new Fragment(id, "iconFragment", NewVersionedLayerPage.this);
                     f.add(new Image("layerIcon", icon));
                     return f;

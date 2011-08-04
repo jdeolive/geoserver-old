@@ -27,11 +27,11 @@ public class ResourceIdAssigningFeatureCollection<T extends FeatureType, F exten
 
     private final ObjectId commitId;
 
-    private final VersioningDataAccess<T,F> store;
+    private final VersioningFeatureSource<T, F> store;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected ResourceIdAssigningFeatureCollection(final FeatureCollection delegate,
-            final VersioningDataAccess store, final ObjectId commitId) {
+            final VersioningFeatureSource<T, F> store, final ObjectId commitId) {
 
         super(delegate);
 
@@ -95,6 +95,7 @@ public class ResourceIdAssigningFeatureCollection<T extends FeatureType, F exten
             features.close();
         }
     }
+
     @Override
     public FeatureIterator<F> features() {
         return new ResourceIdAssigningFeatureIterator(delegate.features());
