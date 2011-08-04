@@ -26,8 +26,8 @@ import org.opengis.filter.identity.Identifier;
 import com.google.common.base.Throwables;
 
 @SuppressWarnings("rawtypes")
-public class VersioningFeatureStore<T extends FeatureType, F extends Feature> extends VersioningFeatureSource<T,F> 
-    implements FeatureStore<T, F> {
+public class VersioningFeatureStore<T extends FeatureType, F extends Feature> extends
+        VersioningFeatureSource<T, F> implements FeatureStore<T, F> {
 
     public VersioningFeatureStore(final FeatureStore unversioned, final VersioningDataAccess store) {
         super(unversioned, store);
@@ -48,20 +48,25 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
 
     }
 
-    private FeatureStore<T, F> getStore() {
+    private FeatureStore<T, F> getUnversionedStore() {
         return ((FeatureStore<T, F>) unversioned);
     }
 
     @Override
     public List<FeatureId> addFeatures(FeatureCollection<T, F> collection) throws IOException {
-        final FeatureStore<T, F> unversioned = getStore();
+        final FeatureStore<T, F> unversioned = getUnversionedStore();
         List<FeatureId> featureIds = unversioned.addFeatures(collection);
 
         if (isVersioned()) {
             checkTransaction();
             try {
                 Name typeName = getSchema().getName();
-                getVersioningState().stageInsert(typeName, collection);
+                VersioningTransactionState versioningState = getVersioningState();
+                FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
+                Id id = ff.id(new HashSet<Identifier>(featureIds));
+                FeatureCollection<T, F> inserted = unversioned.getFeatures(id);
+                int size = inserted.size();
+                versioningState.stageInsert(typeName, inserted);
             } catch (Exception e) {
                 Throwables.propagate(e);
             }
@@ -71,7 +76,7 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
 
     @Override
     public void removeFeatures(Filter filter) throws IOException {
-        final FeatureStore<T, F> unversioned = getStore();
+        final FeatureStore<T, F> unversioned = getUnversionedStore();
         if (isVersioned()) {
             checkTransaction();
 
@@ -87,15 +92,17 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
     }
 
     @Override
-    public void modifyFeatures(final Name[] attributeNames, final Object[] attributeValues, final Filter filter)
-            throws IOException {
-        final FeatureStore<T, F> unversioned = getStore();
+    public void modifyFeatures(final Name[] attributeNames, final Object[] attributeValues,
+            final Filter filter) throws IOException {
+        final FeatureStore<T, F> unversioned = getUnversionedStore();
         final boolean versioned = isVersioned();
         Id affectedFeaturesFitler = null;
         if (versioned) {
             checkTransaction();
-            final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
-            FeatureCollection<T, F> affectedFeatures = getStore().getFeatures(filter);
+            final Filter unversionedFilter = VersionFilters.getUnversioningFilter(filter);
+            FeatureStore<T, F> unversionedStore = getUnversionedStore();
+            FeatureCollection<T, F> affectedFeatures;
+            affectedFeatures = unversionedStore.getFeatures(unversionedFilter);
             FeatureIterator<F> iterator = affectedFeatures.features();
             Set<Identifier> affectedIds = new HashSet<Identifier>();
             try {
@@ -105,6 +112,7 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
             } finally {
                 iterator.close();
             }
+            final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
             affectedFeaturesFitler = ff.id(affectedIds);
         }
 
@@ -161,7 +169,7 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
      */
     @Override
     public void setFeatures(FeatureReader<T, F> reader) throws IOException {
-        final FeatureStore<T, F> unversioned = getStore();
+        final FeatureStore<T, F> unversioned = getUnversionedStore();
         unversioned.setFeatures(reader);
         if (isVersioned()) {
             checkTransaction();
