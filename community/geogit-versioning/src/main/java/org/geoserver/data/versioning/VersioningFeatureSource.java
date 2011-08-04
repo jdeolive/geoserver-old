@@ -135,7 +135,7 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
     public FeatureCollection<T, F> getFeatures(Query query) throws IOException {
         Id versioningFilter;
         if (!isVersioned()) {
-            return unversioned.getFeatures(query.getFilter());
+            return unversioned.getFeatures(query);
         }
         versioningFilter = getVersioningFilter(query.getFilter());
         if (versioningFilter == null) {

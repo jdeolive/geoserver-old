@@ -6,7 +6,12 @@ import java.util.List;
 
 import junit.framework.Test;
 
+import org.custommonkey.xmlunit.XMLAssert;
+import org.geoserver.data.test.MockData;
 import org.opengis.filter.identity.ResourceId;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  * Functional test suite for the {@code GetFeature} WFS 2.0.0 operation with {@link ResourceId}
@@ -70,7 +75,28 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         return new OneTimeTestSetup(new GetFeatureVersioningTest());
     }
     
-    public void testGetFeature(){
+    public void testGetFeature() throws Exception {
+        String buildings = getLayerId(MockData.BUILDINGS);
+        Document dom = getAsDOM("wfs?request=GetFeature&version=2.0.0&typeName="+buildings);
+
+        //assert features returned
+        XMLAssert.assertXpathExists("//" + buildings, dom);
         
+        //assert features returned have version info in ids
+        NodeList features = dom.getElementsByTagName(buildings);
+        for (int i=0; i < features.getLength(); i++) {
+            Element feature = (Element) features.item(i);
+            
+            String fid = feature.getAttribute("gml:id");
+            assertNotNull(fid);
+            assertTrue(fid.contains("@"));
+
+            String[] split = fid.split("@");
+            assertEquals(2, split.length);
+
+            assertTrue(split[0].matches("Buildings\\.\\d+"));
+            
+            //TODO: assert version is locatable... look up in geogit?
+        }
     }
 }
