@@ -53,7 +53,7 @@ public class TransactionTest extends WFS20VersioningTestSupport {
         //get the feature id
         dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings&srsName=EPSG:4326&" +
                 "cql_filter=FID%3D'115'");
-        print(dom);
+        //print(dom);
         assertEquals( "wfs:FeatureCollection", dom.getDocumentElement().getNodeName() );
         XMLAssert.assertXpathEvaluatesTo("1", "count(//" + "cite:Buildings" + ")", dom);
 
@@ -117,16 +117,15 @@ public class TransactionTest extends WFS20VersioningTestSupport {
         dom = postAsDOM("wfs", xml);
         assertEquals( "ows:ExceptionReport", dom.getDocumentElement().getNodeName() );
 
-        //do  a query with endDate before now... should return nothing
-        Calendar c = Calendar.getInstance();
-        c.roll(Calendar.DAY_OF_YEAR, false);
+        //do  a query with endDate before first commit... should return nothing
+        final String endDate = serializeDateTime(commit1.getTimestamp() - 5000);
         xml = "<wfs:GetFeature service='WFS' version='2.0.0' "
             + " xmlns:fes='" + FES.NAMESPACE + "' "
             + "xmlns:cite='http://www.opengis.net/cite' "
             + "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
             + "<wfs:Query typeNames='" + "cite:Buildings" + "'> "
             + "<fes:Filter>"
-              + "<fes:ResourceId rid = '" + fid + "' endDate='" + serializeDateTime(c.getTime())+"'/>"
+              + "<fes:ResourceId rid = '" + fid + "' endDate='" + endDate+"'/>"
             + "</fes:Filter>"
             + "</wfs:Query> "
             + "</wfs:GetFeature>";
@@ -142,8 +141,8 @@ public class TransactionTest extends WFS20VersioningTestSupport {
     }
 
     public void testUpdate() throws Exception {
-        Document dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings" +
-            "&cql_filter=FID%3D'113'");
+        Document dom = getAsDOM("wfs?version=2.0.0&request=getfeature&typename=cite:Buildings"
+                + "&cql_filter=FID%3D'114'");
         XMLAssert.assertXpathEvaluatesTo("1", "count(//cite:Buildings)", dom);
         
         //get the fid and version
@@ -166,7 +165,7 @@ public class TransactionTest extends WFS20VersioningTestSupport {
         "   <fes:Filter>" +
         "     <fes:PropertyIsEqualTo>" +
         "       <fes:ValueReference>FID</fes:ValueReference>" + 
-        "       <fes:Literal>113</fes:Literal>" + 
+        "       <fes:Literal>114</fes:Literal>" + 
         "     </fes:PropertyIsEqualTo>" + 
         "   </fes:Filter>" +
         " </wfs:Update>" +
@@ -178,7 +177,7 @@ public class TransactionTest extends WFS20VersioningTestSupport {
 
         //get the updated version
         dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings" +
-                "&cql_filter=FID%3D'113'");
+                "&cql_filter=FID%3D'114'");
         XMLAssert.assertXpathEvaluatesTo("1", "count(//cite:Buildings)", dom);
             
         //get the new version
@@ -190,25 +189,27 @@ public class TransactionTest extends WFS20VersioningTestSupport {
 
         //query for the old version
         xml = "<wfs:GetFeature service='WFS' version='2.0.0' "
+            + "xmlns:fes='" + FES.NAMESPACE + "' "  
             + "xmlns:cite='http://www.opengis.net/cite' "
             + "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
-            + "<wfs:Query typeNames='" + "cite:Buildings" + "''> "
+            + "<wfs:Query typeNames='" + "cite:Buildings" + "'> "
             + "<fes:Filter>"
-              + "<fes:ResourceId rid = '" + fid + "' version='" + ver1 + "'/>"
+              + "<fes:ResourceId rid = '" + fid + "@" + ver1 + "'/>"
             + "</fes:Filter>"
             + "</wfs:Query> "
             + "</wfs:GetFeature>";
         dom = postAsDOM("wfs", xml);
         XMLAssert.assertXpathEvaluatesTo("1", "count(//cite:Buildings)", dom);
-        XMLAssert.assertXpathExists("//cite:Buildings/cite:ADDRESS[text()='123 Main Street']", dom);
+        XMLAssert.assertXpathExists("//cite:Buildings/cite:ADDRESS[text()='215 Main Street']", dom);
         
         //query for the new version
         xml = "<wfs:GetFeature service='WFS' version='2.0.0' "
+                + "xmlns:fes='" + FES.NAMESPACE + "' "  
                 + "xmlns:cite='http://www.opengis.net/cite' "
                 + "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
-                + "<wfs:Query typeNames='" + "cite:Buildings" + "''> "
+                + "<wfs:Query typeNames='" + "cite:Buildings" + "'> "
                 + "<fes:Filter>"
-                  + "<fes:ResourceId rid = '" + fid + "' version='" + ver2 + "'/>"
+                + " <fes:ResourceId rid = '" + fid + "@" + ver2 + "'/>"
                 + "</fes:Filter>"
                 + "</wfs:Query> "
                 + "</wfs:GetFeature>";
@@ -218,10 +219,9 @@ public class TransactionTest extends WFS20VersioningTestSupport {
     }
 
     public void testDelete() throws Exception {
-        Date then = new Date();
         
         Document dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings" +
-                "&cql_filter=FID%3D'113'");
+                "&cql_filter=FID%3D'114'");
         XMLAssert.assertXpathEvaluatesTo("1", "count(//cite:Buildings)", dom);
         
         //get the fid and version
@@ -240,7 +240,7 @@ public class TransactionTest extends WFS20VersioningTestSupport {
         "   <fes:Filter>" +
         "     <fes:PropertyIsEqualTo>" +
         "       <fes:ValueReference>FID</fes:ValueReference>" + 
-        "       <fes:Literal>113</fes:Literal>" + 
+        "       <fes:Literal>114</fes:Literal>" + 
         "     </fes:PropertyIsEqualTo>" + 
         "   </fes:Filter>" +
         " </wfs:Delete>" +
@@ -251,9 +251,10 @@ public class TransactionTest extends WFS20VersioningTestSupport {
 
         //do a query just based on fid, ensure not returned
         xml = "<wfs:GetFeature service='WFS' version='2.0.0' "
+                + "xmlns:fes='" + FES.NAMESPACE + "' "  
                 + "xmlns:cite='http://www.opengis.net/cite' "
                 + "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
-                + "<wfs:Query typeNames='" + "cite:Buildings" + "''> "
+                + "<wfs:Query typeNames='" + "cite:Buildings" + "'> "
                 + "<fes:Filter>"
                   + "<fes:ResourceId rid = '" + fid + "'/>"
                 + "</fes:Filter>"
@@ -265,11 +266,12 @@ public class TransactionTest extends WFS20VersioningTestSupport {
 
         //do the query with version and ensure returned 
         xml = "<wfs:GetFeature service='WFS' version='2.0.0' "
+                + "xmlns:fes='" + FES.NAMESPACE + "' "  
                 + "xmlns:cite='http://www.opengis.net/cite' "
                 + "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
-                + "<wfs:Query typeNames='" + "cite:Buildings" + "''> "
+                + "<wfs:Query typeNames='" + "cite:Buildings" + "'> "
                 + "<fes:Filter>"
-                  + "<fes:ResourceId rid = '" + fid + "' version='" + ver + "'/>"
+                  + "<fes:ResourceId rid = '" + fid + "@" + ver + "'/>"
                 + "</fes:Filter>"
                 + "</wfs:Query> "
                 + "</wfs:GetFeature>";
@@ -277,11 +279,13 @@ public class TransactionTest extends WFS20VersioningTestSupport {
         assertEquals( "wfs:FeatureCollection", dom.getDocumentElement().getNodeName() );
         XMLAssert.assertXpathEvaluatesTo("1", "count(//cite:Buildings)", dom);
 
+        Date then = new Date();
         //query by date, if end date before time of deletion then we should return features
         xml = "<wfs:GetFeature service='WFS' version='2.0.0' "
+                + "xmlns:fes='" + FES.NAMESPACE + "' "  
                 + "xmlns:cite='http://www.opengis.net/cite' "
                 + "xmlns:wfs='http://www.opengis.net/wfs/2.0' " + "> "
-                + "<wfs:Query typeNames='" + "cite:Buildings" + "''> "
+                + "<wfs:Query typeNames='" + "cite:Buildings" + "'> "
                 + "<fes:Filter>"
                   + "<fes:ResourceId rid = '" + fid + "' endDate='" + serializeDateTime(then) + "'/>"
                 + "</fes:Filter>"
@@ -289,6 +293,8 @@ public class TransactionTest extends WFS20VersioningTestSupport {
                 + "</wfs:GetFeature>";
         dom = postAsDOM("wfs", xml);
         assertEquals( "wfs:FeatureCollection", dom.getDocumentElement().getNodeName() );
-        XMLAssert.assertXpathEvaluatesTo("1", "count(//cite:Buildings)", dom);
+        // 2 instances expected, the insert at commit1 and the update at commit4, as per
+        // oneTimeSetUp()
+        XMLAssert.assertXpathEvaluatesTo("2", "count(//cite:Buildings)", dom);
     }
 }
