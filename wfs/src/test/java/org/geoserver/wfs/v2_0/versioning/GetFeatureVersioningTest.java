@@ -85,11 +85,28 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
     }
 
     public void testGetFeatureResourceIdKVP() throws Exception {
-        fail("not implemented");
-    }
 
-    public void testGetFeatureResourceIdXML() throws Exception {
-        fail("not implemented");
+        for (String rid : commit4FeatureIdentifiers) {
+            String typeName = rid.startsWith("Buildings") ? buildings : bridges;
+            String query = "wfs?request=GetFeature&version=2.0.0&typeName=" + typeName
+                    + "&resourceId=" + rid;
+            Document dom = getAsDOM(query);
+            assertGetFeatures(dom, 1, typeName, Collections.singleton(rid));
+        }
+
+        // current versions with normal feature id (with no <@version> attached)
+        {
+            String query = "wfs?request=GetFeature&version=2.0.0&typeName=" + bridges
+                    + "&resourceId=Bridges.1107531599613";
+            Document dom = getAsDOM(query);
+            assertGetFeatures(dom, 1, bridges, commit5FeatureIdentifiers);
+        }
+        {
+            String query = "wfs?request=GetFeature&version=2.0.0&typeName=" + buildings
+                    + "&resourceId=Buildings.1107531701011";
+            Document dom = getAsDOM(query);
+            assertGetFeatures(dom, 1, buildings, commit5FeatureIdentifiers);
+        }
     }
 
     public void testGetFeatureStartDate() throws Exception {
@@ -178,11 +195,11 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         final Version first = new Version(VersionAction.FIRST);
 
         for (String rid : commit4FeatureIdentifiers) {
-            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
-            xml = buildGetFeatureXml(typenName, rid, null, null, first);
+            String typeName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typeName, rid, null, null, first);
             dom = postAsDOM("wfs?", xml);
             expectedSize = 1;
-            assertGetFeatures(dom, expectedSize, typenName, firstVersions);
+            assertGetFeatures(dom, expectedSize, typeName, firstVersions);
         }
     }
 
@@ -200,11 +217,11 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         final Version last = new Version(VersionAction.LAST);
 
         for (String rid : firstVersions) {
-            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
-            xml = buildGetFeatureXml(typenName, rid, null, null, last);
+            String typeName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typeName, rid, null, null, last);
             dom = postAsDOM("wfs?", xml);
             expectedSize = 1;
-            assertGetFeatures(dom, expectedSize, typenName, lastVersions);
+            assertGetFeatures(dom, expectedSize, typeName, lastVersions);
         }
     }
 
@@ -264,11 +281,11 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         final Version previous = new Version(VersionAction.PREVIOUS);
 
         for (String rid : currentVersions) {
-            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
-            xml = buildGetFeatureXml(typenName, rid, null, null, previous);
+            String typeName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typeName, rid, null, null, previous);
             dom = postAsDOM("wfs?", xml);
             expectedSize = 1;
-            assertGetFeatures(dom, expectedSize, typenName, previousVersions);
+            assertGetFeatures(dom, expectedSize, typeName, previousVersions);
         }
 
         // and what if there's no previous?
@@ -276,11 +293,11 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         firstVersions.addAll(commit1FeatureIdentifiers);// insert of Bridges
         firstVersions.addAll(commit2FeatureIdentifiers);// insert of Buildings
         for (String rid : firstVersions) {
-            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
-            xml = buildGetFeatureXml(typenName, rid, null, null, previous);
+            String typeName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typeName, rid, null, null, previous);
             dom = postAsDOM("wfs?", xml);
             expectedSize = 0;
-            assertGetFeatures(dom, expectedSize, typenName, Collections.EMPTY_SET);
+            assertGetFeatures(dom, expectedSize, typeName, Collections.EMPTY_SET);
         }
     }
 
@@ -308,11 +325,11 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         final Version next = new Version(VersionAction.NEXT);
 
         for (String rid : firstVersions) {
-            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
-            xml = buildGetFeatureXml(typenName, rid, null, null, next);
+            String typeName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typeName, rid, null, null, next);
             dom = postAsDOM("wfs?", xml);
             expectedSize = 1;
-            assertGetFeatures(dom, expectedSize, typenName, nextVersions);
+            assertGetFeatures(dom, expectedSize, typeName, nextVersions);
         }
     }
 
