@@ -1,7 +1,6 @@
 package org.geoserver.data.versioning;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -12,11 +11,13 @@ import java.util.logging.Logger;
 import org.geogit.api.DiffEntry;
 import org.geogit.api.DiffOp;
 import org.geogit.api.GeoGIT;
+import org.geogit.api.LogOp;
 import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevObject.TYPE;
 import org.geogit.repository.Repository;
+import org.geotools.util.Range;
 import org.geotools.util.logging.Logging;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.FeatureType;
@@ -27,6 +28,7 @@ import org.opengis.filter.identity.VersionAction;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 
 public class ResourceIdFeatureCollector implements Iterable<Feature> {
@@ -78,29 +80,64 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
     private Iterator<Ref> query(final GeoGIT ggit, final ResourceId id) throws Exception {
         final String featureId = id.getID();
         final String featureVersion = id.getFeatureVersion();
-        final Ref requestedVersionRef = extractRequestedVersion(ggit, featureId, featureVersion);
-        // if (featureVersionRef == null) {
-        // LOGGER.finest("Resource id didn't match any versioned Feature: " + id);
-        // return Iterators.emptyIterator();
-        // }
 
-        if (id.getEndTime() == null && id.getStartTime() == null && id.getVersion() == null) {
-            // easy, no extra constraints specified
-            return Iterators.singletonIterator(requestedVersionRef);
+        final Ref requestedVersionRef = extractRequestedVersion(ggit, featureId, featureVersion);
+        {
+            if (requestedVersionRef != null && id.getEndTime() == null && id.getStartTime() == null
+                    && id.getVersion() == null) {
+                // easy, no extra constraints specified
+                return Iterators.singletonIterator(requestedVersionRef);
+            }
         }
 
         List<Ref> result = new ArrayList<Ref>(5);
+
         // previousRid is for reporting, not for querying, so not needed here
         // String previousRid = rid.getPreviousRid();
         final Version version = id.getVersion();
-        final Date validAsOf = version.getDateTime();
-        if (version != null) {
+
+        // filter commits that affect the requested feature
+        final List<String> path = path(featureId);
+        LogOp logOp = ggit.log().addPath(path);
+
+        // limit commits by time range, if speficied
+        if (id.getStartTime() != null || id.getEndTime() != null) {
+            Date startTime = id.getStartTime() == null ? new Date(0L) : id.getStartTime();
+            Date endTime = id.getEndTime() == null ? new Date(Long.MAX_VALUE) : id.getEndTime();
+            boolean isMinIncluded = true;
+            boolean isMaxIncluded = true;
+            Range<Date> timeRange = new Range<Date>(Date.class, startTime, isMinIncluded, endTime,
+                    isMaxIncluded);
+            logOp.setTimeRange(timeRange);
+        }
+
+        Iterator<RevCommit> commits = logOp.call();
+
+        if (version == null) {
+            List<Ref> allInAscendingOrder = getAllInAscendingOrder(ggit, commits, featureId);
+            result.addAll(allInAscendingOrder);
+        } else {
             if (version.getDateTime() != null) {
+                final Date validAsOf = version.getDateTime();
+                // use second precision, as that's what xml uses, right?
+                final long lowerThan = toSecondsPrecision(validAsOf.getTime());
+                // filter by commits previous to specified time
+                commits = Iterators.filter(commits, new Predicate<RevCommit>() {
+                    @Override
+                    public boolean apply(RevCommit input) {
+                        long timestamp = toSecondsPrecision(input.getTimestamp());
+                        return timestamp <= lowerThan;
+                    }
+                });
+                // and get only the first one, that's the greatest and closest to the requested
+                // valid time, as commints come in descending temporal order from LogOp
+                commits = Iterators.limit(commits, 1);
+                result.addAll(getAllInAscendingOrder(ggit, commits, featureId));
 
             } else if (version.getIndex() != null) {
                 final int requestIndex = version.getIndex().intValue();
                 final int listIndex = requestIndex - 1;// version indexing starts at 1
-                List<Ref> allVersions = getAllInAscendingOrder(ggit, featureId);
+                List<Ref> allVersions = getAllInAscendingOrder(ggit, commits, featureId);
                 if (allVersions.size() > 0) {
                     if (allVersions.size() >= requestIndex) {
                         result.add(allVersions.get(listIndex));
@@ -110,7 +147,7 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
                 }
             } else if (version.getVersionAction() != null) {
                 final VersionAction versionAction = version.getVersionAction();
-                List<Ref> allInAscendingOrder = getAllInAscendingOrder(ggit, featureId);
+                List<Ref> allInAscendingOrder = getAllInAscendingOrder(ggit, commits, featureId);
                 switch (versionAction) {
                 case ALL:
                     result.addAll(allInAscendingOrder);
@@ -142,32 +179,12 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
                 }
             }
         }
-        //
-        // LogOp logOp = ggit.log();
-        //
-        // String[] path = path(featureId);
-        // logOp.addPath(path);
-        //
-        // // limit by resource id time range, if speficied
-        // if (id.getStartTime() != null || id.getEndTime() != null) {
-        // Date startTime = id.getStartTime() == null ? new Date(0L) : id.getStartTime();
-        // Date endTime = id.getEndTime() == null ? new Date(Long.MAX_VALUE) : id.getEndTime();
-        // boolean isMinIncluded = true;
-        // boolean isMaxIncluded = true;
-        //
-        // Range<Date> timeRange = new Range<Date>(Date.class, startTime, isMinIncluded, endTime,
-        // isMaxIncluded);
-        //
-        // logOp.setTimeRange(timeRange);
-        // }
-        //
-        // Iterator<RevCommit> commitRange = logOp.call();
-        // // limit as per resource id valid date
-        // if (validAsOf != null) {
-        //
-        // }
 
         return result.iterator();
+    }
+
+    private long toSecondsPrecision(final long timeStampMillis) {
+        return timeStampMillis / 1000;
     }
 
     private Ref previous(Ref requestedVersionRef, List<Ref> allVersions) {
@@ -199,14 +216,13 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
         return -1;
     }
 
-    private List<Ref> getAllInAscendingOrder(final GeoGIT ggit, final String featureId)
-            throws Exception {
+    private List<Ref> getAllInAscendingOrder(final GeoGIT ggit, final Iterator<RevCommit> commits,
+            final String featureId) throws Exception {
 
         LinkedList<Ref> featureRefs = new LinkedList<Ref>();
 
-        final List<String> path = Arrays.asList(path(featureId));
+        final List<String> path = path(featureId);
         // find all commits where this feature is touched
-        Iterator<RevCommit> commits = ggit.log().addPath(path).call();
         while (commits.hasNext()) {
             RevCommit commit = commits.next();
             ObjectId commitId = commit.getId();
@@ -250,7 +266,7 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
             return null;
         }
         // no version specified, find out the latest
-        String[] path = path(featureId);
+        List<String> path = path(featureId);
         Ref currFeatureRef = repository.getRootTreeChild(path);
         if (currFeatureRef == null) {
             // feature does not exist at the current repository state
@@ -259,15 +275,15 @@ public class ResourceIdFeatureCollector implements Iterable<Feature> {
         return currFeatureRef;
     }
 
-    private String[] path(final String featureId) {
+    private List<String> path(final String featureId) {
         Name typeName = featureType.getName();
-        String[] path;
+        List<String> path = new ArrayList<String>(3);
 
         if (null != typeName.getNamespaceURI()) {
-            path = new String[] { typeName.getNamespaceURI(), typeName.getLocalPart(), featureId };
-        } else {
-            path = new String[] { typeName.getLocalPart(), featureId };
+            path.add(typeName.getNamespaceURI());
         }
+        path.add(typeName.getLocalPart());
+        path.add(featureId);
 
         return path;
     }

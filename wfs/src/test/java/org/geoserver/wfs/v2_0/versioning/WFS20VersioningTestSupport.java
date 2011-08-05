@@ -107,7 +107,7 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
 
     /**
      * These are the five commits recorded. Commit timestamps are mocked up and have the values
-     * 1000,2000,3000,400, and 5000, respectively
+     * 10000,20000,30000,4000, and 50000, respectively
      */
     protected static RevCommit commit1, commit2, commit3, commit4, commit5;
 
@@ -133,13 +133,13 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
         GEOGIT ggitFacade = GeoServerExtensions.bean(GEOGIT.class, applicationContext);
 
         // insert the single bridge in cite:Bridges
-        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(1000));
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(10000));
         assertTrue(makeVersioned(ggitFacade, CITE_BRIDGES) instanceof RevCommit);
         commit1FeatureIdentifiers = getCurrentResourIds(ggitFacade);
         commit1 = getCurrentCommit(ggitFacade);
 
         // insert the two buildings in cite:Buildings
-        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(2000));
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(20000));
         assertTrue(makeVersioned(ggitFacade, CITE_BUILDINGS) instanceof RevCommit);
         commit2FeatureIdentifiers = getCurrentResourIds(ggitFacade);
         commit2 = getCurrentCommit(ggitFacade);
@@ -157,13 +157,7 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
                 (Object) gf.createPoint(new Coordinate(0.0001, 0.0006)));
         commitMessage = "Change Cam Bridge";
         filter = Filter.INCLUDE;
-        GeoGIT.setCommitStateResolver(new GeoToolsCommitStateResolver() {
-            @Override
-            public long getCurrentTimeMillis() {
-                return 1000;
-            }
-        });
-        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(3000));
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(30000));
         recordUpdateCommit(ggitFacade, CITE_BRIDGES, filter, properties, newValues, commitMessage);
         commit3FeatureIdentifiers = getCurrentResourIds(ggitFacade);
         assertNotNull(commit3FeatureIdentifiers);
@@ -178,14 +172,14 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
         properties = Arrays.asList("the_geom");
         newValues = Arrays.asList((Object) movedBuilding);
         commitMessage = "Moved building";
-        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(4000));
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(40000));
         recordUpdateCommit(ggitFacade, CITE_BUILDINGS, filter, properties, newValues, commitMessage);
         commit4FeatureIdentifiers = getCurrentResourIds(ggitFacade);
         commit4 = getCurrentCommit(ggitFacade);
 
         // delete first building
         filter = ff.id(Collections.singleton(ff.featureId("Buildings.1107531701010")));
-        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(5000));
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(50000));
         recordDeleteCommit(ggitFacade, CITE_BUILDINGS, filter, "Deleted building");
         commit5FeatureIdentifiers = getCurrentResourIds(ggitFacade);
         assertNotNull(commit5FeatureIdentifiers);

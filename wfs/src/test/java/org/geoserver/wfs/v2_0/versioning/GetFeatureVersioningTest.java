@@ -110,15 +110,41 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
     }
 
     public void testGetFeatureStartDate() throws Exception {
-        fail("not implemented");
+
+        final String fid = "Buildings.1107531701011";
+        // this feature was modified at commit4, so asking for a startDate that's between commit3
+        // and commit4 should give commit4's version
+        Date startDate = new Date(commit4.getTimestamp() - 500);
+        Date endDate = null;
+        Version version = null;
+        String xml = buildGetFeatureXml(buildings, fid, startDate, endDate, version);
+        Document dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, buildings, commit4FeatureIdentifiers);
+
     }
 
     public void testGetFeatureEndDate() throws Exception {
-        fail("not implemented");
+        final String fid = "Buildings.1107531701011";
+        // this feature was modified at commit4, so asking for an endDate that's between commit3
+        // and commit4 should give commit3's version
+        Date startDate = null;
+        Date endDate = new Date(commit4.getTimestamp() - 500);
+        Version version = null;
+        String xml = buildGetFeatureXml(buildings, fid, startDate, endDate, version);
+        Document dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, buildings, commit3FeatureIdentifiers);
     }
 
     public void testGetFeatureStartDateEndDate() throws Exception {
-        fail("not implemented");
+        final String fid = "Buildings.1107531701011";
+        // this feature was modified at commit4, so asking for an endDate that's between commit3
+        // and commit5 should give commit4's version
+        Date startDate = new Date(commit4.getTimestamp() - 500);
+        Date endDate = new Date(commit4.getTimestamp() + 500);
+        Version version = null;
+        String xml = buildGetFeatureXml(buildings, fid, startDate, endDate, version);
+        Document dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, buildings, commit4FeatureIdentifiers);
     }
 
     public void testGetFeatureVersionDate() throws Exception {
@@ -128,31 +154,31 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         Version version;
 
         // no valid version at this timestamp
-        version = new Version(new Date(500));
+        version = new Version(new Date(commit1.getTimestamp() - 5000));
         xml = buildGetFeatureXml(bridges, rid, null, null, version);
         dom = postAsDOM("wfs?", xml);
         assertGetFeatures(dom, 0, bridges, commit1FeatureIdentifiers);
 
         // version of the first commit
-        version = new Version(new Date(1000));
+        version = new Version(new Date(commit1.getTimestamp()));
         xml = buildGetFeatureXml(bridges, rid, null, null, version);
         dom = postAsDOM("wfs?", xml);
         assertGetFeatures(dom, 1, bridges, commit1FeatureIdentifiers);
 
         // version timestamp between first and second commit, should return first
-        version = new Version(new Date(1500));
+        version = new Version(new Date(commit1.getTimestamp() + 500));
         xml = buildGetFeatureXml(bridges, rid, null, null, version);
         dom = postAsDOM("wfs?", xml);
         assertGetFeatures(dom, 1, bridges, commit1FeatureIdentifiers);
 
         // version 2, when the bridge was updated (at Commit 3, see superclass javadocs)
-        version = new Version(new Date(3000));
+        version = new Version(new Date(commit3.getTimestamp()));
         xml = buildGetFeatureXml(bridges, rid, null, null, version);
         dom = postAsDOM("wfs?", xml);
         assertGetFeatures(dom, 1, bridges, commit3FeatureIdentifiers);
 
         // version greater then available largest, should return available largest
-        version = new Version(new Date(10000));
+        version = new Version(new Date(commit5.getTimestamp() + 5000));
         xml = buildGetFeatureXml(bridges, rid, null, null, version);
         dom = postAsDOM("wfs?", xml);
         assertGetFeatures(dom, 1, bridges, commit5FeatureIdentifiers);
@@ -164,7 +190,7 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         Document dom;
 
         // version 1, when the buildings were inserted (at Commit 2, see superclass javadocs)
-        xml = buildGetFeatureXml(buildings, "Buildings.1107531701010", null, null, new Version(1));
+        xml = buildGetFeatureXml(buildings, "Buildings.1107531701011", null, null, new Version(1));
         dom = postAsDOM("wfs?", xml);
         assertGetFeatures(dom, 1, buildings, commit2FeatureIdentifiers);
 
@@ -359,17 +385,18 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         sb.append(" <wfs:Query typeNames='" + typeName + "'>\n");
         if (rid != null) {
             sb.append("  <fes:Filter>\n");
-            sb.append("   <fes:ResourceId rid = '" + rid + "' \n");
+            sb.append("   <fes:ResourceId rid='" + rid + "' \n");
             if (startDate != null) {
-                sb.append("        endDate='" + serializeDateTime(startDate.getTime()) + "'\n");
+                sb.append("        startDate='" + serializeDateTime(startDate.getTime(), true)
+                        + "'\n");
             }
             if (endDate != null) {
-                sb.append("        endDate='" + serializeDateTime(endDate.getTime()) + "'\n");
+                sb.append("        endDate='" + serializeDateTime(endDate.getTime(), true) + "'\n");
             }
             if (version != null) {
                 sb.append("        version='");
                 if (version.getDateTime() != null) {
-                    sb.append(serializeDateTime(version.getDateTime()));
+                    sb.append(serializeDateTime(version.getDateTime().getTime(), true));
                 } else if (version.getIndex() != null) {
                     sb.append(version.getIndex());
                 } else if (version.getVersionAction() != null) {

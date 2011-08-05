@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.geogit.api.CommitOp;
+import org.geogit.api.CommitStateResolver;
 import org.geogit.api.GeoGIT;
 import org.geogit.api.RevCommit;
 import org.geogit.repository.Index;
@@ -48,7 +49,11 @@ public class VersioningTransactionState implements Transaction.State {
     };
 
     static {
-        GeoGIT.setCommitStateResolver(new GeoToolsCommitStateResolver());
+        // only set resolver if not overriden by application
+        CommitStateResolver current = GeoGIT.getCommitStateResolver();
+        if (GeoGIT.DEFAULT_COMMIT_RESOLVER.equals(current)) {
+            GeoGIT.setCommitStateResolver(new GeoToolsCommitStateResolver());
+        }
     }
 
     private static final ProgressListener NULL_PROGRESS_LISTENER = new NullProgressListener();
