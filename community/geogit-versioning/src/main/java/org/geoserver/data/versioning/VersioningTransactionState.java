@@ -47,6 +47,10 @@ public class VersioningTransactionState implements Transaction.State {
 
     };
 
+    static {
+        GeoGIT.setCommitStateResolver(new GeoToolsCommitStateResolver());
+    }
+
     private static final ProgressListener NULL_PROGRESS_LISTENER = new NullProgressListener();
 
     private static final Logger LOGGER = Logging.getLogger(VersioningTransactionState.class);
@@ -81,27 +85,29 @@ public class VersioningTransactionState implements Transaction.State {
     @Override
     public void commit() throws IOException {
         LOGGER.info("Committing changeset " + id);
-
-        // final Ref branch = geoGit.checkout().setName(transactionID).call();
-        // commit to the branch
-        RevCommit commit = null;
-        // checkout master
-        // final Ref master = geoGit.checkout().setName("master").call();
-        // merge branch to master
-        // MergeResult mergeResult = geoGit.merge().include(branch).call();
-        // TODO: check mergeResult is success?
-        // geoGit.branchDelete().setName(transactionID).call();
         try {
-            CommitOp commitOp = geoGit.commit().setAuthenticationResolver(
-                    new GeoToolsAuthenticationResolver(transaction));
-
-            commit = commitOp.call();
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            Throwables.propagate(e);
+            GeoToolsCommitStateResolver.CURRENT_TRANSACTION.set(transaction);
+            // final Ref branch = geoGit.checkout().setName(transactionID).call();
+            // commit to the branch
+            RevCommit commit = null;
+            // checkout master
+            // final Ref master = geoGit.checkout().setName("master").call();
+            // merge branch to master
+            // MergeResult mergeResult = geoGit.merge().include(branch).call();
+            // TODO: check mergeResult is success?
+            // geoGit.branchDelete().setName(transactionID).call();
+            try {
+                CommitOp commitOp = geoGit.commit();
+                commit = commitOp.call();
+            } catch (IOException e) {
+                throw e;
+            } catch (Exception e) {
+                Throwables.propagate(e);
+            }
+            LOGGER.info("New commit: " + commit);
+        } finally {
+            GeoToolsCommitStateResolver.CURRENT_TRANSACTION.remove();
         }
-        LOGGER.info("New commit: " + commit);
     }
 
     @Override

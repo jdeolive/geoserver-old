@@ -1,14 +1,23 @@
 package org.geoserver.wfs.v2_0.versioning;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import static org.geotools.feature.type.DateUtil.serializeDateTime;
 
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 
 import org.custommonkey.xmlunit.XMLAssert;
 import org.geoserver.data.test.MockData;
+import org.geotools.filter.v2_0.FES;
+import org.geotools.util.logging.Logging;
 import org.opengis.filter.identity.ResourceId;
+import org.opengis.filter.identity.Version;
+import org.opengis.filter.identity.VersionAction;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -16,57 +25,18 @@ import org.w3c.dom.NodeList;
 /**
  * Functional test suite for the {@code GetFeature} WFS 2.0.0 operation with {@link ResourceId}
  * filter predicates.
+ * <p>
+ * The
+ * </p>
  * 
  * @author groldan
  * 
  */
 public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
 
-    private static final String BASE_REQUEST_PATH = "/ows?service=GSS&version=1.0.0&request=GetEntries";
+    private static final Logger LOGGER = Logging.getLogger(GetFeatureVersioningTest.class);
 
-    private static final String REPLICATION_FEED_BASE = BASE_REQUEST_PATH + "&FEED=REPLICATIONFEED";
-
-    private static final String RESOLUTION_FEED_BASE = BASE_REQUEST_PATH + "&FEED=RESOLUTIONFEED";
-
-    /**
-     * The ordered list of all values for the {@code /atom:feed/atom:entry/atom:title} XPath in the
-     * REPLICATIONFEED as set up at {@link #oneTimeSetUp()}
-     */
-    private final List<String> ALL_REPLICATION_TITLES = Collections.unmodifiableList(Arrays.asList( //
-            "Insert of Feature Bridges.1107531599613", //
-            "Insert of Feature Buildings.1107531701011", //
-            "Insert of Feature Buildings.1107531701010", //
-            "Update of Feature Bridges.1107531599613",//
-            "Update of Feature Buildings.1107531701011",//
-            "Delte of Feature Buildings.1107531701010"//
-    ));
-
-    /**
-     * The ordered list of all values for the {@code /atom:feed/atom:entry/atom:summary} XPath in
-     * the REPLICATIONFEED as set up at {@link #oneTimeSetUp()}
-     */
-    private final List<String> ALL_REPLICATION_SUMMARIES = Collections.unmodifiableList(Arrays
-            .asList(//
-            "Initial import of FeatureType http://www.opengis.net/cite:Bridges",//
-            "Initial import of FeatureType http://www.opengis.net/cite:Buildings",//
-                    "Initial import of FeatureType http://www.opengis.net/cite:Buildings",//
-                    "Change Cam Bridge",//
-                    "Moved building",//
-                    "Deleted building"//
-            ));
-
-    /**
-     * The ordered list of all values for the {@code /atom:feed/atom:entry/atom:content} XPath in
-     * the RESOLUTIONFEED as set up at {@link #oneTimeSetUp()}
-     */
-    private final List<String> ALL_RESOLUTION_CONTENTS = Collections.unmodifiableList(Arrays
-            .asList(//
-            "Initial import of FeatureType http://www.opengis.net/cite:Bridges",//
-            "Initial import of FeatureType http://www.opengis.net/cite:Buildings",//
-                    "Change Cam Bridge",//
-                    "Moved building",//
-                    "Deleted building"//
-            ));
+    String buildings, bridges;
 
     /**
      * This is a READ ONLY TEST so we can use one time setup
@@ -74,29 +44,329 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
     public static Test suite() {
         return new OneTimeTestSetup(new GetFeatureVersioningTest());
     }
-    
+
+    @Override
+    protected void setUpInternal() {
+        buildings = getLayerId(MockData.BUILDINGS);
+        bridges = getLayerId(MockData.BRIDGES);
+    }
+
     public void testGetFeature() throws Exception {
-        String buildings = getLayerId(MockData.BUILDINGS);
-        Document dom = getAsDOM("wfs?request=GetFeature&version=2.0.0&typeName="+buildings);
 
-        //assert features returned
-        XMLAssert.assertXpathExists("//" + buildings, dom);
-        
-        //assert features returned have version info in ids
-        NodeList features = dom.getElementsByTagName(buildings);
-        for (int i=0; i < features.getLength(); i++) {
-            Element feature = (Element) features.item(i);
-            
-            String fid = feature.getAttribute("gml:id");
-            assertNotNull(fid);
-            assertTrue(fid.contains("@"));
+        Document dom = getAsDOM("wfs?request=GetFeature&version=2.0.0&typeName=" + buildings);
+        assertGetFeatures(dom, 1, buildings, commit5FeatureIdentifiers);
 
-            String[] split = fid.split("@");
-            assertEquals(2, split.length);
+        dom = getAsDOM("wfs?request=GetFeature&version=2.0.0&typeName=" + bridges);
+        assertGetFeatures(dom, 1, bridges, commit5FeatureIdentifiers);
+    }
 
-            assertTrue(split[0].matches("Buildings\\.\\d+"));
+    private void assertGetFeatures(Document dom, int expectedFeatures, String typeName,
+            Set<String> allRids) throws Exception {
 
-            //TODO: assert version is locatable... look up in geogit?
+        // assert features returned
+        XMLAssert.assertXpathEvaluatesTo(String.valueOf(expectedFeatures), "count(//" + typeName
+                + ")", dom);
+
+        try {
+            // assert features returned have version info in ids
+            NodeList features = dom.getElementsByTagName(typeName);
+            for (int i = 0; i < features.getLength(); i++) {
+                Element feature = (Element) features.item(i);
+
+                String fid = feature.getAttribute("gml:id");
+                assertNotNull(fid);
+                String msg = "'" + fid + "' is not in " + allRids;
+                assertTrue(msg, allRids.contains(fid));
+            }
+        } catch (AssertionFailedError e) {
+            e.printStackTrace();
+            throw e;
         }
+    }
+
+    public void testGetFeatureResourceIdKVP() throws Exception {
+        fail("not implemented");
+    }
+
+    public void testGetFeatureResourceIdXML() throws Exception {
+        fail("not implemented");
+    }
+
+    public void testGetFeatureStartDate() throws Exception {
+        fail("not implemented");
+    }
+
+    public void testGetFeatureEndDate() throws Exception {
+        fail("not implemented");
+    }
+
+    public void testGetFeatureStartDateEndDate() throws Exception {
+        fail("not implemented");
+    }
+
+    public void testGetFeatureVersionDate() throws Exception {
+        final String rid = "Bridges.1107531599613";
+        String xml;
+        Document dom;
+        Version version;
+
+        // no valid version at this timestamp
+        version = new Version(new Date(500));
+        xml = buildGetFeatureXml(bridges, rid, null, null, version);
+        dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 0, bridges, commit1FeatureIdentifiers);
+
+        // version of the first commit
+        version = new Version(new Date(1000));
+        xml = buildGetFeatureXml(bridges, rid, null, null, version);
+        dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, bridges, commit1FeatureIdentifiers);
+
+        // version timestamp between first and second commit, should return first
+        version = new Version(new Date(1500));
+        xml = buildGetFeatureXml(bridges, rid, null, null, version);
+        dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, bridges, commit1FeatureIdentifiers);
+
+        // version 2, when the bridge was updated (at Commit 3, see superclass javadocs)
+        version = new Version(new Date(3000));
+        xml = buildGetFeatureXml(bridges, rid, null, null, version);
+        dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, bridges, commit3FeatureIdentifiers);
+
+        // version greater then available largest, should return available largest
+        version = new Version(new Date(10000));
+        xml = buildGetFeatureXml(bridges, rid, null, null, version);
+        dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, bridges, commit5FeatureIdentifiers);
+    }
+
+    public void testGetFeatureVersionIndex() throws Exception {
+
+        String xml;
+        Document dom;
+
+        // version 1, when the buildings were inserted (at Commit 2, see superclass javadocs)
+        xml = buildGetFeatureXml(buildings, "Buildings.1107531701010", null, null, new Version(1));
+        dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, buildings, commit2FeatureIdentifiers);
+
+        // version 2, "Moved building" commit (at Commit 4, see superclass javadocs)
+        xml = buildGetFeatureXml(buildings, "Buildings.1107531701011", null, null, new Version(2));
+        dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, buildings, commit4FeatureIdentifiers);
+
+        // version greater than available largest, should return available largest
+        xml = buildGetFeatureXml(buildings, "Buildings.1107531701011", null, null, new Version(12));
+        dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, buildings, commit5FeatureIdentifiers);
+
+        // but this one was deleted at commit 5, to shall match commit4 resource ids...
+        xml = buildGetFeatureXml(buildings, "Buildings.1107531701010", null, null, new Version(12));
+        dom = postAsDOM("wfs?", xml);
+        assertGetFeatures(dom, 1, buildings, commit4FeatureIdentifiers);
+
+    }
+
+    public void testGetFeatureVersionActionFirst() throws Exception {
+        final Set<String> firstVersions = new HashSet<String>();
+        firstVersions.addAll(commit1FeatureIdentifiers);// insert of Bridges
+        firstVersions.addAll(commit2FeatureIdentifiers);// insert of Buildings
+        String xml;
+        Document dom;
+        int expectedSize;
+        final Version first = new Version(VersionAction.FIRST);
+
+        for (String rid : commit4FeatureIdentifiers) {
+            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typenName, rid, null, null, first);
+            dom = postAsDOM("wfs?", xml);
+            expectedSize = 1;
+            assertGetFeatures(dom, expectedSize, typenName, firstVersions);
+        }
+    }
+
+    public void testGetFeatureVersionActionLast() throws Exception {
+        final Set<String> firstVersions = new HashSet<String>();
+        firstVersions.addAll(commit1FeatureIdentifiers);// insert of Bridges
+        firstVersions.addAll(commit2FeatureIdentifiers);// insert of Buildings
+
+        final Set<String> lastVersions = new HashSet<String>();
+        lastVersions.addAll(commit4FeatureIdentifiers);
+
+        String xml;
+        Document dom;
+        int expectedSize;
+        final Version last = new Version(VersionAction.LAST);
+
+        for (String rid : firstVersions) {
+            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typenName, rid, null, null, last);
+            dom = postAsDOM("wfs?", xml);
+            expectedSize = 1;
+            assertGetFeatures(dom, expectedSize, typenName, lastVersions);
+        }
+    }
+
+    public void testGetFeatureVersionActionAll() throws Exception {
+        Set<String> allRids = new HashSet<String>(commit1FeatureIdentifiers);
+        allRids.addAll(commit2FeatureIdentifiers);
+        allRids.addAll(commit3FeatureIdentifiers);
+        allRids.addAll(commit4FeatureIdentifiers);
+        allRids.addAll(commit5FeatureIdentifiers);
+
+        Set<String> allBuildingVersions = new HashSet<String>();
+        Set<String> allBridgesVersions = new HashSet<String>();
+        for (String rid : allRids) {
+            if (rid.startsWith("Buildings")) {
+                allBuildingVersions.add(rid);
+            } else if (rid.startsWith("Bridges")) {
+                allBridgesVersions.add(rid);
+            } else {
+                throw new IllegalStateException(rid);
+            }
+        }
+
+        String xml;
+        Document dom;
+        int expectedSize;
+        final Version all = new Version(VersionAction.ALL);
+
+        xml = buildGetFeatureXml(buildings, "Buildings.1107531701010", null, null, all);
+        dom = postAsDOM("wfs?", xml);
+        // there's only one version of this building. It was added at commit 2 and deleted at commit
+        // 5
+        expectedSize = 1;
+        assertGetFeatures(dom, expectedSize, buildings, allBuildingVersions);
+
+        xml = buildGetFeatureXml(buildings, "Buildings.1107531701011", null, null, all);
+        dom = postAsDOM("wfs?", xml);
+        // there're are two versions of this building. It was added at commit 2 and modified at
+        // commit 4
+        expectedSize = 2;
+        assertGetFeatures(dom, expectedSize, buildings, allBuildingVersions);
+    }
+
+    public void testGetFeatureVersionActionPrevious() throws Exception {
+        final Set<String> currentVersions = new HashSet<String>();
+        currentVersions.add("Bridges.1107531599613");
+        currentVersions.add("Buildings.1107531701011");
+
+        final Set<String> previousVersions = new HashSet<String>();
+        // last time that bridge was modified was at commit 3, so previous should come from commit 2
+        previousVersions.add(find("Bridges.1107531599613", commit2FeatureIdentifiers));
+        // last time that building was modified was at commit4, so previous should come from commit3
+        previousVersions.add(find("Buildings.1107531701011", commit3FeatureIdentifiers));
+
+        String xml;
+        Document dom;
+        int expectedSize;
+        final Version previous = new Version(VersionAction.PREVIOUS);
+
+        for (String rid : currentVersions) {
+            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typenName, rid, null, null, previous);
+            dom = postAsDOM("wfs?", xml);
+            expectedSize = 1;
+            assertGetFeatures(dom, expectedSize, typenName, previousVersions);
+        }
+
+        // and what if there's no previous?
+        final Set<String> firstVersions = new HashSet<String>();
+        firstVersions.addAll(commit1FeatureIdentifiers);// insert of Bridges
+        firstVersions.addAll(commit2FeatureIdentifiers);// insert of Buildings
+        for (String rid : firstVersions) {
+            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typenName, rid, null, null, previous);
+            dom = postAsDOM("wfs?", xml);
+            expectedSize = 0;
+            assertGetFeatures(dom, expectedSize, typenName, Collections.EMPTY_SET);
+        }
+    }
+
+    private String find(String featureID, Set<String> commitFeatureIdentifiers) {
+        for (String commitFid : commitFeatureIdentifiers) {
+            if (commitFid.startsWith(featureID)) {
+                return commitFid;
+            }
+        }
+        throw new IllegalArgumentException(featureID + " not found in " + commitFeatureIdentifiers);
+    }
+
+    public void testGetFeatureVersionActionNext() throws Exception {
+        final Set<String> firstVersions = new HashSet<String>();
+        firstVersions.add(find("Bridges.1107531599613", commit1FeatureIdentifiers));
+        firstVersions.add(find("Buildings.1107531701011", commit2FeatureIdentifiers));
+
+        final Set<String> nextVersions = new HashSet<String>();
+        nextVersions.add(find("Bridges.1107531599613", commit3FeatureIdentifiers));
+        nextVersions.add(find("Buildings.1107531701011", commit4FeatureIdentifiers));
+
+        String xml;
+        Document dom;
+        int expectedSize;
+        final Version next = new Version(VersionAction.NEXT);
+
+        for (String rid : firstVersions) {
+            String typenName = rid.startsWith("Buildings") ? buildings : bridges;
+            xml = buildGetFeatureXml(typenName, rid, null, null, next);
+            dom = postAsDOM("wfs?", xml);
+            expectedSize = 1;
+            assertGetFeatures(dom, expectedSize, typenName, nextVersions);
+        }
+    }
+
+    /**
+     * Builds an XML GetFeature request
+     * 
+     * @param typeName
+     *            the type name to query, non null
+     * @param rid
+     *            the resource id to query, if null no filter will be generated
+     * @param startDate
+     *            the resourceId startDate, may be null, and only used if {@code rid != null}
+     * @param endDate
+     *            the resourceId endDate, may be null, and only used if {@code rid != null}
+     * @param version
+     *            the resourceId version action predicate, may be null, and only used if
+     *            {@code rid != null}
+     */
+    private String buildGetFeatureXml(final String typeName, String rid, Date startDate,
+            Date endDate, Version version) {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<wfs:GetFeature service='WFS' version='2.0.0' ");
+        sb.append(" xmlns:fes='" + FES.NAMESPACE + "' ");
+        sb.append(" xmlns:cite='http://www.opengis.net/cite' ");
+        sb.append(" xmlns:wfs='http://www.opengis.net/wfs/2.0' " + ">\n");
+        sb.append(" <wfs:Query typeNames='" + typeName + "'>\n");
+        if (rid != null) {
+            sb.append("  <fes:Filter>\n");
+            sb.append("   <fes:ResourceId rid = '" + rid + "' \n");
+            if (startDate != null) {
+                sb.append("        endDate='" + serializeDateTime(startDate.getTime()) + "'\n");
+            }
+            if (endDate != null) {
+                sb.append("        endDate='" + serializeDateTime(endDate.getTime()) + "'\n");
+            }
+            if (version != null) {
+                sb.append("        version='");
+                if (version.getDateTime() != null) {
+                    sb.append(serializeDateTime(version.getDateTime()));
+                } else if (version.getIndex() != null) {
+                    sb.append(version.getIndex());
+                } else if (version.getVersionAction() != null) {
+                    sb.append(version.getVersionAction());
+                }
+                sb.append("'");
+            }
+            sb.append("/>\n");
+            sb.append("  </fes:Filter>\n");
+        }
+        sb.append(" </wfs:Query> ");
+        sb.append("</wfs:GetFeature>");
+
+        String xml = sb.toString();
+        return xml;
     }
 }

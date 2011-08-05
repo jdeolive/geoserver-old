@@ -3,16 +3,25 @@ package org.geoserver.wfs.v2_0.versioning;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 import org.custommonkey.xmlunit.XMLUnit;
 import org.custommonkey.xmlunit.XpathEngine;
+import org.geogit.api.GeoGIT;
+import org.geogit.api.ObjectId;
+import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
+import org.geogit.api.RevObject.TYPE;
+import org.geogit.api.RevTree;
+import org.geogit.api.TreeVisitor;
+import org.geogit.repository.Repository;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.data.test.MockData;
-import org.geoserver.data.versioning.GeoToolsAuthenticationResolver;
+import org.geoserver.data.versioning.GeoToolsCommitStateResolver;
 import org.geoserver.geogit.GEOGIT;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.wfs.v2_0.WFS20TestSupport;
@@ -40,9 +49,9 @@ import com.vividsolutions.jts.io.WKTReader;
  * Upon startup, the repository contains the following commits:
  * 
  * <ul>
- * <li>Insert of:
+ * <li><b>Commit 1</b>, Insert of:
  * <code>Bridges.1107531599613[the_geom=POINT (0.0002 0.0007), FID="110",NAME="Cam Bridge"]</code>
- * <li>Insert of:
+ * <li><b>Commit 2</b>, Insert of:
  * <ul>
  * <li>
  * <code>Buildings.1107531701010[the_geom=MULTIPOLYGON (((0.0008 0.0005, 0.0008 0.0007, 0.0012 0.0007, 0.0012 0.0005, 0.0008 0.0005))),FID="113", ADDRESS="123 Main Street"]</code>
@@ -52,12 +61,13 @@ import com.vividsolutions.jts.io.WKTReader;
  * </li>
  * </ul>
  * </li>
- * <li>Commit Message: "Change Cam Bridge", Update of:
+ * <li><b>Commit 3</b>, commit message: "Change Cam Bridge", Update of:
  * <code>Bridges.1107531599613[the_geom=POINT (0.0001 0.0006), NAME="Cam Bridge2"]</code></li>
- * <li>Commit Message: "Moved building", Update of
+ * <li><b>Commit 4</b>, commit Message: "Moved building", Update of
  * <code>Buildings.1107531701011[the_geom=MULTIPOLYGON (((0.002 0.0007, 0.0024 0.0007, 0.0024 0.0005, 0.002 0.0005, 0.002 0.0007)))]</code>
  * </li>
- * <li>Commit Message: "Deleted building", Delete of <code>Buildings.1107531701010</code></li>
+ * <li><b>Commit 5</b>, commit message: "Deleted building", Delete of
+ * <code>Buildings.1107531701010</code></li>
  * </ul>
  * 
  * @author groldan
@@ -73,20 +83,66 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
 
     protected static final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
 
-    private XpathEngine xpath;
+    private static XpathEngine xpath;
+
+    // holds all the feature identifiers in the repository after the first initial commit (in the
+    // form <feature id>@<version id>
+    protected static Set<String> commit1FeatureIdentifiers;
+
+    // holds all the feature identifiers in the repository after the second initial commit (in the
+    // form <feature id>@<version id>
+    protected static Set<String> commit2FeatureIdentifiers;
+
+    // holds all the feature identifiers in the repository after the third initial commit (in the
+    // form <feature id>@<version id>
+    protected static Set<String> commit3FeatureIdentifiers;
+
+    // holds all the feature identifiers in the repository after the third initial commit (in the
+    // form <feature id>@<version id>
+    protected static Set<String> commit4FeatureIdentifiers;
+
+    // holds all the feature identifiers in the repository after the third initial commit (in the
+    // form <feature id>@<version id>
+    protected static Set<String> commit5FeatureIdentifiers;
+
+    /**
+     * These are the five commits recorded. Commit timestamps are mocked up and have the values
+     * 1000,2000,3000,400, and 5000, respectively
+     */
+    protected static RevCommit commit1, commit2, commit3, commit4, commit5;
+
+    protected static class MockCommitStateResolver extends GeoToolsCommitStateResolver {
+        private final long timestamp;
+
+        public MockCommitStateResolver(long timestamp) {
+            this.timestamp = timestamp;
+        }
+
+        @Override
+        public long getCurrentTimeMillis() {
+            return timestamp;
+        }
+    }
 
     @Override
-    public void oneTimeSetUp() throws Exception {
+    public final void oneTimeSetUp() throws Exception {
+
         super.oneTimeSetUp();
         xpath = XMLUnit.newXpathEngine();
 
         GEOGIT ggitFacade = GeoServerExtensions.bean(GEOGIT.class, applicationContext);
 
         // insert the single bridge in cite:Bridges
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(1000));
         assertTrue(makeVersioned(ggitFacade, CITE_BRIDGES) instanceof RevCommit);
+        commit1FeatureIdentifiers = getCurrentResourIds(ggitFacade);
+        commit1 = getCurrentCommit(ggitFacade);
 
         // insert the two buildings in cite:Buildings
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(2000));
         assertTrue(makeVersioned(ggitFacade, CITE_BUILDINGS) instanceof RevCommit);
+        commit2FeatureIdentifiers = getCurrentResourIds(ggitFacade);
+        commit2 = getCurrentCommit(ggitFacade);
 
         GeometryFactory gf = new GeometryFactory();
 
@@ -101,7 +157,17 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
                 (Object) gf.createPoint(new Coordinate(0.0001, 0.0006)));
         commitMessage = "Change Cam Bridge";
         filter = Filter.INCLUDE;
+        GeoGIT.setCommitStateResolver(new GeoToolsCommitStateResolver() {
+            @Override
+            public long getCurrentTimeMillis() {
+                return 1000;
+            }
+        });
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(3000));
         recordUpdateCommit(ggitFacade, CITE_BRIDGES, filter, properties, newValues, commitMessage);
+        commit3FeatureIdentifiers = getCurrentResourIds(ggitFacade);
+        assertNotNull(commit3FeatureIdentifiers);
+        commit3 = getCurrentCommit(ggitFacade);
 
         FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
         // update second building
@@ -112,12 +178,54 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
         properties = Arrays.asList("the_geom");
         newValues = Arrays.asList((Object) movedBuilding);
         commitMessage = "Moved building";
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(4000));
         recordUpdateCommit(ggitFacade, CITE_BUILDINGS, filter, properties, newValues, commitMessage);
+        commit4FeatureIdentifiers = getCurrentResourIds(ggitFacade);
+        commit4 = getCurrentCommit(ggitFacade);
 
         // delete first building
         filter = ff.id(Collections.singleton(ff.featureId("Buildings.1107531701010")));
+        GeoGIT.setCommitStateResolver(new MockCommitStateResolver(5000));
         recordDeleteCommit(ggitFacade, CITE_BUILDINGS, filter, "Deleted building");
+        commit5FeatureIdentifiers = getCurrentResourIds(ggitFacade);
+        assertNotNull(commit5FeatureIdentifiers);
+        commit5 = getCurrentCommit(ggitFacade);
+    }
 
+    private RevCommit getCurrentCommit(GEOGIT ggitFacade) {
+        Repository repository = ggitFacade.getRepository();
+        return repository.getCommit(ggitFacade.getRepository().getHead().getObjectId());
+    }
+
+    private Set<String> getCurrentResourIds(GEOGIT ggitFacade) {
+        final Repository repository = ggitFacade.getGeoGit().getRepository();
+
+        final Set<String> resourceIds = new HashSet<String>();
+        class RidCollector implements TreeVisitor {
+            @Override
+            public boolean visitSubTree(int bucket, ObjectId treeId) {
+                return true;
+            }
+
+            @Override
+            public boolean visitEntry(Ref ref) {
+                if (TYPE.BLOB.equals(ref.getType())) {
+                    resourceIds.add(new StringBuilder(ref.getName()).append('@')
+                            .append(ref.getObjectId().toString()).toString());
+                } else if (TYPE.TREE.equals(ref.getType())) {
+                    repository.getTree(ref.getObjectId()).accept(new RidCollector());
+                }
+                return true;
+            }
+        }
+        ;
+
+        RevTree headTree = repository.getHeadTree();
+        headTree.accept(new RidCollector());
+
+        RevCommit commit = repository.getCommit(repository.getHead().getObjectId());
+        System.out.println("Resource ids in commit '" + commit.getMessage() + "':\n" + resourceIds);
+        return resourceIds;
     }
 
     private void recordDeleteCommit(final GEOGIT facade, final Name typeName, final Filter filter,
@@ -126,7 +234,7 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
         FeatureTypeInfo typeInfo = getCatalog().getFeatureTypeByName(typeName);
         SimpleFeatureStore store = (SimpleFeatureStore) typeInfo.getFeatureSource(null, null);
         Transaction tx = new DefaultTransaction();
-        tx.putProperty(GeoToolsAuthenticationResolver.GEOGIT_COMMIT_MESSAGE, commitMessage);
+        tx.putProperty(GeoToolsCommitStateResolver.GEOGIT_COMMIT_MESSAGE, commitMessage);
         store.setTransaction(tx);
         try {
             @SuppressWarnings("rawtypes")
@@ -154,7 +262,7 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
         FeatureTypeInfo typeInfo = getCatalog().getFeatureTypeByName(typeName);
         SimpleFeatureStore store = (SimpleFeatureStore) typeInfo.getFeatureSource(null, null);
         Transaction tx = new DefaultTransaction();
-        tx.putProperty(GeoToolsAuthenticationResolver.GEOGIT_COMMIT_MESSAGE, commitMessage);
+        tx.putProperty(GeoToolsCommitStateResolver.GEOGIT_COMMIT_MESSAGE, commitMessage);
         store.setTransaction(tx);
         try {
 

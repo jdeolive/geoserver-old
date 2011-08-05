@@ -90,15 +90,14 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
      * @precondition {@code versioningFilter.getIdentifiers().size() > 0}
      * @postcondition {@code $return != null}
      * 
-     * @param typeName
      * @param versioningFilter
      * @param extraQuery
      * @return
      * @throws IOException
      */
-    protected FeatureCollection getFeatures(final Name typeName, final Id versioningFilter,
-            final Query extraQuery) throws IOException {
-        Assert.notNull(typeName);
+    protected FeatureCollection getFeatures(final Id versioningFilter, final Query extraQuery)
+            throws IOException {
+
         Assert.notNull(versioningFilter);
         Assert.isTrue(versioningFilter.getIdentifiers().size() > 0);
 
@@ -220,7 +219,8 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
             }
             return createFeatureCollection(delegate, currentCommitId);
         }
-        return getFeatures(getName(), versioningFilter, query);
+
+        return getFeatures(versioningFilter, query);
     }
 
     /**
