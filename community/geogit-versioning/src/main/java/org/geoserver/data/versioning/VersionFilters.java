@@ -59,7 +59,13 @@ public class VersionFilters {
                 Set<ResourceId> resourceIds = new HashSet<ResourceId>();
                 for (Identifier id : filter.getIdentifiers()) {
                     if (id instanceof ResourceId) {
-                        resourceIds.add((ResourceId) id);
+                        // does it contain any actual versioning predicate?
+                        ResourceId rid = (ResourceId) id;
+                        if (rid.getFeatureVersion() != null || rid.getEndTime() != null
+                                || rid.getStartTime() != null || rid.getVersion() != null) {
+                            // yes, there's something to query in the version history
+                            resourceIds.add((ResourceId) id);
+                        }
                     } else if (id instanceof FeatureId) {
                         FeatureId fid = (FeatureId) id;
                         int idx = fid.getID().indexOf(ResourceId.VERSION_SEPARATOR);
