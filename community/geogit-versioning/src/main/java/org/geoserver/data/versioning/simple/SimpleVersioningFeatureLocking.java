@@ -52,11 +52,11 @@ public class SimpleVersioningFeatureLocking extends
     public SimpleFeatureCollection getFeatures(Query query) throws IOException {
         return (SimpleFeatureCollection) super.getFeatures(query);
     }
-    
+
     @Override
     protected FeatureCollection<SimpleFeatureType, SimpleFeature> createFeatureCollection(
             FeatureCollection<SimpleFeatureType, SimpleFeature> delegate, ObjectId currentCommitId) {
         return new SimpleResourceIdAssigningFeatureCollection((SimpleFeatureCollection) delegate,
                 this, currentCommitId);
-    }    
+    }
 }

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.geogit.api.GeoGIT;
+import org.geogit.api.Ref;
 import org.geogit.repository.Repository;
 import org.geotools.data.FeatureReader;
 import org.geotools.data.FeatureStore;
@@ -15,6 +16,7 @@ import org.geotools.data.Transaction;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.geotools.filter.identity.ResourceIdImpl;
 import org.opengis.feature.Feature;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
@@ -24,8 +26,10 @@ import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Id;
 import org.opengis.filter.identity.FeatureId;
 import org.opengis.filter.identity.Identifier;
+import org.opengis.filter.identity.ResourceId;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Lists;
 
 @SuppressWarnings("rawtypes")
 public class VersioningFeatureStore<T extends FeatureType, F extends Feature> extends
@@ -96,15 +100,18 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
     @Override
     public void modifyFeatures(final Name[] attributeNames, final Object[] attributeValues,
             final Filter filter) throws IOException {
+
         final FeatureStore<T, F> unversioned = getUnversionedStore();
         final boolean versioned = isVersioned();
         Id affectedFeaturesFitler = null;
         if (versioned) {
             checkTransaction();
-            final Filter unversionedFilter = VersionFilters.getUnversioningFilter(filter);
-            FeatureStore<T, F> unversionedStore = getUnversionedStore();
+            // throws exception if filter has a resourceid that doesn't match the current version
+            checkEditFilterMatchesCurrentVersion(filter);
+
             FeatureCollection<T, F> affectedFeatures;
-            affectedFeatures = unversionedStore.getFeatures(unversionedFilter);
+
+            affectedFeatures = unversioned.getFeatures(filter);
             FeatureIterator<F> iterator = affectedFeatures.features();
             Set<Identifier> affectedIds = new HashSet<Identifier>();
             try {
@@ -127,6 +134,39 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
                 getVersioningState().stageUpdate(newValues);
             } catch (Exception e) {
                 Throwables.propagate(e);
+            }
+        }
+    }
+
+    /**
+     * Throws an IllegalArgumentException if {@code filter} contains a resource filter that doesn't
+     * match the current version of a feature
+     * 
+     * @param filter
+     *            original upate filter
+     */
+    private void checkEditFilterMatchesCurrentVersion(final Filter filter) {
+        final Id versionFilter = VersionFilters.getVersioningFilter(filter);
+        if (versionFilter == null) {
+            return;
+        }
+        // don't allow non current versions
+        GeoGIT ggit = new GeoGIT(repository);
+        VersionQuery query = new VersionQuery(ggit, getSchema().getName());
+        for (Identifier id : versionFilter.getIdentifiers()) {
+            ResourceId rid = (ResourceId) id;
+            List<Ref> requested;
+            List<Ref> current;
+            try {
+                requested = Lists.newArrayList(query.get(rid));
+                current = Lists.newArrayList(query.get(new ResourceIdImpl(rid.getID(), null)));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            if (!current.equals(requested)) {
+                throw new IllegalArgumentException(
+                        "Requested resource id filter doesn't match curent version for feature "
+                                + rid.getID());
             }
         }
     }

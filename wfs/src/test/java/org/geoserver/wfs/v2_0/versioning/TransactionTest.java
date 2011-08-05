@@ -216,6 +216,48 @@ public class TransactionTest extends WFS20VersioningTestSupport {
         dom = postAsDOM("wfs", xml);
         XMLAssert.assertXpathEvaluatesTo("1", "count(//cite:Buildings)", dom);
         XMLAssert.assertXpathExists("//cite:Buildings/cite:ADDRESS[text()='148 Lafayette Street']", dom);
+        
+        //do an update with a current version filter, it shall success
+        xml = 
+        "<wfs:Transaction service=\"WFS\" version=\"2.0.0\" " + 
+        "xmlns:cite=\"http://www.opengis.net/cite\" " +
+        "xmlns:fes='" + FES.NAMESPACE + "' " + 
+        "xmlns:wfs='" + WFS.NAMESPACE + "' " + 
+        "xmlns:gml='" + GML.NAMESPACE + "'>" + 
+        " <wfs:Update typeName=\"cite:Buildings\">" +
+        "   <wfs:Property>" +
+        "     <wfs:ValueReference>FID</wfs:ValueReference>" +
+        "     <wfs:Value>115</wfs:Value>" +
+        "   </wfs:Property>" + 
+        "   <fes:Filter>" +
+        "      <fes:ResourceId rid = '" + fid + "@" + ver2 + "'/>" +
+        "   </fes:Filter>" +
+        " </wfs:Update>" +
+       "</wfs:Transaction>"; 
+        
+        dom = postAsDOM( "wfs", xml );
+        assertEquals("wfs:TransactionResponse", dom.getDocumentElement().getNodeName());
+        assertEquals( "1", getFirstElementByTagName(dom, "wfs:totalUpdated").getFirstChild().getNodeValue());
+
+        //get the updated version
+        dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings" +
+                "&cql_filter=FID%3D'115'");
+
+        XMLAssert.assertXpathEvaluatesTo("1", "count(//cite:Buildings)", dom);
+            
+        //get the new version
+        id = getFirstElementByTagName(dom, "cite:Buildings").getAttribute("gml:id");
+        assertEquals(fid, id.split("@")[0]);
+            
+        String ver3 = id.split("@")[1];
+        assertFalse(ver2.equals(ver3));
+        
+        //but an update with a non current version filter shall fail
+        //reuse the previous request, using ver2 as the filter...
+        dom = postAsDOM( "wfs", xml );
+        // print(dom);
+        assertEquals("wfs:TransactionResponse", dom.getDocumentElement().getNodeName());
+        assertEquals( "0", getFirstElementByTagName(dom, "wfs:totalUpdated").getFirstChild().getNodeValue());
     }
 
     public void testDelete() throws Exception {
