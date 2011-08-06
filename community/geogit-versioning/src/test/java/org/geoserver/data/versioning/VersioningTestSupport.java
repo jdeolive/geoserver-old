@@ -11,7 +11,7 @@ import org.opengis.feature.simple.SimpleFeatureType;
  * @author groldan
  * 
  */
-public class VersioningTestSupport extends RepositoryTestCase {
+public abstract class VersioningTestSupport extends RepositoryTestCase {
 
     protected DataAccess<SimpleFeatureType, SimpleFeature> unversionedStore;
 
