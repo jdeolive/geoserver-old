@@ -25,9 +25,9 @@ import com.google.common.collect.AbstractIterator;
 public class ResourceIdAssigningFeatureCollection<T extends FeatureType, F extends Feature> extends
         DecoratingFeatureCollection<T, F> implements FeatureCollection<T, F> {
 
-    private final ObjectId commitId;
+    protected final ObjectId commitId;
 
-    private final VersioningFeatureSource<T, F> store;
+    protected final VersioningFeatureSource<T, F> store;
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected ResourceIdAssigningFeatureCollection(final FeatureCollection delegate,
@@ -68,12 +68,20 @@ public class ResourceIdAssigningFeatureCollection<T extends FeatureType, F exten
         return new ResourceIdAssigningIterator(iterator);
     }
 
-    protected class ResourceIdAssigningFeatureIterator<G extends F> implements FeatureIterator<G> {
+    protected static class ResourceIdAssigningFeatureIterator<G extends Feature> implements
+            FeatureIterator<G> {
 
         protected FeatureIterator<G> features;
 
-        protected ResourceIdAssigningFeatureIterator(FeatureIterator<G> features) {
+        private final VersioningFeatureSource source;
+
+        private final ObjectId commitId;
+
+        public ResourceIdAssigningFeatureIterator(FeatureIterator<G> features,
+                VersioningFeatureSource source, ObjectId commitId) {
             this.features = features;
+            this.source = source;
+            this.commitId = commitId;
         }
 
         @Override
@@ -81,12 +89,13 @@ public class ResourceIdAssigningFeatureCollection<T extends FeatureType, F exten
             return features.hasNext();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public G next() throws NoSuchElementException {
             Feature next = features.next();
             Name typeName = next.getType().getName();
             String featureId = next.getIdentifier().getID();
-            String versionId = store.getFeatureVersion(typeName, featureId, commitId);
+            String versionId = source.getFeatureVersion(typeName, featureId, commitId);
             return (G) VersionedFeatureWrapper.wrap(next, versionId);
         }
 
@@ -96,9 +105,10 @@ public class ResourceIdAssigningFeatureCollection<T extends FeatureType, F exten
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public FeatureIterator<F> features() {
-        return new ResourceIdAssigningFeatureIterator(delegate.features());
+        return new ResourceIdAssigningFeatureIterator(delegate.features(), store, commitId);
     }
 
     @SuppressWarnings("deprecation")

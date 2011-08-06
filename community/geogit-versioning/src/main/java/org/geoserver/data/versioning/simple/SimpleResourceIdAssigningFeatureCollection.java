@@ -1,5 +1,7 @@
 package org.geoserver.data.versioning.simple;
 
+import java.util.NoSuchElementException;
+
 import org.geogit.api.ObjectId;
 import org.geoserver.data.versioning.ResourceIdAssigningFeatureCollection;
 import org.geoserver.data.versioning.VersioningFeatureSource;
@@ -54,11 +56,28 @@ public class SimpleResourceIdAssigningFeatureCollection extends
         return (SimpleFeatureCollection) super.sort(order);
     }
 
-    class SimpleResourceIdAssigningFeatureIterator extends
-            ResourceIdAssigningFeatureIterator<SimpleFeature> implements SimpleFeatureIterator {
+    class SimpleResourceIdAssigningFeatureIterator implements SimpleFeatureIterator {
+
+        private ResourceIdAssigningFeatureIterator<SimpleFeature> features;
 
         SimpleResourceIdAssigningFeatureIterator(FeatureIterator<SimpleFeature> features) {
-            super(features);
+            this.features = new ResourceIdAssigningFeatureIterator<SimpleFeature>(features, store,
+                    commitId);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return features.hasNext();
+        }
+
+        @Override
+        public SimpleFeature next() throws NoSuchElementException {
+            return features.next();
+        }
+
+        @Override
+        public void close() {
+            features.close();
         }
 
     }
