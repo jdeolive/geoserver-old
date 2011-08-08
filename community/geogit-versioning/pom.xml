@@ -24,7 +24,7 @@
     <dependency>
       <groupId>org.geogit</groupId>
       <artifactId>geogit</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0-M1</version>
     </dependency>
     <dependency>
       <groupId>org.geoserver</groupId>
@@ -54,24 +54,24 @@
     <dependency>
       <groupId>org.gvsig</groupId>
       <artifactId>bxml-api</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0-M3</version>
     </dependency>
     <dependency>
       <groupId>org.gvsig</groupId>
       <artifactId>bxml-impl</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0-M3</version>
     </dependency>
     <dependency>
       <groupId>org.gvsig</groupId>
       <artifactId>bxml-utils</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0-M3</version>
     </dependency>
 
     <!-- Test scope dependencies -->
     <dependency>
       <groupId>org.geogit</groupId>
       <artifactId>geogit</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0-M1</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
