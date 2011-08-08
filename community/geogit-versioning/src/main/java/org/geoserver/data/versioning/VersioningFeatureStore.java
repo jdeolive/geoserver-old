@@ -104,28 +104,34 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
         final FeatureStore<T, F> unversioned = getUnversionedStore();
         final boolean versioned = isVersioned();
         Id affectedFeaturesFitler = null;
+        Filter unversionedFilter = filter;
         if (versioned) {
             checkTransaction();
             // throws exception if filter has a resourceid that doesn't match the current version
             checkEditFilterMatchesCurrentVersion(filter);
 
-            FeatureCollection<T, F> affectedFeatures;
+            unversionedFilter = VersionFilters.getUnversioningFilter(filter);
+            if (unversionedFilter instanceof Id) {
+                affectedFeaturesFitler = (Id) unversionedFilter;
+            } else {
+                FeatureCollection<T, F> affectedFeatures;
 
-            affectedFeatures = unversioned.getFeatures(filter);
-            FeatureIterator<F> iterator = affectedFeatures.features();
-            Set<Identifier> affectedIds = new HashSet<Identifier>();
-            try {
-                while (iterator.hasNext()) {
-                    affectedIds.add(iterator.next().getIdentifier());
+                affectedFeatures = unversioned.getFeatures(unversionedFilter);
+                FeatureIterator<F> iterator = affectedFeatures.features();
+                Set<Identifier> affectedIds = new HashSet<Identifier>();
+                try {
+                    while (iterator.hasNext()) {
+                        affectedIds.add(iterator.next().getIdentifier());
+                    }
+                } finally {
+                    iterator.close();
                 }
-            } finally {
-                iterator.close();
+                final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
+                affectedFeaturesFitler = ff.id(affectedIds);
             }
-            final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
-            affectedFeaturesFitler = ff.id(affectedIds);
         }
 
-        unversioned.modifyFeatures(attributeNames, attributeValues, filter);
+        unversioned.modifyFeatures(attributeNames, attributeValues, unversionedFilter);
 
         if (versioned && affectedFeaturesFitler != null
                 && affectedFeaturesFitler.getIdentifiers().size() > 0) {
