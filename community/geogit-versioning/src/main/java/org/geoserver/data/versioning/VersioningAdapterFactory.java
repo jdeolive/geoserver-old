@@ -1,7 +1,5 @@
 package org.geoserver.data.versioning;
 
-import java.util.logging.Logger;
-
 import org.geogit.repository.Repository;
 import org.geoserver.data.versioning.simple.SimpleVersioningFeatureLocking;
 import org.geoserver.data.versioning.simple.SimpleVersioningFeatureSource;
@@ -15,16 +13,21 @@ import org.geotools.data.FeatureStore;
 import org.geotools.data.simple.SimpleFeatureLocking;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.util.logging.Logging;
+import org.opengis.feature.type.Name;
 import org.springframework.util.Assert;
 
 public class VersioningAdapterFactory {
 
-    private static final Logger LOGGER = Logging.getLogger(VersioningAdapterFactory.class);
-
     @SuppressWarnings({ "rawtypes" })
     public static FeatureSource create(final FeatureSource subject) {
         final Repository versioningRepo = GEOGIT.get().getRepository();
+
+        final Name typeName = subject.getSchema().getName();
+
+        // do not wrap if not versioned
+        if (!VersioningFeatureSource.isVersioned(typeName, versioningRepo)) {
+            return subject;
+        }
 
         if (subject instanceof SimpleFeatureLocking) {
             return new SimpleVersioningFeatureLocking((SimpleFeatureLocking) subject,

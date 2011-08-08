@@ -18,6 +18,7 @@ import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
 import org.geogit.repository.Repository;
+import org.geogit.repository.WorkingTree;
 import org.geotools.data.DataAccess;
 import org.geotools.data.FeatureListener;
 import org.geotools.data.FeatureSource;
@@ -65,7 +66,12 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
      */
     public boolean isVersioned() {
         final Name name = getSchema().getName();
-        boolean isVersioned = repository.getWorkingTree().hasRoot(name);
+        return isVersioned(name, repository);
+    }
+
+    public static boolean isVersioned(final Name typeName, final Repository repository) {
+        final WorkingTree workingTree = repository.getWorkingTree();
+        final boolean isVersioned = workingTree.hasRoot(typeName);
         return isVersioned;
     }
 
@@ -213,6 +219,7 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
         versioningFilter = getVersioningFilter(query.getFilter());
         if (versioningFilter == null) {
             FeatureCollection<T, F> delegate = unversioned.getFeatures(query);
+            int size = delegate.size();
             final ObjectId currentCommitId = getCurrentVersion();
             if (currentCommitId == null) {
                 return delegate;
