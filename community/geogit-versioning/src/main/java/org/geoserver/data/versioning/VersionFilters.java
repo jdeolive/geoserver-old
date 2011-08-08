@@ -38,6 +38,8 @@ public class VersionFilters {
                         } else {
                             featureIds.add(id);
                         }
+                    }else{
+                        featureIds.add(id);
                     }
                 }
                 return getFactory(data).id(featureIds);
