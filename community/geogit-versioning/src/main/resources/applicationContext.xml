@@ -13,6 +13,8 @@
     <constructor-arg ref="dataDirectory" />
   </bean>
 
+  <bean id="GEOGITPlugin" class="org.geoserver.geogit.GEOGITPlugin"/>
+  
   <!-- WEB UI -->
   <bean id="versionedTypesMenuPage" class="org.geoserver.web.MenuPageInfo">
     <property name="id" value="versionedTypes"/>

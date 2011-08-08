@@ -3,6 +3,9 @@
 
 <beans>
 
+  <!-- the plugin -->
+  <bean id="wfsvPlugin">
+  </bean>
   <!-- wfs service -->
   <bean id="wfsvServiceTarget"
     class="org.geoserver.wfsv.DefaultVersioningWebFeatureService">

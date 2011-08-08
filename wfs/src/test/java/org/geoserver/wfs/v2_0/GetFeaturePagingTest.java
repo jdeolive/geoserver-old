@@ -4,8 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -386,8 +388,9 @@ public class GetFeaturePagingTest extends WFS20TestSupport {
     
     public void doTestNextPreviousLinksPOST(String typeName) throws Exception {
         FilterFactory ff = CommonFactoryFinder.getFilterFactory(null);
-        Filter filter = ff.id(new LinkedHashSet<Identifier>(Arrays.asList(ff.featureId("Fifteen.5"),
-            ff.featureId("Fifteen.6"), ff.featureId("Fifteen.7"),ff.featureId("Fifteen.8"),ff.featureId("Fifteen.9"))));
+        Filter filter = ff.id(new LinkedHashSet<Identifier>(Arrays.asList(ff.resourceId("Fifteen.5", null),
+            ff.resourceId("Fifteen.6", null), ff.resourceId("Fifteen.7", null),
+            ff.resourceId("Fifteen.8", null),ff.resourceId("Fifteen.9", null))));
         
         String xml = String.format("<GetFeature version='2.0.0' xmlns:gml='http://www.opengis.net/gml/2.0' " +
             "xmlns:fes='http://www.opengis.net/fes/2.0' startIndex='%d' count='%d'>" + 
@@ -442,7 +445,7 @@ public class GetFeaturePagingTest extends WFS20TestSupport {
         assertEquals(String.valueOf(count), kvp.get("COUNT"));
         assertEquals("("+typeName+")", URLDecoder.decode((String)kvp.get("TYPENAMES")));
         assertNotNull(kvp.get("FILTER"));
-        
+
         assertFilter(filter, URLDecoder.decode((String) kvp.get("FILTER")));
     }
     

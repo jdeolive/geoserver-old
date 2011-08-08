@@ -128,8 +128,17 @@ public abstract class TransactionRequest extends RequestObject {
                 return (TransactionType) request.getAdaptee();
             }
 
-            //TODO: create one
-            throw new IllegalArgumentException();
+            //TODO: this is a short term measure... we need to update the apis for transations 
+            // plugins
+            TransactionType tx = WfsFactory.eINSTANCE.createTransactionType();
+            tx.setBaseUrl(request.getBaseUrl());
+            tx.setExtendedProperties(request.getExtendedProperties());
+            tx.setLockId(request.getLockId());
+            tx.setHandle(request.getHandle());
+            tx.setReleaseAction(request.isReleaseActionAll() ? 
+                AllSomeType.ALL_LITERAL : AllSomeType.SOME_LITERAL);
+
+            return tx;
         }
     }
     

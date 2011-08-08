@@ -53,16 +53,6 @@
       <classifier>jdk15</classifier>
     </dependency>
     <dependency>
-      <!-- Depend on geogit-versioning with test scope to account for the WFS2.0 versioning tests.
-           At runtime (on an actual instance), versioning support will depend on whether geogit-versioning
-           is available (currently through the "geogit" maven profile)
-       -->
-      <groupId>org.geoserver.community</groupId>
-      <artifactId>geogit-versioning</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
       <scope>test</scope>

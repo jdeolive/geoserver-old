@@ -1,4 +1,4 @@
-package org.geoserver.wfs.v2_0.versioning;
+package org.geoserver.wfs.versioning;
 
 import static org.geotools.feature.type.DateUtil.serializeDateTime;
 
