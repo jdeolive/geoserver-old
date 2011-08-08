@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.DataStoreInfo;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.web.wicket.GeoServerDataProvider;
@@ -64,12 +65,15 @@ public class NewVersionedLayerPageProvider extends GeoServerDataProvider<Version
         // else, grab the resource list
         try {
             DataStoreInfo dstore = getCatalog().getStore(storeId, DataStoreInfo.class);
-            List<FeatureTypeInfo> featureTypes = getCatalog().getFeatureTypesByDataStore(dstore);
+            Catalog catalog = getCatalog();
+            List<FeatureTypeInfo> featureTypes = catalog.getFeatureTypesByDataStore(dstore);
             List<Name> typeNames = new ArrayList<Name>(featureTypes.size());
 
             for (FeatureTypeInfo fti : featureTypes) {
-                Name typeName = fti.getQualifiedName();
-                typeNames.add(typeName);
+                if (fti.enabled()) {
+                    Name typeName = fti.getQualifiedName();
+                    typeNames.add(typeName);
+                }
             }
 
             List<VersionedLayerInfo> items = new ArrayList<VersionedLayerInfo>(

@@ -7,6 +7,7 @@ package org.geoserver.geogit.web;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Level;
@@ -305,6 +306,11 @@ public class NewVersionedLayerPage extends GeoServerSecuredPage {
         @Override
         protected List<DataStoreInfo> load() {
             List<DataStoreInfo> stores = new ArrayList<DataStoreInfo>(getCatalog().getDataStores());
+            for (Iterator<DataStoreInfo> it = stores.iterator(); it.hasNext();) {
+                if (!it.next().isEnabled()) {
+                    it.remove();
+                }
+            }
             Collections.sort(stores, new Comparator<StoreInfo>() {
                 public int compare(StoreInfo o1, StoreInfo o2) {
                     if (o1.getWorkspace().equals(o2.getWorkspace())) {
