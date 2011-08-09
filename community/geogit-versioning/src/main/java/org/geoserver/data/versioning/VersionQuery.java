@@ -22,7 +22,6 @@ import org.opengis.filter.identity.Version;
 import org.opengis.filter.identity.VersionAction;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 
 public class VersionQuery {
@@ -76,33 +75,24 @@ public class VersionQuery {
             logOp.setTimeRange(timeRange);
         }
 
-        Iterator<RevCommit> commits = logOp.call();
+        // all commits whose tree contains the requested feature
+        Iterator<RevCommit> featureCommits = logOp.call();
 
         if (version == null) {
-            List<Ref> allInAscendingOrder = getAllInAscendingOrder(ggit, commits, featureId);
+            List<Ref> allInAscendingOrder = getAllInAscendingOrder(ggit, featureCommits, featureId);
             result.addAll(allInAscendingOrder);
         } else {
             if (version.getDateTime() != null) {
                 final Date validAsOf = version.getDateTime();
-                // use second precision, as that's what xml uses, right?
-                final long lowerThan = toSecondsPrecision(validAsOf.getTime());
-                // filter by commits previous to specified time
-                commits = Iterators.filter(commits, new Predicate<RevCommit>() {
-                    @Override
-                    public boolean apply(RevCommit input) {
-                        long timestamp = toSecondsPrecision(input.getTimestamp());
-                        return timestamp <= lowerThan;
-                    }
-                });
-                // and get only the first one, that's the greatest and closest to the requested
-                // valid time, as commints come in descending temporal order from LogOp
-                commits = Iterators.limit(commits, 1);
-                result.addAll(getAllInAscendingOrder(ggit, commits, featureId));
-
+                RevCommit closest = findClosest(validAsOf, featureCommits);
+                if (closest != null) {
+                    featureCommits = Iterators.singletonIterator(closest);
+                    result.addAll(getAllInAscendingOrder(ggit, featureCommits, featureId));
+                }
             } else if (version.getIndex() != null) {
                 final int requestIndex = version.getIndex().intValue();
                 final int listIndex = requestIndex - 1;// version indexing starts at 1
-                List<Ref> allVersions = getAllInAscendingOrder(ggit, commits, featureId);
+                List<Ref> allVersions = getAllInAscendingOrder(ggit, featureCommits, featureId);
                 if (allVersions.size() > 0) {
                     if (allVersions.size() >= requestIndex) {
                         result.add(allVersions.get(listIndex));
@@ -112,7 +102,8 @@ public class VersionQuery {
                 }
             } else if (version.getVersionAction() != null) {
                 final VersionAction versionAction = version.getVersionAction();
-                List<Ref> allInAscendingOrder = getAllInAscendingOrder(ggit, commits, featureId);
+                List<Ref> allInAscendingOrder = getAllInAscendingOrder(ggit, featureCommits,
+                        featureId);
                 switch (versionAction) {
                 case ALL:
                     result.addAll(allInAscendingOrder);
@@ -146,6 +137,24 @@ public class VersionQuery {
         }
 
         return result.iterator();
+    }
+
+    private RevCommit findClosest(final Date date, Iterator<RevCommit> commitsInDescendingOrder) {
+        final long requestedTime = date.getTime();
+        RevCommit closest = null;
+        while (commitsInDescendingOrder.hasNext()) {
+            RevCommit current = commitsInDescendingOrder.next();
+            if (closest == null) {
+                closest = current;
+            } else {
+                long delta = Math.abs(current.getTimestamp() - requestedTime);
+                long prevDelta = Math.abs(closest.getTimestamp() - requestedTime);
+                if (delta < prevDelta) {
+                    closest = current;
+                }
+            }
+        }
+        return closest;
     }
 
     private long toSecondsPrecision(final long timeStampMillis) {

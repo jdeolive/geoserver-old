@@ -153,11 +153,11 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         Document dom;
         Version version;
 
-        // no valid version at this timestamp
+        // requested time prior to first commit, should return feature version at first commit
         version = new Version(new Date(commit1.getTimestamp() - 5000));
         xml = buildGetFeatureXml(bridges, rid, null, null, version);
         dom = postAsDOM("wfs?", xml);
-        
+
         //from the spec:
         //The version attribute may also be date indicating that the version of the resource
         //closest to the specified date shall be selected.
