@@ -157,7 +157,12 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
         version = new Version(new Date(commit1.getTimestamp() - 5000));
         xml = buildGetFeatureXml(bridges, rid, null, null, version);
         dom = postAsDOM("wfs?", xml);
-        assertGetFeatures(dom, 0, bridges, commit1FeatureIdentifiers);
+        
+        //from the spec:
+        //The version attribute may also be date indicating that the version of the resource
+        //closest to the specified date shall be selected.
+        assertGetFeatures(dom, 1, bridges, commit1FeatureIdentifiers);
+        //assertGetFeatures(dom, 0, bridges, commit1FeatureIdentifiers);
 
         // version of the first commit
         version = new Version(new Date(commit1.getTimestamp()));
@@ -357,6 +362,21 @@ public class GetFeatureVersioningTest extends WFS20VersioningTestSupport {
             expectedSize = 1;
             assertGetFeatures(dom, expectedSize, typeName, nextVersions);
         }
+    }
+
+    public void testGetFeatureBadVersion() throws Exception {
+        String xml = "    <wfs:GetFeature service='WFS' version='2.0.0' " + 
+                "      xmlns:wfs='http://www.opengis.net/wfs/2.0' " + 
+                "      xmlns:fes='http://www.opengis.net/fes/2.0'> " + 
+                "      <wfs:Query typeNames='cite:Buildings'> " + 
+                "        <fes:Filter> " + 
+                "          <fes:ResourceId rid='Buildings.1107531701010' version='-1'/> " + 
+                "        </fes:Filter> " + 
+                "      </wfs:Query> " + 
+                "    </wfs:GetFeature> ";
+        Document dom = postAsDOM("wfs", xml);
+        assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
+        XMLAssert.assertXpathEvaluatesTo("OperationProcessingFailed", "//ows:Exception/@exceptionCode", dom);
     }
 
     /**

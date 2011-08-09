@@ -46,8 +46,7 @@ public class TransactionTest extends WFS20VersioningTestSupport {
                 + "</wfs:Transaction>";
 
         dom = postAsDOM( "wfs", xml );
-        //print(dom);
-        
+
         XMLAssert.assertXpathEvaluatesTo("1", "count(//" + "wfs:totalInserted" + ")", dom);
         
         //get the feature id
@@ -172,9 +171,13 @@ public class TransactionTest extends WFS20VersioningTestSupport {
        "</wfs:Transaction>"; 
         
         dom = postAsDOM( "wfs", xml );
+
         assertEquals("wfs:TransactionResponse", dom.getDocumentElement().getNodeName());
         assertEquals( "1", getFirstElementByTagName(dom, "wfs:totalUpdated").getFirstChild().getNodeValue());
-
+        
+        //ensure the updated fid is the new one
+        XMLAssert.assertXpathNotExists("//wfs:UpdateResults/wfs:Feature/fes:ResourceId[@rid='"+id+"']", dom);
+                
         //get the updated version
         dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings" +
                 "&cql_filter=FID%3D'114'");
