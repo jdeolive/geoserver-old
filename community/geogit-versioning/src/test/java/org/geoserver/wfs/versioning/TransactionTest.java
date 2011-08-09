@@ -1,6 +1,7 @@
 package org.geoserver.wfs.versioning;
 
-import java.util.Calendar;
+import static org.geotools.feature.type.DateUtil.serializeDateTime;
+
 import java.util.Date;
 
 import org.custommonkey.xmlunit.XMLAssert;
@@ -9,8 +10,6 @@ import org.geotools.filter.v2_0.FES;
 import org.geotools.gml3.v3_2.GML;
 import org.geotools.wfs.v2_0.WFS;
 import org.w3c.dom.Document;
-
-import static org.geotools.feature.type.DateUtil.serializeDateTime;
 
 public class TransactionTest extends WFS20VersioningTestSupport {
 
@@ -46,8 +45,13 @@ public class TransactionTest extends WFS20VersioningTestSupport {
                 + "</wfs:Transaction>";
 
         dom = postAsDOM( "wfs", xml );
-
+        print(dom);
         XMLAssert.assertXpathEvaluatesTo("1", "count(//" + "wfs:totalInserted" + ")", dom);
+        XMLAssert.assertXpathEvaluatesTo("1",
+                "count(wfs:TransactionResponse/wfs:InsertResults/wfs:Feature/fes:ResourceId)", dom);
+        
+        final String insertedRid = xpath.evaluate("wfs:TransactionResponse/wfs:InsertResults/wfs:Feature/fes:ResourceId/@rid", dom);
+        assertTrue(insertedRid, insertedRid.indexOf('@') > 0);
         
         //get the feature id
         dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings&srsName=EPSG:4326&" +
@@ -57,6 +61,7 @@ public class TransactionTest extends WFS20VersioningTestSupport {
         XMLAssert.assertXpathEvaluatesTo("1", "count(//" + "cite:Buildings" + ")", dom);
 
         String id = getFirstElementByTagName(dom, "cite:Buildings").getAttribute("gml:id");
+        assertEquals(insertedRid, id);
         String fid = id.split("@")[0];
         String ver = id.split("@")[1];
 

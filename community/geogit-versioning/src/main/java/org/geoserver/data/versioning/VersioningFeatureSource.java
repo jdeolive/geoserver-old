@@ -221,7 +221,6 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
         versioningFilter = getVersioningFilter(query.getFilter());
         if (versioningFilter == null) {
             FeatureCollection<T, F> delegate = unversioned.getFeatures(query);
-            int size = delegate.size();
             final ObjectId currentCommitId = getCurrentVersion();
 
             return createFeatureCollection(delegate, currentCommitId);

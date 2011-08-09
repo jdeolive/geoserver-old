@@ -3,7 +3,9 @@ package org.geoserver.data.versioning;
 import static org.geotools.data.Transaction.AUTO_COMMIT;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -85,23 +87,32 @@ public class VersioningFeatureStore<T extends FeatureType, F extends Feature> ex
     @Override
     public List<FeatureId> addFeatures(FeatureCollection<T, F> collection) throws IOException {
         final FeatureStore<T, F> unversioned = getUnversionedStore();
-        List<FeatureId> featureIds = unversioned.addFeatures(collection);
-
+        List<FeatureId> unversionedIds = unversioned.addFeatures(collection);
+        
         if (isVersioned()) {
+            List<FeatureId> versionedIds = new ArrayList<FeatureId>(unversionedIds.size());
             checkTransaction();
             try {
-                Name typeName = getSchema().getName();
+                final Name typeName = getSchema().getName();
                 VersioningTransactionState versioningState = getVersioningState();
+                
                 FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
-                Id id = ff.id(new HashSet<Identifier>(featureIds));
+                
+                Id id = ff.id(new HashSet<Identifier>(unversionedIds));
                 FeatureCollection<T, F> inserted = unversioned.getFeatures(id);
-                int size = inserted.size();
                 versioningState.stageInsert(typeName, inserted);
+                
+                for(Iterator<FeatureId> fids = unversionedIds.iterator(); fids.hasNext(); ){
+                    FeatureId fid = fids.next();
+                    String featureVersion = getFeatureVersion(typeName, fid.getID(), null);
+                    versionedIds.add(ff.resourceId(fid.getID(), featureVersion));
+                }
             } catch (Exception e) {
                 Throwables.propagate(e);
             }
+            return versionedIds;
         }
-        return featureIds;
+        return unversionedIds;
     }
 
     /**
