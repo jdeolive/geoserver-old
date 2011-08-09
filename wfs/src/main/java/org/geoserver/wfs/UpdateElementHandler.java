@@ -6,6 +6,7 @@ package org.geoserver.wfs;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,7 @@ import net.opengis.wfs.TransactionType;
 import net.opengis.wfs.UpdateElementType;
 
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EContentsEList.FeatureIterator;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.config.GeoServer;
 import org.geoserver.wfs.request.Property;
@@ -34,6 +36,7 @@ import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureLocking;
 import org.geotools.data.FeatureStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureLocking;
 import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.factory.CommonFactoryFinder;
@@ -42,6 +45,7 @@ import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.projection.PointOutsideEnvelopeException;
+import org.opengis.feature.Feature;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.type.AttributeDescriptor;
 import org.opengis.feature.type.FeatureType;
@@ -52,6 +56,9 @@ import org.opengis.filter.FilterFactory;
 import org.opengis.filter.FilterFactory2;
 import org.opengis.filter.Id;
 import org.opengis.filter.expression.PropertyName;
+import org.opengis.filter.identity.FeatureId;
+import org.opengis.filter.identity.Identifier;
+import org.opengis.filter.identity.ResourceId;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -224,7 +231,7 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
             // region
             // for validation
             //
-            Set fids = new HashSet();
+            Set<Identifier> fids = new HashSet<Identifier>();
             LOGGER.finer("Preprocess to remember modification as a set of fids");
             
             SimpleFeatureCollection features = store.getFeatures(filter);
@@ -239,7 +246,7 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
             try {
                 while (preprocess.hasNext()) {
                     SimpleFeature feature = (SimpleFeature) preprocess.next();
-                    fids.add(feature.getID());
+                    fids.add(feature.getIdentifier());
                 }
             } catch (NoSuchElementException e) {
                 throw new WFSException(request, "Could not aquire FeatureIDs", e);
@@ -271,20 +278,31 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
             if (!fids.isEmpty()) {
                 LOGGER.finer("Post process update for boundary update and featureValidation");
 
-                Set featureIds = new HashSet();
+                Set<FeatureId> featureIds = new HashSet<FeatureId>();
 
                 FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(GeoTools.getDefaultHints());
-                for (Iterator f = fids.iterator(); f.hasNext();) {
-                    featureIds.add(ff.featureId((String) f.next()));
+                for (Identifier id : fids ) {
+                    FeatureId featureId = ff.featureId(String.valueOf(id.getID()));
+                    featureIds.add(featureId);
                 }
 
                 Id modified = ff.id(featureIds);
 
-                response.addUpdatedFeatures(handle, featureIds);
-                
                 SimpleFeatureCollection changed = store.getFeatures(modified);
                 listener.dataStoreChange(new TransactionEvent(TransactionEventType.POST_UPDATE,
                         request, elementName, changed, update));
+
+                SimpleFeatureIterator changedFeatures = changed.features();
+                try{
+                    Collection<FeatureId> updatedIds = new HashSet<FeatureId>();
+                    while(changedFeatures.hasNext()){
+                        SimpleFeature next = changedFeatures.next();
+                        updatedIds.add(next.getIdentifier());
+                    }
+                    response.addUpdatedFeatures(handle, updatedIds);
+                }finally{
+                    changedFeatures.close();
+                }
             }
 
             // update the update counter
