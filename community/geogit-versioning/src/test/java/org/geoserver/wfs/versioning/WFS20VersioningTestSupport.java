@@ -83,7 +83,7 @@ public abstract class WFS20VersioningTestSupport extends WFS20TestSupport {
 
     protected static final FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2(null);
 
-    private static XpathEngine xpath;
+    protected static XpathEngine xpath;
 
     // holds all the feature identifiers in the repository after the first initial commit (in the
     // form <feature id>@<version id>

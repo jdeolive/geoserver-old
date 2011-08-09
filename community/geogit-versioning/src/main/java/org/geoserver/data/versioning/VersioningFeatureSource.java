@@ -17,8 +17,10 @@ import org.geogit.api.ObjectId;
 import org.geogit.api.Ref;
 import org.geogit.api.RevCommit;
 import org.geogit.api.RevTree;
+import org.geogit.repository.Index;
 import org.geogit.repository.Repository;
 import org.geogit.repository.WorkingTree;
+import org.geogit.storage.ObjectDatabase;
 import org.geotools.data.DataAccess;
 import org.geotools.data.FeatureListener;
 import org.geotools.data.FeatureSource;
@@ -221,9 +223,7 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
             FeatureCollection<T, F> delegate = unversioned.getFeatures(query);
             int size = delegate.size();
             final ObjectId currentCommitId = getCurrentVersion();
-            if (currentCommitId == null) {
-                return delegate;
-            }
+
             return createFeatureCollection(delegate, currentCommitId);
         }
 
@@ -232,7 +232,7 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
 
     /**
      * Finds out the version (Feature hash) of the Feature addressed by {@code typeName/featureId}
-     * at the commit {@code commitId}
+     * at the commit {@code commitId}, or at the staging area of {@code commitId == null}
      * 
      * @param typeName
      * @param featureId
@@ -242,13 +242,23 @@ public class VersioningFeatureSource<T extends FeatureType, F extends Feature> i
     public String getFeatureVersion(final Name typeName, final String featureId,
             final ObjectId commitId) {
 
-        final RevCommit commit = repository.getCommit(commitId);
-        if (commit.getTreeId().isNull()) {
-            return null;
+        final RevTree tree;
+        final ObjectDatabase queryDb;
+        if (commitId == null) {
+            Index index = repository.getIndex();
+            tree = index.getStaged();
+            queryDb = index.getDatabase();
+        } else {
+            final RevCommit commit = repository.getCommit(commitId);
+            if (commit.getTreeId().isNull()) {
+                return null;
+            }
+            tree = repository.getTree(commit.getTreeId());
+            queryDb = repository.getObjectDatabase();
         }
-        final RevTree tree = repository.getTree(commit.getTreeId());
+        
         final List<String> path = path(typeName, featureId);
-        Ref featureObjectRef = repository.getObjectDatabase().getTreeChild(tree, path);
+        Ref featureObjectRef = queryDb.getTreeChild(tree, path);
         return featureObjectRef == null ? null : featureObjectRef.getObjectId().toString();
     }
 

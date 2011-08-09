@@ -177,7 +177,10 @@ public class TransactionTest extends WFS20VersioningTestSupport {
         
         //ensure the updated fid is the new one
         XMLAssert.assertXpathNotExists("//wfs:UpdateResults/wfs:Feature/fes:ResourceId[@rid='"+id+"']", dom);
-                
+
+        //get the reported updated version
+        String updatedRid = xpath.evaluate("//wfs:UpdateResults/wfs:Feature/fes:ResourceId/@rid", dom);
+        
         //get the updated version
         dom = getAsDOM( "wfs?version=2.0.0&request=getfeature&typename=cite:Buildings" +
                 "&cql_filter=FID%3D'114'");
@@ -185,8 +188,10 @@ public class TransactionTest extends WFS20VersioningTestSupport {
             
         //get the new version
         id = getFirstElementByTagName(dom, "cite:Buildings").getAttribute("gml:id");
+       
+        assertEquals(updatedRid, id);
+        
         assertEquals(fid, id.split("@")[0]);
-            
         String ver2 = id.split("@")[1];
         assertFalse(ver1.equals(ver2));
 
