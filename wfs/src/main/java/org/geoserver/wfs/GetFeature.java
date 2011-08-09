@@ -74,6 +74,9 @@ import org.opengis.filter.PropertyIsLike;
 import org.opengis.filter.PropertyIsNull;
 import org.opengis.filter.expression.ExpressionVisitor;
 import org.opengis.filter.expression.PropertyName;
+import org.opengis.filter.identity.Identifier;
+import org.opengis.filter.identity.ResourceId;
+import org.opengis.filter.identity.Version;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.filter.spatial.Beyond;
@@ -1183,7 +1186,46 @@ O:      for (String propName : query.getPropertyNames()) {
                 
                 filter.accept(fvisitor, null);
             }
-        }   
+        }
+
+        //4. resource id/versioning checks
+        fvisitor = new AbstractFilterVisitor() {
+            @Override
+            public Object visit(Id filter, Object data) {
+                for (Identifier id : filter.getIdentifiers()) {
+                    if (id instanceof ResourceId) {
+                        ResourceId rid = (ResourceId) id;
+
+                        Version ver = rid.getVersion();
+                        if (ver != null) {
+                            if (ver.getIndex() != null && ver.getIndex() < 1) {
+                                throw new WFSException(request, "Illegal version: " + ver.getIndex());
+                            }
+                        }
+
+                        //do some stricter tests 
+                        if (wfs.isCiteCompliant()) {
+                            //from the spec:
+                            //The startTime and endTime attributes shall always be specified together.
+                            //If the startTime and endTime are specified, the version attribute shall not be specified.
+                            if ((rid.getStartTime() != null && rid.getEndTime() == null) ||
+                                (rid.getStartTime() == null && rid.getEndTime() != null)) {
+                                throw new WFSException(request, "startTime/endTime must be specified together");
+                            }
+
+                            if (rid.getStartTime() != null && ver != null) {
+                                throw new WFSException(request, "startTime/endTime and version are " + 
+                                    " mutually exclusive");
+                            }
+                        }
+
+                    }
+                }
+                
+                return data;
+            }
+        };
+        filter.accept(fvisitor, null);
     }
     
     int maxFeatures(List<FeatureTypeInfo> metas) {
