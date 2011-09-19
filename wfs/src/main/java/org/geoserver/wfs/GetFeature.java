@@ -894,6 +894,9 @@ public class GetFeature {
         QName typeName = query.getTypeNames().get(0);
         org.geotools.data.Query dataQuery = new org.geotools.data.Query(typeName.getLocalPart(), 
             transformedFilter, maxFeatures, props, query.getHandle());
+        if (!query.getAliases().isEmpty()) {
+            dataQuery.setAlias(query.getAliases().get(0)); 
+        }
 
         //handle reprojection
         CoordinateReferenceSystem target;
