@@ -5,6 +5,8 @@ import java.util.Calendar;
 import java.util.List;
 
 import net.opengis.wfs.FeatureCollectionType;
+import net.opengis.wfs.WfsFactory;
+import net.opengis.wfs20.Wfs20Factory;
 
 import org.eclipse.emf.ecore.EObject;
 import org.geotools.feature.FeatureCollection;
@@ -43,7 +45,9 @@ public abstract class FeatureCollectionResponse extends RequestObject {
     public void setTimeStamp(Calendar timeStamp) {
         eSet(adaptee, "timeStamp", timeStamp);
     }
-    
+
+    public abstract FeatureCollectionResponse create();
+
     public abstract BigInteger getNumberOfFeatures();
     public abstract void setNumberOfFeatures(BigInteger n);
     
@@ -66,6 +70,11 @@ public abstract class FeatureCollectionResponse extends RequestObject {
     public static class WFS11 extends FeatureCollectionResponse {
         public WFS11(EObject adaptee) {
             super(adaptee);
+        }
+
+        @Override
+        public FeatureCollectionResponse create() {
+            return FeatureCollectionResponse.adapt(((WfsFactory)getFactory()).createFeatureCollectionType());
         }
 
         @Override
@@ -118,6 +127,11 @@ public abstract class FeatureCollectionResponse extends RequestObject {
     public static class WFS20 extends FeatureCollectionResponse {
         public WFS20(EObject adaptee) {
             super(adaptee);
+        }
+
+        @Override
+        public FeatureCollectionResponse create() {
+            return FeatureCollectionResponse.adapt(((Wfs20Factory)getFactory()).createFeatureCollectionType());
         }
 
         @Override

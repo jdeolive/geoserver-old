@@ -9,16 +9,15 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 
-import net.opengis.wfs.FeatureCollectionType;
 import net.opengis.wfs20.GetFeatureType;
 import net.opengis.wfs20.ResultTypeType;
-import net.opengis.wfs20.Wfs20Factory;
 
 import org.geoserver.config.GeoServer;
 import org.geoserver.ows.util.OwsUtils;
 import org.geoserver.ows.util.ResponseUtils;
 import org.geoserver.platform.Operation;
 import org.geoserver.wfs.WFSInfo;
+import org.geoserver.wfs.request.FeatureCollectionResponse;
 import org.geotools.wfs.v2_0.WFS;
 import org.geotools.wfs.v2_0.WFSConfiguration;
 import org.geotools.xml.Encoder;
@@ -36,20 +35,15 @@ public class HitsOutputFormat extends org.geoserver.wfs.response.HitsOutputForma
     }
     
     @Override
-    protected void encode(FeatureCollectionType hits, OutputStream output, WFSInfo wfs)
+    protected void encode(FeatureCollectionResponse hits, OutputStream output, WFSInfo wfs)
             throws IOException {
+        hits.setNumberOfFeatures(BigInteger.valueOf(0));
         Encoder e = new Encoder(new WFSConfiguration());
         e.setEncoding(Charset.forName( wfs.getGeoServer().getGlobal().getCharset()) );
         e.setSchemaLocation(WFS.NAMESPACE,
             ResponseUtils.appendPath(wfs.getSchemaBaseURL(), "wfs/2.0/wfs.xsd"));
         
-        net.opengis.wfs20.FeatureCollectionType fc = 
-            Wfs20Factory.eINSTANCE.createFeatureCollectionType();
-        fc.setNumberMatched(hits.getNumberOfFeatures());
-        fc.setNumberReturned(BigInteger.valueOf(0));
-        fc.setTimeStamp(hits.getTimeStamp());
-        
-        e.encode(fc, WFS.FeatureCollection, output);
+        e.encode(hits.getAdaptee(), WFS.FeatureCollection, output);
     }
 
 }
