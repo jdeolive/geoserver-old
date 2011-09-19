@@ -101,7 +101,7 @@ public abstract class FeatureTypeSchemaBuilder {
     protected String gmlPrefix;
     protected Configuration xmlConfiguration;
     protected volatile XSDElementDeclaration featureSubGroupElement;
-    
+
     protected FeatureTypeSchemaBuilder(GeoServer gs) {
         this.wfs = gs.getService( WFSInfo.class );
         this.catalog = gs.getCatalog();
@@ -123,34 +123,36 @@ public abstract class FeatureTypeSchemaBuilder {
         throws IOException {
         return build(new FeatureTypeInfo[] { featureTypeInfo }, baseUrl);
     }
-    
-    public XSDSchema build(FeatureTypeInfo featureTypeInfo, String baseUrl, boolean resolveAppSchemaImports)
-        throws IOException {
-        return build(new FeatureTypeInfo[] { featureTypeInfo }, baseUrl, resolveAppSchemaImports);
-    }
 
     public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl)
         throws IOException {
         return build(featureTypeInfos, baseUrl, true);
     }
+
+    public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl, int resolveAppSchemaImports)
+        throws IOException {
+        return build(featureTypeInfos, baseUrl, resolveAppSchemaImports != 0, true);
+    }
+
     
     public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl, boolean scheduleSchemaCleanup)
         throws IOException {
+        return build(featureTypeInfos, baseUrl, false, scheduleSchemaCleanup);
+    }
+
+    public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl, 
+        boolean resolveAppSchemaImports, boolean scheduleSchemaCleanup) throws IOException {
         // build the schema and make sure to schedule it for destruction at the end of the request
-        XSDSchema schema = buildSchemaInternal(featureTypeInfos, baseUrl);
+        XSDSchema schema = buildSchemaInternal(featureTypeInfos, baseUrl, resolveAppSchemaImports);
         if(schema != null && scheduleSchemaCleanup) {
             SchemaCleanerCallback.addSchema(schema);
         }
         return schema;
     }
-
-    public XSDSchema buildSchemaInternal(FeatureTypeInfo[] featureTypeInfos, String baseUrl)
-            throws IOException {
-        return build(featureTypeInfos, baseUrl, false);
-    }
     
-    public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl, boolean resolveAppSchemaImports) 
-        throws IOException {
+    public final XSDSchema buildSchemaInternal(FeatureTypeInfo[] featureTypeInfos, String baseUrl, 
+        boolean resolveAppSchemaImports) throws IOException {
+
         XSDFactory factory = XSDFactory.eINSTANCE;
         XSDSchema schema = factory.createXSDSchema();
         schema.setSchemaForSchemaQNamePrefix("xsd");
@@ -457,7 +459,7 @@ public abstract class FeatureTypeSchemaBuilder {
                 continue;
 
             //build the schema for the types in the single namespace (and don't clean them, they are not dynamic)
-            XSDSchema schema = buildSchemaInternal(new FeatureTypeInfo[] { meta }, null);
+            XSDSchema schema = buildSchemaInternal(new FeatureTypeInfo[] { meta }, null, false);
 
             //declare the namespace
             String prefix = meta.getNamespace().getPrefix();

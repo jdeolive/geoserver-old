@@ -888,9 +888,19 @@ public class Dispatcher extends AbstractController {
             setHeaders(req,opDescriptor,result,response);
             
             OutputStream output = outputStrategy.getDestination(req.getHttpResponse());
-            
+
+            if (req.isSOAP()) {
+                //SOAP request, start the SOAP wrapper
+                startSOAPEnvelope(output, response);
+            }
+
             // actually write out the response
             response.write(result, output, opDescriptor);
+
+            if (req.isSOAP()) {
+                //SOAP request, start the SOAP wrapper
+                endSOAPEnvelope(output);
+            }
 
             // flush the output with detection of client shutting the door in our face
             try {
@@ -946,31 +956,6 @@ public class Dispatcher extends AbstractController {
                 // override any existing header
                 req.getHttpResponse().setHeader("Content-Disposition", disp);
             }
-            
-            OutputStream output = outputStrategy.getDestination(req.getHttpResponse());
-            
-            if (req.isSOAP()) {
-                //SOAP request, start the SOAP wrapper
-                startSOAPEnvelope(output, response);
-            }
-
-            // actually write out the response
-            response.write(result, output, opDescriptor);
-
-            if (req.isSOAP()) {
-                //SOAP request, start the SOAP wrapper
-                endSOAPEnvelope(output);
-            }
-
-            // flush the output with detection of client shutting the door in our face
-            try {
-                outputStrategy.flush(req.getHttpResponse());
-            } catch(IOException e) {
-                throw new ClientStreamAbortedException(e);
-            }
-
-            //flush the underlying out stream for good meaure
-            req.getHttpResponse().getOutputStream().flush();
         }
     }
 

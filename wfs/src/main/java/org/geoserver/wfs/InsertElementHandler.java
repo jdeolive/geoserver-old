@@ -88,8 +88,8 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
             HashMap /* <SimpleFeatureType,FeatureCollection> */ schema2features = new HashMap();
 
             
-            List features = insert.getFeatures();
-            for (Iterator f = features.iterator(); f.hasNext();) {
+            List featureList = insert.getFeatures();
+            for (Iterator f = featureList.iterator(); f.hasNext();) {
                 SimpleFeature feature = (SimpleFeature) f.next();
                 SimpleFeatureType schema = feature.getFeatureType();
                 SimpleFeatureCollection collection;
@@ -188,7 +188,7 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
 
             // report back fids, we need to keep the same order the
             // fids were reported in the original feature collection
-            for (Iterator f = features.iterator(); f.hasNext();) {
+            for (Iterator f = featureList.iterator(); f.hasNext();) {
                 SimpleFeature feature = (SimpleFeature) f.next();
                 SimpleFeatureType schema = feature.getFeatureType();
 
@@ -200,7 +200,7 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
             }
 
             // update the insert counter
-            inserted += features.size();
+            inserted += featureList.size();
         } catch (Exception e) {
             String msg = "Error performing insert: " + e.getMessage();
             throw new WFSTransactionException(msg, e, insert.getHandle());
