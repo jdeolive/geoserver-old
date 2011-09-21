@@ -11,6 +11,7 @@ import net.opengis.wfs20.GetPropertyValueType;
 import net.opengis.wfs20.Wfs20Factory;
 
 import org.geoserver.catalog.Catalog;
+import org.geoserver.config.GeoServer;
 import org.geoserver.ows.kvp.EMFKvpRequestReader;
 import org.geoserver.wfs.WFSException;
 import org.opengis.filter.FilterFactory;
@@ -19,9 +20,9 @@ public class GetPropertyValueKvpRequestReader extends EMFKvpRequestReader {
 
     GetFeatureKvpRequestReader delegate;
     
-    public GetPropertyValueKvpRequestReader(Catalog catalog, FilterFactory filterFactory) {
+    public GetPropertyValueKvpRequestReader(GeoServer geoServer, FilterFactory filterFactory) {
         super(GetPropertyValueType.class, Wfs20Factory.eINSTANCE);
-        delegate = new GetFeatureKvpRequestReader(GetFeatureType.class, catalog, filterFactory);
+        delegate = new GetFeatureKvpRequestReader(GetFeatureType.class, geoServer, filterFactory);
     }
     
     @Override

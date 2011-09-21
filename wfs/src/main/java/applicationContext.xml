@@ -418,7 +418,7 @@
 	</bean>
 	<bean id="getFeature20KvpReader" class="org.geoserver.wfs.kvp.v2_0.GetFeatureKvpRequestReader">
         <constructor-arg value="net.opengis.wfs20.GetFeatureType"/>
-        <constructor-arg ref="catalog"/>
+        <constructor-arg ref="geoServer"/>
         <constructor-arg ref="filterFactory"/>
     </bean>
 	<bean id="getFeatureWithLockKvpReader" class="org.geoserver.wfs.kvp.GetFeatureKvpRequestReader">
@@ -444,7 +444,7 @@
        class="org.geoserver.wfs.kvp.v2_0.DropStoredQueryKvpRequestReader"/>
 	
 	<bean id="getPropertyValue20KvpReader" class="org.geoserver.wfs.kvp.v2_0.GetPropertyValueKvpRequestReader">
-        <constructor-arg ref="catalog"/>
+        <constructor-arg ref="geoServer"/>
         <constructor-arg ref="filterFactory"/>
     </bean>
     
