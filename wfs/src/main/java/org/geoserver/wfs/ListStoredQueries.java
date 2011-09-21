@@ -4,6 +4,8 @@
  */
 package org.geoserver.wfs;
 
+import javax.xml.namespace.QName;
+
 import net.opengis.wfs20.ListStoredQueriesResponseType;
 import net.opengis.wfs20.ListStoredQueriesType;
 import net.opengis.wfs20.StoredQueryListItemType;
@@ -43,7 +45,12 @@ public class ListStoredQueries {
             title.setValue(sq.getTitle());
             item.getTitle().add(title);
             
-            item.getReturnFeatureType().addAll(sq.getFeatureTypes());
+            if (!sq.getFeatureTypes().isEmpty()) {
+                item.getReturnFeatureType().addAll(sq.getFeatureTypes());    
+            }
+            else {
+                item.getReturnFeatureType().add(new QName(""));
+            }
             
             response.getStoredQuery().add(item);
         }
