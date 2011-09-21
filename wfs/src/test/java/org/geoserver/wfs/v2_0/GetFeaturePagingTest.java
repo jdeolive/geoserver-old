@@ -4,8 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -450,7 +452,21 @@ public class GetFeaturePagingTest extends WFS20TestSupport {
         filter = filter.substring(1, filter.length()-1);
         Filter f = (Filter) 
                 new Parser(new FESConfiguration()).parse(new ByteArrayInputStream(filter.getBytes()));
-        assertEquals(expected, f);
+        if (expected instanceof Id) {
+            Set s1 = new HashSet();
+            for (Identifier id: ((Id) expected).getIdentifiers()) {
+                s1.add(id.toString());
+            }
+            Set s2 = new HashSet();
+            for (Identifier id: ((Id) f).getIdentifiers()) {
+                s2.add(id.toString());
+            }
+            assertEquals(s1, s2);
+        }
+        else {
+            assertEquals(expected, f);    
+        }
+        
     }
     
     KvpMap toKvpMap(String url) {
