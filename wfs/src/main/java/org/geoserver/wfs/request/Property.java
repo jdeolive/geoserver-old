@@ -2,6 +2,9 @@ package org.geoserver.wfs.request;
 
 import javax.xml.namespace.QName;
 
+import net.opengis.wfs.PropertyType;
+import net.opengis.wfs.WfsFactory;
+
 import org.eclipse.emf.ecore.EObject;
 
 /**
@@ -30,6 +33,13 @@ public abstract class Property extends RequestObject {
         @Override
         public QName getName() {
             return eGet(adaptee, "name", QName.class);
+        }
+
+        public static PropertyType unadapt(Property property) {
+            PropertyType p = WfsFactory.eINSTANCE.createPropertyType();
+            p.setName(property.getName());
+            p.setValue(property.getValue());
+            return p;
         }
     }
     

@@ -128,8 +128,33 @@ public abstract class TransactionRequest extends RequestObject {
                 return (TransactionType) request.getAdaptee();
             }
 
-            //TODO: create one
-            throw new IllegalArgumentException();
+            WfsFactory factory = (WfsFactory) WfsFactory.eINSTANCE;
+            TransactionType tx = factory.createTransactionType();
+            
+            tx.setVersion(request.getVersion());
+            tx.setHandle(request.getHandle());
+            tx.setLockId(request.getLockId());
+            tx.setReleaseAction(
+                request.isReleaseActionAll() ? AllSomeType.ALL_LITERAL : AllSomeType.SOME_LITERAL);
+            tx.setBaseUrl(request.getBaseUrl());
+            tx.setExtendedProperties(request.getExtendedProperties());
+            
+            for (TransactionElement te : request.getElements()) {
+                if (te instanceof Delete) {
+                    tx.getDelete().add(Delete.WFS11.unadapt((Delete)te));
+                }
+                if (te instanceof Update) {
+                    tx.getUpdate().add(Update.WFS11.unadapt((Update)te));
+                }
+                if (te instanceof Insert) {
+                    tx.getInsert().add(Insert.WFS11.unadapt((Insert)te));
+                }
+                if (te instanceof Native) {
+                    tx.getNative().add(Native.WFS11.unadapt((Native)te));
+                }
+            }
+            
+            return tx;
         }
     }
     

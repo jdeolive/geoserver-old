@@ -7,5 +7,4 @@ public class TransactionElement extends RequestObject {
     protected TransactionElement(EObject adaptee) {
         super(adaptee);
     }
-
 }

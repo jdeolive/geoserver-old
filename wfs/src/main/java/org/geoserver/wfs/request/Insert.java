@@ -2,6 +2,10 @@ package org.geoserver.wfs.request;
 
 import java.util.List;
 
+import net.opengis.wfs.InsertElementType;
+import net.opengis.wfs.WfsFactory;
+import net.opengis.wfs20.InsertType;
+
 import org.eclipse.emf.ecore.EObject;
 
 /**
@@ -28,6 +32,17 @@ public abstract class Insert extends TransactionElement {
             return eGet(adaptee, "feature", List.class);
         }
 
+        public static InsertElementType unadapt(Insert insert) {
+            if (insert instanceof WFS11) {
+                return (InsertElementType) insert.getAdaptee();
+            }
+
+            InsertElementType ie = WfsFactory.eINSTANCE.createInsertElementType();
+            ie.setHandle(insert.getHandle());
+            ie.getFeature().addAll(insert.getFeatures());
+
+            return ie;
+        }
     }
     
     public static class WFS20 extends Insert {

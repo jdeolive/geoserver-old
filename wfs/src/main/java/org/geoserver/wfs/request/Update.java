@@ -3,7 +3,13 @@ package org.geoserver.wfs.request;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.opengis.wfs.InsertElementType;
+import net.opengis.wfs.UpdateElementType;
+import net.opengis.wfs.WfsFactory;
+
 import org.eclipse.emf.ecore.EObject;
+import org.geoserver.wfs.UpdateElementHandler;
+import org.geoserver.wfs.request.Insert.WFS11;
 
 /**
  * Update element in a Transaction request.
@@ -30,6 +36,22 @@ public abstract class Update extends TransactionElement {
                 list.add(new Property.WFS11((EObject) o));
             }
             return list;
+        }
+
+        public static UpdateElementType unadapt(Update update) {
+            if (update instanceof WFS11) {
+                return (UpdateElementType) update.getAdaptee();
+            }
+
+            UpdateElementType ue = WfsFactory.eINSTANCE.createUpdateElementType();
+            ue.setHandle(update.getHandle());
+            ue.setTypeName(update.getTypeName());
+            ue.setFilter(update.getFilter());
+
+            for (Property p : update.getUpdateProperties()) {
+                ue.getProperty().add(Property.WFS11.unadapt(p));
+            }
+            return ue;
         }
     }
     
