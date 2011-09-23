@@ -44,10 +44,16 @@ public class JoinExtractingVisitor extends FilterVisitorSupport {
         this.primaryFeatureType = featureTypes.get(0);
         this.featureTypes = featureTypes.subList(1, featureTypes.size());
         
-        if (aliases != null && !aliases.isEmpty()) {
-            this.primaryAlias = aliases.get(0);
-            this.aliases = aliases.subList(1, aliases.size());
+        if (aliases == null || aliases.isEmpty()) {
+            //assign prefixes
+            aliases = new ArrayList<String>();
+            for (int i = 0; i < featureTypes.size(); i++) {
+                aliases.add(String.valueOf((char)('a' + i)));
+            }
         }
+        
+        this.primaryAlias = aliases.get(0);
+        this.aliases = aliases.subList(1, aliases.size());
     }
 
     public Object visitNullFilter(Object extraData) {
