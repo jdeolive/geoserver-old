@@ -60,6 +60,7 @@ public class StoredQuery {
         desc.getParameter().add(param);
         
         QueryExpressionTextType text = factory.createQueryExpressionTextType();
+        text.setIsPrivate(true);
         text.setReturnFeatureTypes(new ArrayList());
         text.setLanguage(StoredQueryProvider.LANGUAGE);
         

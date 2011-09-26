@@ -143,6 +143,8 @@ public class StoredQueryTest extends WFS20TestSupport {
         XMLAssert.assertXpathExists("//wfs:StoredQueryDescription[@id = '" 
             + StoredQuery.DEFAULT.getName() + "']", dom);
         XMLAssert.assertXpathExists("//wfs:Parameter[@name = 'ID']", dom);
+        XMLAssert.assertXpathExists("//wfs:QueryExpressionText[@isPrivate = 'true']", dom);
+        XMLAssert.assertXpathNotExists("//wfs:QueryExpressionText/*", dom);
     }
 
     public void testDropStoredQuery() throws Exception {
