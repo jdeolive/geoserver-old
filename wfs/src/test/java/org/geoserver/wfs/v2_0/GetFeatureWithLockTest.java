@@ -148,9 +148,7 @@ public class GetFeatureWithLockTest extends WFS20TestSupport {
         // release the lock
         get("wfs?request=ReleaseLock&lockId=" + lockId);
 
-        //assertEquals("ows:ExceptionReport", dom.getDocumentElement().getNodeName());
-        assertEquals("wfs:TransactionResponse", dom.getDocumentElement() .getNodeName());
-        XMLAssert.assertXpathEvaluatesTo("0", "//wfs:totalUpdated/text()", dom);
+        assertEquals("ows:ExceptionReport", dom.getDocumentElement() .getNodeName());
     }
 
     public void testGetFeatureWithLockReleaseActionSome() throws Exception {

@@ -307,7 +307,7 @@ public class Transaction {
         // I will need to record the damaged area for pre commit validation
         // checks
         // Envelope envelope = new Envelope();
-        boolean exception = false;
+        Exception exception = null;
 
         try {
             for (Iterator it = elementHandlers.entrySet().iterator(); it.hasNext();) {
@@ -318,7 +318,7 @@ public class Transaction {
                 handler.execute(element, request, stores, result, multiplexer);
             }
         } catch (WFSTransactionException e) {
-            exception = true;
+            exception = e;
             LOGGER.log(Level.SEVERE, "Transaction failed", e);
 
             result.addAction(e.getCode() != null ? e.getCode() : "InvalidParameterValue", 
@@ -329,7 +329,7 @@ public class Transaction {
         boolean committed = false;
 
         try {
-            if (exception) {
+            if (exception != null) {
                 transaction.rollback();
             } else {
                 // inform plugins we're about to commit
@@ -402,6 +402,13 @@ public class Transaction {
         // transaction.close();
         // transaction = null;
         // }
+
+        if (exception != null) {
+            //WFS 2.0 wants us to throw the exception
+            if (request.getVersion() != null && request.getVersion().startsWith("2")) {
+                throw exception;
+            }
+        }
 
         // JD: this is an issue with the spec, InsertResults must be present,
         // even if no insert
