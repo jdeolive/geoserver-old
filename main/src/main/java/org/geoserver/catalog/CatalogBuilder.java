@@ -349,7 +349,13 @@ public class CatalogBuilder {
         ftinfo.setName(featureType.getName().getLocalPart());
 
         WorkspaceInfo workspace = store.getWorkspace();
-        NamespaceInfo namespace = catalog.getNamespaceByPrefix(workspace.getName());
+        NamespaceInfo namespace = null;
+        if (null != featureType.getName().getNamespaceURI()) {
+            namespace = catalog.getNamespaceByURI(featureType.getName().getNamespaceURI());
+        }
+        if (namespace == null) {
+            namespace = catalog.getNamespaceByPrefix(workspace.getName());
+        }
         if (namespace == null) {
             namespace = catalog.getDefaultNamespace();
         }
