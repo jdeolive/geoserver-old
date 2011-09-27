@@ -60,7 +60,12 @@ class ImportVersionedLayerTask extends LongTask<RevCommit> {
         // geoGit.checkout();TODO: check out master branch
         setProgressMessage("Copying features to working tree");
         WorkingTree workingTree = geoGit.getRepository().getWorkingTree();
-        workingTree.init(schema);
+
+        // Avoid calling init by now cause it sometimes causes the imported tree to be ignored and
+        // appear like no features were imported at all. The one that seems to use it is
+        // GeoGitDataStore, but here the effect is that the created emtpy tree seems to override the
+        // populated type tree when the commit is performed.
+        // workingTree.init(schema);
         try {
             final boolean forceUseProvidedFIDs = true;
             long t = System.currentTimeMillis();
@@ -69,7 +74,7 @@ class ImportVersionedLayerTask extends LongTask<RevCommit> {
             if (listener.isCanceled()) {
                 return null;
             }
-            t=System.currentTimeMillis() - t;
+            t = System.currentTimeMillis() - t;
             LOGGER.warning("WorkingTree.insert: " + t + "ms");
         } catch (Exception e) {
             setProgressMessage("Exception ocuurred, cleaning up working tree...");
@@ -89,7 +94,7 @@ class ImportVersionedLayerTask extends LongTask<RevCommit> {
             // don't want to commit them all
             // geoGit.add().addPattern(pattern).call();
             setProgressMessage("Staging changes...");
-            long t= System.currentTimeMillis();
+            long t = System.currentTimeMillis();
             geoGit.add().setProgressListener(new SubProgressListener(listener, addProgressAmount))
                     .call();
             if (listener.isCanceled()) {
@@ -101,7 +106,7 @@ class ImportVersionedLayerTask extends LongTask<RevCommit> {
             setProgressMessage("Committing....");
             AbstractGeoGitOp<RevCommit> commitOp = geoGit.commit().setMessage(commitMessage)
                     .setProgressListener(new SubProgressListener(listener, commitProgressAmount));
-            
+
             t = System.currentTimeMillis();
             revCommit = commitOp.call();
             t = System.currentTimeMillis() - t;
