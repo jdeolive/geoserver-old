@@ -29,6 +29,7 @@ import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
 import org.geoserver.config.ContactInfo;
 import org.geoserver.config.GeoServer;
+import org.geoserver.data.VersioningPlugin;
 import org.geoserver.ows.URLMangler.URLType;
 import org.geoserver.ows.xml.v1_0.OWS;
 import org.geoserver.platform.GeoServerExtensions;
@@ -1690,6 +1691,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
 
             GetCapabilitiesRequest request;
             WFS1_1.CapabilitiesTranslator1_1 delegate;
+            boolean versioning = false;
             
             public CapabilitiesTranslator2_0(ContentHandler handler) {
                 super(handler, null, null);
@@ -1702,6 +1704,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 // as a delegate
                 delegate = 
                     (CapabilitiesTranslator1_1) new WFS1_1(wfs, catalog).createTranslator(handler);
+                versioning = GeoServerExtensions.bean(VersioningPlugin.class) != null;
             }
 
             public void encode(Object o) throws IllegalArgumentException {
@@ -1926,7 +1929,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                 constraint("ImplementsStandardJoins", true);
                 constraint("ImplementsSpatialJoins", true);
                 constraint("ImplementsTemporalJoins", true);
-                constraint("ImplementsFeatureVersioning", false);
+                constraint("ImplementsFeatureVersioning", versioning);
                 constraint("ManageStoredQueries", true);
                 
                 //capacity constraints
@@ -2017,7 +2020,7 @@ public abstract class CapabilitiesTransformer extends TransformerBase {
                    end("fes:Constraint");
                    start("fes:Constraint", attributes(new String[]{"name", "ImplementsVersionNav"}));
                       element("ows:NoValues", null);
-                      element("ows:DefaultValue", "FALSE");
+                      element("ows:DefaultValue", String.valueOf(versioning).toUpperCase());
                    end("fes:Constraint");
                    start("fes:Constraint", attributes(new String[]{"name", "ImplementsSorting"}));
                       start("ows:AllowedValues");
