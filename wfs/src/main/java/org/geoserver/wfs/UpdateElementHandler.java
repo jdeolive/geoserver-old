@@ -288,8 +288,6 @@ public class UpdateElementHandler extends AbstractTransactionElementHandler {
 
                 Id modified = ff.id(featureIds);
 
-                response.addUpdatedFeatures(handle, featureIds);
-                
                 SimpleFeatureCollection changed = store.getFeatures(modified);
                 listener.dataStoreChange(new TransactionEvent(TransactionEventType.POST_UPDATE,
                         request, elementName, changed, update));
