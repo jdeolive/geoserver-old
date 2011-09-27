@@ -43,6 +43,8 @@ import org.geotools.xml.EMFUtils;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.identity.FeatureId;
+import org.opengis.filter.identity.Identifier;
+import org.opengis.filter.identity.ResourceId;
 import org.opengis.filter.spatial.BBOX;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.xml.sax.helpers.NamespaceSupport;
@@ -199,12 +201,18 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
             //set filter from featureId
             List featureIdList = (List) kvp.get("featureId");
             featureIdList = featureIdList != null ? featureIdList : (List) kvp.get("resourceId"); 
-            Set ids = new HashSet();
+            Set<Identifier> ids = new HashSet<Identifier>();
 
-            for (Iterator i = featureIdList.iterator(); i.hasNext();) {
-                String fid = (String) i.next();
-                FeatureId featureId = filterFactory.featureId(fid);
-               ids.add(featureId);
+            for (Iterator<String> i = featureIdList.iterator(); i.hasNext();) {
+                String fid = i.next();
+                String version = null;
+                if (fid.indexOf(ResourceId.VERSION_SEPARATOR) > 0) {
+                    int idx = fid.indexOf(ResourceId.VERSION_SEPARATOR);
+                    version = fid.substring(idx + 1);
+                    fid = fid.substring(0, idx);
+                }
+                FeatureId featureId = filterFactory.resourceId(fid, version);
+                ids.add(featureId);
             }
             // build a single feature id filter
             List filters = Collections.singletonList(filterFactory.id(ids));

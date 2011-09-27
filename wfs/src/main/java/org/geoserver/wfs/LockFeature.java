@@ -182,7 +182,7 @@ public class LockFeature {
                     for (reader = features.iterator(); reader.hasNext();) {
                         SimpleFeature feature = (SimpleFeature) reader.next();
 
-                        FeatureId fid = fid(feature.getID());
+                        FeatureId fid = feature.getIdentifier();// fid(feature.getID());
                         Id fidFilter = fidFilter(fid);
 
                         if (!(source instanceof FeatureLocking)) {

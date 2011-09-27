@@ -180,8 +180,8 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
                     fids.addAll(store.addFeatures(collection));
                     
                     //fire post insert event
-                    SimpleFeatureCollection features = store.getFeatures(filterFactory.id(new HashSet<FeatureId>(fids)));
-                    event = new TransactionEvent(TransactionEventType.POST_INSERT, request, elementName, features, insert );
+                    SimpleFeatureCollection insertedFeatures = store.getFeatures(filterFactory.id(new HashSet<FeatureId>(fids)));
+                    event = new TransactionEvent(TransactionEventType.POST_INSERT, request, elementName, insertedFeatures, insert );
                     listener.dataStoreChange( event );
                 }
             }
@@ -193,10 +193,10 @@ public class InsertElementHandler extends AbstractTransactionElementHandler {
                 SimpleFeatureType schema = feature.getFeatureType();
 
                 // get the next fid
-                LinkedList fids = (LinkedList) schema2fids.get(schema.getTypeName());
-                String fid = ((FeatureId) fids.removeFirst()).getID();
+                List<FeatureId> fids = schema2fids.get(schema.getTypeName());
+                FeatureId fid = fids.remove(0);
 
-                response.addInsertedFeature(insert.getHandle(), filterFactory.featureId(fid));
+                response.addInsertedFeature(insert.getHandle(), fid);
             }
 
             // update the insert counter
