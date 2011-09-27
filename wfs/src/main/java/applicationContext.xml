@@ -338,10 +338,16 @@
 	<bean id="filter1_1_0_KvpParserDefault" class="org.geoserver.wfs.kvp.Filter_1_1_0_KvpParser"/>
 
     <bean id="cqlKvpParser" class="org.geoserver.ows.kvp.CQLFilterKvpParser"/>
-	<bean id="propertyNameKvpParser" class="org.geoserver.ows.NestedKvpParser">
+	<bean id="propertyName10KvpParser" class="org.geoserver.ows.NestedKvpParser">
 		<constructor-arg index="0" value="propertyName"/>
 		<constructor-arg index="1" value="java.lang.String"/>
+		<property name="version" value="1.0.0"/>
 	</bean>
+	<bean id="propertyName11KvpParser" class="org.geoserver.ows.NestedKvpParser">
+        <constructor-arg index="0" value="propertyName"/>
+        <constructor-arg index="1" value="java.lang.String"/>
+        <property name="version" value="1.1.0"/>
+    </bean>
 	<bean id="maxFeatureKvpParser" class="org.geoserver.ows.util.NumericKvpParser">
 		<constructor-arg index="0" value="maxFeatures"/>
 		<constructor-arg index="1" value="java.math.BigInteger"/>
@@ -349,11 +355,6 @@
 	<bean id="countKvpParser" class="org.geoserver.ows.util.NumericKvpParser">
         <constructor-arg index="0" value="count"/>
         <constructor-arg index="1" value="java.math.BigInteger"/>
-    </bean>
-    <bean id="wfsStartIndexKvpParser" class="org.geoserver.ows.util.NumericKvpParser">
-        <constructor-arg index="0" value="startIndex"/>
-        <constructor-arg index="1" value="java.math.BigInteger"/>
-        <property name="service" value="WFS"/>
     </bean>
 	
 	<bean id="srsNameKvpParser" class="org.geoserver.wfs.kvp.SrsNameKvpParser"/>
@@ -382,8 +383,6 @@
   <bean id="propertyName20KvpParser" class="org.geoserver.wfs.kvp.QNameNestedKvpParser">
     <constructor-arg value="propertyName"/>
     <constructor-arg ref="catalog"/>
-    <property name="service"><value>WFS</value></property>
-    <property name="version"><value>2.0.0</value></property>
   </bean>
   <bean id="storedQueryIdKvpParser" class="org.geoserver.wfs.kvp.URIKvpParser">
     <constructor-arg value="storedQueryId"/>

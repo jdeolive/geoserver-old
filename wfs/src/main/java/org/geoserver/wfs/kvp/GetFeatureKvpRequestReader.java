@@ -29,6 +29,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.FeatureTypeInfo;
 import org.geoserver.catalog.NamespaceInfo;
+import org.geoserver.ows.util.NumericKvpParser;
 import org.geoserver.wfs.GetFeature;
 import org.geoserver.wfs.StoredQuery;
 import org.geoserver.wfs.StoredQueryProvider;
@@ -76,6 +77,13 @@ public class GetFeatureKvpRequestReader extends WFSKvpRequestReader {
      * Performs additinon GetFeature kvp parsing requirements
      */
     public Object read(Object request, Map kvp, Map rawKvp) throws Exception {
+        //hack but startIndex conflicts with WMS startIndex... which parses to different type, so 
+        // we just parse manually
+        if (rawKvp.containsKey("startIndex")) {
+            kvp.put("startIndex", 
+                new NumericKvpParser(null, BigInteger.class).parse((String)rawKvp.get("startIndex")));
+        }
+
         request = super.read(request, kvp, rawKvp);
         
         //get feature has some additional parsing requirements
