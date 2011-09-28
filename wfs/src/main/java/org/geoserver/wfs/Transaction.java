@@ -415,6 +415,10 @@ public class Transaction {
         if (exception != null) {
             //WFS 2.0 wants us to throw the exception
             if (request.getVersion() != null && request.getVersion().startsWith("2")) {
+                if (!(exception instanceof WFSException && ((WFSException)exception).getCode() != null)) {
+                    //wrap to get the default code
+                    exception = new WFSException(request, exception);
+                }
                 throw exception;
             }
         }
