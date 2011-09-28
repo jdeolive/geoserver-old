@@ -149,6 +149,7 @@ public class GetFeatureWithLockTest extends WFS20TestSupport {
         get("wfs?request=ReleaseLock&lockId=" + lockId);
 
         assertEquals("ows:ExceptionReport", dom.getDocumentElement() .getNodeName());
+        XMLAssert.assertXpathExists("//ows:Exception[@exceptionCode = 'MissingParameterValue']", dom);
     }
 
     public void testGetFeatureWithLockReleaseActionSome() throws Exception {

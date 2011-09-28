@@ -29,6 +29,7 @@ import org.geoserver.wfs.request.TransactionElement;
 import org.geoserver.wfs.request.TransactionRequest;
 import org.geoserver.wfs.request.TransactionResponse;
 import org.geotools.data.DefaultTransaction;
+import org.geotools.data.FeatureLockException;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.FeatureStore;
 import org.opengis.feature.Feature;
@@ -318,8 +319,16 @@ public class Transaction {
                 handler.execute(element, request, stores, result, multiplexer);
             }
         } catch (WFSTransactionException e) {
-            exception = e;
             LOGGER.log(Level.SEVERE, "Transaction failed", e);
+
+            exception = e;
+
+            //another wfs 2.0 hack, but in the case no lock is specified in the request and the tx
+            // is trying to update locked features, we need to use the MissingParameterValue
+            if (request.getVersion().startsWith("2") && e.getCause() instanceof FeatureLockException
+                && request.getLockId() == null) {
+                exception = new WFSTransactionException(e.getMessage(), e, "MissingParameterValue");
+            }
 
             result.addAction(e.getCode() != null ? e.getCode() : "InvalidParameterValue", 
                 e.getLocator(), e.getMessage());
