@@ -1,0 +1,35 @@
+***************
+*** 276,282 ****
+          int i = 0;
+          for (Iterator it = dataView.iterator(); it.hasNext();) {
+              Item  item = (Item) it.next();
+-             System.out.println(item.getModelObject());
+              if(selection[i]) {
+                  result.add((T) item.getModelObject());
+              }
+--- 276,283 ----
+          int i = 0;
+          for (Iterator it = dataView.iterator(); it.hasNext();) {
+              Item  item = (Item) it.next();
++ //      commented by mcr            
++ //            System.out.println(item.getModelObject());
+              if(selection[i]) {
+                  result.add((T) item.getModelObject());
+              }
+***************
+*** 587,593 ****
+          }
+      }
+      
+-     class SelectionModel implements IModel {
+          int index;
+          
+          public SelectionModel(int index) {
+--- 588,594 ----
+          }
+      }
+      
++     public class SelectionModel implements IModel {
+          int index;
+          
+          public SelectionModel(int index) {

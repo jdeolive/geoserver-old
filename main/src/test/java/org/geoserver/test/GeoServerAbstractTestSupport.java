@@ -67,6 +67,7 @@ import org.geoserver.ows.util.KvpUtils;
 import org.geoserver.ows.util.ResponseUtils;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.GeoServerResourceLoader;
+import org.geoserver.security.GeoserverServiceFactory;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.simple.SimpleFeatureSource;
@@ -168,6 +169,9 @@ public abstract class GeoServerAbstractTestSupport extends OneTimeSetupTest {
             Hints.putSystemDefault(Hints.FORCE_AXIS_ORDER_HONORING, "http");
             CRS.reset("all");
         }
+        
+        // reset security services
+        GeoserverServiceFactory.Singleton.reset();
         
         // set up test data 
         testData = buildTestData();

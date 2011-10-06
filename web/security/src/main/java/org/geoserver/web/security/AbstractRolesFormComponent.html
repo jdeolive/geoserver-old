@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:wicket="http://wicket.apache.org/">
+<body>
+<wicket:panel>
+	<fieldset>
+        <legend><span><wicket:message key="roles">roles</wicket:message></span></legend>
+		<ul>
+			<wicket:child/>
+			<li>
+<!-- 	    	<label for="roles"><wicket:message key="roles">roles</wicket:message></label> -->
+	    		<div id="roles" wicket:id="roles"></div>
+			</li>
+			<li>
+	   			<a class="add-link" href="#" wicket:id="addRole"><wicket:message key="addRole">addRole</wicket:message></a>
+			</li>
+	</ul>
+	</fieldset>
+</wicket:panel>
+</body>
+</html>
