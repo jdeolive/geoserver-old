@@ -6,25 +6,22 @@ package org.geoserver.web.security.service;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.geoserver.security.impl.ServiceAccessRule;
-import org.geoserver.web.GeoServerSecuredPage;
-import org.geoserver.web.security.SelectionServiceRemovalLink;
+import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.SimpleAjaxLink;
-import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
 /**
  * A page listing data access rules, allowing for removal, addition and linking to an edit page
  */
 @SuppressWarnings("serial")
-public class ServiceAccessRulePage extends GeoServerSecuredPage {
+public class ServiceAccessRulePage extends AbstractSecurityPage {
 
     private GeoServerTablePanel<ServiceAccessRule> rules;
     
@@ -33,6 +30,8 @@ public class ServiceAccessRulePage extends GeoServerSecuredPage {
     GeoServerDialog dialog;
 
     public ServiceAccessRulePage() {
+        super(null);
+        
         ServiceAccessRuleProvider provider = new ServiceAccessRuleProvider();
         add(rules = new GeoServerTablePanel<ServiceAccessRule>("table", provider, true) {
 
@@ -65,7 +64,8 @@ public class ServiceAccessRulePage extends GeoServerSecuredPage {
         Fragment header = new Fragment(HEADER_PANEL, "header", this);
 
         // the add button
-        header.add(new BookmarkablePageLink("addNew", NewServiceAccessRulePage.class));
+        header.add(new BookmarkablePageLink<NewServiceAccessRulePage>(
+                "addNew", NewServiceAccessRulePage.class));
 
         // the removal button
         header.add(removal = new SelectionServiceRemovalLink("removeSelected", rules, dialog));
@@ -75,16 +75,16 @@ public class ServiceAccessRulePage extends GeoServerSecuredPage {
         return header;
     }
 
-    AjaxLink addRuleLink() {
-        return new AjaxLink("addRule", new Model()) {
-
-            @Override
-            public void onClick(AjaxRequestTarget target) {
-                setResponsePage(new NewServiceAccessRulePage());
-            }
-
-        };
-    }
+//    AjaxLink addRuleLink() {
+//        return new AjaxLink("addRule", new Model()) {
+//
+//            @Override
+//            public void onClick(AjaxRequestTarget target) {
+//                setResponsePage(new NewServiceAccessRulePage());
+//            }
+//
+//        };
+//    }
 
     Component editRuleLink(String id, IModel itemModel, Property<ServiceAccessRule> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {

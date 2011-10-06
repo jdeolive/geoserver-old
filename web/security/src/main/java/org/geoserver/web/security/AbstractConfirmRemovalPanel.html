@@ -1,0 +1,29 @@
+<html xmlns:wicket="http://wicket.apache.org/">
+<body>
+<wicket:panel>
+    <div wicket:id="rootObjects">
+      <h3>
+      <wicket:message key="AbstractConfirmRemovelPanel.aboutRemove">About to remove</wicket:message>
+      </h3>
+    </div>        
+    <div wicket:id="removedObjects">
+        <wicket:message
+            key="AbstractConfirmRemovelPanel.removedObjects">The following objects will be removed
+        </wicket:message>:
+        <ul class="plain-ul">
+            <li wicket:id="rulesRemoved"><wicket:message
+                key="rules" />: <span wicket:id="rules"></span></li>
+        </ul>
+    </div>
+     <div wicket:id ="problematicObjects">    
+        <wicket:message
+            key="AbstractConfirmRemovelPanel.problems">The following objects can not be removed
+        </wicket:message>:        
+        <ul class="plain-ul">
+            <li wicket:id="rulesNotRemoved"><wicket:message
+                key="rules" />: <span wicket:id="problems"></span></li>
+        </ul>       
+    </div>
+</wicket:panel>
+</body>
+</html>

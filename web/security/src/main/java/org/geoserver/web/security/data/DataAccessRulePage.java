@@ -11,18 +11,17 @@ import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.IModel;
 import org.geoserver.security.impl.DataAccessRule;
-import org.geoserver.web.GeoServerSecuredPage;
-import org.geoserver.web.security.SelectionDataRuleRemovalLink;
+import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.SimpleAjaxLink;
-import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
 /**
  * A page listing data access rules, allowing for removal, addition and linking to an edit page
  */
 @SuppressWarnings("serial")
-public class DataAccessRulePage extends GeoServerSecuredPage {
+public class DataAccessRulePage extends AbstractSecurityPage {
 
     private GeoServerTablePanel<DataAccessRule> rules;
 
@@ -31,6 +30,7 @@ public class DataAccessRulePage extends GeoServerSecuredPage {
     GeoServerDialog dialog;
 
     public DataAccessRulePage() {
+        super(null);
         DataAccessRuleProvider provider = new DataAccessRuleProvider();
         add(rules = new GeoServerTablePanel<DataAccessRule>("table", provider, true) {
 
@@ -74,7 +74,8 @@ public class DataAccessRulePage extends GeoServerSecuredPage {
         Fragment header = new Fragment(HEADER_PANEL, "header", this);
 
         // the add button
-        header.add(new BookmarkablePageLink("addNew", NewDataAccessRulePage.class));
+        header.add(new BookmarkablePageLink<NewDataAccessRulePage>(
+                "addNew", NewDataAccessRulePage.class));
 
         // the removal button
         header.add(removal = new SelectionDataRuleRemovalLink("removeSelected", rules, dialog));

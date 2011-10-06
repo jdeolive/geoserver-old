@@ -1,63 +1,71 @@
 package org.geoserver.web.security.data;
 
+import java.lang.reflect.Method;
+
+import org.apache.wicket.Component;
+import org.apache.wicket.Page;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.data.test.MockData;
-import org.geoserver.security.AccessMode;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
-import org.geoserver.web.GeoServerWicketTestSupport;
+import org.geoserver.web.security.AbstractListPageTest;
+import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public class DataAccessRulePageTest extends GeoServerWicketTestSupport {
 
-    private DataAccessRuleDAO dao;
+public class DataAccessRulePageTest extends AbstractListPageTest<DataAccessRule> {
 
-    private DataAccessRule rule;
     
-    private static final String TABLE_PATH = "selectLayersContainer:selectLayers:layers";
+
+    protected Class<? extends Page> listPageClass() {
+        return DataAccessRulePage.class;
+    }
+
+    
+    protected Class<? extends Page> newPageClass() {
+        return NewDataAccessRulePage.class;
+    }
+    
+    
+    protected Class<? extends Page> editPageClass() {
+        return EditDataAccessRulePage.class;
+    }
 
     @Override
-    protected void setUpInternal() throws Exception {
-        dao = DataAccessRuleDAO.get();
-        rule = new DataAccessRule(MockData.CITE_PREFIX, MockData.BASIC_POLYGONS.getLocalPart(),
-                AccessMode.READ, "*");
-        dao.addRule(DataAccessRule.READ_ALL);
-        dao.addRule(DataAccessRule.WRITE_ALL);
-        dao.addRule(rule);
-        login();
-        tester.startPage(DataAccessRulePage.class);
+    protected Property<DataAccessRule> getEditProperty() {
+        return DataAccessRuleProvider.RULEKEY;
+    }
+    
+    @Override
+    protected boolean checkEditForm(String objectString) {
+        String[] array=objectString.split("\\.");
+        return  array[0].equals(
+                    tester.getComponentFromLastRenderedPage("ruleForm:workspace").getDefaultModelObject()) &&
+                array[1].equals( 
+                        tester.getComponentFromLastRenderedPage("ruleForm:layer").getDefaultModelObject());
+    }
+    
+    @Override
+    protected String getSearchString() throws Exception{
+        for (DataAccessRule rule : DataAccessRuleDAO.get().getRules()) {
+            if (MockData.CITE_PREFIX.equals(rule.getWorkspace()) && 
+                    MockData.BRIDGES.getLocalPart().equals(rule.getLayer()))
+                return rule.getKey();
+        }
+        return null;
     }
 
-    public void testRenders() throws Exception {
-        tester.assertRenderedPage(DataAccessRulePage.class);
+    
+    
+    @Override
+    protected void simulateDeleteSubmit() throws Exception {
+        
+        assertTrue (DataAccessRuleDAO.get().getRules().size()>0);
+        
+        SelectionDataRuleRemovalLink link = (SelectionDataRuleRemovalLink) getRemoveLink();
+        Method m = link.delegate.getClass().getDeclaredMethod("onSubmit", AjaxRequestTarget.class,Component.class);
+        m.invoke(link.delegate, null,null);
+        
+        assertEquals(0,DataAccessRuleDAO.get().getRules().size());        
     }
-
-    public void testEditRule() throws Exception {
-        // the name link for the first user
-        tester.clickLink("table:listContainer:items:1:itemProperties:0:component:link");
-        tester.assertRenderedPage(EditDataAccessRulePage.class);
-        assertEquals("*", tester.getComponentFromLastRenderedPage("ruleForm:workspace")
-                .getDefaultModelObject());
-    }
-
-//    public void testNewRule() throws Exception {
-//        tester.clickLink("header:addNew");
-//        tester.assertRenderedPage(NewDataAccessRulePage.class);
-//        assertEquals("*", tester.getComponentFromLastRenderedPage("ruleForm:workspace")
-//                .getModelObject());
-//    }
-
-//    public void testRemove() throws Exception {
-//        tester.setupRequestAndResponse(true);
-//        final Component component = tester.getComponentFromLastRenderedPage("table:listContainer");
-//        assertNotNull(component);
-//        assertTrue(dao.getRules().contains(rule));
-//        // the remove link for the second user
-//        tester.executeAjaxEvent("table:listContainer:items:2:itemProperties:2:component:link",
-//                "onclick");
-//
-//        // tester.assertComponentOnAjaxResponse(component);
-//
-//        tester.assertRenderedPage(DataAccessRulePage.class);
-//        assertFalse(dao.getRules().contains(rule));
-//    }
 
 }

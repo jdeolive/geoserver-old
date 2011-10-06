@@ -11,7 +11,6 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.GrantedAuthorityImpl;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.WorkspaceInfo;
@@ -46,12 +45,12 @@ public class DefaultDataAccessManagerTreeTest extends TestCase {
         replay(catalog);
 
         rwUser = new TestingAuthenticationToken("rw", "supersecret", new GrantedAuthority[] {
-                new GrantedAuthorityImpl("READER"), new GrantedAuthorityImpl("WRITER") });
+                new GeoserverGrantedAuthority("READER"), new GeoserverGrantedAuthority("WRITER") });
         roUser = new TestingAuthenticationToken("ro", "supersecret",
-                new GrantedAuthority[] { new GrantedAuthorityImpl("READER") });
+                new GrantedAuthority[] { new GeoserverGrantedAuthority("READER") });
         anonymous = new TestingAuthenticationToken("anonymous", null);
         milUser = new TestingAuthenticationToken("military", "supersecret", new GrantedAuthority[] {
-                new GrantedAuthorityImpl("MILITARY") });
+                new GeoserverGrantedAuthority("MILITARY") });
 
     }
 

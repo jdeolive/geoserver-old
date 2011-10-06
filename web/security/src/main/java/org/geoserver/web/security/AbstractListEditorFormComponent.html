@@ -1,0 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:wicket="http://wicket.apache.org/">
+<body>
+<wicket:panel>
+	<table border="1" id="editortable" wicket:id="editortable">
+		<tr>		    
+			<th wicket:id="tableheader"><span wicket:id="header"></span></th>
+		</tr>	
+		<tr wicket:id="editor" >
+			<wicket:child/>
+			<td><a class="remove-link" href="#" wicket:id="remove"><wicket:message key="remove"/></a></td>
+		</tr>		
+		<!-- <tr><td colspan="4"><input wicket:id="add" type="submit" value="add"/></td></tr> -->
+	</table>
+	<a class="add-link" href="#" wicket:id="add"><wicket:message key="add"/></a>
+	<wicket:fragment wicket:id="columnlabelfragment"><span wicket:id="columnlabel"></span></wicket:fragment>					
+</wicket:panel>
+</body>
+</html>

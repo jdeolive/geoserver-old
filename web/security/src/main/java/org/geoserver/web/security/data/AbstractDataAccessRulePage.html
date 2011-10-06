@@ -6,18 +6,23 @@
 <wicket:extend>
 	<form wicket:id="ruleForm">
 	<ul>
-		<li><label for="workspace"><wicket:message
-			key="workspace">workspace</wicket:message></label> <select
-			wicket:id="workspace" id="workspace" /></li>
-
-		<li><label for="layer"><wicket:message key="layer">layer</wicket:message></label>
-		<select wicket:id="layer" id="layer" /></li>
-
-		<li><label for="accessMode"><wicket:message
-			key="accessMode">mode</wicket:message></label> <select wicket:id="accessMode"
-			id="accessMode" /></li>
-
-		<div wicket:id="roles"></div>
+	   <li>
+	    	<fieldset><ul>		
+			<li><label for="workspace"><wicket:message
+				key="workspace">workspace</wicket:message></label> <select
+				wicket:id="workspace" id="workspace" /></li>
+	
+			<li><label for="layer"><wicket:message key="layer">layer</wicket:message></label>
+			<select wicket:id="layer" id="layer" /></li>
+	
+			<li><label for="accessMode"><wicket:message
+				key="accessMode">mode</wicket:message></label> <select wicket:id="accessMode"
+				id="accessMode" /></li>
+			</ul></fieldset>
+		</li>	
+		<li>
+			<div wicket:id="roles"></div>
+		</li>
 	</ul>
 	<div class="button-group selfclear"><a href="#" wicket:id="save"><wicket:message
 		key="save">Save</wicket:message></a> <a href="#" wicket:id="cancel"><wicket:message

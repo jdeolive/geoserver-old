@@ -6,13 +6,19 @@
 <wicket:extend>
 	<form wicket:id="ruleForm">
 	<ul>
-		<li><label for="service"><wicket:message key="service">service</wicket:message></label>
-		<select wicket:id="service" id="service" /></li>
-
-		<li><label for="method"><wicket:message key="method">method</wicket:message></label>
-		<select wicket:id="method" id="method" /></li>
-
-		<div wicket:id="roles"></div>
+		<li>
+	    	<fieldset><ul>		
+		
+			<li><label for="service"><wicket:message key="service">service</wicket:message></label>
+			<select wicket:id="service" id="service" /></li>
+	
+			<li><label for="method"><wicket:message key="method">method</wicket:message></label>
+			<select wicket:id="method" id="method" /></li>
+			</ul></fieldset>
+		</li>
+		<li>
+			<div wicket:id="roles"></div>
+		</li>
 	</ul>
 	<div class="button-group selfclear"><a href="#" wicket:id="save"><wicket:message
 		key="save">Save</wicket:message></a> <a href="#" wicket:id="cancel"><wicket:message

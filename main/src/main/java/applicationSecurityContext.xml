@@ -336,10 +336,29 @@
 
   <!-- 
     Ah, finally the one that hits the disk and, backed by a property file, returns known
-    users, their passwords and roles
-  -->
-  <bean id="userDetailsService" class="org.geoserver.security.impl.GeoserverUserDao" depends-on="extensions">
+    users, their passwords and roles, deprecated, used for migration 
+     <bean id="userDetailsService" class="org.geoserver.security.impl.GeoserverUserDao" depends-on="extensions">
+  	</bean>     -->
+  
+     <bean id="userDetailsService" class="org.geoserver.security.impl.GeoserverUserDetailsServiceImpl" depends-on="extensions">
+  	</bean>
+  	
+  <bean id="shaPasswordEncoder"
+    class="org.springframework.security.authentication.encoding.ShaPasswordEncoder">
+    <property name="iterations" value="1024"/>
+    </bean>
+  <bean id="md5PasswordEncoder"
+    class="org.springframework.security.authentication.encoding.Md5PasswordEncoder">
+    <property name="iterations" value="1024"/>
   </bean>
+  <bean id="plaintextPasswordEncoder"
+    class="org.springframework.security.authentication.encoding.PlaintextPasswordEncoder" />
+            
+  <bean id="saltSource"
+    class="org.springframework.security.authentication.dao.ReflectionSaltSource">
+    <property name="userPropertyToUse" value="username"/> 
+  </bean>    	
+  	
   
   <!-- The dao used to deal with layer level security -->
   <bean id="accessRulesDao" class="org.geoserver.security.impl.DataAccessRuleDAO">
