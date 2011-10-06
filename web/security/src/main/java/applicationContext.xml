@@ -24,6 +24,33 @@
 		<property name="category" ref="securityCategory" />
 		<property name="order" value="100" />
 	</bean>
+	
+	<!--
+	The group list page 
+	 -->
+	<bean id="groupSecurityPage" class="org.geoserver.web.MenuPageInfo">
+		<property name="id" value="security.group" />
+		<property name="titleKey" value="security.group.title" />
+		<property name="descriptionKey" value="security.group.description" />
+		<property name="componentClass" value="org.geoserver.web.security.group.GroupPage" />
+		<property name="icon" value="../../img/icons/silk/group.png" />
+		<property name="category" ref="securityCategory" />
+		<property name="order" value="110" />
+	</bean>
+
+	<!--
+	The role list page 
+	 -->
+	<bean id="roleSecurityPage" class="org.geoserver.web.MenuPageInfo">
+		<property name="id" value="security.role" />
+		<property name="titleKey" value="security.role.title" />
+		<property name="descriptionKey" value="security.role.description" />
+		<property name="componentClass" value="org.geoserver.web.security.role.RolePage" />
+		<property name="icon" value="../../img/icons/silk/award_star_silver_2.png" />
+		<property name="category" ref="securityCategory" />
+		<property name="order" value="120" />
+	</bean>
+	
 
 	<!--
 	The data list page 

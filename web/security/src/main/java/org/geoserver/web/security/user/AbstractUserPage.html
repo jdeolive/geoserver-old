@@ -6,21 +6,60 @@
 <wicket:extend>
 	<form wicket:id="userForm">
 	<ul>
-		<li><label for="username"><wicket:message key="username">username</wicket:message></label>
-		<input type="text" wicket:id="username" id="username" class="text"/></li>
-
-		<li><label for="password"><wicket:message key="password">password</wicket:message></label>
-		<input type="password" " wicket:id="password" id="password" class="text"/></li>
-
-		<li><label for="confirmPassword"><wicket:message
-			key="confirmPassword">confirmPassword</wicket:message></label> <input
-			type="password" " wicket:id="confirmPassword" id="confirmPassword" class="text"/></li>
-
-		<div wicket:id="roles" />
+		<li>
+	    	<fieldset><ul>		
+				<li>
+		   		<label for="username"><wicket:message key="username">username</wicket:message></label>
+		   		<input type="text" wicket:id="username" id="username" class="text" />
+		   		</li>
+		   		<li>
+		   		<label for="enabled"><wicket:message key="enabled">enabled</wicket:message></label>
+		   		<input type="checkbox"  wicket:id="enabled" id="enabled" />
+		   		</li>
+		   		<li>
+			    <label for="password"><wicket:message key="password">password</wicket:message></label>
+			    <input type="password" " wicket:id="password" id="password" class="text"/>
+			    </li>
+			    <li>		
+		    	<label for="confirmPassword"><wicket:message
+			    	key="confirmPassword">confirmPassword</wicket:message></label> 
+		    	<input type="password" " wicket:id="confirmPassword" id="confirmPassword" class="text"/>
+		    	</li>
+	    	</ul></fieldset>
+		</li>
+		<li>
+		    <fieldset>
+    	    <legend><span><wicket:message key="userpropertyeditor">userpropertyeditor</wicket:message></span></legend>		
+		<!--  	<label for="userpropertyeditor"><wicket:message key="userpropertyeditor">userpropertyeditor</wicket:message></label>--> 
+			<div wicket:id="userpropertyeditor" id="userpropertyeditor"/>
+			</fieldset>
+		</li>						
+		<li>		
+			<div wicket:id="groups" />
+		</li>
+		<li>
+			<div wicket:id="roles" />
+		</li>
+		<li>
+			<fieldset>
+			<legend><span><wicket:message key="calculatedroles">calculatedroles</wicket:message></span></legend>
+			<ul>        						
+			<!-- <label for="calculatedroles"><wicket:message key="calculatedroles">calculatedroles</wicket:message></label> -->
+			<li>
+			<div wicket:id=calculatedrolesContainer> <!-- needed for ajax repaint -->
+				<div wicket:id="calculatedroles">
+   					<span wicket:id="calculatedrole">calculatedrole</span><br/>
+				</div>
+			</div>
+			</li>
+			</ul>
+			</fieldset>
+		</li>		
 	</ul>
-	<div class="button-group selfclear"><a href="#" wicket:id="save"><wicket:message
-		key="save">Save</wicket:message></a> <a href="#" wicket:id="cancel"><wicket:message
-		key="cancel">Cancel</wicket:message></a></div>
+	<div class="button-group selfclear">
+	    <a href="#" wicket:id="save"><wicket:message key="save">Save</wicket:message></a> 
+	    <a href="#" wicket:id="cancel"><wicket:message key="cancel">Cancel</wicket:message></a>
+	</div>
 	</form>
 </wicket:extend>
 </body>

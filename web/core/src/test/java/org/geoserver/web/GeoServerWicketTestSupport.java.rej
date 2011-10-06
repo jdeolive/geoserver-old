@@ -1,0 +1,31 @@
+***************
+*** 15,27 ****
+  import org.apache.wicket.markup.html.form.FormComponent;
+  import org.apache.wicket.util.tester.FormTester;
+  import org.apache.wicket.util.tester.WicketTester;
+  import org.geoserver.test.GeoServerTestSupport;
+  import org.geoserver.web.wicket.WicketHierarchyPrinter;
+  
+  public abstract class GeoServerWicketTestSupport extends GeoServerTestSupport {
+      public static WicketTester tester;
+  
+-     public void oneTimeSetUp() throws Exception {
+          super.oneTimeSetUp();
+          // prevent Wicket from bragging about us being in dev mode (and run
+          // the tests as if we were in production all the time)
+--- 15,29 ----
+  import org.apache.wicket.markup.html.form.FormComponent;
+  import org.apache.wicket.util.tester.FormTester;
+  import org.apache.wicket.util.tester.WicketTester;
++ import org.geoserver.security.GeoserverServiceFactory;
++ import org.geoserver.security.impl.GeoserverGrantedAuthority;
+  import org.geoserver.test.GeoServerTestSupport;
+  import org.geoserver.web.wicket.WicketHierarchyPrinter;
+  
+  public abstract class GeoServerWicketTestSupport extends GeoServerTestSupport {
+      public static WicketTester tester;
+  
++     public void oneTimeSetUp() throws Exception {        
+          super.oneTimeSetUp();
+          // prevent Wicket from bragging about us being in dev mode (and run
+          // the tests as if we were in production all the time)
