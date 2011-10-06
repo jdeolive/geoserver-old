@@ -18,6 +18,14 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+>>>>>>> initial patch applied from GEOS-4554
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractGrantedAuthorityStore;
@@ -123,14 +131,13 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
                 ref.setAttribute(A_ROLEREFID_RR,roleObject.getAuthority());
             }
         }
-               
+
         // serialize the dom
         try {
 //            TODO, wait for JAVA 6
 //            if (isValidatingXMLSchema()) {
 //                XMLValidator.Singleton.validateGrantedAuthorityRegistry(doc);
 //            }
-         
             
             OutputFormat of = 
                     new OutputFormat("XML","UTF-8",true);
@@ -158,9 +165,6 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
         } catch (Exception e) {
             throw new IOException(e);
         }
-
-        
-
     }
 
     @Override
