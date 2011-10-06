@@ -1,55 +1,113 @@
 package org.geoserver.web.security.user;
 
-import java.util.ArrayList;
-import java.util.Collection;
 
-import org.springframework.security.core.authority.GrantedAuthorityImpl;
-import org.springframework.security.core.userdetails.User;
-import org.geoserver.security.impl.GeoserverUserDao;
-import org.geoserver.web.GeoServerWicketTestSupport;
+import java.lang.reflect.Method;
+import java.util.SortedSet;
 
-public class UserListPageTest extends GeoServerWicketTestSupport {
+import org.apache.wicket.Component;
+import org.apache.wicket.Page;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.web.security.AbstractListPageTest;
+import org.geoserver.web.wicket.GeoServerDataProvider.Property;
+
+public class UserListPageTest extends AbstractListPageTest<GeoserverUser> {
+    boolean withRoles=false;
     
-    private GeoserverUserDao dao;
+    protected Class<? extends Page> listPageClass() {
+        return UserPage.class;
+    }
+
+    
+    
+    protected Class<? extends Page> editPageClass() {
+        return EditUserPage.class;
+    }
+
+    
+    
+        
+    protected Class<? extends Page> newPageClass() {
+        return NewUserPage.class;
+    }
+
 
     @Override
-    protected void setUpInternal() throws Exception {
-        dao = GeoserverUserDao.get();
-        Collection<GrantedAuthorityImpl> auths = new ArrayList<GrantedAuthorityImpl>();
-        auths.add(new GrantedAuthorityImpl("ROLE_WFS_ALL"));
-        auths.add(new GrantedAuthorityImpl("ROLE_WMS_ALL"));
-        
-        dao.putUser(new User("user", "pwd", true, true, true, true,auths)); 
-        login();
-        tester.startPage(UserPage.class);
+    protected String getSearchString() throws Exception{
+         GeoserverUser u = ugService.getUserByUsername("user1");
+         assertNotNull(u);
+         return u.getUsername();
     }
 
-    public void testRenders() throws Exception {
-        tester.assertRenderedPage(UserPage.class);
+
+    @Override
+    protected Property<GeoserverUser> getEditProperty() {
+        return UserListProvider.USERNAME;
+    }
+
+
+    @Override
+    protected boolean checkEditForm(String objectString) {
+        return objectString.equals( 
+                tester.getComponentFromLastRenderedPage("userForm:username").getDefaultModelObject());
     }
     
-    public void testEditUser() throws Exception {
-        // the name link for the first user
-        tester.clickLink("table:listContainer:items:1:itemProperties:0:component:link");
-        tester.assertRenderedPage(EditUserPage.class);
-        assertEquals("admin", tester.getComponentFromLastRenderedPage("userForm:username").getDefaultModelObject());
+    public void testReadOnlyService() throws Exception {
+        initializeForXML();
+        tester.startPage(listPageClass());
+        tester.assertVisible(getRemoveLink().getPageRelativePath());
+        tester.assertVisible(getRemoveLinkWithRoles().getPageRelativePath());
+        tester.assertVisible(getAddLink().getPageRelativePath());
+        
+        activateROGAService();
+        tester.startPage(listPageClass());
+        tester.assertVisible(getRemoveLink().getPageRelativePath());
+        tester.assertInvisible(getRemoveLinkWithRoles().getPageRelativePath());
+        tester.assertVisible(getAddLink().getPageRelativePath());
+        
+        activateROUGService();
+        tester.startPage(listPageClass());
+        tester.assertInvisible(getRemoveLink().getPageRelativePath());
+        tester.assertInvisible(getAddLink().getPageRelativePath());
+        tester.assertInvisible(getRemoveLinkWithRoles().getPageRelativePath());
+    }
+
+    @Override
+    protected void simulateDeleteSubmit() throws Exception {
+        SelectionUserRemovalLink link = 
+                (SelectionUserRemovalLink) (withRoles ?  getRemoveLinkWithRoles() : getRemoveLink());
+        Method m = link.delegate.getClass().getDeclaredMethod("onSubmit", AjaxRequestTarget.class,Component.class);
+        m.invoke(link.delegate, null,null);
+        
+        SortedSet<GeoserverUser> users = ugService.getUsers();
+        assertTrue(users.size()==0);
+        if (withRoles)            
+            assertTrue(gaService.getRolesForUser("user1").size()==0);
+        else
+            assertTrue(gaService.getRolesForUser("user1").size()==2);
+    }
+
+    public void testRemoveWithRolesXML() throws Exception {
+        withRoles=true;
+        initializeForXML();
+        insertValues();
+        addAdditonalData();
+        doRemove("headerPanel:removeSelectedWithRoles");
     }
     
-//    public void testNewUser() throws Exception {
-//        tester.clickLink("addUser");
-//        tester.assertRenderedPage(NewUserPage.class);
-//    }
+    public void testRemoveWithRolesJDBC() throws Exception {
+        withRoles=true;
+        initializeForJDBC();
+        insertValues();
+        addAdditonalData();
+        doRemove("headerPanel:removeSelectedWithRoles");
+    }
     
-//    public void testRemove() throws Exception {
-//        dao.loadUserByUsername("user");
-//        // the remove link for the second user
-//        tester.clickLink("table:listContainer:items:2:itemProperties:3:component:link");
-//        tester.assertRenderedPage(UserPage.class);
-//        try {
-//            dao.loadUserByUsername("user");
-//            fail("The user should have been removed");
-//        } catch(UsernameNotFoundException e) {
-//            // fine
-//        }
-//    }
+    public void testRemoveJDBC() throws Exception {
+        initializeForJDBC();
+        insertValues();
+        addAdditonalData();
+        doRemove("headerPanel:removeSelected");
+    }
+
 }

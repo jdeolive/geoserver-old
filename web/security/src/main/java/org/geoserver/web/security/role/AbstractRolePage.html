@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:wicket="http://wicket.apache.org/">
+<body>
+<wicket:extend>
+	<form wicket:id="roleForm">
+	<ul>
+	    <li>
+		    <fieldset>
+		    	<legend><span wicket:id="roledescription">roledescription</span></legend>
+			    <ul>
+					<li>
+						<label for="rolename"><wicket:message key="rolename">rolename</wicket:message></label>
+						<input type="text" wicket:id="rolename" id="rolename" />
+					</li>
+					<li>
+						<label for="parentRoles"><wicket:message key="parentRoles">parentRoles</wicket:message></label>
+						<select  wicket:id="parentRoles" id="parentRoles" style="min-width:200px;"/>
+					</li>
+				</ul>
+			</fieldset>
+		</li>			
+		<li>
+	      <fieldset>
+    	    <legend><span><wicket:message key="roleparameditor">roleparameditor</wicket:message></span></legend>
+			<!--  <label for="roleparameditor"><wicket:message key="roleparameditor">roleparameditor</wicket:message></label> -->
+			<div wicket:id="roleparameditor" id="roleparameditor"/>
+   		  </fieldset>
+		</li>
+	</ul>
+	<div class="button-group selfclear"><a href="#" wicket:id="save"><wicket:message
+		key="save">Save</wicket:message></a> <a href="#" wicket:id="cancel"><wicket:message
+		key="cancel">Cancel</wicket:message></a></div>
+	</form>
+</wicket:extend>
+</body>
+</html>

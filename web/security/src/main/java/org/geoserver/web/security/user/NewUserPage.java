@@ -4,55 +4,114 @@
  */
 package org.geoserver.web.security.user;
 
+import java.io.IOException;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.logging.Level;
 
-import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.validator.AbstractValidator;
-import org.geoserver.security.impl.GeoserverUserDao;
+import org.apache.wicket.Page;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.FormComponent;
+import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
+import org.apache.wicket.model.ResourceModel;
+import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
+import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.wicket.ParamResourceModel;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 
 /**
  * Allows creation of a new user in users.properties
  */
-@SuppressWarnings("serial")
 public class NewUserPage extends AbstractUserPage {
 
-
     public NewUserPage() {
-       super(new UserUIModel());
-       
-       username.add(new UserConflictValidator());
+        this(null);
+    }   
+    public NewUserPage(Page responsePage) {
+       super(new UserUIModel(),new Properties(),responsePage);       
+       form.add(new UserConflictValidator());
+       if (hasUserGroupStore()==false) {
+           throw new RuntimeException("Workflow error, new role not possible for read only service");
+       }
+
     }
     
-    /**
-     * Checks the user is not a new one
-     */
-    class UserConflictValidator extends AbstractValidator {
+    
+    class UserConflictValidator extends AbstractFormValidator {
+
+        private static final long serialVersionUID = 1L;
+
 
         @Override
-        protected void onValidate(IValidatable validatable) {
-            String newName = (String) validatable.getValue();
-            try {
-                GeoserverUserDao.get().loadUserByUsername(newName);
-                error(validatable, "NewUserPage.userConflict", Collections.singletonMap("user", newName));
-            } catch(UsernameNotFoundException e) {
-                // fine, it's new, validation passed
+        public FormComponent<?>[] getDependentFormComponents() {
+            return new FormComponent[] { username };
+        }
+
+        @Override
+        public void validate(Form<?> form) {
+            if (form.findSubmittingButton() != saveLink) { // only validate on final submit
+                return;
             }
+
+            username.updateModel();
+            String newName = uiUser.getUsername();            
+            try {
+                GeoserverUser user = 
+                        GeoserverUserDetailsServiceImpl.get().getUserGroupService().getUserByUsername(newName);
+                if (user != null) {
+                    form.error(new ResourceModel("NewUserPage.userConflict").getObject(),
+                            Collections.singletonMap("user", (Object) newName));
+                    
+                }
+            } catch(IOException e) {
+                throw new RuntimeException(e);
+            }
+            
         }
         
     }
+
+    
     
     @Override
     protected void onFormSubmit() {
         try {
-            UserUIModel user = (UserUIModel) NewUserPage.this.getDefaultModelObject();
-            GeoserverUserDao dao = GeoserverUserDao.get();
-            dao.putUser(user.toSpringUser());
-            dao.storeUsers();
-            setResponsePage(UserPage.class);
+             
+            
+            GeoserverUserGroupStore ugStore = getUserGroupStore();
+            GeoserverUser user =uiUser.toGeoserverUser();             
+            user.getProperties().clear();
+            for (Entry<Object,Object> entry : userpropertyeditor.getProperties().entrySet())
+                user.getProperties().put(entry.getKey(),entry.getValue());
+
+            ugStore.addUser(user);
+                    
+            Iterator<GeoserverUserGroup> it =userGroupFormComponent.groupPalette.getSelectedChoices();
+            while (it.hasNext()) {
+                ugStore.associateUserToGroup(user, it.next());
+            }
+            
+            if (hasGrantedAuthorityStore()) {
+                GeoserverGrantedAuthorityStore gaStore = getGrantedAuthorityStore();
+                Iterator<GeoserverGrantedAuthority> roleIt =userRolesFormComponent.
+                        getRolePalette().getSelectedChoices();
+                while (roleIt.hasNext()) {
+                    gaStore.associateRoleToUser(roleIt.next(), user.getUsername());
+                }
+                gaStore.store();
+            }
+            
+                                    
+            ugStore.store();
+            
+            
+            setActualResponsePage(UserPage.class);
         } catch(Exception e) {
             LOGGER.log(Level.SEVERE, "Error occurred while saving user", e);
             error(new ParamResourceModel("saveError", getPage(), e.getMessage()));

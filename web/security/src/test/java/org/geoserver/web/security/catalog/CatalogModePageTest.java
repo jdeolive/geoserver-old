@@ -1,30 +1,35 @@
 package org.geoserver.web.security.catalog;
 
+import java.util.List;
+
 import org.apache.wicket.Component;
 import org.apache.wicket.Component.IVisitor;
 import org.apache.wicket.markup.html.form.RadioChoice;
 import org.apache.wicket.util.tester.FormTester;
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.CatalogMode;
 import org.geoserver.security.impl.DataAccessRuleDAO;
 import org.geoserver.web.GeoServerWicketTestSupport;
+import org.springframework.security.authentication.encoding.PasswordEncoder;
 
 public class CatalogModePageTest extends GeoServerWicketTestSupport {
 
-    private DataAccessRuleDAO dao;
 
-    private CatalogMode catalogMode;
 
     @Override
     protected void setUpInternal() throws Exception {
-        dao = DataAccessRuleDAO.get();
-        catalogMode = dao.getMode();
         login();
         tester.startPage(CatalogModePage.class);
     }
 
-    public void testRenders() throws Exception {
-        tester.assertRenderedPage(CatalogModePage.class);
-    }
+//    
+//    public void testRenders() throws Exception {
+//        
+//       List<PasswordEncoder> list = GeoServerExtensions.extensions(PasswordEncoder.class);
+//       for (PasswordEncoder pwenc : list) {
+//           System.out.println(pwenc);
+//       }
+//    }
 
     public void testDefaultCatalogMode() throws Exception {
         tester.assertRenderedPage(CatalogModePage.class);
