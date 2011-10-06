@@ -15,9 +15,14 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.file.LockFile;
@@ -124,7 +129,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
                 }
             }
         }            
-        
+
         // serialize the dom
         try {
 //            TODO, wait for JAVA 6
@@ -155,7 +160,6 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
         } catch (Exception e) {
             throw new IOException(e);
         } 
-
         
     }
 
