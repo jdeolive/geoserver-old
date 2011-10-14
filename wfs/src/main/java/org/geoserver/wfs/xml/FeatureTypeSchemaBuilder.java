@@ -101,7 +101,7 @@ public abstract class FeatureTypeSchemaBuilder {
     protected String gmlPrefix;
     protected Configuration xmlConfiguration;
     protected volatile XSDElementDeclaration featureSubGroupElement;
-    
+
     protected FeatureTypeSchemaBuilder(GeoServer gs) {
         this.wfs = gs.getService( WFSInfo.class );
         this.catalog = gs.getCatalog();
@@ -128,19 +128,31 @@ public abstract class FeatureTypeSchemaBuilder {
         throws IOException {
         return build(featureTypeInfos, baseUrl, true);
     }
+
+    public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl, int resolveAppSchemaImports)
+        throws IOException {
+        return build(featureTypeInfos, baseUrl, resolveAppSchemaImports != 0, true);
+    }
+
     
     public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl, boolean scheduleSchemaCleanup)
         throws IOException {
+        return build(featureTypeInfos, baseUrl, false, scheduleSchemaCleanup);
+    }
+
+    public XSDSchema build(FeatureTypeInfo[] featureTypeInfos, String baseUrl, 
+        boolean resolveAppSchemaImports, boolean scheduleSchemaCleanup) throws IOException {
         // build the schema and make sure to schedule it for destruction at the end of the request
-        XSDSchema schema = buildSchemaInternal(featureTypeInfos, baseUrl);
+        XSDSchema schema = buildSchemaInternal(featureTypeInfos, baseUrl, resolveAppSchemaImports);
         if(schema != null && scheduleSchemaCleanup) {
             SchemaCleanerCallback.addSchema(schema);
         }
         return schema;
     }
+    
+    public final XSDSchema buildSchemaInternal(FeatureTypeInfo[] featureTypeInfos, String baseUrl, 
+        boolean resolveAppSchemaImports) throws IOException {
 
-    public XSDSchema buildSchemaInternal(FeatureTypeInfo[] featureTypeInfos, String baseUrl)
-            throws IOException {
         XSDFactory factory = XSDFactory.eINSTANCE;
         XSDSchema schema = factory.createXSDSchema();
         schema.setSchemaForSchemaQNamePrefix("xsd");
@@ -223,6 +235,11 @@ public abstract class FeatureTypeSchemaBuilder {
             }
         } else {
             //different namespaces, write out import statements
+            
+            //set the first namespace as the target one
+            NamespaceInfo ns = featureTypeInfos[0].getNamespace();
+            schema.setTargetNamespace(ns.getURI());
+            
             Map<String, String> imports = new HashMap<String, String>();
             for (Iterator i = ns2featureTypeInfos.entrySet().iterator(); i.hasNext();) {
                 Map.Entry entry = (Map.Entry) i.next();
@@ -259,11 +276,41 @@ public abstract class FeatureTypeSchemaBuilder {
                     String schemaLocation = buildURL(baseUrl, "wfs", params, URLType.RESOURCE);
                     String namespace = catalog.getNamespaceByPrefix(prefix).getURI();
     
+                    //register the namespace prefix
+                    schema.getQNamePrefixToNamespaceMap().put(prefix, namespace);
+                    
                     XSDImport imprt = factory.createXSDImport();
                     imprt.setNamespace(namespace);
                     imprt.setSchemaLocation(schemaLocation);
     
+                    XSDSchema resolved = null;
+                    if (resolveAppSchemaImports) {
+                        //actually build the schema out for these types and set it as the resolved
+                        // schema for the import
+                        List<FeatureTypeInfo> featureTypes = new ArrayList();
+                        for (String typeName : typeNames.toString().split(",")) {
+                            featureTypes.add(catalog.getFeatureTypeByName(typeName));
+                        }
+
+                        resolved = build(featureTypes.toArray(
+                            new FeatureTypeInfo[featureTypes.size()]), baseUrl);
+                        
+                        //ensure we declare the wfs and gml namespaces as well
+                        schema.getQNamePrefixToNamespaceMap().put("gml", gmlNamespace);
+                        if (getWfsSchema() != null) {
+                            schema.getQNamePrefixToNamespaceMap().put("wfs", getWfsSchema().getTargetNamespace());
+                        }
+                    }
+                   
+                    if (resolved != null) {
+                        imprt.setResolvedSchema(resolved);
+                    }
+                    
                     schema.getContents().add(imprt);
+                    
+                    if (resolved != null) {
+                        ((XSDSchemaImpl)resolved).imported(imprt);
+                    }
                 }
             }
         }
@@ -412,7 +459,7 @@ public abstract class FeatureTypeSchemaBuilder {
                 continue;
 
             //build the schema for the types in the single namespace (and don't clean them, they are not dynamic)
-            XSDSchema schema = buildSchemaInternal(new FeatureTypeInfo[] { meta }, null);
+            XSDSchema schema = buildSchemaInternal(new FeatureTypeInfo[] { meta }, null, false);
 
             //declare the namespace
             String prefix = meta.getNamespace().getPrefix();
@@ -880,7 +927,7 @@ public abstract class FeatureTypeSchemaBuilder {
             baseType = "AbstractFeatureType";
             substitutionGroup = "AbstractFeature";
             describeFeatureTypeParams =  params("request", "DescribeFeatureType", 
-                    "version", "1.1.0",
+                    "version", "2.0.0",
                     "service", "WFS", 
                     "outputFormat", "text/xml; subtype=gml/3.2");
             xmlConfiguration = new org.geotools.gml3.v3_2.GMLConfiguration();
@@ -905,9 +952,11 @@ public abstract class FeatureTypeSchemaBuilder {
             XSDImport imprt;
             try {
                 imprt = factory.createXSDImport();
-                imprt.setNamespace( WFS.getInstance().getSchema().getTargetNamespace() );
+                imprt.setNamespace(gmlNamespace);
+                //imprt.setNamespace( WFS.getInstance().getSchema().getTargetNamespace() );
                 imprt.setSchemaLocation(ResponseUtils.buildSchemaURL(baseUrl, gmlSchemaLocation));
-                imprt.setResolvedSchema(WFS.getInstance().getSchema());
+                //imprt.setResolvedSchema(WFS.getInstance().getSchema());
+                imprt.setResolvedSchema( GML.getInstance().getSchema() );
                 schema.getContents().add( imprt );
                 
                 schema.getQNamePrefixToNamespaceMap().put("wfs", WFS.NAMESPACE);

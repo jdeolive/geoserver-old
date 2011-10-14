@@ -95,7 +95,7 @@ public class SampleDataAccessWfsTest extends SampleDataAccessTestSupport {
      * @throws Exception
      */
     public void testGetFeatureContent() throws Exception {
-        Document doc = getAsDOM("wfs?request=GetFeature&typename=gsml:MappedFeature");
+        Document doc = getAsDOM("wfs?request=GetFeature&version=1.1.0&typename=gsml:MappedFeature");
 
         assertXpathCount(2, "//gsml:MappedFeature", doc);
 
