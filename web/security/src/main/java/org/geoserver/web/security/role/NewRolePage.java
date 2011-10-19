@@ -17,7 +17,6 @@ import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.web.wicket.ParamResourceModel;
 
 
@@ -64,7 +63,7 @@ public class NewRolePage extends AbstractRolePage {
             String newName = uiRole.getRolename();            
             try {
                 GeoserverGrantedAuthority role =
-                        GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService().getGrantedAuthorityByName(newName);
+                    getUserDetails().getGrantedAuthorityService().getGrantedAuthorityByName(newName);
                 if (role!=null) {
                     form.error(new ResourceModel("NewRolePage.roleConflict").getObject(),
                             Collections.singletonMap("role", (Object) newName));

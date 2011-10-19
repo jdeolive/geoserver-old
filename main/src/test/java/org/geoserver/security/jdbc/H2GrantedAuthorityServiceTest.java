@@ -19,7 +19,7 @@ public class H2GrantedAuthorityServiceTest extends JDBCGrantedAuthorityServiceTe
         
     @Override
     public GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName) throws IOException {
-        return JDBCTestSupport.createH2GrantedAuthorityService(getFixtureId());
+        return JDBCTestSupport.createH2GrantedAuthorityService(getFixtureId(), getSecurityManager());
     }
 
 }

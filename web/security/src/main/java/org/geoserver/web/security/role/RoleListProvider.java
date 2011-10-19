@@ -13,8 +13,8 @@ import java.util.SortedSet;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 
 /**
@@ -39,7 +39,8 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
         public Object getPropertyValue(GeoserverGrantedAuthority item) {
             GeoserverGrantedAuthority parent=null;
             try {
-                parent = GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService().getParentRole(item);
+                parent = GeoServerApplication.get().getUserDetails()
+                    .getGrantedAuthorityService().getParentRole(item);
             } catch (IOException e) {
                 //TODO is this correct
                 throw new RuntimeException(e);
@@ -113,7 +114,7 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
     protected List<GeoserverGrantedAuthority> getItems() {
         SortedSet<GeoserverGrantedAuthority> roles=null;
         try {
-            roles = GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService().getRoles();
+            roles = GeoServerApplication.get().getUserDetails().getGrantedAuthorityService().getRoles();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 

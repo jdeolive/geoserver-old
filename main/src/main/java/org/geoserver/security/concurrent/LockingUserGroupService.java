@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
@@ -28,10 +29,8 @@ import org.geoserver.security.impl.GeoserverUserGroup;
 public class LockingUserGroupService extends AbstractLockingService implements
         GeoserverUserGroupService, UserGroupLoadedListener {
 
-    protected GeoserverUserGroupService service;
     protected Set<UserGroupLoadedListener> listeners = 
         Collections.synchronizedSet(new HashSet<UserGroupLoadedListener>());
-
 
     /**
      * Constructor for the locking wrapper
@@ -39,7 +38,7 @@ public class LockingUserGroupService extends AbstractLockingService implements
      * @param service
      */
     public LockingUserGroupService(GeoserverUserGroupService service) {
-        this.service=service;
+        super(service);
         service.registerUserGroupLoadedListener(this);
     }
     
@@ -47,9 +46,14 @@ public class LockingUserGroupService extends AbstractLockingService implements
      * @return the wrapped service
      */
     public GeoserverUserGroupService getService() {
-        return service;
+        return (GeoserverUserGroupService) super.getService();
     }
 
+    @Override
+    public GeoserverUserGroupStore createStore() throws IOException {
+        GeoserverUserGroupStore store = getService().createStore();
+        return store != null ? new LockingUserGroupStore(store) : null;
+    }
 
     /**
      * READ_LOCK
@@ -206,19 +210,6 @@ public class LockingUserGroupService extends AbstractLockingService implements
 //        else
 //            readUnLock();
         fireUserGroupLoadedEvent();
-    }
-    
-    /**
-     * NO_LOCK
-     * @see org.geoserver.security.GeoserverUserGroupService#getName()
-     */
-    public String getName() {
-        return getService().getName();
-    }
-
-    @Override
-    public String toString() {
-        return "Locking "+ getName();
     }
 
     /**

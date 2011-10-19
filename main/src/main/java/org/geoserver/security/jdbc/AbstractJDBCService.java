@@ -26,6 +26,7 @@ import org.apache.commons.io.FileUtils;
 import org.geoserver.security.config.JdbcJndiSecurityServiceConfig;
 import org.geoserver.security.config.JdbcSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.impl.AbstractGeoServerSecurityService;
 
 
 
@@ -35,28 +36,25 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
  * @author christian
  *
  */
-public abstract class AbstractJDBCService  {
+public abstract class AbstractJDBCService extends AbstractGeoServerSecurityService {
     /** logger */
-    
-
-    
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.jdbc");
     
     protected Properties ddlProps,dmlProps;
     protected DataSource datasource;
-    protected String name;
     
     /**
      * Default isolation level to use
      */
     final static int DEFAULT_ISOLATION_LEVEL=Connection.TRANSACTION_READ_COMMITTED;
-    
-    
-    protected AbstractJDBCService(String name) throws IOException{
-        this.name=name;        
+
+    protected AbstractJDBCService() {
     }
-    
-                   
+
+    protected AbstractJDBCService(String name) {
+        super(name);
+    }
+
     /**
      * initialize a {@link DataSource} form a
      * {@link JdbcSecurityServiceConfig} object
@@ -366,13 +364,6 @@ public abstract class AbstractJDBCService  {
             closeFinally(con, null,null);
         }
         return reportMap;
-    }
-    
-    /**
-     * @return the name of the service
-     */
-    public String getName() {
-        return name;        
     }
     
     @Override

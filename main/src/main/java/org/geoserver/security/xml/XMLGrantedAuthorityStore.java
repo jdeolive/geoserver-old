@@ -21,6 +21,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractGrantedAuthorityStore;
@@ -51,7 +52,6 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
         this.validatingXMLSchema = validatingXMLSchema;
     }
 
-    
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverGrantedAuthorityStore#initializeFromServer(org.geoserver.security.GeoserverGrantedAuthorityService)
      */

@@ -19,6 +19,7 @@ import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.geoserver.data.test.MockData;
 import org.geoserver.security.AccessMode;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
 import org.geoserver.security.GeoserverUserGroupService;
@@ -28,7 +29,6 @@ import org.geoserver.security.impl.AbstractUserGroupServiceTest;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.MemoryGrantedAuthorityService;
 import org.geoserver.security.impl.MemoryGrantedAuthorityStore;
 import org.geoserver.security.impl.MemoryUserGroupService;
@@ -47,14 +47,24 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
 
         public ReadOnlyGAService(String name) {
             super(name);            
-        }        
+        }
+
+        @Override
+        public boolean canCreateStore() {
+            return false;
+        }
     };
     
     public static class ReadOnlyUGService extends MemoryUserGroupService {
 
-        public ReadOnlyUGService(String name) {
-            super(name);            
-        }        
+        public ReadOnlyUGService(String name, GeoServerSecurityManager securityManager) {
+            super(name, securityManager);            
+        }
+        
+        @Override
+        public boolean canCreateStore() {
+            return false;
+        }
     };
     
     protected AbstractGrantedAuthorityServiceTest gaTest;
@@ -76,9 +86,10 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         gaTest = new XMLGrantedAuthorityServiceTest();        
         ugTest = new XMLUserGroupServiceTest();
         gaService=gaTest.createGrantedAuthorityService("test");
-        GeoserverUserDetailsServiceImpl.get().setGrantedAuthorityService(gaService);
+        
+        getUserDetails().setGrantedAuthorityService(gaService);
         ugService=ugTest.createUserGroupService("test");
-        GeoserverUserDetailsServiceImpl.get().setUserGroupService(ugService);
+        getUserDetails().setUserGroupService(ugService);
         
         gaStore =  gaTest.createStore(gaService);                
         ugStore =  ugTest.createStore(ugService);
@@ -91,9 +102,9 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         gaTest = new H2GrantedAuthorityServiceTest();        
         ugTest = new H2UserGroupServiceTest();
         gaService=gaTest.createGrantedAuthorityService("");
-        GeoserverUserDetailsServiceImpl.get().setGrantedAuthorityService(gaService);
+        getUserDetails().setGrantedAuthorityService(gaService);
         ugService=ugTest.createUserGroupService("");
-        GeoserverUserDetailsServiceImpl.get().setUserGroupService(ugService);
+        getUserDetails().setUserGroupService(ugService);
         
 
         // create tables
@@ -137,17 +148,17 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         gaStore.initializeFromService(gaService);
         gaTest.insertValues(gaStore);
         gaStore.store();
-        GeoserverUserDetailsServiceImpl.get().setGrantedAuthorityService(gaService);
+        getUserDetails().setGrantedAuthorityService(gaService);
         gaStore=null;
     }
     
     protected void activateROUGService() throws Exception{
-        ugService = new ReadOnlyUGService("ReadOnlyUGService");
+        ugService = new ReadOnlyUGService("ReadOnlyUGService", getSecurityManager());
         ugStore = new MemoryUserGroupStore("tmpstore"); 
         ugStore.initializeFromService(ugService);
         ugTest.insertValues(ugStore);
         ugStore.store();
-        GeoserverUserDetailsServiceImpl.get().setUserGroupService(ugService);        
+        getUserDetails().setUserGroupService(ugService);
         ugStore=null;
     }
     

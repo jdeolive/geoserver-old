@@ -247,6 +247,7 @@ public abstract class AbstractUserGroupStore extends AbstractUserGroupService im
     public void initializeFromService(GeoserverUserGroupService service)
             throws IOException {
         this.service=(AbstractUserGroupService)service;
+        setSecurityManager(service.getSecurityManager());
         deserialize();
     }
 

@@ -4,6 +4,7 @@
  */
 package org.geoserver.security.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,7 +14,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 
@@ -23,9 +27,8 @@ import org.geoserver.security.event.UserGroupLoadedListener;
  * @author christian
  *
  */
-public abstract class AbstractUserGroupService implements GeoserverUserGroupService {
-    /** logger */
-    static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security");
+public abstract class AbstractUserGroupService extends AbstractGeoServerSecurityService
+    implements GeoserverUserGroupService {
     
     protected TreeMap<String, GeoserverUser> userMap = new TreeMap<String,GeoserverUser>();
     protected TreeMap<String, GeoserverUserGroup>groupMap = new TreeMap<String,GeoserverUserGroup>();
@@ -37,10 +40,17 @@ public abstract class AbstractUserGroupService implements GeoserverUserGroupServ
     protected Set<UserGroupLoadedListener> listeners = 
         Collections.synchronizedSet(new HashSet<UserGroupLoadedListener>());
     
-    protected String name;
+    protected AbstractUserGroupService() {
+    }
 
-    public AbstractUserGroupService(String name) {
-        this.name=name;
+    protected AbstractUserGroupService(String name) {
+        super(name);
+    }
+
+    @Override
+    public GeoserverUserGroupStore createStore() throws IOException {
+        //return null, subclasses can override if they support a store along with a service
+        return null;
     }
 
     /* (non-Javadoc)
@@ -97,7 +107,7 @@ public abstract class AbstractUserGroupService implements GeoserverUserGroupServ
      * @see org.geoserver.security.GeoserverUserGroupService#createUserObject(java.lang.String, java.lang.String, boolean)
      */
     public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
-       GeoserverUser user = new GeoserverUser(username);
+       GeoserverUser user = new GeoserverUser(username, getUserDetails());
        user.setEnabled(isEnabled);
        user.setPassword(password);
        return user;
@@ -184,11 +194,11 @@ public abstract class AbstractUserGroupService implements GeoserverUserGroupServ
         group_userMap.clear();
     }
 
-    /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverUserGroupService#getName()
+    /**
+     * The root configuration for the user group service.
      */
-    public String getName() {
-        return name;
+    public File getConfigRoot() throws IOException {
+        return new File(getSecurityManager().getUserGroupRoot(), getName());
     }
 
 }

@@ -30,7 +30,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
     @Override
     protected void setUpInternal() throws Exception {
         super.setUpInternal();
-        userDetailService=GeoserverUserDetailsServiceImpl.get();
+        userDetailService=applicationContext.getBean(GeoserverUserDetailsService.class);
     }
     
     protected void setServices(String serviceName) throws IOException{

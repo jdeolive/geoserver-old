@@ -10,16 +10,14 @@ import java.io.IOException;
 
 import org.geoserver.data.test.LiveData;
 import org.geoserver.data.test.TestData;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverUserDetailsService;
-import org.geoserver.security.GeoserverServiceFactory;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
 import org.geoserver.security.impl.AbstractUserDetailsServiceTest;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.Util;
 
 public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 
@@ -32,10 +30,9 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         ugConfig.setFileName(XMLConstants.FILE_UR);
         ugConfig.setStateless(false);
         ugConfig.setValidating(true);
-        Util.storeUserGroupServiceConfig(ugConfig);            
+        getSecurityManager().saveUserGroupService(ugConfig);
 
-        GeoserverUserGroupService service =
-            GeoserverServiceFactory.Singleton.getUserGroupService(serviceName);
+        GeoserverUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
         service.initializeFromConfig(ugConfig);
         return service;                
     }
@@ -49,10 +46,10 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         gaConfig.setFileName(XMLConstants.FILE_RR);
         gaConfig.setStateless(false);
         gaConfig.setValidating(true);
-        Util.storeGrantedAuthorityServiceConfig(gaConfig);            
+        getSecurityManager().saveRoleService(gaConfig);
 
-        GeoserverGrantedAuthorityService service =
-            GeoserverServiceFactory.Singleton.getGrantedAuthorityService(serviceName);
+        GeoserverGrantedAuthorityService service = 
+            getSecurityManager().loadRoleService(serviceName);
         service.initializeFromConfig(gaConfig);
         return service;
     }
@@ -63,7 +60,7 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
                 XMLUserGroupService.DEFAULT_NAME);
         GeoserverGrantedAuthorityService roleService = createGrantedAuthorityService(
                 XMLGrantedAuthorityService.DEFAULT_NAME);
-        GeoserverUserDetailsService service = GeoserverUserDetailsServiceImpl.get();
+        GeoserverUserDetailsService service = getUserDetails();
         service.setGrantedAuthorityService(roleService);
         service.setUserGroupService(userService);
         
@@ -112,17 +109,18 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         assertEquals(1,disabledUser.getAuthorities().size());
         assertTrue(disabledUser.getAuthorities().contains(role_test));
         
-        File userfile = new File(Util.getSecurityRoot(),"users.properties");
+        GeoServerSecurityManager securityManager = getSecurityManager();
+        File userfile = new File(securityManager.getSecurityRoot(),"users.properties");
         assertFalse(userfile.exists());
-        File userfileOld = new File(Util.getSecurityRoot(),"users.properties.old");
+        File userfileOld = new File(securityManager.getSecurityRoot(),"users.properties.old");
         assertTrue(userfileOld.exists());
-        
-        File roleXSD = new File (Util.getGrantedAuthorityNamedRoot(
-                XMLGrantedAuthorityService.DEFAULT_NAME),XMLConstants.FILE_RR_SCHEMA);
+
+        File roleXSD = new File(new File(securityManager.getRoleRoot(), roleService.getName()),
+            XMLConstants.FILE_RR_SCHEMA);
         assertTrue(roleXSD.exists());
 
-        File userXSD = new File (Util.getUserGroupNamedRoot(
-                XMLUserGroupService.DEFAULT_NAME),XMLConstants.FILE_UR_SCHEMA);
+        File userXSD = new File (new File(securityManager.getUserGroupRoot(), userService.getName()), 
+            XMLConstants.FILE_UR_SCHEMA);
         assertTrue(userXSD.exists());
 
 

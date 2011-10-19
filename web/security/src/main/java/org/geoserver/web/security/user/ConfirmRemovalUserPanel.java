@@ -7,7 +7,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.wicket.model.Model;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
 import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractConfirmRemovalPanel;
 
 public class ConfirmRemovalUserPanel extends AbstractConfirmRemovalPanel<GeoserverUser> {
@@ -27,8 +27,8 @@ public class ConfirmRemovalUserPanel extends AbstractConfirmRemovalPanel<Geoserv
     protected String getConfirmationMessage(GeoserverUser object) throws Exception{
         StringBuffer buffer = new StringBuffer(BeanUtils.getProperty(object, "username"));
         if ((Boolean)getDefaultModelObject()) {
-            SortedSet<GeoserverGrantedAuthority> roles = 
-                    GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService().getRolesForUser(object.getUsername());
+            SortedSet<GeoserverGrantedAuthority> roles = GeoServerApplication.get().getUserDetails()
+                .getGrantedAuthorityService().getRolesForUser(object.getUsername());
             buffer.append(" [");
             for (GeoserverGrantedAuthority role: roles) {
                 buffer.append(role.getAuthority());

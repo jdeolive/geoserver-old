@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
-import org.geoserver.security.GeoserverStoreFactory;
+import org.geoserver.security.GeoserverGrantedAuthorityStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 
 
@@ -27,17 +27,24 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
 public class MemoryGrantedAuthorityService extends AbstractGrantedAuthorityService {
 
     byte[] byteArray;
-    
-    static {
-        GeoserverStoreFactory.Singleton.registerGrantedAuthorityMapping(
-                MemoryGrantedAuthorityService.class, MemoryGrantedAuthorityStore.class);
-    }
-    
+
     public MemoryGrantedAuthorityService(String name) {
         super(name);
         
     }
 
+    @Override
+    public boolean canCreateStore() {
+        return true;
+    }
+
+    @Override
+    public GeoserverGrantedAuthorityStore createStore() throws IOException {
+        MemoryGrantedAuthorityStore store = new MemoryGrantedAuthorityStore(getName());
+        store.initializeFromService(this);
+        return store;
+    }
+    
     @SuppressWarnings("unchecked")
     @Override
     protected void deserialize() throws IOException {

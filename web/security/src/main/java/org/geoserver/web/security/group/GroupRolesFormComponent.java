@@ -32,10 +32,8 @@ public class GroupRolesFormComponent extends AbstractRolesFormComponent<Geoserve
     protected List<GeoserverGrantedAuthority> getStoredGrantedAuthorities(GeoserverUserGroup rootObject) {
         List<GeoserverGrantedAuthority> result = new ArrayList<GeoserverGrantedAuthority>();
         try {
-            result.addAll(
-                GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService().
-                    getRolesForGroup(rootObject.getGroupname())
-            );
+            result.addAll(getUserDetails().getGrantedAuthorityService()
+                .getRolesForGroup(rootObject.getGroupname()));
         } catch (IOException e) {
            throw new RuntimeException(e);
         }

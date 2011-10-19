@@ -13,7 +13,6 @@ import java.util.SortedSet;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 
 /**
@@ -141,7 +140,7 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
     protected List<GeoserverUser> getItems() {
         SortedSet<GeoserverUser> users=null;
         try {
-            users = GeoserverUserDetailsServiceImpl.get().getUserGroupService().getUsers();
+            users = getApplication().getUserDetails().getUserGroupService().getUsers();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 

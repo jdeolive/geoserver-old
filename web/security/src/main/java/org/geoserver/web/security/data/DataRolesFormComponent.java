@@ -11,9 +11,11 @@ import java.util.List;
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.form.Form;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
 import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.DataAccessRule;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractRuleRolesFormComponent;
 
 public class DataRolesFormComponent extends AbstractRuleRolesFormComponent<DataAccessRule> {
@@ -28,12 +30,10 @@ public class DataRolesFormComponent extends AbstractRuleRolesFormComponent<DataA
         super("roles", rule,  false,form,behavior);        
     }
 
-
     @Override
     protected List<GeoserverGrantedAuthority> getStoredGrantedAuthorities(DataAccessRule rootObject) {
         
-        GeoserverGrantedAuthorityService gaService = 
-                GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService();
+        GeoserverGrantedAuthorityService gaService = getUserDetails().getGrantedAuthorityService();
         List<GeoserverGrantedAuthority> result = new ArrayList<GeoserverGrantedAuthority>();        
         if (hasStoredAnyRole(rootObject))
             return result; // empty list

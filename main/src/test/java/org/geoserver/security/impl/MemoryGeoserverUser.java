@@ -6,6 +6,8 @@
 
 package org.geoserver.security.impl;
 
+import org.geoserver.security.GeoserverUserDetailsService;
+
 /**
  * Needed to test if subclassing works
  * 
@@ -16,8 +18,7 @@ public class MemoryGeoserverUser extends GeoserverUser {
 
     private static final long serialVersionUID = 1L;
 
-    public MemoryGeoserverUser(String username) {
-        super(username);
-        
+    public MemoryGeoserverUser(String username, GeoserverUserDetailsService userDetailsService) {
+        super(username, userDetailsService);
     }
 }
