@@ -25,7 +25,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
->>>>>>> initial patch applied from GEOS-4554
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractGrantedAuthorityStore;
