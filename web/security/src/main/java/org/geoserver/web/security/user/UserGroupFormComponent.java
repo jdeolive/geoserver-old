@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.wicket.Component;
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
@@ -23,9 +22,10 @@ import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
+import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.group.NewGroupPage;
 
 /**
@@ -54,9 +54,7 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
                                                         
         try {
             selectedGroups=new ArrayList<GeoserverUserGroup>();
-            selectedGroups.addAll(
-                    GeoserverUserDetailsServiceImpl.get().getUserGroupService().
-                    getGroupsForUser(user));
+            selectedGroups.addAll(getUserDetails().getUserGroupService().getGroupsForUser(user));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -74,7 +72,7 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
                         try {
                             SortedSet<GeoserverUserGroup> result=new TreeSet<GeoserverUserGroup>();
                             result.addAll(
-                                    GeoserverUserDetailsServiceImpl.get().getUserGroupService().getUserGroups());
+                                getUserDetails().getUserGroupService().getUserGroups());
                             return result;
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -118,10 +116,14 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
                 
     }
 
+    GeoserverUserDetailsService getUserDetails() {
+        return GeoServerApplication.get().getUserDetails();
+    }
+
     protected void calculateAddedRemovedCollections(Collection<GeoserverUserGroup> added, Collection<GeoserverUserGroup> removed) {
         SortedSet<GeoserverUserGroup> oldgroups;
         try {
-            oldgroups = GeoserverUserDetailsServiceImpl.get().getUserGroupService().getGroupsForUser(user);
+            oldgroups = getUserDetails().getUserGroupService().getGroupsForUser(user);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

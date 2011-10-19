@@ -66,7 +66,7 @@ public class MemoryUserGroupStore extends AbstractUserGroupStore {
 
     @Override
     public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
-        GeoserverUser user = new MemoryGeoserverUser(username);
+        GeoserverUser user = new MemoryGeoserverUser(username, getUserDetails());
         user.setEnabled(isEnabled);
         user.setPassword(password);
         return user;

@@ -12,7 +12,6 @@ import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.form.Form;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.web.security.AbstractRuleRolesFormComponent;
 
@@ -32,8 +31,7 @@ public class ServiceRolesFormComponent extends AbstractRuleRolesFormComponent<Se
     @Override
     protected List<GeoserverGrantedAuthority> getStoredGrantedAuthorities(ServiceAccessRule rootObject) {
         
-        GeoserverGrantedAuthorityService gaService = 
-                GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService();
+        GeoserverGrantedAuthorityService gaService = getUserDetails().getGrantedAuthorityService();
         List<GeoserverGrantedAuthority> result = new ArrayList<GeoserverGrantedAuthority>();        
         if (hasStoredAnyRole(rootObject))
             return result; // empty list

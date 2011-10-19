@@ -20,12 +20,12 @@ public class H2UserDetailsServiceTest extends JDBCUserDetailsServiceTest {
         
     @Override
     public GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName) throws IOException {
-        return JDBCTestSupport.createH2GrantedAuthorityService(getFixtureId());
+        return JDBCTestSupport.createH2GrantedAuthorityService(getFixtureId(), getSecurityManager());
     }
 
     @Override
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {        
-        return JDBCTestSupport.createH2UserGroupService(getFixtureId());
+    public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {
+        return JDBCTestSupport.createH2UserGroupService(getFixtureId(), getSecurityManager());
     }
 
 }

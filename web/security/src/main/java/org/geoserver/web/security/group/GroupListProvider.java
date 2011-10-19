@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
 
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 
 /**
@@ -29,7 +29,7 @@ public class GroupListProvider extends GeoServerDataProvider<GeoserverUserGroup>
     protected List<GeoserverUserGroup> getItems() {
         SortedSet<GeoserverUserGroup> groups=null;
         try {
-            groups = GeoserverUserDetailsServiceImpl.get().getUserGroupService().getUserGroups();
+            groups = GeoServerApplication.get().getUserDetails().getUserGroupService().getUserGroups();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 

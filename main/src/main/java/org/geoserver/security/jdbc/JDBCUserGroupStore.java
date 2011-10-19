@@ -71,6 +71,8 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
      */
     public void initializeFromService(GeoserverUserGroupService service) throws IOException {
         JDBCUserGroupService jdbcService= (JDBCUserGroupService) service;
+        setSecurityManager(service.getSecurityManager());
+
         this.datasource=jdbcService.datasource;
         this.ddlProps=jdbcService.ddlProps;
         this.dmlProps=jdbcService.dmlProps;

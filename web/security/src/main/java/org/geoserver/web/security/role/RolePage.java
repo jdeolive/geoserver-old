@@ -13,7 +13,6 @@ import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.IModel;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.web.CatalogIconFactory;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
@@ -94,6 +93,7 @@ public class RolePage extends AbstractSecurityPage {
 //        };
 //    }
 
+    @SuppressWarnings("unchecked")
     Component editRoleLink(String id, IModel itemModel, Property<GeoserverGrantedAuthority> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
 
@@ -105,6 +105,7 @@ public class RolePage extends AbstractSecurityPage {
         };
     }
     
+    @SuppressWarnings("unchecked")
     Component editParentRoleLink(String id, IModel itemModel, Property<GeoserverGrantedAuthority> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
 
@@ -113,7 +114,7 @@ public class RolePage extends AbstractSecurityPage {
                 GeoserverGrantedAuthority role = (GeoserverGrantedAuthority) getDefaultModelObject();
                 GeoserverGrantedAuthority parentRole;
                 try {
-                    parentRole = GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService().getParentRole(role);
+                    parentRole = getUserDetails().getGrantedAuthorityService().getParentRole(role);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
-import org.geoserver.security.GeoserverServiceFactory;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
@@ -35,8 +34,9 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     @Override
     protected void tearDownInternal() throws Exception {
         super.tearDownInternal();
-        if (Util.listUserGroupServices().contains("test"))
-            Util.removeUserGroupServiceConfig("test");
+        if (getSecurityManager().listUserGroupServices().contains("test")) {
+            getSecurityManager().removeUserGroupService("test");
+        }
     }
 
     
@@ -48,10 +48,9 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
         ugConfig.setFileName(xmlFileName);
         ugConfig.setStateless(false);
         ugConfig.setValidating(true);
-        Util.storeUserGroupServiceConfig(ugConfig);            
-
-        GeoserverUserGroupService service =
-            GeoserverServiceFactory.Singleton.getUserGroupService(serviceName);
+        getSecurityManager().saveUserGroupService(ugConfig);
+        
+        GeoserverUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
         service.initializeFromConfig(ugConfig); // create files
         return service;                
     }
@@ -253,7 +252,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
         assertTrue(service1.getUserGroups().size()==1);
         
      // increment lastmodified adding a second manually, the test is too fast
-        xmlFile.setLastModified(xmlFile.lastModified()+1000);  
+        xmlFile.setLastModified(xmlFile.lastModified()+2000);  
         
         // wait for the listener to unlock when 
         // service 2 triggers a load event

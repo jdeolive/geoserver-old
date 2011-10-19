@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 
-import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
 import org.geoserver.security.event.GrantedAuthorityLoadedListener;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
@@ -22,22 +21,18 @@ import org.geoserver.security.impl.GeoserverGrantedAuthority;
  * @author christian
  *
  */
-public interface GeoserverGrantedAuthorityService  {
-    
-    
+public interface GeoserverGrantedAuthorityService extends GeoServerSecurityService {
+
     /**
-     * Initialize from configuration object
-     * @param config
-     * @throws IOException
+     * Creates the granted authority store associated with this service, or null if creating a store
+     * is not supported. 
+     * <p>
+     * Implementations that do not support a store should ensure that {@link #canCreateStore()} 
+     * returns <code>false</code>.
+     * </p>
      */
-    public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException;
-    
-    /**
-     * @return the name of this service
-     */
-    String getName();
-    
-    
+    GeoserverGrantedAuthorityStore createStore() throws IOException;
+
     /**
      * Register for notifications on load
      * 
@@ -78,7 +73,7 @@ public interface GeoserverGrantedAuthorityService  {
      * @param username
      * @return a collection which cannot be modified
      */
-    public abstract SortedSet<GeoserverGrantedAuthority> getRolesForUser(String username) throws IOException;
+    SortedSet<GeoserverGrantedAuthority> getRolesForUser(String username) throws IOException;
 
     
     /**
@@ -88,7 +83,7 @@ public interface GeoserverGrantedAuthorityService  {
      * @param groupname
      * @return a collection which cannot be modified
      */
-    public abstract SortedSet<GeoserverGrantedAuthority> getRolesForGroup(String groupname) throws IOException;
+    SortedSet<GeoserverGrantedAuthority> getRolesForGroup(String groupname) throws IOException;
 
 
     /**
@@ -98,7 +93,7 @@ public interface GeoserverGrantedAuthorityService  {
      * @return a collection which cannot be modified
      */
     
-    public abstract SortedSet<GeoserverGrantedAuthority> getRoles() throws IOException;
+    SortedSet<GeoserverGrantedAuthority> getRoles() throws IOException;
 
     
     /**
@@ -111,7 +106,7 @@ public interface GeoserverGrantedAuthorityService  {
      * @return a collection which cannot be modified
      * @throws IOException
      */
-    public abstract Map<String,String> getParentMappings() throws IOException;
+    Map<String,String> getParentMappings() throws IOException;
         
     /**
      * Creates a {@link GeoserverGrantedAuthority} object . Implementations
@@ -120,7 +115,7 @@ public interface GeoserverGrantedAuthorityService  {
      * @param role
      * @return
      */
-    public GeoserverGrantedAuthority createGrantedAuthorityObject(String role) throws IOException;
+    GeoserverGrantedAuthority createGrantedAuthorityObject(String role) throws IOException;
     
     
     /**
@@ -128,7 +123,7 @@ public interface GeoserverGrantedAuthorityService  {
      * @param role
      * @return the parent role or null
      */
-    public GeoserverGrantedAuthority getParentRole(GeoserverGrantedAuthority role)  throws IOException;
+    GeoserverGrantedAuthority getParentRole(GeoserverGrantedAuthority role)  throws IOException;
     
     /**
      * Loads a {@link GeoserverGrantedAuthority} by name
@@ -136,13 +131,13 @@ public interface GeoserverGrantedAuthorityService  {
      * @return
      * @throws null if the role is not found
      */
-    public GeoserverGrantedAuthority getGrantedAuthorityByName(String role) throws  IOException;
+    GeoserverGrantedAuthority getGrantedAuthorityByName(String role) throws  IOException;
 
     /**
      * load from backend store. On success,
      * a  {@link GrantedAuthorityLoadedEvent} should must be triggered 
      */
-    public abstract void load() throws IOException;
+    void load() throws IOException;
     
     
     /**
@@ -175,7 +170,7 @@ public interface GeoserverGrantedAuthorityService  {
      * properties otherwise 
      * @throws IOException
      */
-    public abstract Properties personalizeRoleParams (String roleName,Properties roleParams, 
+    Properties personalizeRoleParams (String roleName,Properties roleParams, 
             String userName,Properties userProps) throws IOException;
         
 }

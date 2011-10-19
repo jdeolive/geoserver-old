@@ -5,8 +5,16 @@
 
 package org.geoserver.security.concurrent;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.security.GeoServerSecurityManager;
+import org.geoserver.security.GeoServerSecurityService;
+import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverUserDetailsService;
 
 /**
  * Abstract base class for locking support.
@@ -14,11 +22,74 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author christian
  *
  */
-public abstract class AbstractLockingService {
+public abstract class AbstractLockingService implements GeoServerSecurityService {
 
     protected final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock(true);
     protected final Lock readLock = readWriteLock.readLock();
     protected final Lock writeLock = readWriteLock.writeLock();
+
+    protected GeoServerSecurityService service;
+
+    protected AbstractLockingService(GeoServerSecurityService service) {
+        this.service = service;
+    }
+
+    /**
+     * @return the wrapped service
+     */
+    public GeoServerSecurityService getService() {
+        return service;
+    }
+
+    
+    /**
+     * NO_LOCK
+     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getName()
+     */
+    public String getName() {
+        return getService().getName();
+    }
+
+    @Override
+    public void setName(String name) {
+        writeLock();
+        try {
+            getService().setName(name);
+        } finally {
+            writeUnLock();
+        }
+    }
+
+    @Override
+    public void setSecurityManager(GeoServerSecurityManager securityManager) {
+        writeLock();
+        try {
+            getService().setSecurityManager(securityManager);
+        } finally {
+            writeUnLock();
+        }
+    }
+
+    /**
+     * NO_LOCK
+     */
+    @Override
+    public GeoServerSecurityManager getSecurityManager() {
+        return getService().getSecurityManager();
+    }
+
+    /**
+     * NO_LOCK
+     */
+    @Override
+    public boolean canCreateStore() {
+        return getService().canCreateStore();
+    }
+
+   @Override
+    public String toString() {
+        return "Locking "+ getName();
+    }
 
     /**
      *  get a read lock
