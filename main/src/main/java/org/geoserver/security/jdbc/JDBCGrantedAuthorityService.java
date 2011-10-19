@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 
 
 import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverStoreFactory;
+import org.geoserver.security.GeoserverGrantedAuthorityStore;
 import org.geoserver.security.config.JdbcBaseSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
@@ -38,11 +38,6 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
     public final static String DEFAULT_DML_FILE="rolesdml.xml";
     public final static String DEFAULT_DDL_FILE="rolesddl.xml";
     
-    static {
-        GeoserverStoreFactory.Singleton.registerGrantedAuthorityMapping(
-                JDBCGrantedAuthorityService.class, JDBCGrantedAuthorityStore.class);
-    }
-
     
     /** logger */
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.jdbc");
@@ -50,6 +45,9 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
         Collections.synchronizedSet(new HashSet<GrantedAuthorityLoadedListener>());
     
     
+    public JDBCGrantedAuthorityService() {
+    }
+
     /**
      * @param name
      * @throws IOException
@@ -58,7 +56,18 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
         super(name);
     }
 
-    
+    @Override
+    public boolean canCreateStore() {
+        return true;
+    }
+
+    @Override
+    public GeoserverGrantedAuthorityStore createStore() throws IOException {
+        JDBCGrantedAuthorityStore store = new JDBCGrantedAuthorityStore(getName());
+        store.initializeFromService(this);
+        return store;
+    }
+
     /**
      * Uses {@link #initializeDSFromConfig(SecurityNamedServiceConfig)}
      * and {@link #checkORCreateJDBCPropertyFile(String, File, String)} 
@@ -75,13 +84,11 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
                 (JdbcBaseSecurityServiceConfig) config;
                         
             String fileNameDML =jdbcConfig.getPropertyFileNameDML();
-            File file = checkORCreateJDBCPropertyFile(fileNameDML,
-                    Util.getGrantedAuthorityNamedRoot(name),DEFAULT_DML_FILE);                        
+            File file = checkORCreateJDBCPropertyFile(fileNameDML,getConfigRoot(),DEFAULT_DML_FILE);
             dmlProps = Util.loadUniversal(new FileInputStream(file));
             
             String fileNameDDL =jdbcConfig.getPropertyFileNameDDL();
-            file = checkORCreateJDBCPropertyFile(fileNameDDL,
-                    Util.getGrantedAuthorityNamedRoot(name),DEFAULT_DDL_FILE);                        
+            file = checkORCreateJDBCPropertyFile(fileNameDDL, getConfigRoot(), DEFAULT_DDL_FILE);
 
             ddlProps = Util.loadUniversal(new FileInputStream(file));            
         }
@@ -482,4 +489,10 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
         return personalized ?  props : null;
     }
 
+    /**
+     * The root configuration for the role service.
+     */
+    public File getConfigRoot() throws IOException {
+        return new File(getSecurityManager().getRoleRoot(), getName());
+    }
 }

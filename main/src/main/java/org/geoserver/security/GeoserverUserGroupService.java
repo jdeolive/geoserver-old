@@ -7,7 +7,6 @@ package org.geoserver.security;
 import java.io.IOException;
 import java.util.SortedSet;
 
-import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.impl.GeoserverUser;
@@ -23,23 +22,18 @@ import org.springframework.dao.DataAccessException;
  * @author christian
  *
  */
-public interface GeoserverUserGroupService  {
-    
-    
+public interface GeoserverUserGroupService extends GeoServerSecurityService {
+
     /**
-     * Initialize from config object
-     * 
-     * @param config
-     * @throws IOException
+     * Creates the user group store that corresponds to this service, or null if creating a store
+     * is not supported.
+     * <p>
+     * Implementations that do not support a store should ensure that {@link #canCreateStore()} 
+     * returns <code>false</code>.
+     * </p>
      */
-    public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException;
-    
-    /**
-     * @return the name of this service
-     */
-    String getName();
-    
-    
+    GeoserverUserGroupStore createStore() throws IOException;
+
     /**
      * Register for notifications on load
      * 
@@ -62,7 +56,7 @@ public interface GeoserverUserGroupService  {
      * @return null if group not found
      * @throws DataAccessException
      */
-    public GeoserverUserGroup getGroupByGroupname(String groupname) throws IOException;
+    GeoserverUserGroup getGroupByGroupname(String groupname) throws IOException;
     
     /**
      * Returns the the user object, null if not found
@@ -71,7 +65,7 @@ public interface GeoserverUserGroupService  {
      * @return null if user not found
      * @throws DataAccessException
      */
-    public GeoserverUser getUserByUsername(String username) throws IOException;
+    GeoserverUser getUserByUsername(String username) throws IOException;
 
    
 
@@ -83,7 +77,7 @@ public interface GeoserverUserGroupService  {
      * @param isEnabled
      * @return
      */
-    public GeoserverUser createUserObject(String username,String password, boolean isEnabled)  throws IOException;
+    GeoserverUser createUserObject(String username,String password, boolean isEnabled)  throws IOException;
     
     /**
      * Create a user object. Implementations can use classes implementing  {@link GeoserverUserGroup}
@@ -93,21 +87,21 @@ public interface GeoserverUserGroupService  {
      * @param isEnabled
      * @return
      */
-    public GeoserverUserGroup createGroupObject(String groupname, boolean isEnabled)  throws IOException;
+    GeoserverUserGroup createGroupObject(String groupname, boolean isEnabled)  throws IOException;
     
     /**
      * Returns the list of users. 
      * 
      * @return a collection which cannot be modified
      */
-    public abstract SortedSet<GeoserverUser> getUsers()  throws IOException;
+    SortedSet<GeoserverUser> getUsers()  throws IOException;
     
     /**
      * Returns the list of GeoserverUserGroups. 
      * 
      * @return a collection which cannot be modified
      */
-    public abstract SortedSet<GeoserverUserGroup> getUserGroups()  throws IOException;
+    SortedSet<GeoserverUserGroup> getUserGroups()  throws IOException;
 
           
     
@@ -117,7 +111,7 @@ public interface GeoserverUserGroupService  {
      * @param group
      * @return a collection which cannot be modified
      */
-    public  SortedSet<GeoserverUser> getUsersForGroup (GeoserverUserGroup group)  throws IOException;
+    SortedSet<GeoserverUser> getUsersForGroup (GeoserverUserGroup group)  throws IOException;
     
     /**
      * get the groups for a user, an implementation not 
@@ -126,13 +120,13 @@ public interface GeoserverUserGroupService  {
      * @param user
      * @return a collection which cannot be modified
      */
-    public  SortedSet<GeoserverUserGroup> getGroupsForUser (GeoserverUser user)  throws IOException;
+    SortedSet<GeoserverUserGroup> getGroupsForUser (GeoserverUser user)  throws IOException;
 
                 
     /**
      * load from backendstore. On success,
      * a  {@link UserGroupLoadedEvent} should  be triggered 
      */
-    public abstract void load() throws IOException;
+    void load() throws IOException;
 
 }

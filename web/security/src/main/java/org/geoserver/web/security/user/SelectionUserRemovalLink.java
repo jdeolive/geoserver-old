@@ -10,12 +10,13 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.GeoserverStoreFactory;
+import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.ParamResourceModel;
@@ -69,16 +70,16 @@ public class SelectionUserRemovalLink extends AjaxLink<Object> {
             protected boolean onSubmit(AjaxRequestTarget target, Component contents) {
                 // cascade delete the whole selection
 
-                GeoserverUserGroupService ugService = 
-                        GeoserverUserDetailsServiceImpl.get().getUserGroupService();
+                GeoserverUserDetailsService userDetails = GeoServerApplication.get().getUserDetails(); 
+
+                GeoserverUserGroupService ugService = userDetails.getUserGroupService();
                 try {
-                    GeoserverUserGroupStore ugStore = GeoserverStoreFactory.Singleton.getStoreFor(ugService);
+                    GeoserverUserGroupStore ugStore = ugService.createStore();
                     for (GeoserverUser user : removePanel.getRoots()) { // keep admins                    
                         ugStore.removeUser(user);
                         if (disassociateRoles) {
                             GeoserverGrantedAuthorityStore gaStore = 
-                                    GeoserverStoreFactory.Singleton.getStoreFor(
-                                            GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService());
+                                userDetails.getGrantedAuthorityService().createStore();
                             List<GeoserverGrantedAuthority> list= new ArrayList<GeoserverGrantedAuthority>();
                             list.addAll(gaStore.getRolesForUser(user.getUsername()));
                             for (GeoserverGrantedAuthority role: list)

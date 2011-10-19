@@ -14,15 +14,11 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.validator.AbstractValidator;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.wicket.ParamResourceModel;
-
 
 public class NewGroupPage extends AbstractGroupPage {
 
@@ -64,7 +60,7 @@ public class NewGroupPage extends AbstractGroupPage {
             String newName = uiGroup.getGroupname();            
             try {
                 GeoserverUserGroup group =
-                        GeoserverUserDetailsServiceImpl.get().getUserGroupService().getGroupByGroupname(newName);
+                    getUserDetails().getUserGroupService().getGroupByGroupname(newName);
                 if (group!=null) {
                     form.error(new ResourceModel("NewGroupPage.groupConflict").getObject(),
                             Collections.singletonMap("group", (Object) newName));

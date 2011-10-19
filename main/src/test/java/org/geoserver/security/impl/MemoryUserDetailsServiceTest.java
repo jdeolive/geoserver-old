@@ -19,7 +19,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
     
     @Override
     public GeoserverUserGroupService createUserGroupService(String name) throws IOException {
-        return new MemoryUserGroupService(name);
+        return new MemoryUserGroupService(name, getSecurityManager());
     }
 
 

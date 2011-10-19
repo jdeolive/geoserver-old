@@ -13,7 +13,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 
+
 import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverGrantedAuthorityStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
 import org.geoserver.security.event.GrantedAuthorityLoadedListener;
@@ -29,10 +31,8 @@ import org.geoserver.security.impl.GeoserverGrantedAuthority;
 public class LockingGrantedAuthorityService extends AbstractLockingService implements
         GeoserverGrantedAuthorityService,GrantedAuthorityLoadedListener {
 
-    protected GeoserverGrantedAuthorityService service;
     protected Set<GrantedAuthorityLoadedListener> listeners = 
         Collections.synchronizedSet(new HashSet<GrantedAuthorityLoadedListener>());
-    
 
     /**
      * Constructor for the locking wrapper
@@ -40,18 +40,23 @@ public class LockingGrantedAuthorityService extends AbstractLockingService imple
      * @param service
      */
     public LockingGrantedAuthorityService(GeoserverGrantedAuthorityService service) {
-        this.service=service;
+        super(service);
         service.registerGrantedAuthorityLoadedListener(this);
     }
-    
+
     /**
      * @return the wrapped service
      */
     public GeoserverGrantedAuthorityService getService() {
-        return service;
+        return (GeoserverGrantedAuthorityService) super.getService();
     }
 
-        
+    @Override
+    public GeoserverGrantedAuthorityStore createStore() throws IOException {
+        GeoserverGrantedAuthorityStore store = getService().createStore();
+        return store != null ? new LockingGrantedAuthorityStore(store) : null;
+    }
+
     /** 
      * WRITE_LOCK
      * @see org.geoserver.security.GeoserverGrantedAuthorityService#load()
@@ -186,18 +191,6 @@ public class LockingGrantedAuthorityService extends AbstractLockingService imple
         fireGrantedLoadedChangedEvent();
     }
 
-    /**
-     * NO_LOCK
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getName()
-     */
-    public String getName() {
-        return getService().getName();
-    }
-
-    @Override
-    public String toString() {
-        return "Locking "+ getName();
-    }
 
     /**
      * READ_LOCK

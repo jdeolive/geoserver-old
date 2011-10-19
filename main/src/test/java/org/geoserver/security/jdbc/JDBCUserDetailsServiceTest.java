@@ -22,12 +22,14 @@ public abstract class JDBCUserDetailsServiceTest extends AbstractUserDetailsServ
     @Override
     public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {
         
-        return JDBCTestSupport.createUserGroupService(getFixtureId(), (LiveDbmsDataSecurity)getTestData());
+        return JDBCTestSupport.createUserGroupService(getFixtureId(), 
+            (LiveDbmsDataSecurity)getTestData(), getSecurityManager());
     }
 
     @Override
     public GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName) throws IOException {    
-        return JDBCTestSupport.createGrantedAuthorityService(getFixtureId(),(LiveDbmsDataSecurity)getTestData());        
+        return JDBCTestSupport.createGrantedAuthorityService(getFixtureId(),
+            (LiveDbmsDataSecurity)getTestData(), getSecurityManager());
     }
 
     @Override

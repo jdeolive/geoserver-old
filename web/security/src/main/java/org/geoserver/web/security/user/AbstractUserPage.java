@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
@@ -30,12 +28,11 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
-import org.apache.wicket.model.ResourceModel;
 import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
 import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.PropertyEditorFormComponent;
 import org.geoserver.web.security.role.EditRolePage;
@@ -207,7 +204,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     public List<GeoserverGrantedAuthority> getCalculatedroles() {
         List<GeoserverGrantedAuthority> tmpList = new ArrayList<GeoserverGrantedAuthority>();
         List<GeoserverGrantedAuthority> resultList = new ArrayList<GeoserverGrantedAuthority>();
-        GeoserverUserDetailsService gsDetails = GeoserverUserDetailsServiceImpl.get();
+        GeoserverUserDetailsService gsDetails = getUserDetails();
         try {
             tmpList.addAll(userRolesFormComponent.getSelectedRoles());
             gsDetails.addInheritedRoles(tmpList);
@@ -281,7 +278,8 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         public GeoserverUser toGeoserverUser() {
             GeoserverUser user;
             try {
-                user = GeoserverUserDetailsServiceImpl.get().getUserGroupService().createUserObject(username, password, enabled);
+                user = GeoServerApplication.get().getUserDetails()
+                    .getUserGroupService().createUserObject(username, password, enabled);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

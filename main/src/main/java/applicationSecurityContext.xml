@@ -340,9 +340,18 @@
      <bean id="userDetailsService" class="org.geoserver.security.impl.GeoserverUserDao" depends-on="extensions">
   	</bean>     -->
   
-     <bean id="userDetailsService" class="org.geoserver.security.impl.GeoserverUserDetailsServiceImpl" depends-on="extensions">
-  	</bean>
+  <bean id="userDetailsService" class="org.geoserver.security.impl.GeoserverUserDetailsServiceImpl"/>
+
+  <!-- global security manager -->
+  <bean id="geoServerSecurityManager" class="org.geoserver.security.GeoServerSecurityManager"
+     depends-on="extensions">
+    <constructor-arg ref="userDetailsService"/>
+    <constructor-arg ref="dataDirectory"/>
+  </bean>
   	
+  <!-- jdbc backend provider -->
+  <bean id="jdbcSecurityProvider" class="org.geoserver.security.jdbc.JDBCSecurityProvider"/>
+
   <bean id="shaPasswordEncoder"
     class="org.springframework.security.authentication.encoding.ShaPasswordEncoder">
     <property name="iterations" value="1024"/>

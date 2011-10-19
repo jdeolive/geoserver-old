@@ -20,7 +20,6 @@ import org.geoserver.security.GeoserverGrantedAuthorityStore;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
 import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.wicket.ParamResourceModel;
 
@@ -63,7 +62,7 @@ public class NewUserPage extends AbstractUserPage {
             String newName = uiUser.getUsername();            
             try {
                 GeoserverUser user = 
-                        GeoserverUserDetailsServiceImpl.get().getUserGroupService().getUserByUsername(newName);
+                    getUserDetails().getUserGroupService().getUserByUsername(newName);
                 if (user != null) {
                     form.error(new ResourceModel("NewUserPage.userConflict").getObject(),
                             Collections.singletonMap("user", (Object) newName));

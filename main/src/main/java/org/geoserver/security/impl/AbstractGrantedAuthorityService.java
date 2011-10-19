@@ -4,6 +4,7 @@
  */
 package org.geoserver.security.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +18,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
 import org.geoserver.security.event.GrantedAuthorityLoadedListener;
 
@@ -28,9 +32,8 @@ import org.geoserver.security.event.GrantedAuthorityLoadedListener;
  * @author Christian
  *
  */
-public abstract class AbstractGrantedAuthorityService implements GeoserverGrantedAuthorityService {
-    /** logger */
-    static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security");
+public abstract class AbstractGrantedAuthorityService extends AbstractGeoServerSecurityService 
+    implements GeoserverGrantedAuthorityService {
     
     protected TreeMap<String,GeoserverGrantedAuthority> roleMap =
         new TreeMap<String,GeoserverGrantedAuthority>();    
@@ -43,15 +46,20 @@ public abstract class AbstractGrantedAuthorityService implements GeoserverGrante
     
     protected Set<GrantedAuthorityLoadedListener> listeners = 
         Collections.synchronizedSet(new HashSet<GrantedAuthorityLoadedListener>());
-    
-    protected String name;
-    
-        
-    public AbstractGrantedAuthorityService(String name) {
-        this.name=name;
+
+    protected AbstractGrantedAuthorityService() {
+    }
+
+    protected AbstractGrantedAuthorityService(String name) {
+        super(name);
     }
     
-    
+    @Override
+    public GeoserverGrantedAuthorityStore createStore() throws IOException {
+        //return null, subclasses can override if they support a store along with a service
+        return null;
+    }
+
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverGrantedAuthorityService#registerGrantedAuthorityChangedListener(org.geoserver.security.event.GrantedAuthorityChangedListener)
      */
@@ -209,13 +217,6 @@ public abstract class AbstractGrantedAuthorityService implements GeoserverGrante
         return Collections.unmodifiableMap(parentMap);
     }
 
-    /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getName()
-     */
-    public String getName() {
-        return name;
-    }
-    
     /** (non-Javadoc)
      * @see org.geoserver.security.GeoserverGrantedAuthorityService#personalizeRoleParams(java.lang.String, java.util.Properties, java.lang.String, java.util.Properties)
      * 
@@ -244,4 +245,10 @@ public abstract class AbstractGrantedAuthorityService implements GeoserverGrante
         return personalized ?  props : null;
     }
 
+    /**
+     * The root configuration for the role service.
+     */
+    public File getConfigRoot() throws IOException {
+        return new File(getSecurityManager().getRoleRoot(), getName());
+    }
 }

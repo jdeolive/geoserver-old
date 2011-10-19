@@ -32,6 +32,8 @@ import org.geoserver.catalog.Catalog;
 import org.geoserver.config.GeoServer;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.GeoServerResourceLoader;
+import org.geoserver.security.GeoServerSecurityManager;
+import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.web.spring.security.GeoServerSession;
 import org.geoserver.web.util.DataDirectoryConverterLocator;
 import org.geoserver.web.util.GeoToolsConverterAdapter;
@@ -87,6 +89,20 @@ public class GeoServerApplication extends SpringWebApplication {
      */
     public Catalog getCatalog() {
         return getGeoServer().getCatalog();
+    }
+
+    /**
+     * Returns the security manager.
+     */
+    public GeoServerSecurityManager getSecurityManager() {
+        return getBeanOfType(GeoServerSecurityManager.class);
+    }
+
+    /**
+     * Returns the user details.
+     */
+    public GeoserverUserDetailsService getUserDetails() {
+        return getSecurityManager().getUserDetails();
     }
 
     /**

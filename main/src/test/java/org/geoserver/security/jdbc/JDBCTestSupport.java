@@ -13,11 +13,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverServiceFactory;
+import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.JdbcSecurityServiceConfig;
 import org.geoserver.security.config.impl.JdbcSecurityServiceConfigImpl;
+import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.Util;
 
 
@@ -63,7 +65,8 @@ public class JDBCTestSupport {
         return property != null && "false".equals(property.toLowerCase());                 
     }
     
-    protected static GeoserverUserGroupService createH2UserGroupService(String serviceName) throws IOException {
+    protected static GeoserverUserGroupService createH2UserGroupService(String serviceName, 
+        GeoServerSecurityManager securityManager) throws IOException {
         
         JdbcSecurityServiceConfig config = new JdbcSecurityServiceConfigImpl();           
         config.setName(serviceName);
@@ -75,13 +78,13 @@ public class JDBCTestSupport {
         config.setStateless(true);
         config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
-        Util.storeUserGroupServiceConfig(config);
-        GeoserverUserGroupService service =
-            GeoserverServiceFactory.Singleton.getUserGroupService(serviceName);
-        return service;                
+        securityManager.saveUserGroupService(config);
+
+        return securityManager.loadUserGroupService(serviceName);
     }
 
-    protected static GeoserverGrantedAuthorityService createH2GrantedAuthorityService(String serviceName) throws IOException {
+    protected static GeoserverGrantedAuthorityService createH2GrantedAuthorityService(
+        String serviceName, GeoServerSecurityManager securityManager) throws IOException {
         
         JdbcSecurityServiceConfig config = new JdbcSecurityServiceConfigImpl();
         
@@ -94,13 +97,13 @@ public class JDBCTestSupport {
         config.setStateless(true);
         config.setPropertyFileNameDDL(JDBCGrantedAuthorityService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCGrantedAuthorityService.DEFAULT_DML_FILE);
-        Util.storeGrantedAuthorityServiceConfig(config);
-        GeoserverGrantedAuthorityService service =
-            GeoserverServiceFactory.Singleton.getGrantedAuthorityService(serviceName);
-        return service;                
+        securityManager.saveRoleService(config);
+        return securityManager.loadRoleService(serviceName);
     }
 
-    static  protected GeoserverGrantedAuthorityService createGrantedAuthorityService(String fixtureId, LiveDbmsDataSecurity data) throws IOException {
+    static  protected GeoserverGrantedAuthorityService createGrantedAuthorityService(
+        String fixtureId, LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) 
+            throws IOException {
     
         JdbcSecurityServiceConfigImpl config = new
         JdbcSecurityServiceConfigImpl();
@@ -121,13 +124,12 @@ public class JDBCTestSupport {
         }
         config.setPropertyFileNameDML(JDBCGrantedAuthorityService.DEFAULT_DML_FILE);
 
-        Util.storeGrantedAuthorityServiceConfig(config);
-        GeoserverGrantedAuthorityService service =
-            GeoserverServiceFactory.Singleton.getGrantedAuthorityService(fixtureId);
-        return service;                
+        securityManager.saveRoleService(config);
+        return securityManager.loadRoleService(fixtureId);
     }
     
-    static protected GeoserverUserGroupService createUserGroupService(String fixtureId,LiveDbmsDataSecurity data) throws IOException {
+    static protected GeoserverUserGroupService createUserGroupService(String fixtureId,
+        LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) throws IOException {
         
         JdbcSecurityServiceConfigImpl config = new
         JdbcSecurityServiceConfigImpl();
@@ -147,10 +149,8 @@ public class JDBCTestSupport {
             config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         }
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
-        Util.storeUserGroupServiceConfig(config);
-        GeoserverUserGroupService service =
-            GeoserverServiceFactory.Singleton.getUserGroupService(fixtureId);
-        return service;                
+        securityManager.saveUserGroupService(config);
+        return securityManager.loadUserGroupService(fixtureId);
     }
 
 

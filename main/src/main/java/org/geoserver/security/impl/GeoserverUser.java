@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoserverUserDetailsService;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
@@ -58,11 +59,19 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
 
 
 
-    public GeoserverUser(String username) {
+    public GeoserverUser(String username, GeoserverUserDetailsService detailsService) {
+        this(username);
+        if (detailsService == null) {
+            throw new NullPointerException("detailsService must not be null");
+        }
+        this.detailsService = detailsService;
+    }
+
+    private GeoserverUser(String username) {
+        this.username=username;
         
-        this.username=username;        
         accountNonExpired=accountNonLocked=credentialsNonExpired=enabled=true;
-        unmodifiableAuthorities=null;        
+        unmodifiableAuthorities=null;
     }
 
     
@@ -154,9 +163,9 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
 
     
     protected GeoserverUserDetailsService getDetailsService() {
-        if (detailsService == null)
-            detailsService = GeoserverUserDetailsServiceImpl.get();
-        return detailsService;
+        //for the DEFAULT_ADMIN user we have to look up on demand
+        return detailsService != null ? 
+            detailsService : GeoServerExtensions.bean(GeoserverUserDetailsService.class);
     }
     
     /* (non-Javadoc)

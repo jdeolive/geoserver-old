@@ -34,8 +34,7 @@ public class UserRolesFormComponent extends AbstractRolesFormComponent<Geoserver
         List<GeoserverGrantedAuthority> result = new ArrayList<GeoserverGrantedAuthority>();
         try {
             result.addAll(
-                GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService().
-                    getRolesForUser(rootObject.getUsername())
+                getUserDetails().getGrantedAuthorityService().getRolesForUser(rootObject.getUsername())
             );
         } catch (IOException e) {
            throw new RuntimeException(e);

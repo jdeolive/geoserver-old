@@ -21,7 +21,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.io.FileUtils;
-import org.geoserver.security.GeoserverStoreFactory;
+import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.XMLBasedSecurityServiceConfig;
@@ -40,14 +40,6 @@ import org.xml.sax.SAXException;
  */
 public class XMLUserGroupService extends AbstractUserGroupService {
             
-    static public final String DEFAULT_NAME="default";
-    // register the store class  
-    static {
-        GeoserverStoreFactory.Singleton.registerUserGroupMapping(
-                XMLUserGroupService.class, XMLUserGroupStore.class);
-    }
-    
-    
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
     protected DocumentBuilder builder;
     protected File userFile;
@@ -57,8 +49,10 @@ public class XMLUserGroupService extends AbstractUserGroupService {
      */
     private boolean validatingXMLSchema = true;
 
+    public XMLUserGroupService() throws IOException{
+        this(null);
+    }
 
-    
     public XMLUserGroupService(String name) throws IOException{
         super(name);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -70,7 +64,7 @@ public class XMLUserGroupService extends AbstractUserGroupService {
             throw new IOException(e);
         } 
     }
-    
+
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
 
@@ -78,8 +72,7 @@ public class XMLUserGroupService extends AbstractUserGroupService {
         if (config instanceof XMLBasedSecurityServiceConfig) {
             validatingXMLSchema =((XMLBasedSecurityServiceConfig) config).isValidating();
             // copy schema file 
-            File xsdFile = new File(Util.getUserGroupNamedRoot(name),
-                    XMLConstants.FILE_UR_SCHEMA);
+            File xsdFile = new File(getConfigRoot(), XMLConstants.FILE_UR_SCHEMA);
             if (xsdFile.exists()==false) {
                 FileUtils.copyURLToFile(getClass().getResource(XMLConstants.FILE_UR_SCHEMA), xsdFile);
             }            
@@ -90,7 +83,7 @@ public class XMLUserGroupService extends AbstractUserGroupService {
             String fileName = ((FileBasedSecurityServiceConfig) config).getFileName();
             userFile = new File(fileName);
             if (userFile.isAbsolute()==false) {
-                userFile= new File(Util.getUserGroupNamedRoot(name),fileName);
+                userFile= new File(getConfigRoot(), fileName);
             } 
             if (userFile.exists()==false) {
                 FileUtils.copyURLToFile(getClass().getResource("usersTemplate.xml"), userFile);
@@ -101,8 +94,18 @@ public class XMLUserGroupService extends AbstractUserGroupService {
         deserialize();
     }
 
+    @Override
+    public boolean canCreateStore() {
+        return true;
+    }
+
+    @Override
+    public GeoserverUserGroupStore createStore() throws IOException {
+        XMLUserGroupStore store = new XMLUserGroupStore(getName());
+        store.initializeFromService(this);
+        return store;
+    }
     
-        
     public boolean isValidatingXMLSchema() {
         return validatingXMLSchema;
     }
