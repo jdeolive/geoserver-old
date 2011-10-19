@@ -4,8 +4,6 @@
  */
 package org.geoserver.web.security.group;
 
-
-
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -15,8 +13,8 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.PropertyModel;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 
 /**
@@ -99,8 +97,8 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
         public GeoserverUserGroup toGeoserverUserGroup() {
             GeoserverUserGroup group;
             try {
-                group = GeoserverUserDetailsServiceImpl.get().getUserGroupService().
-                        createGroupObject(groupname,enabled);
+                group = GeoServerApplication.get().getUserDetails()
+                    .getUserGroupService().createGroupObject(groupname,enabled);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

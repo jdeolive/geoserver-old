@@ -13,7 +13,6 @@ import org.geoserver.data.test.LiveData;
 import org.geoserver.data.test.TestData;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.GeoserverStoreFactory;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.test.GeoServerAbstractTestSupport;
@@ -35,10 +34,10 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     }
 
     public GeoserverUserGroupStore createStore(GeoserverUserGroupService service) throws IOException {
-        return GeoserverStoreFactory.Singleton.getStoreFor(service);
+        return service.createStore();
     }
     public GeoserverGrantedAuthorityStore createStore(GeoserverGrantedAuthorityService service) throws IOException {
-        return GeoserverStoreFactory.Singleton.getStoreFor(service);
+        return service.createStore(); 
     }
     protected void checkEmpty(GeoserverGrantedAuthorityService roleService) throws IOException {
         assertEquals(0, roleService.getRoles().size());

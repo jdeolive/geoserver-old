@@ -18,7 +18,7 @@ public class H2UserGroupServiceTest extends JDBCUserGroupServiceTest {
 
 
     public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {        
-        return JDBCTestSupport.createH2UserGroupService(getFixtureId());
+        return JDBCTestSupport.createH2UserGroupService(getFixtureId(), getSecurityManager());
     }
 
 }

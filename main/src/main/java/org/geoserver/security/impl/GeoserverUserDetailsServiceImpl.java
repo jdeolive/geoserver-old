@@ -13,19 +13,15 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverUserDetailsService;
-import org.geoserver.security.GeoserverServiceFactory;
-import org.geoserver.security.GeoserverStoreFactory;
 import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.config.UserDetailsServiceConfig;
+
 import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
 import org.geoserver.security.event.GrantedAuthorityLoadedListener;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.springframework.dao.DataAccessException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
@@ -41,20 +37,6 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
 
     protected GeoserverGrantedAuthorityService grantedAuthoriyService;
     protected GeoserverUserGroupService userGroupService;
-    
-    public static GeoserverUserDetailsServiceImpl get() {
-        return (GeoserverUserDetailsServiceImpl) GeoServerExtensions.bean("userDetailsService");
-    }
-
-    
-    
-    public GeoserverUserDetailsServiceImpl() throws IOException{
-        super();
-        Util.migrateIfNeccessary();
-        UserDetailsServiceConfig config = Util.loadSecurityServiceConfig();
-        initializeFrom(config);
-    }
-    
     
     /* (non-Javadoc)
      * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
@@ -89,8 +71,7 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
 
     public boolean isGrantedAuthorityStore() {
         assertServicesNotNull();
-        return GeoserverStoreFactory.Singleton.hasStoreFor(getGrantedAuthorityService());
-        
+        return getGrantedAuthorityService().canCreateStore();
     }
 
     public void setUserGroupService(GeoserverUserGroupService service) {
@@ -106,7 +87,7 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
 
     public boolean isUserGroupStore() {
         assertServicesNotNull();
-        return GeoserverStoreFactory.Singleton.hasStoreFor(getUserGroupService());
+        return getUserGroupService().canCreateStore();
     }
 
 
@@ -184,22 +165,6 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
         // recursion
         addParentRole(parentRole, inherited);
     }
-
-
-    /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverSecurityService#initializeFrom(org.geoserver.security.config.SecurityServiceConfig)
-     */
-    @Override
-    public void initializeFrom(UserDetailsServiceConfig config) throws IOException {
-        setUserGroupService(
-            GeoserverServiceFactory.Singleton.getUserGroupService(
-                    config.getUserGroupServiceName()));
-        
-        setGrantedAuthorityService(
-                GeoserverServiceFactory.Singleton.getGrantedAuthorityService(
-                        config.getGrantedAuthorityServiceName()));
-    }
-
 
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserDetailsService#calculateGrantedAuthorities(org.geoserver.security.impl.GeoserverUserGroup)

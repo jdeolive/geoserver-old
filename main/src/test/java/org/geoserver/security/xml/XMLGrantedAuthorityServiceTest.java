@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.GeoserverServiceFactory;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
 import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
 import org.geoserver.security.event.GrantedAuthorityLoadedListener;
@@ -35,11 +34,10 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
     @Override
     protected void tearDownInternal() throws Exception {
         super.tearDownInternal();
-        if (Util.listGrantedAuthorityServices().contains("test"))
-            Util.removeGrantedAuthorityServiceConfig("test");
+        if (getSecurityManager().listRoleServices().contains("test")) {
+            getSecurityManager().removeRoleService("test");
+        }
     }
-
-    
     
     protected GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName, String xmlFileName) throws IOException {
          
@@ -50,13 +48,8 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
         gaConfig.setFileName(xmlFileName);
         gaConfig.setStateless(false);
         gaConfig.setValidating(true);
-        Util.storeGrantedAuthorityServiceConfig(gaConfig);            
-
-        GeoserverGrantedAuthorityService service =
-            GeoserverServiceFactory.Singleton.getGrantedAuthorityService(serviceName);
-        service.initializeFromConfig(gaConfig); // create files
-        return service;
-        
+        getSecurityManager().saveRoleService(gaConfig);
+        return getSecurityManager().loadRoleService(serviceName);
     }
 
         

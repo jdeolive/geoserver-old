@@ -3,7 +3,6 @@ package org.geoserver.web.security.role;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -11,13 +10,12 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.GeoserverStoreFactory;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.ParamResourceModel;
@@ -69,10 +67,12 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
             protected boolean onSubmit(AjaxRequestTarget target, Component contents) {
                 // cascade delete the whole selection
 
-                GeoserverGrantedAuthorityService gaService = 
-                        GeoserverUserDetailsServiceImpl.get().getGrantedAuthorityService();
+                
+                GeoserverGrantedAuthorityService gaService =
+                    GeoServerApplication.get().getUserDetails().getGrantedAuthorityService();
+
                 try {
-                    GeoserverGrantedAuthorityStore gaStore = GeoserverStoreFactory.Singleton.getStoreFor(gaService);
+                    GeoserverGrantedAuthorityStore gaStore = gaService.createStore();
                     for (GeoserverGrantedAuthority role : removePanel.getRoots()) {                     
                          gaStore.removeGrantedAuthority(role);
                     }

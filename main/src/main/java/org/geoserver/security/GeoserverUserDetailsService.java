@@ -37,7 +37,7 @@ public interface GeoserverUserDetailsService extends UserDetailsService {
      * 
      * @param config
      */
-    void initializeFrom(UserDetailsServiceConfig config) throws IOException;
+    //void initializeFrom(UserDetailsServiceConfig config) throws IOException;
     
     /**
      * Setter for the {@link GeoserverGrantedAuthorityService} or {@link GeoserverGrantedAuthorityStore} object

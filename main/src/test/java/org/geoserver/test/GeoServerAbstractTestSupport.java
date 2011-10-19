@@ -67,7 +67,8 @@ import org.geoserver.ows.util.KvpUtils;
 import org.geoserver.ows.util.ResponseUtils;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.GeoServerResourceLoader;
-import org.geoserver.security.GeoserverServiceFactory;
+import org.geoserver.security.GeoServerSecurityManager;
+import org.geoserver.security.GeoserverUserDetailsService;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.simple.SimpleFeatureSource;
@@ -171,7 +172,7 @@ public abstract class GeoServerAbstractTestSupport extends OneTimeSetupTest {
         }
         
         // reset security services
-        GeoserverServiceFactory.Singleton.reset();
+        //GeoserverServiceFactory.Singleton.reset();
         
         // set up test data 
         testData = buildTestData();
@@ -335,7 +336,21 @@ public abstract class GeoServerAbstractTestSupport extends OneTimeSetupTest {
     protected GeoServer getGeoServer() {
         return (GeoServer) applicationContext.getBean("geoServer");
     }
-    
+
+    /**
+     * Accesssor for global security manager instance from the test application context.
+     */
+    protected GeoServerSecurityManager getSecurityManager() {
+        return (GeoServerSecurityManager) applicationContext.getBean("geoServerSecurityManager");
+    }
+
+    /**
+     * Accesssor for global user details instance from the security manager.
+     */
+    protected GeoserverUserDetailsService getUserDetails() {
+        return getSecurityManager().getUserDetails();
+    }
+
     /**
      * Flush XSD if exists.
      */

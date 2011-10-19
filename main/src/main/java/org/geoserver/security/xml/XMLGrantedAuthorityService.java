@@ -21,13 +21,14 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.io.FileUtils;
-import org.geoserver.security.GeoserverStoreFactory;
+import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.security.GeoserverGrantedAuthorityStore;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.XMLBasedSecurityServiceConfig;
+import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
 import org.geoserver.security.impl.AbstractGrantedAuthorityService;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.Util;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -35,14 +36,6 @@ import org.xml.sax.SAXException;
 
 public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService {
 
-    static public final String DEFAULT_NAME="default";
-    
-    static {
-        GeoserverStoreFactory.Singleton.registerGrantedAuthorityMapping(
-                XMLGrantedAuthorityService.class, XMLGrantedAuthorityStore.class);
-    }
-
-    
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
     protected DocumentBuilder builder;
     protected File roleFile;
@@ -54,8 +47,12 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
     private boolean validatingXMLSchema = true;
     
     
+    public XMLGrantedAuthorityService() throws IOException{
+        this(null);
+    }
+    
     public XMLGrantedAuthorityService(String name) throws IOException{
-        super(name);        
+        super(name);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         factory.setIgnoringComments(true);
@@ -65,7 +62,7 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
             throw new IOException(e);
         }
     }
-    
+
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
 
@@ -73,8 +70,7 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
         if (config instanceof XMLBasedSecurityServiceConfig) {
             validatingXMLSchema =((XMLBasedSecurityServiceConfig) config).isValidating();
             // copy schema file 
-            File xsdFile = new File(Util.getGrantedAuthorityNamedRoot(name),
-                    XMLConstants.FILE_RR_SCHEMA);
+            File xsdFile = new File(getConfigRoot(), XMLConstants.FILE_RR_SCHEMA);
             if (xsdFile.exists()==false) {
                 FileUtils.copyURLToFile(getClass().getResource(XMLConstants.FILE_RR_SCHEMA), xsdFile);
             }            
@@ -84,7 +80,7 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
             String fileName = ((FileBasedSecurityServiceConfig) config).getFileName();
             roleFile = new File(fileName);
             if (roleFile.isAbsolute()==false) {
-                roleFile= new File(Util.getGrantedAuthorityNamedRoot(name),fileName);
+                roleFile= new File(getConfigRoot(),fileName);
             } 
             if (roleFile.exists()==false) {
                 FileUtils.copyURLToFile(getClass().getResource("rolesTemplate.xml"), roleFile);                
@@ -96,7 +92,18 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
         deserialize();
     }
 
-                        
+    @Override
+    public boolean canCreateStore() {
+        return true;
+    }
+
+    @Override
+    public GeoserverGrantedAuthorityStore createStore() throws IOException {
+        XMLGrantedAuthorityStore store = new XMLGrantedAuthorityStore(getName());
+        store.initializeFromService(this);
+        return store;
+    }
+
     public boolean isValidatingXMLSchema() {
         return validatingXMLSchema;
     }

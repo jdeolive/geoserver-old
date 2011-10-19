@@ -18,8 +18,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import org.geoserver.security.GeoserverStoreFactory;
 import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.JdbcBaseSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.UserGroupLoadedEvent;
@@ -39,24 +39,31 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     public final static String DEFAULT_DML_FILE="usersdml.xml";
     public final static String DEFAULT_DDL_FILE="usersddl.xml";
 
-    
-    // register the store class  
-    static {
-        GeoserverStoreFactory.Singleton.registerUserGroupMapping(
-                JDBCUserGroupService.class, JDBCUserGroupStore.class);
-    }
-    
-    
     /** logger */
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.jdbc");
     protected Set<UserGroupLoadedListener> listeners = 
         Collections.synchronizedSet(new HashSet<UserGroupLoadedListener>());
     
     
+    public JDBCUserGroupService() throws IOException{
+    }
+
     public JDBCUserGroupService(String name) throws IOException{
         super(name);
     }
-    
+
+    @Override
+    public boolean canCreateStore() {
+        return true;
+    }
+
+    @Override
+    public GeoserverUserGroupStore createStore() throws IOException {
+        JDBCUserGroupStore store = new JDBCUserGroupStore(getName());
+        store.initializeFromService(this);
+        return store;
+    }
+
     /** Uses {@link #initializeDSFromConfig(SecurityNamedServiceConfig)} and
      * {@link #checkORCreateJDBCPropertyFile(String, File, String)} for initializing
      * @see org.geoserver.security.GeoserverUserGroupService#initializeFromConfig(org.geoserver.security.config.SecurityNamedServiceConfig)
@@ -71,13 +78,11 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
                 (JdbcBaseSecurityServiceConfig) config;
             
             String fileNameDML =jdbcConfig.getPropertyFileNameDML();
-            File file = checkORCreateJDBCPropertyFile(fileNameDML,
-                    Util.getUserGroupNamedRoot(name),DEFAULT_DML_FILE);                        
+            File file = checkORCreateJDBCPropertyFile(fileNameDML, getConfigRoot(), DEFAULT_DML_FILE);
             dmlProps = Util.loadUniversal(new FileInputStream(file));
             
             String fileNameDDL =jdbcConfig.getPropertyFileNameDDL();
-            file = checkORCreateJDBCPropertyFile(fileNameDDL,
-                    Util.getUserGroupNamedRoot(name),DEFAULT_DDL_FILE);                        
+            file = checkORCreateJDBCPropertyFile(fileNameDDL, getConfigRoot(), DEFAULT_DDL_FILE);
 
             ddlProps = Util.loadUniversal(new FileInputStream(file));                        
         }        
@@ -260,7 +265,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
      * @see org.geoserver.security.GeoserverUserGroupService#createUserObject(java.lang.String, java.lang.String, boolean)
      */
     public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
-       GeoserverUser user = new GeoserverUser(username);
+       GeoserverUser user = new GeoserverUser(username, getUserDetails());
        user.setEnabled(isEnabled);
        user.setPassword(password==null ? "" : password);
        return user;
@@ -394,5 +399,10 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
         }
     }
 
-    
+    /**
+     * The root configuration for the user group service.
+     */
+    public File getConfigRoot() throws IOException {
+        return new File(getSecurityManager().getUserGroupRoot(), getName());
+    }
 }

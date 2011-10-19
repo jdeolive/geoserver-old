@@ -45,7 +45,8 @@ public abstract class JDBCGrantedAuthorityServiceTest extends AbstractGrantedAut
     
     
     public GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName) throws IOException {    
-        return JDBCTestSupport.createGrantedAuthorityService(getFixtureId(),(LiveDbmsDataSecurity)getTestData());        
+        return JDBCTestSupport.createGrantedAuthorityService(getFixtureId(),
+            (LiveDbmsDataSecurity)getTestData(), getSecurityManager());        
     }
 
     @Override

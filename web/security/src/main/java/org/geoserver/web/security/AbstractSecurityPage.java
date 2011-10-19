@@ -8,13 +8,15 @@ import java.io.IOException;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.link.Link;
+import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.GeoserverStoreFactory;
 import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.GeoServerSecuredPage;
 
 /**
@@ -47,33 +49,37 @@ public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
             }            
         }; 
     }
-    
-    public GeoserverUserDetailsService getUserDetailsService() {
-        return GeoserverUserDetailsServiceImpl.get();
+
+    public GeoServerSecurityManager getSecurityManager() {
+        return GeoServerApplication.get().getSecurityManager();
+    }
+
+    public GeoserverUserDetailsService getUserDetails() {
+        return getSecurityManager().getUserDetails();
     }
     
     public GeoserverUserGroupService getUserGroupService() {
-        return getUserDetailsService().getUserGroupService();
+        return getUserDetails().getUserGroupService();
     }
     
     public GeoserverGrantedAuthorityService getGrantedAuthorityService() {
-        return getUserDetailsService().getGrantedAuthorityService();
+        return getUserDetails().getGrantedAuthorityService();
     }
 
     public boolean hasGrantedAuthorityStore() {
-        return GeoserverStoreFactory.Singleton.hasStoreFor(getGrantedAuthorityService());
+        return getGrantedAuthorityService().canCreateStore();
     }
     
     public GeoserverGrantedAuthorityStore getGrantedAuthorityStore() throws IOException {
-        return GeoserverStoreFactory.Singleton.getStoreFor(getGrantedAuthorityService());
-    }
-
-    public GeoserverUserGroupStore getUserGroupStore() throws IOException{
-        return GeoserverStoreFactory.Singleton.getStoreFor(getUserGroupService());
+        return getGrantedAuthorityService().createStore();
     }
     
     public boolean hasUserGroupStore() {
-        return GeoserverStoreFactory.Singleton.hasStoreFor(getUserGroupService());
+        return getUserGroupService().canCreateStore();
+    }
+
+    public GeoserverUserGroupStore getUserGroupStore() throws IOException{
+        return getUserGroupService().createStore();
     }
 
     

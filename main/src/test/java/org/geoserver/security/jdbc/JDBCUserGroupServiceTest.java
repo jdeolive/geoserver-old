@@ -44,7 +44,8 @@ public abstract class JDBCUserGroupServiceTest extends AbstractUserGroupServiceT
         
     public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {
         
-        return JDBCTestSupport.createUserGroupService(getFixtureId(), (LiveDbmsDataSecurity)getTestData());
+        return JDBCTestSupport.createUserGroupService(getFixtureId(), 
+            (LiveDbmsDataSecurity)getTestData(), getSecurityManager());
     }
         
     @Override
