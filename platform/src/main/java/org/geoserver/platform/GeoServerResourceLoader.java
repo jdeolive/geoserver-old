@@ -302,7 +302,7 @@ public class GeoServerResourceLoader extends DefaultResourceLoader implements Ap
      *  find or create.
      */
     public File findOrCreateDirectory( File parent, String... location ) throws IOException {
-        return findOrCreateDirectory(concat(location));
+        return findOrCreateDirectory(parent, concat(location));
     }
     
     /**
@@ -340,7 +340,7 @@ public class GeoServerResourceLoader extends DefaultResourceLoader implements Ap
         }
         
         //create it
-        return createDirectory( location );
+        return createDirectory( parent, location );
     }
     
     /**
@@ -418,19 +418,18 @@ public class GeoServerResourceLoader extends DefaultResourceLoader implements Ap
             return file;
         }
 
-        if ( parent == null ) {
-            //no base directory set, cannot create a relative path
-            if (baseDirectory == null) {
-                String msg = "No base location set, could not create directory: " + location;
-                throw new IOException(msg);
-            }
-    
-            file = new File(baseDirectory, location);
-            file.mkdirs();
-    
-            return file;
+        //no base directory set, cannot create a relative path
+        if (baseDirectory == null) {
+            String msg = "No base location set, could not create directory: " + location;
+            throw new IOException(msg);
         }
-        return null;
+    
+        file = parent != null ? new File(new File(baseDirectory, parent.getPath()), location) 
+            : new File(baseDirectory, location);
+
+        file.mkdirs();
+        return file;
+
     }
 
     /**
