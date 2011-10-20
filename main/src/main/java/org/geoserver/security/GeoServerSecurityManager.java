@@ -506,6 +506,14 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
         return result;
     }
 
+    XStreamPersister globalPersister() throws IOException {
+        XStreamPersister xp = persister();
+        xp.getXStream().alias("security", UserDetailsServiceConfigImpl.class);
+        xp.getXStream().aliasField("roleServiceName", 
+            UserDetailsServiceConfigImpl.class, "grantedAuthorityServiceName");
+        return xp;
+    }
+
     /*
      * creates the persister for security plugin configuration.
      */
@@ -525,7 +533,7 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
      * loads the global security config
      */
     UserDetailsServiceConfig loadSecurityConfig() throws IOException {
-        return (UserDetailsServiceConfig) loadConfigFile(getSecurityRoot(), persister());
+        return (UserDetailsServiceConfig) loadConfigFile(getSecurityRoot(), globalPersister());
     }
 
     /*
@@ -534,8 +542,7 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
     void saveSecurityConfig(UserDetailsServiceConfig config) throws IOException {
         FileOutputStream fout = new FileOutputStream(new File(getSecurityRoot(), "config.xml"));
         try {
-            XStreamPersister xp = persister();
-            xp.getXStream().alias("security", UserDetailsServiceConfigImpl.class);
+            XStreamPersister xp = globalPersister();
             xp.save(config, fout); 
         }
         finally {
