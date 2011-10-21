@@ -101,7 +101,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         //migrate from old security config
         migrateIfNecessary();
-
     }
 
     @Override
