@@ -52,6 +52,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.security.authentication.AnonymousAuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.RememberMeAuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.memory.UserAttribute;
 import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
@@ -62,7 +67,7 @@ import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
  * @author Justin Deoliveira, OpenGeo
  *
  */
-public class GeoServerSecurityManager implements ApplicationContextAware {
+public class GeoServerSecurityManager extends ProviderManager implements ApplicationContextAware {
 
     static Logger LOGGER = Logging.getLogger("org.geoserver.security");
 
@@ -86,6 +91,7 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
     /** some helper instances for storing/loading service config */ 
     RoleServiceHelper roleServiceHelper = new RoleServiceHelper();
     UserGroupServiceHelper userGroupServiceHelper = new UserGroupServiceHelper();
+    AuthProviderHelper authProviderHelper = new AuthProviderHelper();
 
     public GeoServerSecurityManager(GeoserverUserDetailsService userDetails, 
         GeoServerDataDirectory dataDir) throws IOException {
@@ -95,6 +101,7 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
 
         //migrate from old security config
         migrateIfNecessary();
+
     }
 
     @Override
@@ -169,6 +176,35 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
         //configure the user details instance
         getUserDetails().setUserGroupService(userGroupService);
         getUserDetails().setGrantedAuthorityService(roleService);
+
+        //set up authentcation providers
+        List<AuthenticationProvider> authProviders = new ArrayList<AuthenticationProvider>();
+
+        //add the custom one
+        /*if (config.getAuthProviderName() != null) {
+            authProvider = authProviderHelper.load(config.getAuthProviderName());
+            authProviders.add(daoAuthProvider);
+        }*/
+
+        //dao based authentication that wraps user service
+        DaoAuthenticationProvider daoAuthProvider = new DaoAuthenticationProvider();
+        daoAuthProvider.setUserDetailsService(getUserDetails());
+        daoAuthProvider.afterPropertiesSet();
+        authProviders.add(daoAuthProvider);
+
+        //anonymous
+        AnonymousAuthenticationProvider aap = new AnonymousAuthenticationProvider();
+        aap.setKey("geoserver");
+        aap.afterPropertiesSet();
+        authProviders.add(aap);
+
+        //remember me
+        RememberMeAuthenticationProvider rap = new RememberMeAuthenticationProvider();
+        rap.setKey("geoserver");
+        rap.afterPropertiesSet();
+        authProviders.add(rap);
+
+        setProviders(authProviders);
     }
 
     /**
@@ -202,6 +238,13 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
      */
     public File getUserGroupRoot() throws IOException {
         return dataDir.findOrCreateSecurityDir("usergroup"); 
+    }
+
+    /**
+     * authentication configuration root directory.
+     */
+    public File getAuthRoot() throws IOException {
+        return dataDir.findOrCreateSecurityDir("auth");
     }
 
     /**
@@ -331,6 +374,7 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
         //create required directories
         getRoleRoot();
         getUserGroupRoot();
+        getAuthRoot();
         
         // check for service.properties, create if necessary
         File serviceFile = new File(getSecurityRoot(), "service.properties");
@@ -667,8 +711,8 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
     }
 
     class RoleServiceHelper {
-        
-            /**
+
+         /**
          * Loads the role service for the named config from persistence.
          */
         public GeoserverGrantedAuthorityService load(String name) throws IOException {
@@ -769,5 +813,51 @@ public class GeoServerSecurityManager implements ApplicationContextAware {
 //            list.add(new XMLGrantedAuthorityService());
 //            return list;
 //        }
+    }
+
+    class AuthProviderHelper {
+        /**
+         * Loads the auth provider for the named config from persistence.
+         */
+        public AuthenticationProvider load(String name) throws IOException {
+            
+            SecurityNamedServiceConfig config = loadConfig(name);
+            if (config == null) {
+                //no such config
+                return null;
+            }
+
+            //look up the service for this config
+            AuthenticationProvider authProvider = null;
+
+            for (GeoServerSecurityProvider p  : lookupSecurityProviders()) {
+                if (p.getAuthenticationProviderClass() == null) {
+                    continue;
+                }
+                if (p.getAuthenticationProviderClass().getName().equals(config.getClassName())) {
+                    authProvider = p.createAuthProvider(config);
+                    break;
+                }
+            }
+
+            if (authProvider == null) {
+                throw new IOException("No authentication provider matching config: " + config);
+            }
+
+            return authProvider;
+        }
+
+        /**
+         * loads the named authority service config from persistence
+         */
+        public SecurityNamedServiceConfig loadConfig(String name) throws IOException {
+            File dir = new File(getAuthRoot(), name);
+            if (!dir.exists()) {
+                return null;
+            }
+
+            XStreamPersister xp = persister();
+            return (SecurityNamedServiceConfig) loadConfigFile(dir, xp);
+        }
     }
 }
