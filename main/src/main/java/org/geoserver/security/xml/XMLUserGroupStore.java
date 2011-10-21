@@ -7,6 +7,7 @@ package org.geoserver.security.xml;
 import static org.geoserver.security.xml.XMLConstants.*;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.SortedSet;
 import java.util.logging.Logger;
@@ -14,12 +15,9 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
+
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.file.LockFile;
@@ -126,24 +124,38 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
                 }
             }
         }            
+        
         // serialize the dom
         try {
 //            TODO, wait for JAVA 6
 //            if (isValidatingXMLSchema()) {
 //                XMLValidator.Singleton.validateUserGroupRegistry(doc);
 //            }            
+            
+            OutputFormat of = 
+                    new OutputFormat("XML","UTF-8",true);
+             XMLSerializer serializer = 
+                                    new XMLSerializer();
+             serializer.setOutputFormat(of);
+             serializer.setOutputByteStream(new              
+                    FileOutputStream(userFile));
+             serializer.serialize(doc);
+            
+            /* standard java, but there is no possibility to set 
+             * the number of chars to indent, each line is starting at 
+             * column 0            
             Source source = new DOMSource(doc);
-
-            // Prepare the output file            
-            Result result = new StreamResult(userFile);
-
-            // Write the DOM document to the file
+            Result result = new StreamResult(
+                    new OutputStreamWriter(new FileOutputStream(userFile),"UTF-8"));
             Transformer xformer = TransformerFactory.newInstance().newTransformer();
+            xformer.setOutputProperty(OutputKeys.INDENT, "yes");
             xformer.transform(source, result);
+            */
                         
         } catch (Exception e) {
             throw new IOException(e);
         } 
+
         
     }
 
