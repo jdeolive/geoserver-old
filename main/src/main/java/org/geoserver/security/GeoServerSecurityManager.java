@@ -91,7 +91,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /** some helper instances for storing/loading service config */ 
     RoleServiceHelper roleServiceHelper = new RoleServiceHelper();
     UserGroupServiceHelper userGroupServiceHelper = new UserGroupServiceHelper();
-    AuthProviderHelper authProviderHelper = new AuthProviderHelper();
+    //AuthProviderHelper authProviderHelper = new AuthProviderHelper();
 
     public GeoServerSecurityManager(GeoserverUserDetailsService userDetails, 
         GeoServerDataDirectory dataDir) throws IOException {
@@ -239,12 +239,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         return dataDir.findOrCreateSecurityDir("usergroup"); 
     }
 
-    /**
-     * authentication configuration root directory.
-     */
-    public File getAuthRoot() throws IOException {
-        return dataDir.findOrCreateSecurityDir("auth");
-    }
+//    /**
+//     * authentication configuration root directory.
+//     */
+//    public File getAuthRoot() throws IOException {
+//        return dataDir.findOrCreateSecurityDir("auth");
+//    }
 
     /**
      * Lists all available role service configurations.
@@ -373,7 +373,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         //create required directories
         getRoleRoot();
         getUserGroupRoot();
-        getAuthRoot();
+        //getAuthRoot();
         
         // check for service.properties, create if necessary
         File serviceFile = new File(getSecurityRoot(), "service.properties");
@@ -799,64 +799,51 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         public void removeConfig(String name) throws IOException {
             FileUtils.deleteDirectory(new File(getRoleRoot(), name));
         }
+    }
 
+//    class AuthProviderHelper {
 //        /**
-//         * looks up all available authority services.
+//         * Loads the auth provider for the named config from persistence.
 //         */
-//        public List<GeoserverGrantedAuthorityService> lookupAuthorityServices() throws IOException {
-//            for (GeoServerSecurityProvider p : lookupSecurityProviders()) {
-//                GeoserverGrantedAuthorityService roleService = p.createRoleService(config)
+//        public AuthenticationProvider load(String name) throws IOException {
+//            
+//            SecurityNamedServiceConfig config = loadConfig(name);
+//            if (config == null) {
+//                //no such config
+//                return null;
 //            }
-//            List<GeoserverGrantedAuthorityService> list = new ArrayList(
-//                GeoServerExtensions.extensions(GeoserverGrantedAuthorityService.class, appContext));
-//            list.add(new XMLGrantedAuthorityService());
-//            return list;
+//
+//            //look up the service for this config
+//            AuthenticationProvider authProvider = null;
+//
+//            for (GeoServerSecurityProvider p  : lookupSecurityProviders()) {
+//                if (p.getAuthenticationProviderClass() == null) {
+//                    continue;
+//                }
+//                if (p.getAuthenticationProviderClass().getName().equals(config.getClassName())) {
+//                    authProvider = p.createAuthProvider(config);
+//                    break;
+//                }
+//            }
+//
+//            if (authProvider == null) {
+//                throw new IOException("No authentication provider matching config: " + config);
+//            }
+//
+//            return authProvider;
 //        }
-    }
-
-    class AuthProviderHelper {
-        /**
-         * Loads the auth provider for the named config from persistence.
-         */
-        public AuthenticationProvider load(String name) throws IOException {
-            
-            SecurityNamedServiceConfig config = loadConfig(name);
-            if (config == null) {
-                //no such config
-                return null;
-            }
-
-            //look up the service for this config
-            AuthenticationProvider authProvider = null;
-
-            for (GeoServerSecurityProvider p  : lookupSecurityProviders()) {
-                if (p.getAuthenticationProviderClass() == null) {
-                    continue;
-                }
-                if (p.getAuthenticationProviderClass().getName().equals(config.getClassName())) {
-                    authProvider = p.createAuthProvider(config);
-                    break;
-                }
-            }
-
-            if (authProvider == null) {
-                throw new IOException("No authentication provider matching config: " + config);
-            }
-
-            return authProvider;
-        }
-
-        /**
-         * loads the named authority service config from persistence
-         */
-        public SecurityNamedServiceConfig loadConfig(String name) throws IOException {
-            File dir = new File(getAuthRoot(), name);
-            if (!dir.exists()) {
-                return null;
-            }
-
-            XStreamPersister xp = persister();
-            return (SecurityNamedServiceConfig) loadConfigFile(dir, xp);
-        }
-    }
+//
+//        /**
+//         * loads the named authority service config from persistence
+//         */
+//        public SecurityNamedServiceConfig loadConfig(String name) throws IOException {
+//            File dir = new File(getAuthRoot(), name);
+//            if (!dir.exists()) {
+//                return null;
+//            }
+//
+//            XStreamPersister xp = persister();
+//            return (SecurityNamedServiceConfig) loadConfigFile(dir, xp);
+//        }
+//    }
 }
