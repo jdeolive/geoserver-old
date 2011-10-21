@@ -7,6 +7,7 @@ package org.geoserver.security.xml;
 import static org.geoserver.security.xml.XMLConstants.*;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.SortedSet;
 import java.util.logging.Logger;
@@ -14,13 +15,9 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
+import org.apache.xml.serialize.OutputFormat;
+import org.apache.xml.serialize.XMLSerializer;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractGrantedAuthorityStore;
@@ -127,26 +124,42 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
                 ref.setAttribute(A_ROLEREFID_RR,roleObject.getAuthority());
             }
         }
-       
+               
         // serialize the dom
         try {
 //            TODO, wait for JAVA 6
 //            if (isValidatingXMLSchema()) {
 //                XMLValidator.Singleton.validateGrantedAuthorityRegistry(doc);
 //            }
+         
             
+            OutputFormat of = 
+                    new OutputFormat("XML","UTF-8",true);
+             XMLSerializer serializer = 
+                                    new XMLSerializer();
+             serializer.setOutputFormat(of);
+             serializer.setOutputByteStream(new              
+                    FileOutputStream(roleFile));
+             serializer.serialize(doc);
+            
+            /* standard java, but there is no possibility to set 
+             * the number of chars to indent, each line is starting at 
+             * column 0
             Source source = new DOMSource(doc);
-
             // Prepare the output file            
-            Result result = new StreamResult(roleFile);
+            Result result = new StreamResult(
+                    new OutputStreamWriter(new FileOutputStream(roleFile),"UTF-8"));
 
-            // Write the DOM document to the file
-            Transformer xformer = TransformerFactory.newInstance().newTransformer();
+            TransformerFactory fac = TransformerFactory.newInstance();
+            Transformer xformer = fac.newTransformer();                        
+            xformer.setOutputProperty(OutputKeys.INDENT, "yes");            
             xformer.transform(source, result);
+            */
             
         } catch (Exception e) {
             throw new IOException(e);
         }
+
         
 
     }
