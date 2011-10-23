@@ -66,6 +66,7 @@ public class MemoryRoleService extends AbstractRoleService {
 
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
+        this.name=config.getName();
     }
 
 }
