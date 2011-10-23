@@ -214,7 +214,7 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
                 throw new UsernameNotFoundException(userNotFoundMessage(username));
             RoleCalculator calculator = new RoleCalculator(this, 
                     getSecurityManager().getActiveRoleService());
-            user.setAuthorities(calculator.calculateGrantedAuthorities(user));
+            user.setAuthorities(calculator.calculateRoles(user));
         } catch (IOException e) {
             throw new UsernameNotFoundException(userNotFoundMessage(username),e);
         }        

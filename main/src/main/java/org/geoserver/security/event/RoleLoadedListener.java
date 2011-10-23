@@ -13,6 +13,6 @@ import java.util.EventListener;
  * @author christian
  *
  */
-public interface GrantedAuthorityLoadedListener extends EventListener {
-    public void grantedAuthoritiesChanged(GrantedAuthorityLoadedEvent event);
+public interface RoleLoadedListener extends EventListener {
+    public void rolesChanged(RoleLoadedEvent event);
 }

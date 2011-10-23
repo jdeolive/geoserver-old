@@ -13,7 +13,7 @@ import java.util.List;
 import org.apache.wicket.Component;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.web.ComponentBuilder;
 import org.geoserver.web.FormTestPage;
@@ -88,7 +88,7 @@ public class ConfirmRemovalUserPanelTest extends AbstractConfirmRemovalPanelTest
     protected String getRemoveableObjectRegExp() throws Exception{
         if (disassociateRoles)
             return ".*"+getRemoveableObject().getUsername()+".*" +
-            		GeoserverGrantedAuthority.ADMIN_ROLE +".*";
+            		GeoserverRole.ADMIN_ROLE +".*";
         else    
             return ".*"+getRemoveableObject().getUsername()+".*";
     }    

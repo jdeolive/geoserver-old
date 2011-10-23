@@ -13,23 +13,23 @@ import java.util.List;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.model.StringResourceModel;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.ComponentBuilder;
 import org.geoserver.web.FormTestPage;
 import org.geoserver.web.security.AbstractConfirmRemovalPanelTest;
 
-public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest<GeoserverGrantedAuthority> {
+public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest<GeoserverRole> {
     private static final long serialVersionUID = 1L;
 
-    protected void setupPanel(final List<GeoserverGrantedAuthority> roots)  {
+    protected void setupPanel(final List<GeoserverRole> roots)  {
         
         tester.startPage(new FormTestPage(new ComponentBuilder() {
             private static final long serialVersionUID = 1L;
 
             public Component buildComponent(String id) {
-                return new ConfirmRemovalRolePanel(id, roots.toArray(new GeoserverGrantedAuthority[roots.size()])) {
+                return new ConfirmRemovalRolePanel(id, roots.toArray(new GeoserverRole[roots.size()])) {
                     @Override
-                    protected StringResourceModel canRemove(GeoserverGrantedAuthority data) {
+                    protected StringResourceModel canRemove(GeoserverRole data) {
                         SelectionRoleRemovalLink link = new SelectionRoleRemovalLink("XXX",null,null);
                         return link.canRemove(data);
                     }
@@ -53,19 +53,19 @@ public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest
     
 
     @Override
-    protected GeoserverGrantedAuthority getRemoveableObject() throws Exception{
-        GeoserverGrantedAuthority role =  gaService.getGrantedAuthorityByName("ROLE_NEW");
+    protected GeoserverRole getRemoveableObject() throws Exception{
+        GeoserverRole role =  gaService.getRoleByName("ROLE_NEW");
         if (role == null) {
-            gaStore.addGrantedAuthority(role =gaStore.createGrantedAuthorityObject("ROLE_NEW"));
+            gaStore.addRole(role =gaStore.createRoleObject("ROLE_NEW"));
             gaStore.store();
         }
         return role;    
     }
 
     @Override
-    protected GeoserverGrantedAuthority getProblematicObject() throws Exception {
-        return gaService.getGrantedAuthorityByName(
-                GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority());
+    protected GeoserverRole getProblematicObject() throws Exception {
+        return gaService.getRoleByName(
+                GeoserverRole.ADMIN_ROLE.getAuthority());
     }
 
     @Override

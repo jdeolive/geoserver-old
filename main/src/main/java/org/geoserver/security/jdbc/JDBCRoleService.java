@@ -18,22 +18,22 @@ import java.util.TreeSet;
 import java.util.logging.Logger;
 
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.config.JdbcBaseSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
-import org.geoserver.security.event.GrantedAuthorityLoadedListener;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.event.RoleLoadedEvent;
+import org.geoserver.security.event.RoleLoadedListener;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.Util;
 
 /**
- * JDBC implementation of {@link GeoserverGrantedAuthorityService}
+ * JDBC implementation of {@link GeoserverRoleService}
  * 
  * @author christian
  *
  */
-public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements GeoserverGrantedAuthorityService {
+public  class JDBCRoleService extends AbstractJDBCService implements GeoserverRoleService {
     
     public final static String DEFAULT_DML_FILE="rolesdml.xml";
     public final static String DEFAULT_DDL_FILE="rolesddl.xml";
@@ -41,18 +41,18 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
     
     /** logger */
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.jdbc");
-    protected Set<GrantedAuthorityLoadedListener> listeners = 
-        Collections.synchronizedSet(new HashSet<GrantedAuthorityLoadedListener>());
+    protected Set<RoleLoadedListener> listeners = 
+        Collections.synchronizedSet(new HashSet<RoleLoadedListener>());
     
     
-    public JDBCGrantedAuthorityService() {
+    public JDBCRoleService() {
     }
 
     /**
      * @param name
      * @throws IOException
      */
-    public JDBCGrantedAuthorityService(String name) throws IOException{
+    public JDBCRoleService(String name) throws IOException{
         super(name);
     }
 
@@ -62,8 +62,8 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
     }
 
     @Override
-    public GeoserverGrantedAuthorityStore createStore() throws IOException {
-        JDBCGrantedAuthorityStore store = new JDBCGrantedAuthorityStore(getName());
+    public GeoserverRoleStore createStore() throws IOException {
+        JDBCRoleStore store = new JDBCRoleStore(getName());
         store.initializeFromService(this);
         return store;
     }
@@ -72,7 +72,7 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
      * Uses {@link #initializeDSFromConfig(SecurityNamedServiceConfig)}
      * and {@link #checkORCreateJDBCPropertyFile(String, File, String)} 
      *  
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#initializeFromConfig(org.geoserver.security.config.SecurityNamedServiceConfig)
+     * @see org.geoserver.security.GeoserverRoleService#initializeFromConfig(org.geoserver.security.config.SecurityNamedServiceConfig)
      */
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
@@ -119,22 +119,22 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
 
     
     /**
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getGrantedAuthorityByName(java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleService#getRoleByName(java.lang.String)
      */
-    public GeoserverGrantedAuthority getGrantedAuthorityByName(String role)
+    public GeoserverRole getRoleByName(String role)
             throws IOException {
         
         Connection con=null;
         PreparedStatement ps = null,ps2=null;
         ResultSet rs = null,rs2=null;
-        GeoserverGrantedAuthority  roleObject  = null;
+        GeoserverRole  roleObject  = null;
         try {
             con = getConnection();
             ps = getDMLStatement("roles.keyed",con);            
             ps.setString(1, role);
             rs = ps.executeQuery();
             if (rs.next()) {                
-                roleObject  = createGrantedAuthorityObject(role);
+                roleObject  = createRoleObject(role);
                 ps2 = getDMLStatement("roleprops.selectForRole",con);            
                 ps2.setString(1, role);
                 rs2 = ps2.executeQuery();
@@ -156,20 +156,20 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
     
 
     /**
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getRoles()
+     * @see org.geoserver.security.GeoserverRoleService#getRoles()
      */
-    public  SortedSet<GeoserverGrantedAuthority> getRoles() throws IOException {
+    public  SortedSet<GeoserverRole> getRoles() throws IOException {
         Connection con=null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        Map<String,GeoserverGrantedAuthority> map = new HashMap<String,GeoserverGrantedAuthority>();
+        Map<String,GeoserverRole> map = new HashMap<String,GeoserverRole>();
         try {
             con = getConnection();
             ps = getDMLStatement("roles.all",con);            
             rs = ps.executeQuery();
             while (rs.next()) {                
                 String rolename = rs.getString(1);                
-                GeoserverGrantedAuthority roleObject = createGrantedAuthorityObject(rolename);            
+                GeoserverRole roleObject = createRoleObject(rolename);            
                 map.put(rolename, roleObject);
             }
             
@@ -182,7 +182,7 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
                 String roleName = rs.getString(1);
                 String propName = rs.getString(2);
                 Object propValue = rs.getString(3);
-                GeoserverGrantedAuthority roleObject = map.get(roleName);
+                GeoserverRole roleObject = map.get(roleName);
                 if (roleObject!=null) {
                     roleObject.getProperties().put(propName, propValue==null ? "" : propValue);
                 }
@@ -193,14 +193,14 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
             closeFinally(con, ps, rs);
         }
                                         
-        SortedSet<GeoserverGrantedAuthority> roles = new TreeSet<GeoserverGrantedAuthority>();
+        SortedSet<GeoserverRole> roles = new TreeSet<GeoserverRole>();
         roles.addAll(map.values());               
         return Collections.unmodifiableSortedSet(roles);
                 
     }
     
     /**
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getParentMappings()
+     * @see org.geoserver.security.GeoserverRoleService#getParentMappings()
      */
     public  Map<String,String> getParentMappings() throws IOException {
         Connection con=null;
@@ -226,22 +226,22 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
     
 
     /**
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#createGrantedAuthorityObject(java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleService#createRoleObject(java.lang.String)
      */
-    public GeoserverGrantedAuthority createGrantedAuthorityObject(String role) {
-        return new GeoserverGrantedAuthority(role);
+    public GeoserverRole createRoleObject(String role) {
+        return new GeoserverRole(role);
     }
     
     
     
     /** 
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getRolesForUser(java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleService#getRolesForUser(java.lang.String)
      */
-    public  SortedSet<GeoserverGrantedAuthority> getRolesForUser(String username) throws IOException {
+    public  SortedSet<GeoserverRole> getRolesForUser(String username) throws IOException {
         Connection con=null;
         PreparedStatement ps = null,ps2 = null;
         ResultSet rs = null,rs2=null;
-        Map<String,GeoserverGrantedAuthority> map = new HashMap<String,GeoserverGrantedAuthority>();
+        Map<String,GeoserverRole> map = new HashMap<String,GeoserverRole>();
         try {
             con = getConnection();
             ps = getDMLStatement("userroles.rolesForUser",con);
@@ -251,7 +251,7 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
             rs = ps.executeQuery();
             while (rs.next()) {                
                 String rolename = rs.getString(1);                
-                GeoserverGrantedAuthority roleObject = createGrantedAuthorityObject(rolename);                
+                GeoserverRole roleObject = createRoleObject(rolename);                
                 map.put(rolename,roleObject);         
                 
             }
@@ -265,7 +265,7 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
                 String rolename = rs.getString(1);                
                 String propName = rs.getString(2);
                 Object propValue = rs.getObject(3);
-                GeoserverGrantedAuthority roleObject = map.get(rolename);
+                GeoserverRole roleObject = map.get(rolename);
                 if (roleObject!=null) {
                     roleObject.getProperties().put(propName, propValue==null ? "" : propValue);
                 }
@@ -278,19 +278,19 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
             closeFinally(con, ps, rs);
         }
                                 
-        TreeSet<GeoserverGrantedAuthority>roles= new TreeSet<GeoserverGrantedAuthority>();
+        TreeSet<GeoserverRole>roles= new TreeSet<GeoserverRole>();
         roles.addAll(map.values());
         return Collections.unmodifiableSortedSet(roles);
     }
     
     /** 
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getRolesForGroup(java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleService#getRolesForGroup(java.lang.String)
      */
-    public  SortedSet<GeoserverGrantedAuthority> getRolesForGroup(String groupname) throws IOException {
+    public  SortedSet<GeoserverRole> getRolesForGroup(String groupname) throws IOException {
         Connection con=null;
         PreparedStatement ps = null,ps2 = null;
         ResultSet rs = null,rs2=null;
-        Map<String,GeoserverGrantedAuthority> map = new HashMap<String,GeoserverGrantedAuthority>();
+        Map<String,GeoserverRole> map = new HashMap<String,GeoserverRole>();
         try {
             con = getConnection();
             ps = getDMLStatement("grouproles.rolesForGroup",con);
@@ -300,7 +300,7 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
             rs = ps.executeQuery();
             while (rs.next()) {                
                 String rolename = rs.getString(1);
-                GeoserverGrantedAuthority roleObject = createGrantedAuthorityObject(rolename);                
+                GeoserverRole roleObject = createRoleObject(rolename);                
                 map.put(rolename,roleObject);         
                 
             }
@@ -314,7 +314,7 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
                 String rolename = rs.getString(1);                
                 String propName = rs.getString(2);
                 Object propValue = rs.getObject(3);
-                GeoserverGrantedAuthority roleObject = map.get(rolename);
+                GeoserverRole roleObject = map.get(rolename);
                 if (roleObject!=null) {
                     roleObject.getProperties().put(propName, propValue==null ? "" : propValue);
                 }
@@ -327,14 +327,14 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
             closeFinally(con, ps, rs);
         }
                                 
-        TreeSet<GeoserverGrantedAuthority>roles= new TreeSet<GeoserverGrantedAuthority>();
+        TreeSet<GeoserverRole>roles= new TreeSet<GeoserverRole>();
         roles.addAll(map.values());
         return Collections.unmodifiableSortedSet(roles);
     }
 
 
     /**
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#load()
+     * @see org.geoserver.security.GeoserverRoleService#load()
      */
     public void load() throws IOException {
         // do nothing
@@ -343,15 +343,15 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
 
 
     /**
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getParentRole(org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleService#getParentRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public GeoserverGrantedAuthority getParentRole(GeoserverGrantedAuthority role)
+    public GeoserverRole getParentRole(GeoserverRole role)
             throws IOException {
 
         Connection con=null;
         PreparedStatement ps = null,ps2=null;
         ResultSet rs = null,rs2=null;
-        GeoserverGrantedAuthority  roleObject  = null;
+        GeoserverRole  roleObject  = null;
         try {
             con = getConnection();
             ps = getDMLStatement("roles.keyed",con);            
@@ -360,7 +360,7 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
             if (rs.next()) {                
                 String parent = rs.getString(1);                
                 if (parent!=null) { // do we have a parent ?
-                    roleObject  = createGrantedAuthorityObject(parent);
+                    roleObject  = createRoleObject(parent);
                     ps2 = getDMLStatement("roleprops.selectForRole",con);            
                     ps2.setString(1, parent);
                     rs2 = ps2.executeQuery();
@@ -382,35 +382,35 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
 
 
     /** 
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#registerGrantedAuthorityChangedListener(org.geoserver.security.event.GrantedAuthorityChangedListener)
+     * @see org.geoserver.security.GeoserverRoleService#registerRoleLoadedListener(RoleLoadedListener)
      */
-    public void registerGrantedAuthorityLoadedListener(GrantedAuthorityLoadedListener listener) {
+    public void registerRoleLoadedListener(RoleLoadedListener listener) {
         listeners.add(listener);
     }
 
 
     /** 
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#unregisterGrantedAuthorityChangedListener(org.geoserver.security.event.GrantedAuthorityChangedListener)
+     * @see org.geoserver.security.GeoserverRoleService#unregisterRoleLoadedListener(RoleLoadedListener)
      */
-    public void unregisterGrantedAuthorityLoadedListener(GrantedAuthorityLoadedListener listener) {
+    public void unregisterRoleLoadedListener(RoleLoadedListener listener) {
         listeners.remove(listener);
     }
     
     /**
-     * Fire {@link GrantedAuthorityLoadedEvent} for all listeners
+     * Fire {@link RoleLoadedEvent} for all listeners
      */
-    protected void fireGrantedAuthorityChangedEvent() {
-        GrantedAuthorityLoadedEvent event = new GrantedAuthorityLoadedEvent(this);
-        for (GrantedAuthorityLoadedListener listener : listeners) {
-            listener.grantedAuthoritiesChanged(event);
+    protected void fireRoleChangedEvent() {
+        RoleLoadedEvent event = new RoleLoadedEvent(this);
+        for (RoleLoadedListener listener : listeners) {
+            listener.rolesChanged(event);
         }
     }
 
 
     /**
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getGroupNamesForRole(org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleService#getGroupNamesForRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public SortedSet<String> getGroupNamesForRole(GeoserverGrantedAuthority role) throws IOException {
+    public SortedSet<String> getGroupNamesForRole(GeoserverRole role) throws IOException {
         Connection con=null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -435,9 +435,9 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
 
 
     /**
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#getUserNamesForRole(org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleService#getUserNamesForRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public SortedSet<String> getUserNamesForRole(GeoserverGrantedAuthority role) throws IOException{
+    public SortedSet<String> getUserNamesForRole(GeoserverRole role) throws IOException{
         Connection con=null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -462,7 +462,7 @@ public  class JDBCGrantedAuthorityService extends AbstractJDBCService implements
     }    
 
     /**
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#personalizeRoleParams(java.lang.String, java.util.Properties, java.lang.String, java.util.Properties)
+     * @see org.geoserver.security.GeoserverRoleService#personalizeRoleParams(java.lang.String, java.util.Properties, java.lang.String, java.util.Properties)
      * 
      * Default implementation: if a user property name equals a role propertyname, 
      * take the value from to user property and use it for the role property. 

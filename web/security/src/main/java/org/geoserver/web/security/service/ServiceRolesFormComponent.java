@@ -10,8 +10,8 @@ import java.util.List;
 
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.form.Form;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.web.security.AbstractRuleRolesFormComponent;
 
@@ -29,16 +29,16 @@ public class ServiceRolesFormComponent extends AbstractRuleRolesFormComponent<Se
 
 
     @Override
-    protected List<GeoserverGrantedAuthority> getStoredGrantedAuthorities(ServiceAccessRule rootObject) {
+    protected List<GeoserverRole> getStoredGrantedAuthorities(ServiceAccessRule rootObject) {
         
-        GeoserverGrantedAuthorityService gaService = getSecurityManager().getActiveRoleService();
-        List<GeoserverGrantedAuthority> result = new ArrayList<GeoserverGrantedAuthority>();        
+        GeoserverRoleService gaService = getSecurityManager().getActiveRoleService();
+        List<GeoserverRole> result = new ArrayList<GeoserverRole>();        
         if (hasStoredAnyRole(rootObject))
             return result; // empty list
         
         try {
             for (String roleString : rootObject.getRoles()) 
-                result.add(gaService.getGrantedAuthorityByName(roleString));
+                result.add(gaService.getRoleByName(roleString));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }                                
@@ -47,6 +47,6 @@ public class ServiceRolesFormComponent extends AbstractRuleRolesFormComponent<Se
 
     @Override
     public boolean hasStoredAnyRole(ServiceAccessRule rootObject) {
-        return rootObject.getRoles().contains(GeoserverGrantedAuthority.HASANY_ROLE.getAuthority());        
+        return rootObject.getRoles().contains(GeoserverRole.HASANY_ROLE.getAuthority());        
     }    
 }

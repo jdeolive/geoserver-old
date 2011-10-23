@@ -5,7 +5,7 @@ import java.util.SortedSet;
 import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.util.tester.FormTester;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 import org.geoserver.web.security.role.NewRolePage;
@@ -53,7 +53,7 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
         // assign the new role to the new group
         form=tester.newFormTester("groupForm");
         tester.assertRenderedPage(NewGroupPage.class);
-        form.setValue("roles:roles:recorder", gaService.getGrantedAuthorityByName("ROLE_NEW").getAuthority());
+        form.setValue("roles:roles:recorder", gaService.getRoleByName("ROLE_NEW").getAuthority());
         
         // reopen new role dialog again to ensure that the current state is not lost
         form.submit("roles:addRole");
@@ -71,7 +71,7 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
         GeoserverUserGroup group = ugService.getGroupByGroupname("testgroup");
         assertNotNull(group);
         assertFalse(group.isEnabled());
-        SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForGroup("testgroup");
+        SortedSet<GeoserverRole> roleList = gaService.getRolesForGroup("testgroup");
         assertEquals(1,roleList.size());
         assertEquals("ROLE_NEW",roleList.iterator().next().getAuthority());
         
@@ -104,7 +104,7 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
             fail("No runtime exception for read only UserGroupService");
     }
     
-    public void testReadOnlyGrantedAuthorityService() throws Exception{
+    public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
         activateROGAService();
         tester.startPage(page=new NewGroupPage());
@@ -117,7 +117,7 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
         GeoserverUserGroup group = ugService.getGroupByGroupname("testgroup");
         assertNotNull(group);
         assertTrue(group.isEnabled());
-        SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForGroup("testgroup");
+        SortedSet<GeoserverRole> roleList = gaService.getRolesForGroup("testgroup");
         assertEquals(0,roleList.size());
     }
 

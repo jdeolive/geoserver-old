@@ -25,14 +25,14 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.file.LockFile;
-import org.geoserver.security.impl.AbstractGrantedAuthorityStore;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.AbstractRoleStore;
+import org.geoserver.security.impl.GeoserverRole;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
+public class XMLRoleStore extends AbstractRoleStore {
 
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
     protected File roleFile;
@@ -43,7 +43,7 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
      */
     private boolean validatingXMLSchema = true;
     
-    public XMLGrantedAuthorityStore(String name) {
+    public XMLRoleStore(String name) {
         super(name);
     }
     
@@ -56,11 +56,11 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
     }
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#initializeFromServer(org.geoserver.security.GeoserverGrantedAuthorityService)
+     * @see org.geoserver.security.impl.AbstractRoleStore#initializeFromService(org.geoserver.security.GeoserverRoleService)
      */
-    public void initializeFromService(GeoserverGrantedAuthorityService service) throws IOException {                        
-        this.roleFile=((XMLGrantedAuthorityService)service).roleFile;
-        this.validatingXMLSchema=((XMLGrantedAuthorityService)service).isValidatingXMLSchema();
+    public void initializeFromService(GeoserverRoleService service) throws IOException {                        
+        this.roleFile=((XMLRoleService)service).roleFile;
+        this.validatingXMLSchema=((XMLRoleService)service).isValidatingXMLSchema();
         super.initializeFromService(service);
                 
     }
@@ -86,11 +86,11 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
         Element rolelist = doc.createElement(E_ROLELIST_RR);
         rolereg.appendChild(rolelist);
         
-        for (GeoserverGrantedAuthority roleObject : roleMap.values()) {
+        for (GeoserverRole roleObject : roleMap.values()) {
             Element role = doc.createElement(E_ROLE_RR);
             rolelist.appendChild(role);
             role.setAttribute(A_ROLEID_RR, roleObject.getAuthority());
-            GeoserverGrantedAuthority parentObject = role_parentMap.get(roleObject);
+            GeoserverRole parentObject = role_parentMap.get(roleObject);
             if (parentObject!=null) {
                 role.setAttribute(A_PARENTID_RR, parentObject.getAuthority());
             }            
@@ -108,8 +108,8 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
             Element userroles = doc.createElement(E_USERROLES_RR);
             userList.appendChild(userroles);
             userroles.setAttribute(A_USERNAME_RR, userName);
-            SortedSet<GeoserverGrantedAuthority> roleObjects =  user_roleMap.get(userName);
-            for (GeoserverGrantedAuthority roleObject: roleObjects) {
+            SortedSet<GeoserverRole> roleObjects =  user_roleMap.get(userName);
+            for (GeoserverRole roleObject: roleObjects) {
                 Element ref = doc.createElement(E_ROLEREF_RR);
                 userroles.appendChild(ref);
                 ref.setAttribute(A_ROLEREFID_RR,roleObject.getAuthority());
@@ -123,8 +123,8 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
             Element grouproles = doc.createElement(E_GROUPROLES_RR);
             groupList.appendChild(grouproles);
             grouproles.setAttribute(A_GROUPNAME_RR, groupName);
-            SortedSet<GeoserverGrantedAuthority> roleObjects =  group_roleMap.get(groupName);
-            for (GeoserverGrantedAuthority roleObject: roleObjects) {
+            SortedSet<GeoserverRole> roleObjects =  group_roleMap.get(groupName);
+            for (GeoserverRole roleObject: roleObjects) {
                 Element ref = doc.createElement(E_ROLEREF_RR);
                 grouproles.appendChild(ref);
                 ref.setAttribute(A_ROLEREFID_RR,roleObject.getAuthority());
@@ -135,7 +135,7 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
         try {
 //            TODO, wait for JAVA 6
 //            if (isValidatingXMLSchema()) {
-//                XMLValidator.Singleton.validateGrantedAuthorityRegistry(doc);
+//                XMLValidator.Singleton.validateRoleRegistry(doc);
 //            }
             
             OutputFormat of = 
@@ -198,21 +198,21 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
 
 
     @Override
-    public void addGrantedAuthority(GeoserverGrantedAuthority role) throws IOException {
+    public void addRole(GeoserverRole role) throws IOException {
         ensureLock();
-        super.addGrantedAuthority(role);
+        super.addRole(role);
     }
 
     @Override
-    public void updateGrantedAuthority(GeoserverGrantedAuthority role) throws IOException {
+    public void updateRole(GeoserverRole role) throws IOException {
         ensureLock();
-        super.updateGrantedAuthority(role);
+        super.updateRole(role);
     }
 
     @Override
-    public boolean removeGrantedAuthority(GeoserverGrantedAuthority role) throws IOException {
+    public boolean removeRole(GeoserverRole role) throws IOException {
         ensureLock();
-        return super.removeGrantedAuthority(role);
+        return super.removeRole(role);
     }
 
     @Override
@@ -223,35 +223,35 @@ public class XMLGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
     }
 
     @Override
-    public void disAssociateRoleFromGroup(GeoserverGrantedAuthority role, String groupname)
+    public void disAssociateRoleFromGroup(GeoserverRole role, String groupname)
             throws IOException {
         ensureLock();
         super.disAssociateRoleFromGroup(role, groupname);
     }
 
     @Override
-    public void associateRoleToGroup(GeoserverGrantedAuthority role, String groupname)
+    public void associateRoleToGroup(GeoserverRole role, String groupname)
             throws IOException {
         ensureLock();
         super.associateRoleToGroup(role, groupname);
     }
 
     @Override
-    public void associateRoleToUser(GeoserverGrantedAuthority role, String username)
+    public void associateRoleToUser(GeoserverRole role, String username)
             throws IOException {
         ensureLock();
         super.associateRoleToUser(role, username);
     }
 
     @Override
-    public void disAssociateRoleFromUser(GeoserverGrantedAuthority role, String username)
+    public void disAssociateRoleFromUser(GeoserverRole role, String username)
             throws IOException {
         ensureLock();
         super.disAssociateRoleFromUser(role, username);
     }
 
     @Override
-    public void setParentRole(GeoserverGrantedAuthority role, GeoserverGrantedAuthority parentRole)
+    public void setParentRole(GeoserverRole role, GeoserverRole parentRole)
             throws IOException {
         ensureLock();
         super.setParentRole(role, parentRole);

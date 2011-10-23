@@ -12,12 +12,12 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.geoserver.data.test.TestData;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.impl.AbstractGrantedAuthorityServiceTest;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
+import org.geoserver.security.impl.AbstractRoleServiceTest;
 
 
-public abstract class JDBCGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServiceTest {
+public abstract class JDBCRoleServiceTest extends AbstractRoleServiceTest {
 
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.jdbc");
     
@@ -29,7 +29,7 @@ public abstract class JDBCGrantedAuthorityServiceTest extends AbstractGrantedAut
     protected void tearDownInternal() throws Exception {
         super.tearDownInternal();
         if (store!=null) {
-            JDBCGrantedAuthorityStore jdbcStore =(JDBCGrantedAuthorityStore)store;
+            JDBCRoleStore jdbcStore =(JDBCRoleStore)store;
             JDBCTestSupport.dropExistingTables(jdbcStore,jdbcStore.getConnection());
             store.store();
         }
@@ -44,15 +44,15 @@ public abstract class JDBCGrantedAuthorityServiceTest extends AbstractGrantedAut
 
     
     
-    public GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName) throws IOException {    
-        return JDBCTestSupport.createGrantedAuthorityService(getFixtureId(),
+    public GeoserverRoleService createRoleService(String serviceName) throws IOException {    
+        return JDBCTestSupport.createRoleService(getFixtureId(),
             (LiveDbmsDataSecurity)getTestData(), getSecurityManager());        
     }
 
     @Override
-    public GeoserverGrantedAuthorityStore createStore(GeoserverGrantedAuthorityService service) throws IOException {
-        JDBCGrantedAuthorityStore store = 
-            (JDBCGrantedAuthorityStore) super.createStore(service);
+    public GeoserverRoleStore createStore(GeoserverRoleService service) throws IOException {
+        JDBCRoleStore store = 
+            (JDBCRoleStore) super.createStore(service);
         try {
             JDBCTestSupport.dropExistingTables(store,store.getConnection());
         } catch (SQLException e) {
@@ -65,10 +65,10 @@ public abstract class JDBCGrantedAuthorityServiceTest extends AbstractGrantedAut
     }
 
     
-    public void testGrantedAuthorityDatabaseSetup() {
+    public void testRoleDatabaseSetup() {
         try {        
-            JDBCGrantedAuthorityStore jdbcStore =  
-                (JDBCGrantedAuthorityStore) store;
+            JDBCRoleStore jdbcStore =  
+                (JDBCRoleStore) store;
             jdbcStore.checkDDLStatements();
             jdbcStore.checkDMLStatements();
             jdbcStore.clear();

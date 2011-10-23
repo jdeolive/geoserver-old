@@ -14,7 +14,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.JdbcSecurityServiceConfig;
 import org.geoserver.security.config.impl.JdbcSecurityServiceConfigImpl;
@@ -81,7 +81,7 @@ public class JDBCTestSupport {
         return securityManager.loadUserGroupService(serviceName);
     }
 
-    protected static GeoserverGrantedAuthorityService createH2GrantedAuthorityService(
+    protected static GeoserverRoleService createH2RoleService(
         String serviceName, GeoServerSecurityManager securityManager) throws IOException {
         
         JdbcSecurityServiceConfig config = new JdbcSecurityServiceConfigImpl();
@@ -91,15 +91,15 @@ public class JDBCTestSupport {
         config.setDriverClassName("org.h2.Driver");
         config.setUserName("sa");
         config.setPassword("");                    
-        config.setClassName(JDBCGrantedAuthorityService.class.getName());
+        config.setClassName(JDBCRoleService.class.getName());
         config.setStateless(true);
-        config.setPropertyFileNameDDL(JDBCGrantedAuthorityService.DEFAULT_DDL_FILE);
-        config.setPropertyFileNameDML(JDBCGrantedAuthorityService.DEFAULT_DML_FILE);
+        config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
+        config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
         securityManager.saveRoleService(config);
         return securityManager.loadRoleService(serviceName);
     }
 
-    static  protected GeoserverGrantedAuthorityService createGrantedAuthorityService(
+    static  protected GeoserverRoleService createRoleService(
         String fixtureId, LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) 
             throws IOException {
     
@@ -113,14 +113,14 @@ public class JDBCTestSupport {
         config.setDriverClassName(props.getProperty("driver"));
         config.setUserName(props.getProperty("user") == null ? props.getProperty("username") : props.getProperty("user"));
         config.setPassword(props.getProperty("password"));            
-        config.setClassName(JDBCGrantedAuthorityService.class.getName());
+        config.setClassName(JDBCRoleService.class.getName());
         config.setStateless(true);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("rolesddl.mysql.xml");            
         } else {
-            config.setPropertyFileNameDDL(JDBCGrantedAuthorityService.DEFAULT_DDL_FILE);
+            config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
         }
-        config.setPropertyFileNameDML(JDBCGrantedAuthorityService.DEFAULT_DML_FILE);
+        config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
 
         securityManager.saveRoleService(config);
         return securityManager.loadRoleService(fixtureId);

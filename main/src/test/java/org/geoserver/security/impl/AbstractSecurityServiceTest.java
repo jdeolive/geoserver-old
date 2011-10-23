@@ -11,8 +11,8 @@ import java.io.IOException;
 
 import org.geoserver.data.test.LiveData;
 import org.geoserver.data.test.TestData;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.test.GeoServerAbstractTestSupport;
@@ -29,37 +29,37 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     public GeoserverUserGroupService createUserGroupService(String name) throws IOException {
         return null;
     }
-    public GeoserverGrantedAuthorityService createGrantedAuthorityService(String name) throws IOException {
+    public GeoserverRoleService createRoleService(String name) throws IOException {
         return null;
     }
 
     public GeoserverUserGroupStore createStore(GeoserverUserGroupService service) throws IOException {
         return service.createStore();
     }
-    public GeoserverGrantedAuthorityStore createStore(GeoserverGrantedAuthorityService service) throws IOException {
+    public GeoserverRoleStore createStore(GeoserverRoleService service) throws IOException {
         return service.createStore(); 
     }
-    protected void checkEmpty(GeoserverGrantedAuthorityService roleService) throws IOException {
+    protected void checkEmpty(GeoserverRoleService roleService) throws IOException {
         assertEquals(0, roleService.getRoles().size());
     }
-    public void insertValues(GeoserverGrantedAuthorityStore roleStore) throws IOException {
+    public void insertValues(GeoserverRoleStore roleStore) throws IOException {
         
-        GeoserverGrantedAuthority role_admin = 
-            roleStore.createGrantedAuthorityObject(GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority());        
-        GeoserverGrantedAuthority role_auth = 
-            roleStore.createGrantedAuthorityObject("ROLE_AUTHENTICATED" );
-        GeoserverGrantedAuthority role_wfs = 
-            roleStore.createGrantedAuthorityObject("ROLE_WFS");
-        GeoserverGrantedAuthority role_wms = 
-            roleStore.createGrantedAuthorityObject("ROLE_WMS");
+        GeoserverRole role_admin = 
+            roleStore.createRoleObject(GeoserverRole.ADMIN_ROLE.getAuthority());        
+        GeoserverRole role_auth = 
+            roleStore.createRoleObject("ROLE_AUTHENTICATED" );
+        GeoserverRole role_wfs = 
+            roleStore.createRoleObject("ROLE_WFS");
+        GeoserverRole role_wms = 
+            roleStore.createRoleObject("ROLE_WMS");
                         
         role_auth.getProperties().put("employee","");
         role_auth.getProperties().put("bbox","lookupAtRuntime");
                         
-        roleStore.addGrantedAuthority(role_admin);
-        roleStore.addGrantedAuthority(role_auth);
-        roleStore.addGrantedAuthority(role_wfs);
-        roleStore.addGrantedAuthority(role_wms);
+        roleStore.addRole(role_admin);
+        roleStore.addRole(role_auth);
+        roleStore.addRole(role_wfs);
+        roleStore.addRole(role_wms);
         
         roleStore.setParentRole(role_wms, role_auth);
         roleStore.setParentRole(role_wfs, role_auth);
@@ -76,35 +76,35 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         roleStore.associateRoleToGroup(role_wfs, "g_all");
         
     }
-    public void removeValues(GeoserverGrantedAuthorityStore roleStore) throws IOException {
-        GeoserverGrantedAuthority role_auth = 
-            roleStore.createGrantedAuthorityObject("ROLE_AUTHENTICATED" );
-        GeoserverGrantedAuthority role_wfs = roleStore.getGrantedAuthorityByName("ROLE_WFS");
-        roleStore.removeGrantedAuthority(role_wfs);
-        roleStore.removeGrantedAuthority(role_auth);
+    public void removeValues(GeoserverRoleStore roleStore) throws IOException {
+        GeoserverRole role_auth = 
+            roleStore.createRoleObject("ROLE_AUTHENTICATED" );
+        GeoserverRole role_wfs = roleStore.getRoleByName("ROLE_WFS");
+        roleStore.removeRole(role_wfs);
+        roleStore.removeRole(role_auth);
     }
-    public void modifyValues(GeoserverGrantedAuthorityStore roleStore) throws IOException {
+    public void modifyValues(GeoserverRoleStore roleStore) throws IOException {
         
-        GeoserverGrantedAuthority role_auth = roleStore.getGrantedAuthorityByName("ROLE_AUTHENTICATED");
-        GeoserverGrantedAuthority role_wfs = roleStore.getGrantedAuthorityByName("ROLE_WFS");
-        GeoserverGrantedAuthority role_wms = roleStore.getGrantedAuthorityByName("ROLE_WMS");
+        GeoserverRole role_auth = roleStore.getRoleByName("ROLE_AUTHENTICATED");
+        GeoserverRole role_wfs = roleStore.getRoleByName("ROLE_WFS");
+        GeoserverRole role_wms = roleStore.getRoleByName("ROLE_WMS");
         
         role_auth.getProperties().remove("bbox");
         role_auth.getProperties().setProperty("employee","4711");
-        roleStore.updateGrantedAuthority(role_auth);
+        roleStore.updateRole(role_auth);
         
         role_wms.getProperties().setProperty("envelope", "10 10 20 20");
-        roleStore.updateGrantedAuthority(role_wms);
+        roleStore.updateRole(role_wms);
         
         roleStore.disAssociateRoleFromGroup(role_wfs, "g_all");
         roleStore.disAssociateRoleFromUser(role_wfs, "user1");
         roleStore.setParentRole(role_wms, null);
         roleStore.setParentRole(role_wfs, role_wms);
     }
-    protected void checkValuesRemoved(GeoserverGrantedAuthorityService roleService) throws IOException {
-        GeoserverGrantedAuthority role_admin = roleService.getGrantedAuthorityByName(
-                GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority());
-        GeoserverGrantedAuthority role_wms = roleService.getGrantedAuthorityByName("ROLE_WMS");
+    protected void checkValuesRemoved(GeoserverRoleService roleService) throws IOException {
+        GeoserverRole role_admin = roleService.getRoleByName(
+                GeoserverRole.ADMIN_ROLE.getAuthority());
+        GeoserverRole role_wms = roleService.getRoleByName("ROLE_WMS");
     
         assertEquals(2, roleService.getRoles().size());
         assertTrue(roleService.getRoles().contains(role_admin));        
@@ -118,10 +118,10 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         assertEquals(1, roleService.getRolesForGroup("g_all").size());
         assertTrue(roleService.getRolesForGroup("g_all").contains(role_wms));
     }
-    protected void checkValuesModified(GeoserverGrantedAuthorityService roleService) throws IOException {
-        GeoserverGrantedAuthority role_auth = roleService.getGrantedAuthorityByName("ROLE_AUTHENTICATED");
-        GeoserverGrantedAuthority role_wms = roleService.getGrantedAuthorityByName("ROLE_WMS");
-        GeoserverGrantedAuthority role_wfs = roleService.getGrantedAuthorityByName("ROLE_WFS");
+    protected void checkValuesModified(GeoserverRoleService roleService) throws IOException {
+        GeoserverRole role_auth = roleService.getRoleByName("ROLE_AUTHENTICATED");
+        GeoserverRole role_wms = roleService.getRoleByName("ROLE_WMS");
+        GeoserverRole role_wfs = roleService.getRoleByName("ROLE_WFS");
         
         assertEquals(1,role_auth.getProperties().size());
         assertEquals("4711", role_auth.getProperties().get("employee"));
@@ -129,7 +129,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         assertEquals("10 10 20 20", role_wms.getProperties().get("envelope"));
         assertEquals(0,role_wfs.getProperties().size());
         
-        for (GeoserverGrantedAuthority role : roleService.getRoles()) {
+        for (GeoserverRole role : roleService.getRoles()) {
             if ("ROLE_AUTHENTICATED".equals(role.getAuthority())) {
                 assertEquals(1,role.getProperties().size());
                 assertEquals("4711", role.getProperties().get("employee"));                
@@ -148,7 +148,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         
         assertEquals(1,roleService.getRolesForGroup("g_all").size());
         assertTrue(roleService.getRolesForGroup("g_all").contains(role_wms));
-        GeoserverGrantedAuthority role = roleService.getRolesForGroup("g_all").iterator().next();
+        GeoserverRole role = roleService.getRolesForGroup("g_all").iterator().next();
         assertEquals(1,role.getProperties().size());
         assertEquals("10 10 20 20", role.getProperties().get("envelope"));
         
@@ -161,13 +161,13 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         assertNull(roleService.getParentRole(role_wms));
         assertEquals(role_wms,roleService.getParentRole(role_wfs));
     }
-    protected void checkValuesInserted(GeoserverGrantedAuthorityService roleService) throws IOException {
+    protected void checkValuesInserted(GeoserverRoleService roleService) throws IOException {
     
-        GeoserverGrantedAuthority role_auth = roleService.getGrantedAuthorityByName("ROLE_AUTHENTICATED");
-        GeoserverGrantedAuthority role_wfs = roleService.getGrantedAuthorityByName("ROLE_WFS");
-        GeoserverGrantedAuthority role_wms = roleService.getGrantedAuthorityByName("ROLE_WMS");
-        GeoserverGrantedAuthority role_admin = roleService.getGrantedAuthorityByName(
-                GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority());
+        GeoserverRole role_auth = roleService.getRoleByName("ROLE_AUTHENTICATED");
+        GeoserverRole role_wfs = roleService.getRoleByName("ROLE_WFS");
+        GeoserverRole role_wms = roleService.getRoleByName("ROLE_WMS");
+        GeoserverRole role_admin = roleService.getRoleByName(
+                GeoserverRole.ADMIN_ROLE.getAuthority());
     
         
         assertEquals(4, roleService.getRoles().size());
@@ -177,9 +177,9 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         assertTrue(roleService.getRoles().contains(role_wms));
                 
         
-        assertNull (roleService.getGrantedAuthorityByName("xxx"));
+        assertNull (roleService.getRoleByName("xxx"));
         
-        for (GeoserverGrantedAuthority role : roleService.getRoles() ) {
+        for (GeoserverRole role : roleService.getRoles() ) {
             if (role_auth.getAuthority().equals(role.getAuthority())) {
                 assertEquals(2,role.getProperties().size());
                 assertEquals(role.getProperties().getProperty("employee"),"");
@@ -213,7 +213,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     
         assertEquals(0, roleService.getRolesForUser("xxx").size());
         assertEquals(1, roleService.getRolesForUser("admin").size());
-        assertTrue(roleService.getRolesForUser("admin").contains(GeoserverGrantedAuthority.ADMIN_ROLE));
+        assertTrue(roleService.getRolesForUser("admin").contains(GeoserverRole.ADMIN_ROLE));
         
         assertEquals(2, roleService.getRolesForUser("user1").size());
         assertTrue(roleService.getRolesForUser("user1").contains(role_wfs));
@@ -231,14 +231,14 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         assertTrue(roleService.getRolesForGroup("g_all").contains(role_wfs));
         assertTrue(roleService.getRolesForGroup("g_all").contains(role_wms));
         
-        assertEquals(1,roleService.getUserNamesForRole(GeoserverGrantedAuthority.ADMIN_ROLE).size());
-        assertTrue(roleService.getUserNamesForRole(GeoserverGrantedAuthority.ADMIN_ROLE).contains("admin"));        
+        assertEquals(1,roleService.getUserNamesForRole(GeoserverRole.ADMIN_ROLE).size());
+        assertTrue(roleService.getUserNamesForRole(GeoserverRole.ADMIN_ROLE).contains("admin"));        
         assertEquals(1,roleService.getUserNamesForRole(role_wfs).size());
         assertTrue(roleService.getUserNamesForRole(role_wfs).contains("user1"));
         assertEquals(1,roleService.getUserNamesForRole(role_wms).size());
         assertTrue(roleService.getUserNamesForRole(role_wms).contains("user1"));
         assertEquals(0,roleService.getUserNamesForRole(
-                roleService.createGrantedAuthorityObject("xxx")).size());
+                roleService.createRoleObject("xxx")).size());
     
         assertEquals(2,roleService.getGroupNamesForRole(role_wfs).size());
         assertTrue(roleService.getGroupNamesForRole(role_wfs).contains("g_wfs"));
@@ -250,11 +250,11 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         assertTrue(roleService.getGroupNamesForRole(role_wms).contains("g_all"));
     
         assertEquals(0,roleService.getGroupNamesForRole(
-                roleService.createGrantedAuthorityObject("xxx")).size());
+                roleService.createRoleObject("xxx")).size());
         
         assertEquals (4,roleService.getParentMappings().size());
         assertNull (roleService.getParentMappings().get(
-                GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority()));
+                GeoserverRole.ADMIN_ROLE.getAuthority()));
         assertNull (roleService.getParentMappings().get(role_auth.getAuthority()));
         assertEquals(roleService.getParentMappings().get(role_wfs.getAuthority()), role_auth.getAuthority());
         assertEquals(roleService.getParentMappings().get(role_wms.getAuthority()), role_auth.getAuthority());

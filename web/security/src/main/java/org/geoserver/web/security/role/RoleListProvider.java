@@ -12,7 +12,7 @@ import java.util.SortedSet;
 
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDataProvider;
@@ -24,11 +24,11 @@ import org.geoserver.web.wicket.GeoServerDataProvider;
  *
  */
 @SuppressWarnings("serial")
-public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuthority> {
+public class RoleListProvider extends GeoServerDataProvider<GeoserverRole> {
 
     
-    public static final Property<GeoserverGrantedAuthority> ROLENAME = new BeanProperty<GeoserverGrantedAuthority>("rolename", "authority");    
-    public static final Property<GeoserverGrantedAuthority> PARENTROLENAME = new Property<GeoserverGrantedAuthority>() {
+    public static final Property<GeoserverRole> ROLENAME = new BeanProperty<GeoserverRole>("rolename", "authority");    
+    public static final Property<GeoserverRole> PARENTROLENAME = new Property<GeoserverRole>() {
         
         @Override
         public String getName() {
@@ -36,8 +36,8 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
         }
 
         @Override
-        public Object getPropertyValue(GeoserverGrantedAuthority item) {
-            GeoserverGrantedAuthority parent=null;
+        public Object getPropertyValue(GeoserverRole item) {
+            GeoserverRole parent=null;
             try {
                 parent = GeoServerApplication.get().getSecurityManager()
                     .getActiveRoleService().getParentRole(item);
@@ -54,12 +54,12 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
 
         @Override
         public IModel getModel(IModel itemModel) {
-            return new Model((String) getPropertyValue((GeoserverGrantedAuthority) itemModel.getObject()));
+            return new Model((String) getPropertyValue((GeoserverRole) itemModel.getObject()));
         }
 
         @Override
-        public Comparator<GeoserverGrantedAuthority> getComparator() {
-            return new PropertyComparator<GeoserverGrantedAuthority>(this);
+        public Comparator<GeoserverRole> getComparator() {
+            return new PropertyComparator<GeoserverRole>(this);
         }
 
         @Override
@@ -74,7 +74,7 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
         
     };
             
-    public static final Property<GeoserverGrantedAuthority> HASROLEPARAMS = new Property<GeoserverGrantedAuthority>() {
+    public static final Property<GeoserverRole> HASROLEPARAMS = new Property<GeoserverRole>() {
 
         @Override
         public String getName() {
@@ -82,7 +82,7 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
         }
 
         @Override
-        public Object getPropertyValue(GeoserverGrantedAuthority item) {
+        public Object getPropertyValue(GeoserverRole item) {
             if (item.getProperties().size()==0)
                 return Boolean.FALSE;
             else
@@ -91,12 +91,12 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
 
         @Override
         public IModel getModel(IModel itemModel) {
-            return new Model((Boolean) getPropertyValue((GeoserverGrantedAuthority) itemModel.getObject()));
+            return new Model((Boolean) getPropertyValue((GeoserverRole) itemModel.getObject()));
         }
 
         @Override
-        public Comparator<GeoserverGrantedAuthority> getComparator() {
-            return new PropertyComparator<GeoserverGrantedAuthority>(this);
+        public Comparator<GeoserverRole> getComparator() {
+            return new PropertyComparator<GeoserverRole>(this);
         }
 
         @Override
@@ -111,22 +111,22 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
     };
     
     @Override
-    protected List<GeoserverGrantedAuthority> getItems() {
-        SortedSet<GeoserverGrantedAuthority> roles=null;
+    protected List<GeoserverRole> getItems() {
+        SortedSet<GeoserverRole> roles=null;
         try {
             roles = GeoServerApplication.get().getSecurityManager().getActiveRoleService().getRoles();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 
         }
-        List<GeoserverGrantedAuthority> roleList = new ArrayList<GeoserverGrantedAuthority>();
+        List<GeoserverRole> roleList = new ArrayList<GeoserverRole>();
         roleList.addAll(roles);
         return roleList;
     }
 
     @Override
-    protected List<Property<GeoserverGrantedAuthority>> getProperties() {
-        List<Property<GeoserverGrantedAuthority>> result = new ArrayList<GeoServerDataProvider.Property<GeoserverGrantedAuthority>>();
+    protected List<Property<GeoserverRole>> getProperties() {
+        List<Property<GeoserverRole>> result = new ArrayList<GeoServerDataProvider.Property<GeoserverRole>>();
         result.add(ROLENAME);
         result.add(PARENTROLENAME);
         result.add(HASROLEPARAMS);

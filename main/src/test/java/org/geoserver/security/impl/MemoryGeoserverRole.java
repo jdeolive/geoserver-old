@@ -11,7 +11,7 @@ package org.geoserver.security.impl;
  * @author christian
  *
  */
-public class MemoryGeoserverGrantedAuthority extends GeoserverGrantedAuthority {
+public class MemoryGeoserverRole extends GeoserverRole {
     
     /**
      * 
@@ -19,7 +19,7 @@ public class MemoryGeoserverGrantedAuthority extends GeoserverGrantedAuthority {
     private static final long serialVersionUID = 1L;
 
 
-    public MemoryGeoserverGrantedAuthority(String role) {
+    public MemoryGeoserverRole(String role) {
         super(role);
         
     }

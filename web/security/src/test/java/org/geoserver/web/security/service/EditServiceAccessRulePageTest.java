@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
 import org.apache.wicket.util.tester.FormTester;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
@@ -49,7 +49,7 @@ public class EditServiceAccessRulePageTest extends AbstractSecurityWicketTestSup
         ServiceAccessRule rule = getRule("wms.GetMap");
         assertNotNull(rule);
         assertEquals(1,rule.getRoles().size());
-        assertEquals(GeoserverGrantedAuthority.HASANY_ROLE,rule.getRoles().iterator().next());        
+        assertEquals(GeoserverRole.HASANY_ROLE,rule.getRoles().iterator().next());        
     }
     
     
@@ -69,7 +69,7 @@ public class EditServiceAccessRulePageTest extends AbstractSecurityWicketTestSup
 
 
     
-    public void testReadOnlyGrantedAuthorityService() throws Exception{
+    public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
         activateROGAService();
         tester.startPage(page=new EditServiceAccessRulePage(getRule("wms.GetMap")));

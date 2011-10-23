@@ -15,7 +15,7 @@ import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 
 /**
  * A form component that can be used to edit user/rule role lists
@@ -69,10 +69,10 @@ public abstract class AbstractRuleRolesFormComponent<T> extends AbstractRolesFor
         return (Boolean) hasAnyBox.getDefaultModelObject();
     }
     
-    public  Set<GeoserverGrantedAuthority> getRolesForStoring() {
-        Set<GeoserverGrantedAuthority> result = new HashSet<GeoserverGrantedAuthority>();
+    public  Set<GeoserverRole> getRolesForStoring() {
+        Set<GeoserverRole> result = new HashSet<GeoserverRole>();
         if (hasAnyRole())
-            result.add(GeoserverGrantedAuthority.HASANY_ROLE);
+            result.add(GeoserverRole.HASANY_ROLE);
         else 
             result.addAll(rolePalette.getModelCollection());
         return result;
@@ -80,7 +80,7 @@ public abstract class AbstractRuleRolesFormComponent<T> extends AbstractRolesFor
         
     public Set<String> getRolesNamesForStoring() {
         Set<String> result = new HashSet<String>();
-        for (GeoserverGrantedAuthority role : getRolesForStoring())
+        for (GeoserverRole role : getRolesForStoring())
             result.add(role.getAuthority());
         return result;
     }

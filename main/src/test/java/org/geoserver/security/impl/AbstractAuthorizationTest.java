@@ -85,13 +85,13 @@ public abstract class AbstractAuthorizationTest extends SecureObjectsTest {
         super.setUp();
         
         rwUser = new TestingAuthenticationToken("rw", "supersecret", new GrantedAuthority[] {
-                new GeoserverGrantedAuthority("READER"), new GeoserverGrantedAuthority("WRITER") });
+                new GeoserverRole("READER"), new GeoserverRole("WRITER") });
         roUser = new TestingAuthenticationToken("ro", "supersecret",
-                new GrantedAuthority[] { new GeoserverGrantedAuthority("READER") });
+                new GrantedAuthority[] { new GeoserverRole("READER") });
         anonymous = new TestingAuthenticationToken("anonymous", null);
         milUser = new TestingAuthenticationToken("military", "supersecret",
-                new GrantedAuthority[] { new GeoserverGrantedAuthority("MILITARY") });
-        root = new TestingAuthenticationToken("admin", "geoserver", new GrantedAuthority[] { new GeoserverGrantedAuthority(SecureTreeNode.ROOT_ROLE) });
+                new GrantedAuthority[] { new GeoserverRole("MILITARY") });
+        root = new TestingAuthenticationToken("admin", "geoserver", new GrantedAuthority[] { new GeoserverRole(SecureTreeNode.ROOT_ROLE) });
 
         catalog = createNiceMock(Catalog.class);
         expect(catalog.getWorkspace((String) anyObject())).andReturn(

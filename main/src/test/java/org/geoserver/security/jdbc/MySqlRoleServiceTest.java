@@ -5,11 +5,11 @@
 
 package org.geoserver.security.jdbc;
 
-public class OracleGrantedAuthorityServiceTest extends JDBCGrantedAuthorityServiceTest {
+public class MySqlRoleServiceTest extends JDBCRoleServiceTest {
 
     @Override
     protected String getFixtureId() {
-        return "oracle";
+        return "mysql";
     }
 
 }

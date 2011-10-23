@@ -83,7 +83,7 @@ public class GroupPage extends AbstractSecurityPage {
         header.add(removalWithRoles  = new SelectionGroupRemovalLink("removeSelectedWithRoles", groups, dialog,true));
         removalWithRoles.setOutputMarkupId(true);
         removalWithRoles.setEnabled(false);
-        removalWithRoles.setVisibilityAllowed(hasUserGroupStore()&& hasGrantedAuthorityStore());
+        removalWithRoles.setVisibilityAllowed(hasUserGroupStore()&& hasRoleStore());
         
         return header;
     }

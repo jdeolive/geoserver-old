@@ -3,7 +3,7 @@ package org.geoserver.web.security.group;
 import java.util.SortedSet;
 
 import org.apache.wicket.util.tester.FormTester;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 import org.geoserver.web.security.role.NewRolePage;
@@ -56,7 +56,7 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         // assign the new role to the new group
         form=tester.newFormTester("groupForm");
         tester.assertRenderedPage(EditGroupPage.class);
-        form.setValue("roles:roles:recorder", gaService.getGrantedAuthorityByName("ROLE_NEW").getAuthority());
+        form.setValue("roles:roles:recorder", gaService.getRoleByName("ROLE_NEW").getAuthority());
         
         // reopen new role dialog again to ensure that the current state is not lost
         form.submit("roles:addRole");
@@ -74,7 +74,7 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         GeoserverUserGroup group = ugService.getGroupByGroupname("group1");
         assertNotNull(group);
         assertFalse(group.isEnabled());
-        SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForGroup("group1");
+        SortedSet<GeoserverRole> roleList = gaService.getRolesForGroup("group1");
         assertEquals(1,roleList.size());
         assertEquals("ROLE_NEW",roleList.iterator().next().getAuthority());
                 
@@ -103,27 +103,27 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         tester.assertVisible("groupForm:save");
         
         FormTester form=tester.newFormTester("groupForm");
-        form.setValue("roles:roles:recorder", gaService.getGrantedAuthorityByName("ROLE_WFS").getAuthority());
+        form.setValue("roles:roles:recorder", gaService.getRoleByName("ROLE_WFS").getAuthority());
         form.submit("save");
         
-        SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForGroup("group1");
+        SortedSet<GeoserverRole> roleList = gaService.getRolesForGroup("group1");
         assertEquals(1,roleList.size());
         assertEquals("ROLE_WFS",roleList.iterator().next().getAuthority());
 
     }
     
-    public void testReadOnlyGrantedAuthorityService() throws Exception {
+    public void testReadOnlyRoleService() throws Exception {
         initializeForXML();
-        doTestReadOnlyGrantedAuthorityService();
+        doTestReadOnlyRoleService();
     }
     
-    public void testReadOnlyGrantedAuthorityServiceJDBC() throws Exception {
+    public void testReadOnlyRoleServiceJDBC() throws Exception {
         initializeForJDBC();
-        doTestReadOnlyGrantedAuthorityService();
+        doTestReadOnlyRoleService();
     }
 
     
-    protected void doTestReadOnlyGrantedAuthorityService() throws Exception {
+    protected void doTestReadOnlyRoleService() throws Exception {
         insertValues();
         
         activateROGAService();

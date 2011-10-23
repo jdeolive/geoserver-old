@@ -67,9 +67,9 @@ public class XMLXpathFactory extends XMLXpath {
      * @param version
      * @return
      */
-    public GrantedAuthorityXMLXpath getGrantedAuthorityXMLXpath(String version) {
+    public RoleXMLXpath getRoleXMLXpath(String version) {
         if (VERSION_RR_1_0.equals(version))
-            return GrantedAuthorityXMLXpath_1_0.Singleton;
+            return RoleXMLXpath_1_0.Singleton;
         return null; 
             
     }

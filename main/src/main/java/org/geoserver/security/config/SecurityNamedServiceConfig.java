@@ -5,7 +5,7 @@
 
 package org.geoserver.security.config;
 
-import org.geoserver.security.concurrent.LockingGrantedAuthorityService;
+import org.geoserver.security.concurrent.LockingRoleService;
 import org.geoserver.security.concurrent.LockingUserGroupService;
 
 /**
@@ -38,7 +38,7 @@ public interface SecurityNamedServiceConfig extends SecurityConfig {
     
     /**
      * a value of false will hide this object
-     * behind a {@link LockingGrantedAuthorityService}
+     * behind a {@link LockingRoleService}
      * or a {@link LockingUserGroupService}
      * 
      * @param value

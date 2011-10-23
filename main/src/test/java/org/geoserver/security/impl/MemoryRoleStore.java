@@ -21,11 +21,11 @@ import java.util.TreeMap;
  * @author christian
  *
  */
-public class MemoryGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
+public class MemoryRoleStore extends AbstractRoleStore {
     
     
     
-    public MemoryGrantedAuthorityStore(String name) {
+    public MemoryRoleStore(String name) {
         super(name);        
     }
 
@@ -38,7 +38,7 @@ public class MemoryGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
         oout.writeObject(role_parentMap);
         oout.writeObject(user_roleMap);
         oout.writeObject(group_roleMap);
-        ((MemoryGrantedAuthorityService)service).byteArray=out.toByteArray();
+        ((MemoryRoleService)service).byteArray=out.toByteArray();
         oout.close();            
     }
 
@@ -46,7 +46,7 @@ public class MemoryGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
     @Override
     protected void deserialize() throws IOException {
         clearMaps();
-        byte[] bytes = ((MemoryGrantedAuthorityService) service).byteArray;
+        byte[] bytes = ((MemoryRoleService) service).byteArray;
         if (bytes==null) {
             setModified(false);
             return;
@@ -54,10 +54,10 @@ public class MemoryGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            roleMap = (TreeMap<String,GeoserverGrantedAuthority>) oin.readObject();
-            role_parentMap =(HashMap<GeoserverGrantedAuthority,GeoserverGrantedAuthority>) oin.readObject();
-            user_roleMap = (TreeMap<String,SortedSet<GeoserverGrantedAuthority>>)oin.readObject();
-            group_roleMap = (TreeMap<String,SortedSet<GeoserverGrantedAuthority>>)oin.readObject();
+            roleMap = (TreeMap<String,GeoserverRole>) oin.readObject();
+            role_parentMap =(HashMap<GeoserverRole,GeoserverRole>) oin.readObject();
+            user_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
+            group_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
@@ -65,9 +65,9 @@ public class MemoryGrantedAuthorityStore extends AbstractGrantedAuthorityStore {
     }
     
     @Override
-    public GeoserverGrantedAuthority createGrantedAuthorityObject(String role)
+    public GeoserverRole createRoleObject(String role)
             throws IOException {
-        return new MemoryGeoserverGrantedAuthority(role);
+        return new MemoryGeoserverRole(role);
     }
 
 

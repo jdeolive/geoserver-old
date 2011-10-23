@@ -12,8 +12,8 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,16 +23,16 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 public abstract class AbstractUserDetailsServiceTest extends AbstractSecurityServiceTest {
 
     
-    protected GeoserverGrantedAuthorityService roleService;
+    protected GeoserverRoleService roleService;
     protected GeoserverUserGroupService usergroupService;
-    protected GeoserverGrantedAuthorityStore roleStore;
+    protected GeoserverRoleStore roleStore;
     protected GeoserverUserGroupStore usergroupStore;
     
 
     
     
     protected void setServices(String serviceName) throws IOException{
-        roleService=createGrantedAuthorityService(serviceName);
+        roleService=createRoleService(serviceName);
         usergroupService=createUserGroupService(serviceName);
         roleStore = createStore(roleService);
         usergroupStore =createStore(usergroupService);
@@ -52,7 +52,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
         }
     }
     
-    public void testGrantedAuthorityCalculation() {
+    public void testRoleCalculation() {
         try {
 
             setServices("rolecalulation");
@@ -75,102 +75,102 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             theUser=usergroupStore.createUserObject(username, "", true);
             usergroupStore.addUser(theUser);
                                                
-            GeoserverGrantedAuthority role = null;
-            Set<GeoserverGrantedAuthority> roles = new HashSet<GeoserverGrantedAuthority>();
+            GeoserverRole role = null;
+            Set<GeoserverRole> roles = new HashSet<GeoserverRole>();
             
            // no roles
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
                         
             // first direct role
-            role=roleStore.createGrantedAuthorityObject("userrole1");
-            roleStore.addGrantedAuthority(role);
+            role=roleStore.createRoleObject("userrole1");
+            roleStore.addRole(role);
             roleStore.associateRoleToUser(role, username);
             roles.add(role);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
             
             // second direct role
-            role=roleStore.createGrantedAuthorityObject("userrole2");
-            roleStore.addGrantedAuthority(role);
+            role=roleStore.createRoleObject("userrole2");
+            roleStore.addRole(role);
             roleStore.associateRoleToUser(role, username);
             roles.add(role);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
 
             // first role inherited by first group
             GeoserverUserGroup theGroup1=usergroupStore.createGroupObject("theGroup1",true);
             usergroupStore.addGroup(theGroup1);
             usergroupStore.associateUserToGroup(theUser, theGroup1);
-            role=roleStore.createGrantedAuthorityObject("grouprole1a");
-            roleStore.addGrantedAuthority(role);
+            role=roleStore.createRoleObject("grouprole1a");
+            roleStore.addRole(role);
             roleStore.associateRoleToGroup(role, "theGroup1");
             roles.add(role);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
             
             // second role inherited by first group
-            role=roleStore.createGrantedAuthorityObject("grouprole1b");
-            roleStore.addGrantedAuthority(role);
+            role=roleStore.createRoleObject("grouprole1b");
+            roleStore.addRole(role);
             roleStore.associateRoleToGroup(role, "theGroup1");
             roles.add(role);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
 
             // first role inherited by second group, but the group is disabled
             GeoserverUserGroup theGroup2=usergroupStore.createGroupObject("theGroup2",false);
             usergroupStore.addGroup(theGroup2);
             usergroupStore.associateUserToGroup(theUser, theGroup2);
-            role=roleStore.createGrantedAuthorityObject("grouprole2a");
-            roleStore.addGrantedAuthority(role);
+            role=roleStore.createRoleObject("grouprole2a");
+            roleStore.addRole(role);
             roleStore.associateRoleToGroup(role, "theGroup2");            
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
 
             // enable the group
             theGroup2.setEnabled(true);
             usergroupStore.updateGroup(theGroup2);
             roles.add(role);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
 
             // check inheritance, first level
-            GeoserverGrantedAuthority tmp = role;
-            role=roleStore.createGrantedAuthorityObject("grouprole2aa");
-            roleStore.addGrantedAuthority(role);
+            GeoserverRole tmp = role;
+            role=roleStore.createRoleObject("grouprole2aa");
+            roleStore.addRole(role);
             roleStore.setParentRole(tmp, role);
             roles.add(role);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
             
             // check inheritance, second level
             tmp = role;
-            role=roleStore.createGrantedAuthorityObject("grouprole2aaa");
-            roleStore.addGrantedAuthority(role);
+            role=roleStore.createRoleObject("grouprole2aaa");
+            roleStore.addRole(role);
             roleStore.setParentRole(tmp, role);
             roles.add(role);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
 
             // remove second level
-            tmp=roleStore.getGrantedAuthorityByName("grouprole2aa");
+            tmp=roleStore.getRoleByName("grouprole2aa");
             roleStore.setParentRole(tmp, null);
             roles.remove(role);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
             
             // delete first level role
-            roleStore.removeGrantedAuthority(tmp);
+            roleStore.removeRole(tmp);
             roles.remove(tmp);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
             
             // delete second group
             usergroupStore.removeGroup(theGroup2);
-            tmp=roleStore.getGrantedAuthorityByName("grouprole2a");
+            tmp=roleStore.getRoleByName("grouprole2a");
             roles.remove(tmp);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
             
             // remove role from first group
-            tmp=roleStore.getGrantedAuthorityByName("grouprole1b");
+            tmp=roleStore.getRoleByName("grouprole1b");
             roleStore.disAssociateRoleFromGroup(tmp, theGroup1.getGroupname());
             roles.remove(tmp);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
             
             // remove role from user
-            tmp=roleStore.getGrantedAuthorityByName("userrole2");
+            tmp=roleStore.getRoleByName("userrole2");
             roleStore.disAssociateRoleFromUser(tmp, theUser.getUsername());
             roles.remove(tmp);
-            checkGrantedAuthorities(username, roles);
+            checkRoles(username, roles);
             
         } catch (IOException ex) {
             Assert.fail(ex.getMessage());
@@ -194,18 +194,18 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             theUser.getProperties().put("propertyC", "C");
             usergroupStore.addUser(theUser);
                                                
-            GeoserverGrantedAuthority role = null;
+            GeoserverRole role = null;
                         
-            role=roleStore.createGrantedAuthorityObject("persrole1");
+            role=roleStore.createRoleObject("persrole1");
             role.getProperties().put("propertyA", "");
             role.getProperties().put("propertyX", "X");
-            roleStore.addGrantedAuthority(role);
+            roleStore.addRole(role);
             roleStore.associateRoleToUser(role, username);
             
-            role=roleStore.createGrantedAuthorityObject("persrole2");
+            role=roleStore.createRoleObject("persrole2");
             role.getProperties().put("propertyB", "");
             role.getProperties().put("propertyY", "Y");
-            roleStore.addGrantedAuthority(role);
+            roleStore.addRole(role);
             roleStore.associateRoleToUser(role, username);
             
             syncbackends();
@@ -215,13 +215,13 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             Collection<GrantedAuthority> authColl = details.getAuthorities();
             
             for (GrantedAuthority auth : authColl) {
-                role = (GeoserverGrantedAuthority) auth;
+                role = (GeoserverRole) auth;
                 if ("persrole1".equals(role.getAuthority())) {
                     assertEquals("A", role.getProperties().get("propertyA"));
                     assertEquals("X", role.getProperties().get("propertyX"));
                     
-                    GeoserverGrantedAuthority anonymousRole = 
-                        roleStore.getGrantedAuthorityByName(role.getAuthority());
+                    GeoserverRole anonymousRole = 
+                        roleStore.getRoleByName(role.getAuthority());
                     
                     assertFalse(role.isAnonymous());
                     assertTrue(anonymousRole.isAnonymous());
@@ -243,12 +243,12 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
        }                
     }
     
-    protected void checkGrantedAuthorities(String username, Set<GeoserverGrantedAuthority> roles) throws IOException{
+    protected void checkRoles(String username, Set<GeoserverRole> roles) throws IOException{
         syncbackends();
         UserDetails details = usergroupService.loadUserByUsername(username);
         Collection<GrantedAuthority> authColl = details.getAuthorities();
         assertEquals(roles.size(), authColl.size());
-        for (GeoserverGrantedAuthority role : roles) {
+        for (GeoserverRole role : roles) {
             assertTrue(authColl.contains(role));
         }
     }

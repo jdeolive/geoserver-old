@@ -10,25 +10,25 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
-import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
-import org.geoserver.security.event.GrantedAuthorityLoadedListener;
-import org.geoserver.security.impl.AbstractGrantedAuthorityServiceTest;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.event.RoleLoadedEvent;
+import org.geoserver.security.event.RoleLoadedListener;
+import org.geoserver.security.impl.AbstractRoleServiceTest;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.Util;
 
 import junit.framework.Assert;
 
-public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServiceTest {
+public class XMLRoleServiceTest extends AbstractRoleServiceTest {
 
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
     
     @Override
-    public GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName) throws IOException {
-        return createGrantedAuthorityService(serviceName,XMLConstants.FILE_RR);
+    public GeoserverRoleService createRoleService(String serviceName) throws IOException {
+        return createRoleService(serviceName,XMLConstants.FILE_RR);
     }
     
     @Override
@@ -39,11 +39,11 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
         }
     }
     
-    protected GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName, String xmlFileName) throws IOException {
+    protected GeoserverRoleService createRoleService(String serviceName, String xmlFileName) throws IOException {
          
         XMLFileBasedSecurityServiceConfigImpl gaConfig = new XMLFileBasedSecurityServiceConfigImpl();                 
         gaConfig.setName(serviceName);
-        gaConfig.setClassName(XMLGrantedAuthorityService.class.getName());
+        gaConfig.setClassName(XMLRoleService.class.getName());
         gaConfig.setCheckInterval(10);  // extreme short for testing 
         gaConfig.setFileName(xmlFileName);
         gaConfig.setStateless(false);
@@ -57,10 +57,10 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
     public void testCopyFrom() {
         try {
             
-            GeoserverGrantedAuthorityService service1 = createGrantedAuthorityService("copyFrom");
-            GeoserverGrantedAuthorityService service2 = createGrantedAuthorityService("copyTo");
-            GeoserverGrantedAuthorityStore store1 = createStore(service1);
-            GeoserverGrantedAuthorityStore store2 = createStore(service2);                        
+            GeoserverRoleService service1 = createRoleService("copyFrom");
+            GeoserverRoleService service2 = createRoleService("copyTo");
+            GeoserverRoleStore store1 = createStore(service1);
+            GeoserverRoleStore store2 = createStore(service2);                        
             
             store1.clear();
             checkEmpty(store1);        
@@ -79,11 +79,11 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
 
     public void testDefault() {
         try {
-            GeoserverGrantedAuthorityService service = createGrantedAuthorityService("default");
+            GeoserverRoleService service = createRoleService("default");
             
             assertEquals(1, service.getRoles().size());
-            GeoserverGrantedAuthority admin_role= service.getGrantedAuthorityByName(
-                    GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority());
+            GeoserverRole admin_role= service.getRoleByName(
+                    GeoserverRole.ADMIN_ROLE.getAuthority());
             assertEquals(0,service.getGroupNamesForRole(admin_role).size());
             assertEquals(1,service.getUserNamesForRole(admin_role).size());
             assertEquals(1, 
@@ -99,19 +99,19 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
     public void testLocking() throws IOException {
         File xmlFile = File.createTempFile("roles", ".xml");
         FileUtils.copyURLToFile(getClass().getResource("rolesTemplate.xml"),xmlFile);
-        GeoserverGrantedAuthorityService service1 =  
-            createGrantedAuthorityService("locking1",xmlFile.getCanonicalPath());
-        GeoserverGrantedAuthorityService service2 =  
-            createGrantedAuthorityService("locking2",xmlFile.getCanonicalPath());
-        GeoserverGrantedAuthorityStore store1= createStore(service1);
-        GeoserverGrantedAuthorityStore store2= createStore(service2);
+        GeoserverRoleService service1 =  
+            createRoleService("locking1",xmlFile.getCanonicalPath());
+        GeoserverRoleService service2 =  
+            createRoleService("locking2",xmlFile.getCanonicalPath());
+        GeoserverRoleStore store1= createStore(service1);
+        GeoserverRoleStore store2= createStore(service2);
         
         
-        GeoserverGrantedAuthority role_test1 = store1.createGrantedAuthorityObject("ROLE_TEST");
-        GeoserverGrantedAuthority role_test2= store2.createGrantedAuthorityObject("ROLE_TEST");
+        GeoserverRole role_test1 = store1.createRoleObject("ROLE_TEST");
+        GeoserverRole role_test2= store2.createRoleObject("ROLE_TEST");
         
        // obtain a lock
-        store1.addGrantedAuthority(role_test1);
+        store1.addRole(role_test1);
         boolean fail;
         String failMessage="Concurrent lock not allowed"; 
         fail=true;
@@ -126,7 +126,7 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
         // release lock
         store1.load();
         // get lock
-        store2.addGrantedAuthority(role_test1);
+        store2.addRole(role_test1);
         
         fail=true;
         try {
@@ -145,7 +145,7 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
         //// end of part one, now check all modifying methods
 
         // obtain a lock
-        store1.addGrantedAuthority(role_test1);
+        store1.addRole(role_test1);
         
         fail=true;
         try {
@@ -175,13 +175,13 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
         
         fail=true;
         try {
-            store2.updateGrantedAuthority(role_test2);
+            store2.updateRole(role_test2);
         } catch (IOException ex) {
             try {
-                store2.removeGrantedAuthority(role_test2);
+                store2.removeRole(role_test2);
             } catch (IOException ex1) {
                 try {
-                    store2.addGrantedAuthority(role_test2);
+                    store2.addRole(role_test2);
                 } catch (IOException ex2) {
                     fail=false;
                 }
@@ -217,35 +217,35 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
     public void testDynamicReload() throws Exception {
         File xmlFile = File.createTempFile("roles", ".xml");
         FileUtils.copyURLToFile(getClass().getResource("rolesTemplate.xml"),xmlFile);
-        GeoserverGrantedAuthorityService service1 =  
-            createGrantedAuthorityService("reload1",xmlFile.getCanonicalPath());
-        GeoserverGrantedAuthorityService service2 =  
-            createGrantedAuthorityService("reload2",xmlFile.getCanonicalPath());
+        GeoserverRoleService service1 =  
+            createRoleService("reload1",xmlFile.getCanonicalPath());
+        GeoserverRoleService service2 =  
+            createRoleService("reload2",xmlFile.getCanonicalPath());
         
-        GeoserverGrantedAuthorityStore store1= createStore(service1);
+        GeoserverRoleStore store1= createStore(service1);
         
         
-        GeoserverGrantedAuthority role_test1 = store1.createGrantedAuthorityObject("ROLE_TEST1");
+        GeoserverRole role_test1 = store1.createRoleObject("ROLE_TEST1");
         
         checkEmpty(service1);
         checkEmpty(service2);
         
         // prepare for syncing
         
-        GrantedAuthorityLoadedListener listener = new GrantedAuthorityLoadedListener() {
+        RoleLoadedListener listener = new RoleLoadedListener() {
             
             @Override
-            public void grantedAuthoritiesChanged(GrantedAuthorityLoadedEvent event) {
+            public void rolesChanged(RoleLoadedEvent event) {
                 synchronized (this) {
                     this.notifyAll();
                 }
                 
             }
         }; 
-        service2.registerGrantedAuthorityLoadedListener(listener);
+        service2.registerRoleLoadedListener(listener);
         
         // modifiy store1
-        store1.addGrantedAuthority(role_test1);
+        store1.addRole(role_test1);
         store1.store();
         assertTrue(service1.getRoles().size()==1);
         

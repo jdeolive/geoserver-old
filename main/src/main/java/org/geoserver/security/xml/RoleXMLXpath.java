@@ -17,7 +17,7 @@ import org.w3c.dom.NodeList;
  * @author christian
  *
  */
-public abstract class GrantedAuthorityXMLXpath  extends XMLXpath {
+public abstract class RoleXMLXpath  extends XMLXpath {
        
     /**
      * @return absolute expression for {@link NodeList} for roles

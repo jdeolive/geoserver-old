@@ -7,7 +7,7 @@ package org.geoserver.security.jdbc;
 
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 
 public class H2UserDetailsServiceTest extends JDBCUserDetailsServiceTest {
@@ -19,8 +19,8 @@ public class H2UserDetailsServiceTest extends JDBCUserDetailsServiceTest {
     }
         
     @Override
-    public GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName) throws IOException {
-        return JDBCTestSupport.createH2GrantedAuthorityService(getFixtureId(), getSecurityManager());
+    public GeoserverRoleService createRoleService(String serviceName) throws IOException {
+        return JDBCTestSupport.createH2RoleService(getFixtureId(), getSecurityManager());
     }
 
     @Override
