@@ -36,10 +36,6 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
     private boolean modified=false;
     protected AbstractRoleService service;
 
-    public AbstractRoleStore(String name) {
-        super(name);
-        
-    }
     
     
     /* (non-Javadoc)
@@ -277,6 +273,7 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
     @Override
     public void initializeFromService(GeoserverRoleService service)
             throws IOException {
+        this.name=service.getName();
         this.service=(AbstractRoleService)service;
         deserialize();
     }

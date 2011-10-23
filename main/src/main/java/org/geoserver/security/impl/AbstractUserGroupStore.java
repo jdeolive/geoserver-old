@@ -34,10 +34,6 @@ public abstract class AbstractUserGroupStore extends AbstractUserGroupService im
     private boolean modified=false;
     protected AbstractUserGroupService service;
 
-    public AbstractUserGroupStore(String name) {
-        super(name);
-        
-    }
 
     
     /* (non-Javadoc)
@@ -247,6 +243,7 @@ public abstract class AbstractUserGroupStore extends AbstractUserGroupService im
     public void initializeFromService(GeoserverUserGroupService service)
             throws IOException {
         this.service=(AbstractUserGroupService)service;
+        this.name=service.getName();
         setSecurityManager(service.getSecurityManager());
         deserialize();
     }

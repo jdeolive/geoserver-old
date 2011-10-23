@@ -49,12 +49,8 @@ public class XMLUserGroupService extends AbstractUserGroupService {
      */
     private boolean validatingXMLSchema = true;
 
-    public XMLUserGroupService() throws IOException{
-        this(null);
-    }
 
-    public XMLUserGroupService(String name) throws IOException{
-        super(name);
+    public XMLUserGroupService() throws IOException{
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         factory.setIgnoringComments(true);
@@ -68,6 +64,7 @@ public class XMLUserGroupService extends AbstractUserGroupService {
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
 
+        this.name=config.getName();
         validatingXMLSchema=false;
         if (config instanceof XMLBasedSecurityServiceConfig) {
             validatingXMLSchema =((XMLBasedSecurityServiceConfig) config).isValidating();
@@ -101,7 +98,7 @@ public class XMLUserGroupService extends AbstractUserGroupService {
 
     @Override
     public GeoserverUserGroupStore createStore() throws IOException {
-        XMLUserGroupStore store = new XMLUserGroupStore(getName());
+        XMLUserGroupStore store = new XMLUserGroupStore();
         store.initializeFromService(this);
         return store;
     }

@@ -28,10 +28,6 @@ public abstract class AbstractGeoServerSecurityService implements GeoServerSecur
     protected AbstractGeoServerSecurityService() {
     }
 
-    protected AbstractGeoServerSecurityService(String name) {
-        setName(name);
-    }
-
     @Override
     public String getName() {
         return name;

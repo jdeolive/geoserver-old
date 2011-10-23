@@ -27,8 +27,11 @@ public  class FileTest extends TestCase {
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
     int gaCounter=0,ugCounter=0;
     
-    GeoserverRoleService gaService = new AbstractRoleService("TestGAService") {
+    GeoserverRoleService gaService = new AbstractRoleService() {
         
+        public String getName() {
+            return "TestGAService";
+        };
         @Override
         protected void deserialize() throws IOException {
             gaCounter++;
@@ -39,7 +42,11 @@ public  class FileTest extends TestCase {
         }
     };
     
-    GeoserverUserGroupService ugService = new AbstractUserGroupService("TestUGService") {
+    GeoserverUserGroupService ugService = new AbstractUserGroupService() {
+        
+        public String getName() {
+            return "TestUGService";
+        };
         
         @Override
         protected void deserialize() throws IOException {

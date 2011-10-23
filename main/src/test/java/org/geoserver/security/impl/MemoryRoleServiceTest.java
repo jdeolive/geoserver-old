@@ -9,14 +9,23 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
+import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 
 public class MemoryRoleServiceTest extends AbstractRoleServiceTest {
   
 
     @Override
     public GeoserverRoleService createRoleService(String name) throws IOException {
-        return new MemoryRoleService(name);
+        SecurityNamedServiceConfig config = new SecurityNamedServiceConfigImpl();
+        config.setName(name);
+        GeoserverRoleService service = new MemoryRoleService();
+        service.initializeFromConfig(config);
+        service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
+        return service;
     }
 
     @Override
