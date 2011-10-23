@@ -39,6 +39,7 @@ public  class FileTest extends TestCase {
 
         @Override
         public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
+            this.name=config.getName();
         }
     };
     

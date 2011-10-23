@@ -143,10 +143,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         ugStore.store();
     }
     
-    
-    
-    
-    
+                
     protected void activateROGAService() throws Exception{
         SecurityNamedServiceConfig config = new SecurityNamedServiceConfigImpl();
         config.setName("ReadOnlyGAService");        
