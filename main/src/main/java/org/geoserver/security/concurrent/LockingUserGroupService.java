@@ -18,6 +18,9 @@ import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * This is a wrapper class for a {@link GeoserverUserGroupService}
@@ -224,6 +227,22 @@ public class LockingUserGroupService extends AbstractLockingService implements
         } finally {
             writeUnLock();
         }
+    }
+
+    
+    /** 
+     * READ_LOCK
+     * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
+            DataAccessException {
+        readLock();
+        try {
+            return getService().loadUserByUsername(username);
+        } finally {
+            readUnLock();
+        }            
     }
 
 }

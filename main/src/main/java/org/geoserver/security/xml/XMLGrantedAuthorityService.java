@@ -21,12 +21,10 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.io.FileUtils;
-import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.XMLBasedSecurityServiceConfig;
-import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
 import org.geoserver.security.impl.AbstractGrantedAuthorityService;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
 import org.w3c.dom.Document;

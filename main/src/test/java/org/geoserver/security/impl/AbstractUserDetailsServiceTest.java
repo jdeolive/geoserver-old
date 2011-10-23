@@ -12,8 +12,9 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
+import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.GeoserverUserDetailsService;
+import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,32 +22,31 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public abstract class AbstractUserDetailsServiceTest extends AbstractSecurityServiceTest {
 
-    protected GeoserverUserDetailsService userDetailService;
+    
+    protected GeoserverGrantedAuthorityService roleService;
+    protected GeoserverUserGroupService usergroupService;
     protected GeoserverGrantedAuthorityStore roleStore;
     protected GeoserverUserGroupStore usergroupStore;
     
 
     
-    @Override
-    protected void setUpInternal() throws Exception {
-        super.setUpInternal();
-        userDetailService=applicationContext.getBean(GeoserverUserDetailsService.class);
-    }
     
     protected void setServices(String serviceName) throws IOException{
-        userDetailService.setGrantedAuthorityService(createGrantedAuthorityService(serviceName));
-        userDetailService.setUserGroupService(createUserGroupService(serviceName));
-        roleStore = createStore(userDetailService.getGrantedAuthorityService());
-        usergroupStore =createStore(userDetailService.getUserGroupService()); 
+        roleService=createGrantedAuthorityService(serviceName);
+        usergroupService=createUserGroupService(serviceName);
+        roleStore = createStore(roleService);
+        usergroupStore =createStore(usergroupService);
+        getSecurityManager().setActiveRoleService(roleService);
+        getSecurityManager().setActiveUserGroupService(usergroupService);
     }
     
     public void testConfiguration() {
         try {
             setServices("config");
-            assertNotNull(userDetailService.getGrantedAuthorityService());
-            assertNotNull(userDetailService.getUserGroupService());
-            assertTrue(userDetailService.isGrantedAuthorityStore());
-            assertTrue(userDetailService.isUserGroupStore());
+            assertEquals(roleService,getSecurityManager().getActiveRoleService());
+            assertEquals(usergroupService,getSecurityManager().getActiveUserGroupService());
+            assertTrue(roleService.canCreateStore());
+            assertTrue(usergroupService.canCreateStore());
         } catch (IOException ex) {
             Assert.fail(ex.getMessage());
         }
@@ -64,7 +64,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             GeoserverUser theUser = null;
             boolean fail=true;
             try {
-                theUser = (GeoserverUser) userDetailService.loadUserByUsername(username);
+                theUser = (GeoserverUser) usergroupService.loadUserByUsername(username);
             } catch (UsernameNotFoundException ex) {
                 fail = false;
             }
@@ -210,7 +210,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             
             syncbackends();
             
-            UserDetails details = userDetailService.loadUserByUsername(username);
+            UserDetails details = usergroupService.loadUserByUsername(username);
             
             Collection<GrantedAuthority> authColl = details.getAuthorities();
             
@@ -245,7 +245,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
     
     protected void checkGrantedAuthorities(String username, Set<GeoserverGrantedAuthority> roles) throws IOException{
         syncbackends();
-        UserDetails details = userDetailService.loadUserByUsername(username);
+        UserDetails details = usergroupService.loadUserByUsername(username);
         Collection<GrantedAuthority> authColl = details.getAuthorities();
         assertEquals(roles.size(), authColl.size());
         for (GeoserverGrantedAuthority role : roles) {

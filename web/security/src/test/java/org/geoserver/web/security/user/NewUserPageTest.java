@@ -83,12 +83,12 @@ public class NewUserPageTest extends AbstractUserPageTest {
     
     public void testFill3() throws Exception{
         initializeForXML();
-        doTestFill2();
+        doTestFill3();
     }
     
     public void testFill3JDBC() throws Exception{
         initializeForJDBC();
-        doTestFill2();
+        doTestFill3();
     }
     
     
@@ -128,7 +128,8 @@ public class NewUserPageTest extends AbstractUserPageTest {
         SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForUser("testuser");
         assertEquals(1,roleList.size());
         assertTrue(roleList.contains(gaService.createGrantedAuthorityObject("ROLE_WMS")));
-        
+
+        user = (GeoserverUser) ugService.loadUserByUsername("testuser");
         assertEquals(2,user.getAuthorities().size());
         assertTrue(user.getAuthorities().contains(gaService.createGrantedAuthorityObject("ROLE_AUTHENTICATED")));
         assertTrue(user.getAuthorities().contains(gaService.createGrantedAuthorityObject("ROLE_WMS")));
@@ -184,6 +185,7 @@ public class NewUserPageTest extends AbstractUserPageTest {
         SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForUser("testuser");
         assertEquals(0,roleList.size());
         
+        user = (GeoserverUser) ugService.loadUserByUsername("testuser");
         assertEquals(3,user.getAuthorities().size());
         assertTrue(user.getAuthorities().contains(gaService.createGrantedAuthorityObject("ROLE_AUTHENTICATED")));
         assertTrue(user.getAuthorities().contains(gaService.createGrantedAuthorityObject("ROLE_WFS")));

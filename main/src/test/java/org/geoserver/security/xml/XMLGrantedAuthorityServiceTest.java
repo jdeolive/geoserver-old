@@ -87,8 +87,8 @@ public class XMLGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServ
             assertEquals(0,service.getGroupNamesForRole(admin_role).size());
             assertEquals(1,service.getUserNamesForRole(admin_role).size());
             assertEquals(1, 
-                    service.getRolesForUser(GeoserverUser.DEFAULT_ADMIN.getUsername()).size());
-            assertTrue(service.getRolesForUser(GeoserverUser.DEFAULT_ADMIN.getUsername()).contains(admin_role));
+                    service.getRolesForUser(GeoserverUser.AdminName).size());
+            assertTrue(service.getRolesForUser(GeoserverUser.AdminName).contains(admin_role));
             
             
         } catch (IOException ex) {

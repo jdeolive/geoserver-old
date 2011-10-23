@@ -22,7 +22,7 @@ import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
-import org.geoserver.security.GeoserverUserDetailsService;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.GeoServerApplication;
@@ -54,7 +54,7 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
                                                         
         try {
             selectedGroups=new ArrayList<GeoserverUserGroup>();
-            selectedGroups.addAll(getUserDetails().getUserGroupService().getGroupsForUser(user));
+            selectedGroups.addAll(getSecurityManager().getActiveUserGroupService().getGroupsForUser(user));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -72,7 +72,7 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
                         try {
                             SortedSet<GeoserverUserGroup> result=new TreeSet<GeoserverUserGroup>();
                             result.addAll(
-                                getUserDetails().getUserGroupService().getUserGroups());
+                                getSecurityManager().getActiveUserGroupService().getUserGroups());
                             return result;
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -116,14 +116,14 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
                 
     }
 
-    GeoserverUserDetailsService getUserDetails() {
-        return GeoServerApplication.get().getUserDetails();
+    GeoServerSecurityManager getSecurityManager() {
+        return GeoServerApplication.get().getSecurityManager();
     }
 
     protected void calculateAddedRemovedCollections(Collection<GeoserverUserGroup> added, Collection<GeoserverUserGroup> removed) {
         SortedSet<GeoserverUserGroup> oldgroups;
         try {
-            oldgroups = getUserDetails().getUserGroupService().getGroupsForUser(user);
+            oldgroups = getSecurityManager().getActiveUserGroupService().getGroupsForUser(user);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

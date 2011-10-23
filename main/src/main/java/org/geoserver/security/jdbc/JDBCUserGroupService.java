@@ -26,7 +26,11 @@ import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.security.impl.Util;
+import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * JDBC implementation of {@link GeoserverUserGroupService}
@@ -265,7 +269,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
      * @see org.geoserver.security.GeoserverUserGroupService#createUserObject(java.lang.String, java.lang.String, boolean)
      */
     public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
-       GeoserverUser user = new GeoserverUser(username, getUserDetails());
+       GeoserverUser user = new GeoserverUser(username);
        user.setEnabled(isEnabled);
        user.setPassword(password==null ? "" : password);
        return user;
@@ -405,4 +409,30 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     public File getConfigRoot() throws IOException {
         return new File(getSecurityManager().getUserGroupRoot(), getName());
     }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
+            DataAccessException {
+        GeoserverUser user=null;
+        try {
+            user = getUserByUsername(username);            
+            if (user==null)
+                throw new UsernameNotFoundException(userNotFoundMessage(username));
+            RoleCalculator calculator = new RoleCalculator(this, 
+                    getSecurityManager().getActiveRoleService());
+            user.setAuthorities(calculator.calculateGrantedAuthorities(user));
+        } catch (IOException e) {
+            throw new UsernameNotFoundException(userNotFoundMessage(username),e);
+        }        
+        return user;
+    }
+    
+    protected String userNotFoundMessage(String username) {
+        return "User  "+username + 
+                " not found in usergroupservice: "+getName();
+    }
+
 }

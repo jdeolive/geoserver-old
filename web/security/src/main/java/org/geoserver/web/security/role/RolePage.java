@@ -114,7 +114,7 @@ public class RolePage extends AbstractSecurityPage {
                 GeoserverGrantedAuthority role = (GeoserverGrantedAuthority) getDefaultModelObject();
                 GeoserverGrantedAuthority parentRole;
                 try {
-                    parentRole = getUserDetails().getGrantedAuthorityService().getParentRole(role);
+                    parentRole = getSecurityManager().getActiveRoleService().getParentRole(role);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

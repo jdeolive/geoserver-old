@@ -6,7 +6,6 @@
 package org.geoserver.security.config;
 
 import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
 
 
@@ -16,7 +15,7 @@ import org.geoserver.security.GeoserverUserGroupService;
  * @author christian
  *
  */
-public interface UserDetailsServiceConfig  extends SecurityConfig {
+public interface SecurityManagerConfig  extends SecurityConfig {
 
     /**
      * @return the name for a 

@@ -31,7 +31,7 @@ public class ServiceRolesFormComponent extends AbstractRuleRolesFormComponent<Se
     @Override
     protected List<GeoserverGrantedAuthority> getStoredGrantedAuthorities(ServiceAccessRule rootObject) {
         
-        GeoserverGrantedAuthorityService gaService = getUserDetails().getGrantedAuthorityService();
+        GeoserverGrantedAuthorityService gaService = getSecurityManager().getActiveRoleService();
         List<GeoserverGrantedAuthority> result = new ArrayList<GeoserverGrantedAuthority>();        
         if (hasStoredAnyRole(rootObject))
             return result; // empty list

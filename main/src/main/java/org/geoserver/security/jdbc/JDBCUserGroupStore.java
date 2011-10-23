@@ -25,6 +25,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
 
     protected boolean modified;
     protected Connection connection;
+    protected JDBCUserGroupService jdbcService;
     
     public JDBCUserGroupStore(String name) throws IOException {
         super(name);
@@ -70,7 +71,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
      * @see org.geoserver.security.GeoserverUserGroupStore#initializeFromServer(org.geoserver.security.GeoserverUserGroupService)
      */
     public void initializeFromService(GeoserverUserGroupService service) throws IOException {
-        JDBCUserGroupService jdbcService= (JDBCUserGroupService) service;
+        jdbcService= (JDBCUserGroupService) service;
         setSecurityManager(service.getSecurityManager());
 
         this.datasource=jdbcService.datasource;
@@ -385,4 +386,12 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
         }
         setModified(true);                                                
     }    
+    /** 
+     * Delegates to the {@link GeoserverUserGroupService} backend
+     */
+    @Override
+    public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{        
+        return jdbcService.createUserObject(username, password, isEnabled);
+     }
+
 }

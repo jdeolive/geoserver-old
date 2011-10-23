@@ -5,15 +5,15 @@
 
 package org.geoserver.security.config.impl;
 
-import org.geoserver.security.config.UserDetailsServiceConfig;
+import org.geoserver.security.config.SecurityManagerConfig;
 
 /**
- * Implementation of {@link UserDetailsServiceConfig}
+ * Implementation of {@link SecurityManagerConfig}
  * 
  * @author christian
  *
  */
-public class UserDetailsServiceConfigImpl extends SecurityConfigImpl implements UserDetailsServiceConfig {
+public class SecurityManagerConfigImpl extends SecurityConfigImpl implements SecurityManagerConfig {
     private String grantedAuthorityServiceName;
     private String userGroupServiceName;
     

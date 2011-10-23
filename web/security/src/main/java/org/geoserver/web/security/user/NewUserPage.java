@@ -62,7 +62,7 @@ public class NewUserPage extends AbstractUserPage {
             String newName = uiUser.getUsername();            
             try {
                 GeoserverUser user = 
-                    getUserDetails().getUserGroupService().getUserByUsername(newName);
+                    getSecurityManager().getActiveUserGroupService().getUserByUsername(newName);
                 if (user != null) {
                     form.error(new ResourceModel("NewUserPage.userConflict").getObject(),
                             Collections.singletonMap("user", (Object) newName));

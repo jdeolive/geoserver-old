@@ -16,12 +16,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.logging.Logger;
-
-import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
 import org.geoserver.security.event.GrantedAuthorityLoadedListener;
 

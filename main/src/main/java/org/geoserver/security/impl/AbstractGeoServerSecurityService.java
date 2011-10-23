@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityService;
-import org.geoserver.security.GeoserverUserDetailsService;
 
 /**
  * Common base class for user group and role services.
@@ -53,10 +52,6 @@ public abstract class AbstractGeoServerSecurityService implements GeoServerSecur
         this.securityManager = securityManager;
     }
     
-    public GeoserverUserDetailsService getUserDetails() {
-        GeoServerSecurityManager securityManager = getSecurityManager();
-        return securityManager != null ? securityManager.getUserDetails() : null;
-    }
 
     @Override
     public boolean canCreateStore() {

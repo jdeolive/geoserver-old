@@ -11,7 +11,6 @@ import java.util.List;
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.form.Form;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.security.AbstractRolesFormComponent;
 
@@ -32,7 +31,7 @@ public class GroupRolesFormComponent extends AbstractRolesFormComponent<Geoserve
     protected List<GeoserverGrantedAuthority> getStoredGrantedAuthorities(GeoserverUserGroup rootObject) {
         List<GeoserverGrantedAuthority> result = new ArrayList<GeoserverGrantedAuthority>();
         try {
-            result.addAll(getUserDetails().getGrantedAuthorityService()
+            result.addAll(getSecurityManager().getActiveRoleService()
                 .getRolesForGroup(rootObject.getGroupname()));
         } catch (IOException e) {
            throw new RuntimeException(e);
