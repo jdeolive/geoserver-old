@@ -63,7 +63,7 @@ public class NewRolePage extends AbstractRolePage {
             String newName = uiRole.getRolename();            
             try {
                 GeoserverGrantedAuthority role =
-                    getUserDetails().getGrantedAuthorityService().getGrantedAuthorityByName(newName);
+                    getSecurityManager().getActiveRoleService().getGrantedAuthorityByName(newName);
                 if (role!=null) {
                     form.error(new ResourceModel("NewRolePage.roleConflict").getObject(),
                             Collections.singletonMap("role", (Object) newName));

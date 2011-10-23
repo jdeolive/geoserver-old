@@ -8,14 +8,11 @@ import java.io.IOException;
 
 import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.link.Link;
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.GeoServerSecuredPage;
 
@@ -54,16 +51,13 @@ public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
         return GeoServerApplication.get().getSecurityManager();
     }
 
-    public GeoserverUserDetailsService getUserDetails() {
-        return getSecurityManager().getUserDetails();
-    }
     
     public GeoserverUserGroupService getUserGroupService() {
-        return getUserDetails().getUserGroupService();
+        return getSecurityManager().getActiveUserGroupService();
     }
     
     public GeoserverGrantedAuthorityService getGrantedAuthorityService() {
-        return getUserDetails().getGrantedAuthorityService();
+        return getSecurityManager().getActiveRoleService();
     }
 
     public boolean hasGrantedAuthorityStore() {

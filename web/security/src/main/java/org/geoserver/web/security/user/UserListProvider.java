@@ -140,7 +140,7 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
     protected List<GeoserverUser> getItems() {
         SortedSet<GeoserverUser> users=null;
         try {
-            users = getApplication().getUserDetails().getUserGroupService().getUsers();
+            users = getApplication().getSecurityManager().getActiveUserGroupService().getUsers();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 

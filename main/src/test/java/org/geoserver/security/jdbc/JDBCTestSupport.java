@@ -15,11 +15,9 @@ import java.util.logging.Logger;
 
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.JdbcSecurityServiceConfig;
 import org.geoserver.security.config.impl.JdbcSecurityServiceConfigImpl;
-import org.geoserver.security.impl.GeoserverUserDetailsServiceImpl;
 import org.geoserver.security.impl.Util;
 
 

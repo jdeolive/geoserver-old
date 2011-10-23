@@ -299,13 +299,12 @@
   -->
   <bean id="rememberMeServices"
     class="org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices">
-    <property name="userDetailsService" ref="userDetailsService" />
+    <!--  TODO, temporary, use GeoserverSecurityManager as UserDetailService -->
+    <property name="userDetailsService" ref="authenticationManager" />
     <property name="key" value="geoserver" />
   </bean>
 
   
-  <bean id="userDetailsService" class="org.geoserver.security.impl.GeoserverUserDetailsServiceImpl"/>
-
   <!-- global security manager -->
   <!-- 
     The bean managing authentication, basically forwards authentication requests against
@@ -313,7 +312,6 @@
   -->
   <bean id="authenticationManager" class="org.geoserver.security.GeoServerSecurityManager"
      depends-on="extensions">
-    <constructor-arg ref="userDetailsService"/>
     <constructor-arg ref="dataDirectory"/>
   </bean>
   <alias name="authenticationManager" alias="geoServerSecurityManager"/>

@@ -29,7 +29,7 @@ public class GroupListProvider extends GeoServerDataProvider<GeoserverUserGroup>
     protected List<GeoserverUserGroup> getItems() {
         SortedSet<GeoserverUserGroup> groups=null;
         try {
-            groups = GeoServerApplication.get().getUserDetails().getUserGroupService().getUserGroups();
+            groups = GeoServerApplication.get().getSecurityManager().getActiveUserGroupService().getUserGroups();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 

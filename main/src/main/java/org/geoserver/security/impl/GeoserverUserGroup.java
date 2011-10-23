@@ -9,7 +9,6 @@ package org.geoserver.security.impl;
 
 import java.io.Serializable;
 
-import org.geoserver.security.GeoserverUserDetailsService;
 
 /**
  * Implementation of {@link UserGroup}
@@ -26,9 +25,6 @@ public class GeoserverUserGroup implements Comparable<GeoserverUserGroup>,Serial
     private static final long serialVersionUID = 1L;
     private final String groupname;
     private boolean enabled;
-    protected transient GeoserverUserDetailsService detailsService;
-//    protected Properties properties;
-
 
 
     public GeoserverUserGroup(String name) {

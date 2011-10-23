@@ -12,7 +12,6 @@ import org.geoserver.data.test.LiveData;
 import org.geoserver.data.test.TestData;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
 import org.geoserver.security.impl.AbstractUserDetailsServiceTest;
@@ -60,26 +59,25 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
                 XMLUserGroupService.DEFAULT_NAME);
         GeoserverGrantedAuthorityService roleService = createGrantedAuthorityService(
                 XMLGrantedAuthorityService.DEFAULT_NAME);
-        GeoserverUserDetailsService service = getUserDetails();
-        service.setGrantedAuthorityService(roleService);
-        service.setUserGroupService(userService);
+        getSecurityManager().setActiveRoleService(roleService);
+        getSecurityManager().setActiveUserGroupService(userService);
         
         assertEquals(3,userService.getUsers().size());
         assertEquals(0,userService.getUserGroups().size());
         
         assertEquals(8,roleService.getRoles().size());
         
-        GeoserverUser admin = (GeoserverUser) service.loadUserByUsername("admin");
+        GeoserverUser admin = (GeoserverUser) userService.loadUserByUsername("admin");
         assertNotNull(admin);
         assertEquals("gs",admin.getPassword());
         assertTrue(admin.isEnabled());
         
-        GeoserverUser wfs = (GeoserverUser) service.loadUserByUsername("wfs");
+        GeoserverUser wfs = (GeoserverUser) userService.loadUserByUsername("wfs");
         assertNotNull(wfs);
         assertEquals("webFeatureService",wfs.getPassword());
         assertTrue(wfs.isEnabled());
 
-        GeoserverUser disabledUser = (GeoserverUser) service.loadUserByUsername("disabledUser");
+        GeoserverUser disabledUser = (GeoserverUser) userService.loadUserByUsername("disabledUser");
         assertNotNull(disabledUser);
         assertEquals("nah",disabledUser.getPassword());
         assertFalse(disabledUser.isEnabled());

@@ -4,25 +4,19 @@
  */
 package org.geoserver.security.impl;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
-import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoserverUserDetailsService;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 
 /**
- * Extending the {@link User} implementation to add
- * support for {@link GrantedAuthority} objects inherited
- * by {@link UserGroup} objects the user belongs to
+ * Geoserver implemenation of  {@link UserDetails} 
  * 
  * @author christian
  * 
@@ -34,14 +28,19 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
     private static final long serialVersionUID = 1L;
     
     
+    public static final String AdminName="admin";
+    public static final String AdminPasword="geoserver";
+    public static final boolean AdminEnabled=true;
     /**
-     * The default administrator
+     * Create the geoserver default administrator
+     * 
+     * @return
      */
-    public final static GeoserverUser DEFAULT_ADMIN;
-    static {
-        DEFAULT_ADMIN=new GeoserverUser("admin");
-        DEFAULT_ADMIN.setPassword("geoserver");
-        DEFAULT_ADMIN.setEnabled(true);
+    public static GeoserverUser createDefaultAdmin() {
+        GeoserverUser admin = new GeoserverUser(AdminName);
+        admin.setPassword(AdminPasword);
+        admin.setEnabled(AdminEnabled);
+        return admin;
     }
     
     private String password;
@@ -53,27 +52,16 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
 
     
     protected Properties properties;
-    protected transient GeoserverUserDetailsService detailsService;
     
+
     protected Collection<GrantedAuthority> unmodifiableAuthorities; 
 
 
-
-    public GeoserverUser(String username, GeoserverUserDetailsService detailsService) {
-        this(username);
-        if (detailsService == null) {
-            throw new NullPointerException("detailsService must not be null");
-        }
-        this.detailsService = detailsService;
-    }
-
-    private GeoserverUser(String username) {
+    public GeoserverUser(String username) {
         this.username=username;
-        
         accountNonExpired=accountNonLocked=credentialsNonExpired=enabled=true;
         unmodifiableAuthorities=null;
     }
-
     
     /* (non-Javadoc)
      * @see org.springframework.security.core.userdetails.UserDetails#getPassword()
@@ -99,7 +87,6 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
     public void setAccountNonExpired(boolean accountNonExpired) {
         if (this.accountNonExpired!=accountNonExpired) {
             this.accountNonExpired = accountNonExpired;
-            //calculateGrantedAuthorities();
         }
     }
 
@@ -162,25 +149,24 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
     }
 
     
-    protected GeoserverUserDetailsService getDetailsService() {
-        //for the DEFAULT_ADMIN user we have to look up on demand
-        return detailsService != null ? 
-            detailsService : GeoServerExtensions.bean(GeoserverUserDetailsService.class);
-    }
     
     /* (non-Javadoc)
      * @see org.springframework.security.core.userdetails.UserDetails#getAuthorities()
      */
     public Collection<GrantedAuthority> getAuthorities() {
         if (unmodifiableAuthorities==null)
-            try {
-                List<GrantedAuthority> roles = new ArrayList<GrantedAuthority>();
-                roles.addAll(getDetailsService().calculateGrantedAuthorities(this));
-                unmodifiableAuthorities= Collections.unmodifiableCollection(roles);                        
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            unmodifiableAuthorities=Collections.unmodifiableSet(new TreeSet<GrantedAuthority>());
         return unmodifiableAuthorities;
+    }
+    
+    /**
+     * Set the roles of the user. 
+     * 
+     * @param roles
+     */
+    public void setAuthorities(Set<? extends GrantedAuthority> roles) {
+        
+        unmodifiableAuthorities=Collections.unmodifiableSet(roles);
     }
 
     
@@ -259,11 +245,5 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
         return properties;    
     }
     
-    /**
-     * force recalculation of authorities
-     */
-    public void resetGrantedAuthorities() {
-        unmodifiableAuthorities=null;
-    }
 
 }

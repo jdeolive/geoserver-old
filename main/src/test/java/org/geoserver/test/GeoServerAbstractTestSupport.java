@@ -68,7 +68,6 @@ import org.geoserver.ows.util.ResponseUtils;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverUserDetailsService;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.FeatureSource;
 import org.geotools.data.simple.SimpleFeatureSource;
@@ -342,13 +341,6 @@ public abstract class GeoServerAbstractTestSupport extends OneTimeSetupTest {
      */
     protected GeoServerSecurityManager getSecurityManager() {
         return (GeoServerSecurityManager) applicationContext.getBean("geoServerSecurityManager");
-    }
-
-    /**
-     * Accesssor for global user details instance from the security manager.
-     */
-    protected GeoserverUserDetailsService getUserDetails() {
-        return getSecurityManager().getUserDetails();
     }
 
     /**
