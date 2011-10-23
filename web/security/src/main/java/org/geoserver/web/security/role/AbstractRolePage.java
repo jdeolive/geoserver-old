@@ -21,7 +21,7 @@ import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.RoleHierarchyHelper;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.PropertyEditorFormComponent;
@@ -67,24 +67,24 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
                 }
         };
         rolenameField.setDefaultModel(new PropertyModel<RoleUIModel>(uiRole, "rolename"));
-        rolenameField.setEnabled(hasGrantedAuthorityStore());
+        rolenameField.setEnabled(hasRoleStore());
         form.add(rolenameField);
         
         
         parentRoles=new DropDownChoice<String>(
                 "parentRoles", new PropertyModel<String>(uiRole, "parentrolename"), uiRole.getPossibleParentRoleNames());
-        parentRoles.setEnabled(hasGrantedAuthorityStore());
+        parentRoles.setEnabled(hasRoleStore());
         form.add(parentRoles);
         
         
         roleParamEditor = new PropertyEditorFormComponent("roleparameditor",properties);
-        roleParamEditor.setEnabled(hasGrantedAuthorityStore());
+        roleParamEditor.setEnabled(hasRoleStore());
         form.add(roleParamEditor);
                         
         // build the submit/cancel        
         form.add(getCancelLink(RolePage.class));
         form.add(saveLink=saveLink());
-        saveLink.setVisibilityAllowed(hasGrantedAuthorityStore());
+        saveLink.setVisibilityAllowed(hasRoleStore());
                 
     }
 
@@ -106,7 +106,7 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
         uimodel.setPossibleParentRoleNames(new ArrayList<String>());
         uimodel.getPossibleParentRoleNames().add(""); // no parent        
         try {
-            Map<String,String> parentMappings = getGrantedAuthorityService().getParentMappings();  
+            Map<String,String> parentMappings = getRoleService().getParentMappings();  
             
             if (uimodel.getRolename() !=null && uimodel.getRolename().length()>0) { // rolename given
                 RoleHierarchyHelper helper = new RoleHierarchyHelper(parentMappings);
@@ -136,7 +136,7 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
     protected abstract void onFormSubmit();
     
     /**
-     * Mediates between the UI and the {@link GeoserverGrantedAuthority}  class
+     * Mediates between the UI and the {@link GeoserverRole}  class
      */
     static class RoleUIModel implements Serializable {
         private String rolename;

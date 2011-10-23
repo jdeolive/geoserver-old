@@ -99,7 +99,7 @@ public class UserPage extends AbstractSecurityPage {
         header.add(removalWithRoles = new SelectionUserRemovalLink("removeSelectedWithRoles", users, dialog,true));
         removalWithRoles.setOutputMarkupId(true);
         removalWithRoles.setEnabled(false);
-        removalWithRoles.setVisible(hasUserGroupStore() && hasGrantedAuthorityStore());
+        removalWithRoles.setVisible(hasUserGroupStore() && hasRoleStore());
         
         
         return header;

@@ -60,13 +60,13 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
 
         
         form.add(groupRolesFormComponent =new GroupRolesFormComponent(uiGroup.toGeoserverUserGroup(),form));
-        groupRolesFormComponent.setEnabled(hasGrantedAuthorityStore());
+        groupRolesFormComponent.setEnabled(hasRoleStore());
         
         // build the submit/cancel
         form.add(getCancelLink(GroupPage.class));
         saveLink = saveLink();
         form.add(saveLink);
-        saveLink.setVisible(hasUserGroupStore() || hasGrantedAuthorityStore());
+        saveLink.setVisible(hasUserGroupStore() || hasRoleStore());
         
         
     }

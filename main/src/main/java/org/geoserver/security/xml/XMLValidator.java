@@ -77,7 +77,7 @@ public class XMLValidator {
      * @throws IOException
      */
 
-    public void validateGrantedAuthorityRegistry(Document doc) throws IOException{
+    public void validateRoleRegistry(Document doc) throws IOException{
         if (versionMapRR==null)
             initializeSchemataRR();
         XPathExpression expr = XMLXpathFactory.Singleton.getVersionExpressionRR();

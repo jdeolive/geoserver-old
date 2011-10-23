@@ -14,9 +14,9 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
 import org.apache.wicket.model.ResourceModel;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.wicket.ParamResourceModel;
 
@@ -85,9 +85,9 @@ public class NewGroupPage extends AbstractGroupPage {
             store.addGroup(group);
             store.store();
             
-            if (hasGrantedAuthorityStore()) {
-                GeoserverGrantedAuthorityStore gaStore = getGrantedAuthorityStore();
-                Iterator<GeoserverGrantedAuthority> roleIt =groupRolesFormComponent.
+            if (hasRoleStore()) {
+                GeoserverRoleStore gaStore = getRoleStore();
+                Iterator<GeoserverRole> roleIt =groupRolesFormComponent.
                     getRolePalette().getSelectedChoices();
                 while (roleIt.hasNext()) {
                     gaStore.associateRoleToGroup(roleIt.next(), group.getGroupname());

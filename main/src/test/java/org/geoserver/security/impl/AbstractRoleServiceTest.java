@@ -10,19 +10,19 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 
-public abstract class AbstractGrantedAuthorityServiceTest extends AbstractSecurityServiceTest {
+public abstract class AbstractRoleServiceTest extends AbstractSecurityServiceTest {
     
-    protected GeoserverGrantedAuthorityService service; 
-    protected GeoserverGrantedAuthorityStore store; 
+    protected GeoserverRoleService service; 
+    protected GeoserverRoleStore store; 
 
 
     @Override
     protected void setUpInternal() throws Exception {
         super.setUpInternal();
-        service =   createGrantedAuthorityService("test");
+        service =   createRoleService("test");
         store  = createStore(service);
             
     }
@@ -43,27 +43,27 @@ public abstract class AbstractGrantedAuthorityServiceTest extends AbstractSecuri
             store.store();
             assertFalse(store.isModified());
             
-            GeoserverGrantedAuthority role = 
-                store.createGrantedAuthorityObject("ROLE_DUMMY");
-            GeoserverGrantedAuthority role_parent = 
-                store.createGrantedAuthorityObject("ROLE_PARENT");        
+            GeoserverRole role = 
+                store.createRoleObject("ROLE_DUMMY");
+            GeoserverRole role_parent = 
+                store.createRoleObject("ROLE_PARENT");        
 
             
             assertFalse(store.isModified());
             
             // add,remove,update
-            store.addGrantedAuthority(role);
-            store.addGrantedAuthority(role_parent);
+            store.addRole(role);
+            store.addRole(role_parent);
             assertTrue(store.isModified());
             store.store();
             
             assertFalse(store.isModified());
-            store.updateGrantedAuthority(role);
+            store.updateRole(role);
             assertTrue(store.isModified());
             store.load();
             
             assertFalse(store.isModified());
-            store.removeGrantedAuthority(role);
+            store.removeRole(role);
             assertTrue(store.isModified());
             store.load();
             

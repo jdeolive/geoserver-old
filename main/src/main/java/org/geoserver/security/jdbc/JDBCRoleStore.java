@@ -11,24 +11,24 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.RoleHierarchyHelper;
 
 /**
- * JDBC Implementation of {@link GeoserverGrantedAuthorityStore}
+ * JDBC Implementation of {@link GeoserverRoleStore}
  * 
  * @author christian
  *
  */
-public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService implements GeoserverGrantedAuthorityStore {
+public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore {
 
     protected boolean modified;
     protected Connection connection;
     
     
-    public JDBCGrantedAuthorityStore(String name) throws IOException {
+    public JDBCRoleStore(String name) throws IOException {
         super(name);
         
     }
@@ -70,7 +70,7 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
      * Executes {@link Connection#rollback() and
      * frees the connection object
      * 
-     * @see org.geoserver.security.jdbc.JDBCGrantedAuthorityService#load()
+     * @see org.geoserver.security.jdbc.JDBCRoleService#load()
      */
     public void load() throws IOException {
         // Simply roll back the transaction
@@ -82,11 +82,10 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
             throw new IOException(ex);
         }
         setModified(false);
-        //fireGrantedAuthorityChangedEvent();
     }
 
     
-    protected void addRoleProperties(GeoserverGrantedAuthority role, Connection con) throws SQLException,IOException {
+    protected void addRoleProperties(GeoserverRole role, Connection con) throws SQLException,IOException {
         if (role.getProperties().size()==0) return; // nothing to do
         
         PreparedStatement ps = getDMLStatement("roleprops.insert", con);
@@ -105,9 +104,9 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
     
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#addGrantedAuthority(org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleStore#addRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public void addGrantedAuthority(GeoserverGrantedAuthority role)  throws IOException{
+    public void addRole(GeoserverRole role)  throws IOException{
     
         Connection con = null;
         PreparedStatement ps = null;
@@ -129,9 +128,9 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
     }
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#updateGrantedAuthority(org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleStore#updateRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public void updateGrantedAuthority(GeoserverGrantedAuthority role) throws IOException {
+    public void updateRole(GeoserverRole role) throws IOException {
  
         
         // No attributes for update   
@@ -161,9 +160,9 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
     }
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#removeGrantedAuthority(org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleStore#removeRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public boolean removeGrantedAuthority(GeoserverGrantedAuthority role) throws IOException {
+    public boolean removeRole(GeoserverRole role) throws IOException {
         Connection con = null;
         PreparedStatement ps = null;
         boolean retval = false;
@@ -207,7 +206,7 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
     /**
      * Executes {@link Connection#commit()} and frees
      * the connection
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#store()
+     * @see org.geoserver.security.GeoserverRoleStore#store()
      */
     public void store() throws IOException {
         // Simply commit the transaction
@@ -218,14 +217,13 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
             throw new IOException(ex);
         }
         setModified(false);
-        //fireGrantedAuthorityChangedEvent();
     }
 
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#associateRoleToUser(org.geoserver.security.impl.GeoserverGrantedAuthority, java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleStore#associateRoleToUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void associateRoleToUser(GeoserverGrantedAuthority role, String username) throws IOException{
+    public void associateRoleToUser(GeoserverRole role, String username) throws IOException{
         
         Connection con = null;
         PreparedStatement ps = null;
@@ -244,9 +242,9 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
     }
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#disAssociateRoleFromUser(org.geoserver.security.impl.GeoserverGrantedAuthority, java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void disAssociateRoleFromUser(GeoserverGrantedAuthority role, String username) throws IOException{
+    public void disAssociateRoleFromUser(GeoserverRole role, String username) throws IOException{
     
        
         Connection con = null;
@@ -267,9 +265,9 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
 
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#associateRoleToGroup(org.geoserver.security.impl.GeoserverGrantedAuthority, java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleStore#associateRoleToGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void associateRoleToGroup(GeoserverGrantedAuthority role, String groupname) throws IOException{
+    public void associateRoleToGroup(GeoserverRole role, String groupname) throws IOException{
         
         Connection con = null;
         PreparedStatement ps = null;
@@ -288,9 +286,9 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
     }
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#disAssociateRoleFromGroup(org.geoserver.security.impl.GeoserverGrantedAuthority, java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void disAssociateRoleFromGroup(GeoserverGrantedAuthority role, String groupname) throws IOException{
+    public void disAssociateRoleFromGroup(GeoserverRole role, String groupname) throws IOException{
     
        
         Connection con = null;
@@ -319,9 +317,9 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
     }
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#setParentRole(org.geoserver.security.impl.GeoserverGrantedAuthority, org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleStore#setParentRole(org.geoserver.security.impl.GeoserverRole, org.geoserver.security.impl.GeoserverRole)
      */
-    public void setParentRole(GeoserverGrantedAuthority role, GeoserverGrantedAuthority parentRole)
+    public void setParentRole(GeoserverRole role, GeoserverRole parentRole)
             throws IOException {
         
         RoleHierarchyHelper helper = new RoleHierarchyHelper(getParentMappings());
@@ -354,7 +352,7 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
 
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#clear()
+     * @see org.geoserver.security.GeoserverRoleStore#clear()
      */
     public void clear() throws IOException {
         Connection con = null;
@@ -385,10 +383,10 @@ public class JDBCGrantedAuthorityStore extends JDBCGrantedAuthorityService imple
     }
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#initializeFromServer(org.geoserver.security.GeoserverGrantedAuthorityService)
+     * @see org.geoserver.security.GeoserverRoleStore#initializeFromService(org.geoserver.security.GeoserverRoleService)
      */
-    public void initializeFromService(GeoserverGrantedAuthorityService service) throws IOException {
-        JDBCGrantedAuthorityService jdbcService= (JDBCGrantedAuthorityService) service;
+    public void initializeFromService(GeoserverRoleService service) throws IOException {
+        JDBCRoleService jdbcService= (JDBCRoleService) service;
         this.datasource=jdbcService.datasource;
         this.ddlProps=jdbcService.ddlProps;
         this.dmlProps=jdbcService.dmlProps;

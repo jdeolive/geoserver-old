@@ -10,10 +10,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.impl.AbstractGrantedAuthorityService;
+import org.geoserver.security.impl.AbstractRoleService;
 import org.geoserver.security.impl.AbstractUserGroupService;
 
 import junit.framework.Assert;
@@ -27,7 +27,7 @@ public  class FileTest extends TestCase {
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
     int gaCounter=0,ugCounter=0;
     
-    GeoserverGrantedAuthorityService gaService = new AbstractGrantedAuthorityService("TestGAService") {
+    GeoserverRoleService gaService = new AbstractRoleService("TestGAService") {
         
         @Override
         protected void deserialize() throws IOException {
@@ -58,8 +58,8 @@ public  class FileTest extends TestCase {
             File gaFile = File.createTempFile("roles", ".xml");
             gaFile.deleteOnExit();
             
-            GrantedAuthorityFileWatcher gaWatcher = new
-                GrantedAuthorityFileWatcher(gaFile.getCanonicalPath(),gaService);
+            RoleFileWatcher gaWatcher = new
+                RoleFileWatcher(gaFile.getCanonicalPath(),gaService);
             assertEquals(1, gaCounter);
             
             gaWatcher.setDelay(10); // 10 millisecs

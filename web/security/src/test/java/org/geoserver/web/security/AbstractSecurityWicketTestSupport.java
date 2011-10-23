@@ -20,30 +20,30 @@ import org.apache.wicket.feedback.FeedbackMessage;
 import org.geoserver.data.test.MockData;
 import org.geoserver.security.AccessMode;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.AbstractGrantedAuthorityServiceTest;
+import org.geoserver.security.impl.AbstractRoleServiceTest;
 import org.geoserver.security.impl.AbstractUserGroupServiceTest;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
-import org.geoserver.security.impl.MemoryGrantedAuthorityService;
-import org.geoserver.security.impl.MemoryGrantedAuthorityStore;
+import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.MemoryRoleService;
+import org.geoserver.security.impl.MemoryRoleStore;
 import org.geoserver.security.impl.MemoryUserGroupService;
 import org.geoserver.security.impl.MemoryUserGroupStore;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
-import org.geoserver.security.jdbc.H2GrantedAuthorityServiceTest;
+import org.geoserver.security.jdbc.H2RoleServiceTest;
 import org.geoserver.security.jdbc.H2UserGroupServiceTest;
-import org.geoserver.security.xml.XMLGrantedAuthorityServiceTest;
+import org.geoserver.security.xml.XMLRoleServiceTest;
 import org.geoserver.security.xml.XMLUserGroupServiceTest;
 import org.geoserver.web.GeoServerWicketTestSupport;
 
 public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSupport {
     
-    public static class ReadOnlyGAService extends MemoryGrantedAuthorityService {
+    public static class ReadOnlyGAService extends MemoryRoleService {
 
         public ReadOnlyGAService(String name) {
             super(name);            
@@ -67,11 +67,11 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         }
     };
     
-    protected AbstractGrantedAuthorityServiceTest gaTest;
+    protected AbstractRoleServiceTest gaTest;
     protected AbstractUserGroupServiceTest ugTest;
     protected GeoserverUserGroupService ugService;
-    protected GeoserverGrantedAuthorityService gaService;
-    protected GeoserverGrantedAuthorityStore gaStore;
+    protected GeoserverRoleService gaService;
+    protected GeoserverRoleStore gaStore;
     protected GeoserverUserGroupStore ugStore;
     
     
@@ -83,9 +83,9 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
 
     
     protected void initializeForXML() throws IOException {
-        gaTest = new XMLGrantedAuthorityServiceTest();        
+        gaTest = new XMLRoleServiceTest();        
         ugTest = new XMLUserGroupServiceTest();
-        gaService=gaTest.createGrantedAuthorityService("test");
+        gaService=gaTest.createRoleService("test");
         getSecurityManager().setActiveRoleService(gaService);
         ugService=ugTest.createUserGroupService("test");
         getSecurityManager().setActiveUserGroupService(ugService);
@@ -98,9 +98,9 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     }
 
     protected void initializeForJDBC() throws Exception {
-        gaTest = new H2GrantedAuthorityServiceTest();        
+        gaTest = new H2RoleServiceTest();        
         ugTest = new H2UserGroupServiceTest();
-        gaService=gaTest.createGrantedAuthorityService("");
+        gaService=gaTest.createRoleService("");
         getSecurityManager().setActiveRoleService(gaService);
         ugService=ugTest.createUserGroupService("");
         getSecurityManager().setActiveUserGroupService(ugService);
@@ -115,9 +115,9 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     
     protected void addAdditonalData() throws Exception {
         gaStore.associateRoleToGroup(
-                gaStore.getGrantedAuthorityByName("ROLE_WMS"), "group1");
+                gaStore.getRoleByName("ROLE_WMS"), "group1");
         gaStore.associateRoleToGroup(
-                gaStore.getGrantedAuthorityByName("ROLE_WFS"), "group1");
+                gaStore.getRoleByName("ROLE_WFS"), "group1");
         gaStore.store();                    
     }
     protected void insertValues() throws IOException{
@@ -143,7 +143,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     
     protected void activateROGAService() throws Exception{
         gaService = new ReadOnlyGAService("ReadOnlyGAService");
-        gaStore = new MemoryGrantedAuthorityStore("tmpstore");
+        gaStore = new MemoryRoleStore("tmpstore");
         gaStore.initializeFromService(gaService);
         gaTest.insertValues(gaStore);
         gaStore.store();
@@ -192,7 +192,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
           dao.addRule(new ServiceAccessRule("wms", "*", "ROLE_WMS"));
           dao.addRule(new ServiceAccessRule("wfs", "GetFeature", "ROLE_AUTHENTICATED"));                    
           dao.addRule(new ServiceAccessRule("wfs", "*", "ROLE_WFS"));
-          dao.addRule(new ServiceAccessRule("*", "*", GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority()));
+          dao.addRule(new ServiceAccessRule("*", "*", GeoserverRole.ADMIN_ROLE.getAuthority()));
           dao.storeRules();
       }
       
@@ -240,7 +240,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
           DataAccessRuleDAO dao = DataAccessRuleDAO.get();
           dao.getRules();
           dao.addRule(new DataAccessRule("*", "*", AccessMode.WRITE, 
-                  GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority()));
+                  GeoserverRole.ADMIN_ROLE.getAuthority()));
           dao.addRule(new DataAccessRule(MockData.CITE_PREFIX, "*", AccessMode.READ,                   
                   "ROLE_AUTENTICATED"));
           dao.addRule(new DataAccessRule(MockData.CITE_PREFIX, MockData.LAKES.getLocalPart(), AccessMode.WRITE,                   

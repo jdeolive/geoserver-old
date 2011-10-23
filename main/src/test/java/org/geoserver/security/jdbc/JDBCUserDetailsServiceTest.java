@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 import org.geoserver.data.test.TestData;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.AbstractUserDetailsServiceTest;
@@ -27,15 +27,15 @@ public abstract class JDBCUserDetailsServiceTest extends AbstractUserDetailsServ
     }
 
     @Override
-    public GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName) throws IOException {    
-        return JDBCTestSupport.createGrantedAuthorityService(getFixtureId(),
+    public GeoserverRoleService createRoleService(String serviceName) throws IOException {    
+        return JDBCTestSupport.createRoleService(getFixtureId(),
             (LiveDbmsDataSecurity)getTestData(), getSecurityManager());
     }
 
     @Override
-    public GeoserverGrantedAuthorityStore createStore(GeoserverGrantedAuthorityService service) throws IOException {
-        JDBCGrantedAuthorityStore store = 
-            (JDBCGrantedAuthorityStore) super.createStore(service);
+    public GeoserverRoleStore createStore(GeoserverRoleService service) throws IOException {
+        JDBCRoleStore store = 
+            (JDBCRoleStore) super.createStore(service);
         try {
             JDBCTestSupport.dropExistingTables(store,store.getConnection());
         } catch (SQLException e) {
@@ -66,7 +66,7 @@ public abstract class JDBCUserDetailsServiceTest extends AbstractUserDetailsServ
     protected void tearDownInternal() throws Exception {
         super.tearDownInternal();
         if (roleStore!=null) {
-            JDBCGrantedAuthorityStore jdbcStore1 =(JDBCGrantedAuthorityStore) roleStore;
+            JDBCRoleStore jdbcStore1 =(JDBCRoleStore) roleStore;
             JDBCTestSupport.dropExistingTables(jdbcStore1,jdbcStore1.getConnection());
             roleStore.store();
         }

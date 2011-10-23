@@ -3,7 +3,7 @@ package org.geoserver.web.security.user;
 import java.util.SortedSet;
 
 import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 
@@ -80,9 +80,9 @@ public class EditUserPageTest extends AbstractUserPageTest {
         assertEquals(1,groupList.size());
         assertTrue(groupList.contains(ugService.getGroupByGroupname("testgroup")));
                 
-        SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForUser("user1");
+        SortedSet<GeoserverRole> roleList = gaService.getRolesForUser("user1");
         assertEquals(1,roleList.size());
-        assertTrue(roleList.contains(gaService.getGrantedAuthorityByName("ROLE_NEW")));
+        assertTrue(roleList.contains(gaService.getRoleByName("ROLE_NEW")));
     }
     
     public void testReadOnlyUserGroupService() throws Exception {
@@ -114,28 +114,28 @@ public class EditUserPageTest extends AbstractUserPageTest {
         tester.assertVisible("userForm:save");
         
         newFormTester();
-        assignRole(GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority());
+        assignRole(GeoserverRole.ADMIN_ROLE.getAuthority());
         newFormTester();        
         form.submit("save");
         
-        SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForUser("user1");
+        SortedSet<GeoserverRole> roleList = gaService.getRolesForUser("user1");
         assertEquals(1,roleList.size());
-        assertTrue(roleList.contains(gaService.getGrantedAuthorityByName(GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority())));
+        assertTrue(roleList.contains(gaService.getRoleByName(GeoserverRole.ADMIN_ROLE.getAuthority())));
 
     }
     
-    public void testReadOnlyGrantedAuthorityService() throws Exception {
+    public void testReadOnlyRoleService() throws Exception {
         initializeForXML();
-        doTestReadOnlyGrantedAuthorityService();
+        doTestReadOnlyRoleService();
     }
     
-    public void testReadOnlyGrantedAuthorityServiceJDBC() throws Exception {
+    public void testReadOnlyRoleServiceJDBC() throws Exception {
         initializeForJDBC();
-        doTestReadOnlyGrantedAuthorityService();
+        doTestReadOnlyRoleService();
     }
 
     
-    protected void doTestReadOnlyGrantedAuthorityService() throws Exception {
+    protected void doTestReadOnlyRoleService() throws Exception {
         insertValues();        
         activateROGAService();        
         current = ugService.getUserByUsername("user1");

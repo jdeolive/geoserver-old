@@ -7,9 +7,9 @@ package org.geoserver.security.file;
 
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
-import org.geoserver.security.event.GrantedAuthorityLoadedListener;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.event.RoleLoadedEvent;
+import org.geoserver.security.event.RoleLoadedListener;
 
 /**
  * Watches a file storing role information
@@ -18,16 +18,16 @@ import org.geoserver.security.event.GrantedAuthorityLoadedListener;
  * @author christian
  *
  */
-public class GrantedAuthorityFileWatcher extends FileWatcher implements GrantedAuthorityLoadedListener{
+public class RoleFileWatcher extends FileWatcher implements RoleLoadedListener{
     
     
-    public GrantedAuthorityFileWatcher(String fileName,GeoserverGrantedAuthorityService service) {
+    public RoleFileWatcher(String fileName,GeoserverRoleService service) {
         super(fileName);
         this.service=service;
         checkAndConfigure();
     }
 
-    public GrantedAuthorityFileWatcher(String fileName,GeoserverGrantedAuthorityService service,long lastModified) {
+    public RoleFileWatcher(String fileName,GeoserverRoleService service,long lastModified) {
         super(fileName);
         this.service=service;
         this.lastModified=lastModified;
@@ -35,13 +35,13 @@ public class GrantedAuthorityFileWatcher extends FileWatcher implements GrantedA
     }
 
     
-    protected GeoserverGrantedAuthorityService service;
+    protected GeoserverRoleService service;
     
-    public synchronized GeoserverGrantedAuthorityService getService() {
+    public synchronized GeoserverRoleService getService() {
         return service;
     }
 
-    public synchronized void setService(GeoserverGrantedAuthorityService service) {
+    public synchronized void setService(GeoserverRoleService service) {
         this.service = service;
     }
 
@@ -53,7 +53,7 @@ public class GrantedAuthorityFileWatcher extends FileWatcher implements GrantedA
      */
     @Override
     protected void doOnChange() {        
-        GeoserverGrantedAuthorityService theService = getService();
+        GeoserverRoleService theService = getService();
         try {
             if (theService!=null)
                 theService.load();
@@ -75,11 +75,11 @@ public class GrantedAuthorityFileWatcher extends FileWatcher implements GrantedA
     /**
      * Another method to avoid reloads if this object
      * is registered 
-     * @see GeoserverGrantedAuthorityService#registerGrantedAuthorityLoadedListener(GrantedAuthorityLoadedListener)
+     * @see GeoserverRoleService#registerRoleLoadedListener(RoleLoadedListener)
      * 
      */
     @Override
-    public void grantedAuthoritiesChanged(GrantedAuthorityLoadedEvent event) {
+    public void rolesChanged(RoleLoadedEvent event) {
         // avoid reloads
         setLastModified(file.lastModified());
         LOGGER.info("Adjusted last modified for file: " +filename);        

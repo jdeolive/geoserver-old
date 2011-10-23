@@ -8,46 +8,21 @@ package org.geoserver.security.impl;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
-import java.util.logging.Logger;
 import java.util.Properties;
 import java.util.SortedSet;
+import java.util.logging.Logger;
 
-import javax.management.relation.RoleNotFoundException;
-
-import org.apache.commons.io.FileUtils;
-import org.geoserver.config.GeoServerDataDirectory;
-import org.geoserver.config.util.XStreamPersister;
-import org.geoserver.config.util.XStreamPersisterFactory;
-import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.platform.GeoServerResourceLoader;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
-
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.config.SecurityConfig;
-import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.SecurityManagerConfig;
-import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
-import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
-import org.geoserver.security.xml.XMLConstants;
-import org.geoserver.security.xml.XMLGrantedAuthorityService;
-import org.geoserver.security.xml.XMLUserGroupService;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.memory.UserAttribute;
-import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
 
 
 /**
@@ -116,29 +91,29 @@ public class Util {
      * @param store
      * @throws IOException
      */
-    static public void copyFrom(GeoserverGrantedAuthorityService service, GeoserverGrantedAuthorityStore store) throws IOException {
+    static public void copyFrom(GeoserverRoleService service, GeoserverRoleStore store) throws IOException {
         store.clear();
-        Map<String,GeoserverGrantedAuthority> newRoleDict = new HashMap<String,GeoserverGrantedAuthority>();
+        Map<String,GeoserverRole> newRoleDict = new HashMap<String,GeoserverRole>();
         
-        for (GeoserverGrantedAuthority role : service.getRoles()) {
-            GeoserverGrantedAuthority newRole = store.createGrantedAuthorityObject(role.getAuthority());
+        for (GeoserverRole role : service.getRoles()) {
+            GeoserverRole newRole = store.createRoleObject(role.getAuthority());
             for (Object key: role.getProperties().keySet()) {
                 newRole.getProperties().put(key, role.getProperties().get(key));
             }
-            store.addGrantedAuthority(newRole);
+            store.addRole(newRole);
             newRoleDict.put(newRole.getAuthority(),newRole);
         }
         
-        for (GeoserverGrantedAuthority role : service.getRoles()) {
-            GeoserverGrantedAuthority parentRole = service.getParentRole(role);
-            GeoserverGrantedAuthority newRole = newRoleDict.get(role.getAuthority());
-            GeoserverGrantedAuthority newParentRole = parentRole == null ?
+        for (GeoserverRole role : service.getRoles()) {
+            GeoserverRole parentRole = service.getParentRole(role);
+            GeoserverRole newRole = newRoleDict.get(role.getAuthority());
+            GeoserverRole newParentRole = parentRole == null ?
                     null : newRoleDict.get(parentRole.getAuthority());
             store.setParentRole(newRole, newParentRole);
         }
         
-        for (GeoserverGrantedAuthority role : service.getRoles()) {
-            GeoserverGrantedAuthority newRole = newRoleDict.get(role.getAuthority());
+        for (GeoserverRole role : service.getRoles()) {
+            GeoserverRole newRole = newRoleDict.get(role.getAuthority());
             SortedSet<String> usernames = service.getUserNamesForRole(role);
             for (String username : usernames) {
                 store.associateRoleToUser(newRole, username);
@@ -150,7 +125,7 @@ public class Util {
         }                        
     }
     
-    static SortedSet<GeoserverUser> usersHavingRole(GeoserverGrantedAuthority role) {
+    static SortedSet<GeoserverUser> usersHavingRole(GeoserverRole role) {
         // TODO
         return null;
     }

@@ -28,7 +28,7 @@ import org.geoserver.config.GeoServerDataDirectory;
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.config.util.XStreamPersisterFactory;
 import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.concurrent.LockingGrantedAuthorityService;
+import org.geoserver.security.concurrent.LockingRoleService;
 import org.geoserver.security.concurrent.LockingUserGroupService;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityConfig;
@@ -37,13 +37,13 @@ import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
 
-import org.geoserver.security.file.GrantedAuthorityFileWatcher;
+import org.geoserver.security.file.RoleFileWatcher;
 import org.geoserver.security.file.UserGroupFileWatcher;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.Util;
 import org.geoserver.security.xml.XMLConstants;
-import org.geoserver.security.xml.XMLGrantedAuthorityService;
+import org.geoserver.security.xml.XMLRoleService;
 import org.geoserver.security.xml.XMLSecurityProvider;
 import org.geoserver.security.xml.XMLUserGroupService;
 
@@ -96,7 +96,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     ApplicationContext appContext;
 
     /** the active role service */
-    GeoserverGrantedAuthorityService activeRoleService;
+    GeoserverRoleService activeRoleService;
     
     /** the active user group servie */
     // TODO, this is needed for current migration !!!! 
@@ -114,12 +114,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     /** cached user groups */
-    ConcurrentHashMap<String, GeoserverUserGroupService> userGroups = 
+    ConcurrentHashMap<String, GeoserverUserGroupService> userGroupServices = 
         new ConcurrentHashMap<String, GeoserverUserGroupService>();
 
     /** cached role services */
-    ConcurrentHashMap<String, GeoserverGrantedAuthorityService> grantedAuthorities = 
-        new ConcurrentHashMap<String, GeoserverGrantedAuthorityService>();
+    ConcurrentHashMap<String, GeoserverRoleService> roleServices = 
+        new ConcurrentHashMap<String, GeoserverRoleService>();
 
     /** some helper instances for storing/loading service config */ 
     RoleServiceHelper roleServiceHelper = new RoleServiceHelper();
@@ -181,8 +181,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
 
         //load the role authority and ensure it is properly configured
-        String roleServiceName = config.getGrantedAuthorityServiceName();
-        GeoserverGrantedAuthorityService roleService = null;
+        String roleServiceName = config.getRoleServiceName();
+        GeoserverRoleService roleService = null;
         try {
             roleService = loadRoleService(roleServiceName);
             
@@ -247,7 +247,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     /**
-     * Role/granted authority configuration root directory.
+     * Role configuration root directory.
      */
     public File getRoleRoot() throws IOException {
         return getRoleRoot(true); 
@@ -284,16 +284,16 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * 
      * @param name The name of the role service configuration.
      */
-    public GeoserverGrantedAuthorityService loadRoleService(String name)
+    public GeoserverRoleService loadRoleService(String name)
             throws IOException {
-        GeoserverGrantedAuthorityService roleService = grantedAuthorities.get(name);
+        GeoserverRoleService roleService = roleServices.get(name);
         if (roleService == null) {
             synchronized (this) {
-                roleService = grantedAuthorities.get(name);
+                roleService = roleServices.get(name);
                 if (roleService == null) {
                     roleService = roleServiceHelper.load(name);
                     if (roleService != null) {
-                        grantedAuthorities.put(name, roleService);
+                        roleServices.put(name, roleService);
                     }
                 }
             }
@@ -320,7 +320,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
 
         //remove the cached service
-        grantedAuthorities.remove(name);
+        roleServices.remove(name);
         
         //remove the config dir
         roleServiceHelper.removeConfig(name);
@@ -339,14 +339,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * @param name The name of the user group service configuration.
      */
     public GeoserverUserGroupService loadUserGroupService(String name) throws IOException {
-        GeoserverUserGroupService ugService = userGroups.get(name);
+        GeoserverUserGroupService ugService = userGroupServices.get(name);
         if (ugService == null) {
             synchronized (this) {
-                ugService = userGroups.get(name);
+                ugService = userGroupServices.get(name);
                 if (ugService == null) {
                     ugService = userGroupServiceHelper.load(name);
                     if (ugService != null) {
-                        userGroups.put(name, ugService);
+                        userGroupServices.put(name, ugService);
                     }
                 }
             }
@@ -373,7 +373,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
          
         // First, I we have only one usergroupservice, we cannot delete it.
-        if (userGroups.size()==1)
+        if (userGroupServices.size()==1)
             throw new IllegalArgumentException("Can't delete last user group service: " + name);
         
         // TODO: this check is more complicated.
@@ -381,7 +381,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         // we have to refuse deletion. To be implemented
         
         //remove the cached service
-        userGroups.remove(name);
+        userGroupServices.remove(name);
         
         //remove the config dir
         userGroupServiceHelper.removeConfig(name);
@@ -433,25 +433,25 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
 
         //check for the default role service, create if necessary
-        GeoserverGrantedAuthorityService roleService = 
-            loadRoleService(XMLGrantedAuthorityService.DEFAULT_NAME);
+        GeoserverRoleService roleService = 
+            loadRoleService(XMLRoleService.DEFAULT_NAME);
 
         if (roleService == null) {
             XMLFileBasedSecurityServiceConfigImpl gaConfig = new XMLFileBasedSecurityServiceConfigImpl();                 
-            gaConfig.setName(XMLGrantedAuthorityService.DEFAULT_NAME);
-            gaConfig.setClassName(XMLGrantedAuthorityService.class.getName());
+            gaConfig.setName(XMLRoleService.DEFAULT_NAME);
+            gaConfig.setClassName(XMLRoleService.class.getName());
             gaConfig.setCheckInterval(checkInterval); 
             gaConfig.setFileName(XMLConstants.FILE_RR);
             gaConfig.setStateless(false);
             gaConfig.setValidating(true);
             saveRoleService(gaConfig);
 
-            roleService = loadRoleService(XMLGrantedAuthorityService.DEFAULT_NAME);
+            roleService = loadRoleService(XMLRoleService.DEFAULT_NAME);
         }
 
         //save the top level config
         SecurityManagerConfig config = new SecurityManagerConfigImpl();
-        config.setGrantedAuthorityServiceName(XMLGrantedAuthorityService.DEFAULT_NAME);
+        config.setRoleServiceName(XMLRoleService.DEFAULT_NAME);
         config.setUserGroupServiceName(XMLUserGroupService.DEFAULT_NAME);
         saveSecurityConfig(config);
 
@@ -461,7 +461,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         //populate the user group and role service
         GeoserverUserGroupStore userGroupStore = userGroupService.createStore();
-        GeoserverGrantedAuthorityStore roleStore = roleService.createStore();
+        GeoserverRoleStore roleStore = roleService.createStore();
 
         //migradate from users.properties
         File usersFile = new File(getSecurityRoot(), "users.properties");
@@ -485,11 +485,11 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                     userGroupStore.addUser(user);
 
                     for (GrantedAuthority auth : attr.getAuthorities()) {
-                        GeoserverGrantedAuthority role = 
-                            roleStore.getGrantedAuthorityByName(auth.getAuthority());
+                        GeoserverRole role = 
+                            roleStore.getRoleByName(auth.getAuthority());
                         if (role==null) {
-                            role = roleStore.createGrantedAuthorityObject(auth.getAuthority());
-                            roleStore.addGrantedAuthority(role);
+                            role = roleStore.createRoleObject(auth.getAuthority());
+                            roleStore.addRole(role);
                         }
                         roleStore.associateRoleToUser(role, username);
                     }
@@ -499,8 +499,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             // no user.properties, populate with default user and roles
             if (userGroupService.getUserByUsername(GeoserverUser.AdminName) == null) {
                 userGroupStore.addUser(GeoserverUser.createDefaultAdmin());
-                roleStore.addGrantedAuthority(GeoserverGrantedAuthority.ADMIN_ROLE);
-                roleStore.associateRoleToUser(GeoserverGrantedAuthority.ADMIN_ROLE,
+                roleStore.addRole(GeoserverRole.ADMIN_ROLE);
+                roleStore.associateRoleToUser(GeoserverRole.ADMIN_ROLE,
                         GeoserverUser.AdminName);
             }
         }
@@ -514,8 +514,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 while (tokenizer.hasMoreTokens()) {
                     String roleName = tokenizer.nextToken().trim();
                     if (roleName.length()>0) {
-                        if (roleStore.getGrantedAuthorityByName(roleName)==null)
-                            roleStore.addGrantedAuthority(roleStore.createGrantedAuthorityObject(roleName));
+                        if (roleStore.getRoleByName(roleName)==null)
+                            roleStore.addRole(roleStore.createRoleObject(roleName));
                     }
                 }
             }
@@ -532,8 +532,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 while (tokenizer.hasMoreTokens()) {
                     String roleName = tokenizer.nextToken().trim();
                     if (roleName.length()>0 && roleName.equals("*")==false) {
-                        if (roleStore.getGrantedAuthorityByName(roleName)==null)
-                            roleStore.addGrantedAuthority(roleStore.createGrantedAuthorityObject(roleName));
+                        if (roleStore.getRoleByName(roleName)==null)
+                            roleStore.addRole(roleStore.createRoleObject(roleName));
                     }
                 }
             }
@@ -584,8 +584,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     XStreamPersister globalPersister() throws IOException {
         XStreamPersister xp = persister();
         xp.getXStream().alias("security", SecurityManagerConfigImpl.class);
-        xp.getXStream().aliasField("roleServiceName", 
-            SecurityManagerConfigImpl.class, "grantedAuthorityServiceName");
+        
+//      Not needed anymore, property Name has chanted        
+//        xp.getXStream().aliasField("roleServiceName", 
+//            SecurityManagerConfigImpl.class, "grantedAuthorityServiceName");
         return xp;
     }
 
@@ -746,7 +748,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
          /**
          * Loads the role service for the named config from persistence.
          */
-        public GeoserverGrantedAuthorityService load(String name) throws IOException {
+        public GeoserverRoleService load(String name) throws IOException {
             
             SecurityNamedServiceConfig config = loadConfig(name);
             if (config == null) {
@@ -755,7 +757,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             }
 
             //look up the service for this config
-            GeoserverGrantedAuthorityService service = null;
+            GeoserverRoleService service = null;
 
             for (GeoServerSecurityProvider p  : lookupSecurityProviders()) {
                 if (p.getRoleServiceClass() == null) {
@@ -775,7 +777,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             //TODO: we should probably create a new instance of the service config... or mandate
             // that authority service beans be prototype beans and look them up every time
             if (!config.isStateless()) {
-                service = new LockingGrantedAuthorityService(service);
+                service = new LockingRoleService(service);
             }
             service.setName(name);
 
@@ -792,10 +794,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                     if (file.canRead()==false) {
                         throw new IOException("Cannot read file: "+file.getCanonicalPath());
                     }
-                    GrantedAuthorityFileWatcher watcher = new 
-                        GrantedAuthorityFileWatcher(file.getCanonicalPath(),service,file.lastModified());
+                    RoleFileWatcher watcher = new 
+                        RoleFileWatcher(file.getCanonicalPath(),service,file.lastModified());
                     watcher.setDelay(fileConfig.getCheckInterval());
-                    service.registerGrantedAuthorityLoadedListener(watcher);
+                    service.registerRoleLoadedListener(watcher);
                     watcher.start();
                 }
             }
@@ -836,17 +838,17 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     
     /**
      *
-     * @return the active {@link GeoserverGrantedAuthorityService}
+     * @return the active {@link GeoserverRoleService}
      */
-    public GeoserverGrantedAuthorityService getActiveRoleService() {
+    public GeoserverRoleService getActiveRoleService() {
         return activeRoleService;
     }
 
     /**
-     * set the active {@link GeoserverGrantedAuthorityService}
+     * set the active {@link GeoserverRoleService}
      * @param activeRoleService
      */
-    public void setActiveRoleService(GeoserverGrantedAuthorityService activeRoleService) {
+    public void setActiveRoleService(GeoserverRoleService activeRoleService) {
         this.activeRoleService = activeRoleService;
     }
 

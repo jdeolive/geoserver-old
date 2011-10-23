@@ -47,7 +47,7 @@ public class NewDataAccessRulePageTest extends AbstractSecurityWicketTestSupport
         // assign the new role to the method
         form=tester.newFormTester("ruleForm");
         tester.assertRenderedPage(NewDataAccessRulePage.class);
-        form.setValue("roles:roles:recorder", gaService.getGrantedAuthorityByName("ROLE_NEW").getAuthority());
+        form.setValue("roles:roles:recorder", gaService.getRoleByName("ROLE_NEW").getAuthority());
         
         // reopen new role dialog again to ensure that the current state is not lost
         form.submit("roles:addRole");
@@ -124,7 +124,7 @@ public class NewDataAccessRulePageTest extends AbstractSecurityWicketTestSupport
     }
 
     
-    public void testReadOnlyGrantedAuthorityService() throws Exception{
+    public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
         activateROGAService();
         tester.startPage(page=new NewDataAccessRulePage());

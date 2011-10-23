@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.form.Form;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.web.security.AbstractRolesFormComponent;
 
@@ -29,8 +29,8 @@ public class UserRolesFormComponent extends AbstractRolesFormComponent<Geoserver
     }
 
     @Override
-    protected  List<GeoserverGrantedAuthority> getStoredGrantedAuthorities(GeoserverUser rootObject) {
-        List<GeoserverGrantedAuthority> result = new ArrayList<GeoserverGrantedAuthority>();
+    protected  List<GeoserverRole> getStoredGrantedAuthorities(GeoserverUser rootObject) {
+        List<GeoserverRole> result = new ArrayList<GeoserverRole>();
         try {
             result.addAll(
                 getSecurityManager().getActiveRoleService().getRolesForUser(rootObject.getUsername())

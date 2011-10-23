@@ -4,7 +4,7 @@ import java.util.SortedSet;
 
 import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
 import org.apache.wicket.feedback.FeedbackMessage;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 
@@ -74,7 +74,7 @@ public class NewUserPageTest extends AbstractUserPageTest {
         assertEquals(1,groupList.size());
         assertEquals("testgroup",groupList.iterator().next().getGroupname());
         
-        SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForUser("testuser");
+        SortedSet<GeoserverRole> roleList = gaService.getRolesForUser("testuser");
         assertEquals(1,roleList.size());
         assertEquals("ROLE_NEW",roleList.iterator().next().getAuthority());
         
@@ -125,14 +125,14 @@ public class NewUserPageTest extends AbstractUserPageTest {
         SortedSet<GeoserverUserGroup> groupList = ugService.getGroupsForUser(user);
         assertEquals(0,groupList.size());
         
-        SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForUser("testuser");
+        SortedSet<GeoserverRole> roleList = gaService.getRolesForUser("testuser");
         assertEquals(1,roleList.size());
-        assertTrue(roleList.contains(gaService.createGrantedAuthorityObject("ROLE_WMS")));
+        assertTrue(roleList.contains(gaService.createRoleObject("ROLE_WMS")));
 
         user = (GeoserverUser) ugService.loadUserByUsername("testuser");
         assertEquals(2,user.getAuthorities().size());
-        assertTrue(user.getAuthorities().contains(gaService.createGrantedAuthorityObject("ROLE_AUTHENTICATED")));
-        assertTrue(user.getAuthorities().contains(gaService.createGrantedAuthorityObject("ROLE_WMS")));
+        assertTrue(user.getAuthorities().contains(gaService.createRoleObject("ROLE_AUTHENTICATED")));
+        assertTrue(user.getAuthorities().contains(gaService.createRoleObject("ROLE_WMS")));
         
     }
     
@@ -182,14 +182,14 @@ public class NewUserPageTest extends AbstractUserPageTest {
         assertEquals(1,groupList.size());
         assertEquals("group1",groupList.iterator().next().getGroupname());
         
-        SortedSet<GeoserverGrantedAuthority> roleList = gaService.getRolesForUser("testuser");
+        SortedSet<GeoserverRole> roleList = gaService.getRolesForUser("testuser");
         assertEquals(0,roleList.size());
         
         user = (GeoserverUser) ugService.loadUserByUsername("testuser");
         assertEquals(3,user.getAuthorities().size());
-        assertTrue(user.getAuthorities().contains(gaService.createGrantedAuthorityObject("ROLE_AUTHENTICATED")));
-        assertTrue(user.getAuthorities().contains(gaService.createGrantedAuthorityObject("ROLE_WFS")));
-        assertTrue(user.getAuthorities().contains(gaService.createGrantedAuthorityObject("ROLE_WMS")));
+        assertTrue(user.getAuthorities().contains(gaService.createRoleObject("ROLE_AUTHENTICATED")));
+        assertTrue(user.getAuthorities().contains(gaService.createRoleObject("ROLE_WFS")));
+        assertTrue(user.getAuthorities().contains(gaService.createRoleObject("ROLE_WMS")));
         
     }
 

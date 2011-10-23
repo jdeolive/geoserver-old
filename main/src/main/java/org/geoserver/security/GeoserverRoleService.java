@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
 
-import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
-import org.geoserver.security.event.GrantedAuthorityLoadedListener;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.event.RoleLoadedEvent;
+import org.geoserver.security.event.RoleLoadedListener;
+import org.geoserver.security.impl.GeoserverRole;
 
 /**
  * A class implementing this interface is capable of reading 
@@ -21,7 +21,11 @@ import org.geoserver.security.impl.GeoserverGrantedAuthority;
  * @author christian
  *
  */
-public interface GeoserverGrantedAuthorityService extends GeoServerSecurityService {
+/**
+ * @author christian
+ *
+ */
+public interface GeoserverRoleService extends GeoServerSecurityService {
 
     /**
      * Creates the granted authority store associated with this service, or null if creating a store
@@ -31,39 +35,39 @@ public interface GeoserverGrantedAuthorityService extends GeoServerSecurityServi
      * returns <code>false</code>.
      * </p>
      */
-    GeoserverGrantedAuthorityStore createStore() throws IOException;
+    GeoserverRoleStore createStore() throws IOException;
 
     /**
      * Register for notifications on load
      * 
      * @param listener
      */
-    void registerGrantedAuthorityLoadedListener (GrantedAuthorityLoadedListener listener);
+    void registerRoleLoadedListener (RoleLoadedListener listener);
     
     /**
      * Unregister for notifications on load
      * 
      * @param listener
      */
-    void unregisterGrantedAuthorityLoadedListener (GrantedAuthorityLoadedListener listener);
+    void unregisterRoleLoadedListener (RoleLoadedListener listener);
 
     /**
-     * Get group names for a {@link GeoserverGrantedAuthority} object
+     * Get group names for a {@link GeoserverRole} object
      * Hierarchical roles are not considered
      * 
      * @param role
      * @return collection which cannot be modified
      */
-    SortedSet<String> getGroupNamesForRole(GeoserverGrantedAuthority role) throws IOException;
+    SortedSet<String> getGroupNamesForRole(GeoserverRole role) throws IOException;
 
     /**
-     * Get user names for a {@link GeoserverGrantedAuthority} object
+     * Get user names for a {@link GeoserverRole} object
      * Hierarchical roles are not considered
      * 
      * @param role
      * @return collection which cannot be modified
      */
-    SortedSet<String> getUserNamesForRole(GeoserverGrantedAuthority role) throws IOException;
+    SortedSet<String> getUserNamesForRole(GeoserverRole role) throws IOException;
 
     
     /**
@@ -73,7 +77,7 @@ public interface GeoserverGrantedAuthorityService extends GeoServerSecurityServi
      * @param username
      * @return a collection which cannot be modified
      */
-    SortedSet<GeoserverGrantedAuthority> getRolesForUser(String username) throws IOException;
+    SortedSet<GeoserverRole> getRolesForUser(String username) throws IOException;
 
     
     /**
@@ -83,7 +87,7 @@ public interface GeoserverGrantedAuthorityService extends GeoServerSecurityServi
      * @param groupname
      * @return a collection which cannot be modified
      */
-    SortedSet<GeoserverGrantedAuthority> getRolesForGroup(String groupname) throws IOException;
+    SortedSet<GeoserverRole> getRolesForGroup(String groupname) throws IOException;
 
 
     /**
@@ -93,12 +97,12 @@ public interface GeoserverGrantedAuthorityService extends GeoServerSecurityServi
      * @return a collection which cannot be modified
      */
     
-    SortedSet<GeoserverGrantedAuthority> getRoles() throws IOException;
+    SortedSet<GeoserverRole> getRoles() throws IOException;
 
     
     /**
      * returns a role name -> parent role name mapping for the all
-     * {@link GeoserverGrantedAuthority} objects.
+     * {@link GeoserverRole} objects.
      * 
      * This method should be used by clients if they have to build
      * a tree structure
@@ -109,33 +113,33 @@ public interface GeoserverGrantedAuthorityService extends GeoServerSecurityServi
     Map<String,String> getParentMappings() throws IOException;
         
     /**
-     * Creates a {@link GeoserverGrantedAuthority} object . Implementations
-     * can use their special classes derived from {@link GeoserverGrantedAuthority}
+     * Creates a {@link GeoserverRole} object . Implementations
+     * can use their special classes derived from {@link GeoserverRole}
      * 
      * @param role
      * @return
      */
-    GeoserverGrantedAuthority createGrantedAuthorityObject(String role) throws IOException;
+    GeoserverRole createRoleObject(String role) throws IOException;
     
     
     /**
-     * Get the parent {@link GeoserverGrantedAuthority} object
+     * Get the parent {@link GeoserverRole} object
      * @param role
      * @return the parent role or null
      */
-    GeoserverGrantedAuthority getParentRole(GeoserverGrantedAuthority role)  throws IOException;
+    GeoserverRole getParentRole(GeoserverRole role)  throws IOException;
     
     /**
-     * Loads a {@link GeoserverGrantedAuthority} by name
+     * Loads a {@link GeoserverRole} by name
      * @param role
      * @return
      * @throws null if the role is not found
      */
-    GeoserverGrantedAuthority getGrantedAuthorityByName(String role) throws  IOException;
+    GeoserverRole getRoleByName(String role) throws  IOException;
 
     /**
      * load from backend store. On success,
-     * a  {@link GrantedAuthorityLoadedEvent} should must be triggered 
+     * a  {@link RoleLoadedEvent} should must be triggered 
      */
     void load() throws IOException;
     
@@ -160,7 +164,7 @@ public interface GeoserverGrantedAuthorityService extends GeoServerSecurityServi
      * @param roleName, the name of the role
      * 
      * @param roleParams, the params for the role from
-     * {@link GeoserverGrantedAuthorityService}
+     * {@link GeoserverRoleService}
      * 
      * @param userName, the user name
      * @param userProps. the properties of the user from

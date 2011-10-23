@@ -16,9 +16,9 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
 import org.apache.wicket.model.ResourceModel;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.wicket.ParamResourceModel;
@@ -96,9 +96,9 @@ public class NewUserPage extends AbstractUserPage {
                 ugStore.associateUserToGroup(user, it.next());
             }
             
-            if (hasGrantedAuthorityStore()) {
-                GeoserverGrantedAuthorityStore gaStore = getGrantedAuthorityStore();
-                Iterator<GeoserverGrantedAuthority> roleIt =userRolesFormComponent.
+            if (hasRoleStore()) {
+                GeoserverRoleStore gaStore = getRoleStore();
+                Iterator<GeoserverRole> roleIt =userRolesFormComponent.
                         getRolePalette().getSelectedChoices();
                 while (roleIt.hasNext()) {
                     gaStore.associateRoleToUser(roleIt.next(), user.getUsername());

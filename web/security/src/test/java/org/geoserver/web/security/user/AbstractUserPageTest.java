@@ -13,7 +13,7 @@ public abstract class AbstractUserPageTest extends AbstractSecurityWicketTestSup
     
     protected abstract void initializeTester();
         
-    public void testReadOnlyGrantedAuthorityService() throws Exception{
+    public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
         activateROGAService();        
         initializeTester();
@@ -60,7 +60,7 @@ public abstract class AbstractUserPageTest extends AbstractSecurityWicketTestSup
 
     
     protected void assignRole(String roleName) throws Exception {
-        form.setValue("roles:roles:recorder", gaService.getGrantedAuthorityByName(roleName).getAuthority());
+        form.setValue("roles:roles:recorder", gaService.getRoleByName(roleName).getAuthority());
         tester.executeAjaxEvent("userForm:roles:roles:recorder", "onchange");
         newFormTester();
     }
@@ -99,7 +99,7 @@ public abstract class AbstractUserPageTest extends AbstractSecurityWicketTestSup
     protected void assertCalculatedRoles( String[] roles) throws Exception{
         for (int i = 0; i < roles.length;i++ )
         tester.assertModelValue("userForm:calculatedrolesContainer:calculatedroles:"+i,
-                gaService.getGrantedAuthorityByName(roles[i]));
+                gaService.getRoleByName(roles[i]));
     }
 
 }

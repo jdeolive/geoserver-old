@@ -28,9 +28,9 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.security.impl.RoleCalculator;
@@ -50,7 +50,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     protected UserGroupFormComponent userGroupFormComponent;
     protected UserRolesFormComponent userRolesFormComponent;
     protected PropertyEditorFormComponent userpropertyeditor;
-    protected ListView<GeoserverGrantedAuthority> calculatedRoles;
+    protected ListView<GeoserverRole> calculatedRoles;
     protected UserUIModel uiUser;
     protected Form<Serializable> form;
     protected SubmitLink saveLink;
@@ -108,21 +108,21 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         pw2.setEnabled(hasUserGroupStore());
         
         
-        LoadableDetachableModel<List<GeoserverGrantedAuthority>> caclulatedRolesModel = new 
-                LoadableDetachableModel<List<GeoserverGrantedAuthority>> () {
+        LoadableDetachableModel<List<GeoserverRole>> caclulatedRolesModel = new 
+                LoadableDetachableModel<List<GeoserverRole>> () {
                     private static final long serialVersionUID = 1L;                                       
                     @Override
-                    protected List<GeoserverGrantedAuthority> load() {                        
+                    protected List<GeoserverRole> load() {                        
                             return getCalculatedroles();
                     }            
         };
 
 
                 
-        calculatedRoles = new ListView<GeoserverGrantedAuthority>
+        calculatedRoles = new ListView<GeoserverRole>
         ("calculatedroles", caclulatedRolesModel) {
                 private static final long serialVersionUID = 1L;
-                protected void populateItem(ListItem<GeoserverGrantedAuthority> item) {
+                protected void populateItem(ListItem<GeoserverRole> item) {
                     item.add(editRoleLink("calculatedrole", item.getModel(), RoleListProvider.ROLENAME));
                 }
         };
@@ -142,12 +142,12 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         form.add(userGroupFormComponent = new UserGroupFormComponent(tmpUser,form,getCalculatedRolesBehavior()));
         userGroupFormComponent.setEnabled(hasUserGroupStore());
         form.add(userRolesFormComponent =new UserRolesFormComponent(tmpUser,form,getCalculatedRolesBehavior()));
-        userRolesFormComponent.setEnabled(hasGrantedAuthorityStore());
+        userRolesFormComponent.setEnabled(hasRoleStore());
                                        
         // build the submit/cancel
         form.add(getCancelLink(UserPage.class));
         form.add(saveLink=saveLink());
-        saveLink.setVisible(hasUserGroupStore() || hasGrantedAuthorityStore());
+        saveLink.setVisible(hasUserGroupStore() || hasRoleStore());
         
                                
         // add the validators
@@ -181,13 +181,13 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     }
     
     
-    Component editRoleLink(String id, IModel<GeoserverGrantedAuthority> itemModel, Property<GeoserverGrantedAuthority> property) {
+    Component editRoleLink(String id, IModel<GeoserverRole> itemModel, Property<GeoserverRole> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onClick(AjaxRequestTarget target) {                
-                setResponsePage(new EditRolePage((GeoserverGrantedAuthority) getDefaultModelObject(), this.getPage()));
+                setResponsePage(new EditRolePage((GeoserverRole) getDefaultModelObject(), this.getPage()));
             }
         };
     }
@@ -203,18 +203,18 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         };
     }
     
-    public List<GeoserverGrantedAuthority> getCalculatedroles() {
-        List<GeoserverGrantedAuthority> tmpList = new ArrayList<GeoserverGrantedAuthority>();
-        List<GeoserverGrantedAuthority> resultList = new ArrayList<GeoserverGrantedAuthority>();
+    public List<GeoserverRole> getCalculatedroles() {
+        List<GeoserverRole> tmpList = new ArrayList<GeoserverRole>();
+        List<GeoserverRole> resultList = new ArrayList<GeoserverRole>();
         GeoserverUserGroupService ugService= getSecurityManager().getActiveUserGroupService();
-        GeoserverGrantedAuthorityService gaService = getSecurityManager().getActiveRoleService();
+        GeoserverRoleService gaService = getSecurityManager().getActiveRoleService();
         RoleCalculator calc = new RoleCalculator(ugService, gaService);
         try {
             tmpList.addAll(userRolesFormComponent.getSelectedRoles());
             calc.addInheritedRoles(tmpList);
             for (GeoserverUserGroup group : userGroupFormComponent.getSelectedGroups()) {
                 if (group.isEnabled())
-                    tmpList.addAll(calc.calculateGrantedAuthorities(group));
+                    tmpList.addAll(calc.calculateRoles(group));
             }
             resultList.addAll(calc.personalizeRoles(uiUser.toGeoserverUser(), tmpList));
         } catch (IOException e) {
