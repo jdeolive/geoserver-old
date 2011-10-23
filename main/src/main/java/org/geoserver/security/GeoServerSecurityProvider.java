@@ -73,7 +73,7 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p> 
      */
-    public abstract Class<? extends GeoserverGrantedAuthorityService> getRoleServiceClass();
+    public abstract Class<? extends GeoserverRoleService> getRoleServiceClass();
     
     /**
      * Creates a new role group service.
@@ -82,7 +82,7 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p>
      */
-    public abstract GeoserverGrantedAuthorityService createRoleService(SecurityNamedServiceConfig config) 
+    public abstract GeoserverRoleService createRoleService(SecurityNamedServiceConfig config) 
         throws IOException;
 
     

@@ -22,7 +22,7 @@ import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.role.NewRolePage;
 
@@ -33,9 +33,9 @@ import org.geoserver.web.security.role.NewRolePage;
 public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<Serializable> {
 
 
-    protected Palette<GeoserverGrantedAuthority> rolePalette;
+    protected Palette<GeoserverRole> rolePalette;
     protected T rootObject;
-    protected List <GeoserverGrantedAuthority> selectedRoles; 
+    protected List <GeoserverRole> selectedRoles; 
     protected Form<?> form;
     
     public AbstractRolesFormComponent(String id, T rootObject,   final boolean isRequired, Form<?> form) {
@@ -49,16 +49,16 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
         this.form=form;
                 
         selectedRoles=getStoredGrantedAuthorities(rootObject);        
-        PropertyModel<List<GeoserverGrantedAuthority>> model = new 
-                PropertyModel<List<GeoserverGrantedAuthority>> (this,"selectedRoles");
+        PropertyModel<List<GeoserverRole>> model = new 
+                PropertyModel<List<GeoserverRole>> (this,"selectedRoles");
                 
         
-        LoadableDetachableModel<SortedSet<GeoserverGrantedAuthority>> choicesModel = new 
-                LoadableDetachableModel<SortedSet<GeoserverGrantedAuthority>> () {
+        LoadableDetachableModel<SortedSet<GeoserverRole>> choicesModel = new 
+                LoadableDetachableModel<SortedSet<GeoserverRole>> () {
                     @Override
-                    protected SortedSet<GeoserverGrantedAuthority> load() {                        
+                    protected SortedSet<GeoserverRole> load() {                        
                         try {
-                            SortedSet<GeoserverGrantedAuthority> result = new TreeSet<GeoserverGrantedAuthority>();
+                            SortedSet<GeoserverRole> result = new TreeSet<GeoserverRole>();
                             result.addAll(getSecurityManager().getActiveRoleService().getRoles());
                             return result;
                         } catch (IOException e) {
@@ -70,14 +70,14 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
 
      
         
-        rolePalette = new Palette<GeoserverGrantedAuthority>(
+        rolePalette = new Palette<GeoserverRole>(
                 "roles", model,choicesModel,
-                new ChoiceRenderer<GeoserverGrantedAuthority>("authority","authority"), 10, false) {
+                new ChoiceRenderer<GeoserverRole>("authority","authority"), 10, false) {
             // trick to force the palette to have at least one selected elements
             // tried with a nicer validator but it's not used at all, the required thing
             // instead is working (don't know why...)
-            protected Recorder<GeoserverGrantedAuthority> newRecorderComponent() {
-                Recorder<GeoserverGrantedAuthority> rec = super.newRecorderComponent();                
+            protected Recorder<GeoserverRole> newRecorderComponent() {
+                Recorder<GeoserverRole> rec = super.newRecorderComponent();                
                 if (isRequired)
                     rec.setRequired(true);                
                 if (behavior!=null) 
@@ -105,20 +105,20 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
         return GeoServerApplication.get().getSecurityManager();
     }
 
-    public Palette<GeoserverGrantedAuthority> getRolePalette() {
+    public Palette<GeoserverRole> getRolePalette() {
 	return rolePalette;
     }
     
-    abstract protected List<GeoserverGrantedAuthority> getStoredGrantedAuthorities (T rootObject);
+    abstract protected List<GeoserverRole> getStoredGrantedAuthorities (T rootObject);
     
-    public void calculateAddedRemovedCollections(Collection<GeoserverGrantedAuthority> added, Collection<GeoserverGrantedAuthority> removed) {
-        List<GeoserverGrantedAuthority> oldroles;
+    public void calculateAddedRemovedCollections(Collection<GeoserverRole> added, Collection<GeoserverRole> removed) {
+        List<GeoserverRole> oldroles;
         oldroles = getStoredGrantedAuthorities(rootObject);
-        Iterator<GeoserverGrantedAuthority> it = rolePalette.getSelectedChoices();
+        Iterator<GeoserverRole> it = rolePalette.getSelectedChoices();
         
         removed.addAll(oldroles);
         while (it.hasNext()) {
-            GeoserverGrantedAuthority role = it.next();
+            GeoserverRole role = it.next();
             if (oldroles.contains(role)==false)
                 added.add(role);
             else
@@ -126,11 +126,11 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
         }
     }
     
-    public List<GeoserverGrantedAuthority> getSelectedRoles() {
+    public List<GeoserverRole> getSelectedRoles() {
         return selectedRoles;
     }
 
-    public void setSelectedRoles(List<GeoserverGrantedAuthority> selectedRoles) {
+    public void setSelectedRoles(List<GeoserverRole> selectedRoles) {
         this.selectedRoles = selectedRoles;
     }
 

@@ -9,7 +9,7 @@ import java.io.IOException;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 
 /**
- * Common interface for {@link GeoserverGrantedAuthorityService} and {@link GeoserverUserGroupService}.
+ * Common interface for {@link GeoserverRoleService} and {@link GeoserverUserGroupService}.
  *  
  * @author Justin Deoliveira, OpenGeo
  *

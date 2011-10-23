@@ -11,11 +11,11 @@ import java.io.IOException;
 import org.geoserver.data.test.LiveData;
 import org.geoserver.data.test.TestData;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
 import org.geoserver.security.impl.AbstractUserDetailsServiceTest;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 
 public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
@@ -36,18 +36,18 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         return service;                
     }
 
-    public GeoserverGrantedAuthorityService createGrantedAuthorityService(String serviceName) throws IOException {
+    public GeoserverRoleService createRoleService(String serviceName) throws IOException {
         
         XMLFileBasedSecurityServiceConfigImpl gaConfig = new XMLFileBasedSecurityServiceConfigImpl();                 
         gaConfig.setName(serviceName);
-        gaConfig.setClassName(XMLGrantedAuthorityService.class.getName());
+        gaConfig.setClassName(XMLRoleService.class.getName());
         gaConfig.setCheckInterval(10); 
         gaConfig.setFileName(XMLConstants.FILE_RR);
         gaConfig.setStateless(false);
         gaConfig.setValidating(true);
         getSecurityManager().saveRoleService(gaConfig);
 
-        GeoserverGrantedAuthorityService service = 
+        GeoserverRoleService service = 
             getSecurityManager().loadRoleService(serviceName);
         service.initializeFromConfig(gaConfig);
         return service;
@@ -57,8 +57,8 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
     public void testMigration() throws IOException {
         GeoserverUserGroupService userService = createUserGroupService(
                 XMLUserGroupService.DEFAULT_NAME);
-        GeoserverGrantedAuthorityService roleService = createGrantedAuthorityService(
-                XMLGrantedAuthorityService.DEFAULT_NAME);
+        GeoserverRoleService roleService = createRoleService(
+                XMLRoleService.DEFAULT_NAME);
         getSecurityManager().setActiveRoleService(roleService);
         getSecurityManager().setActiveUserGroupService(userService);
         
@@ -82,18 +82,18 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         assertEquals("nah",disabledUser.getPassword());
         assertFalse(disabledUser.isEnabled());
         
-        GeoserverGrantedAuthority role_admin = roleService.getGrantedAuthorityByName("ROLE_ADMINISTRATOR");
+        GeoserverRole role_admin = roleService.getRoleByName("ROLE_ADMINISTRATOR");
         assertNotNull(role_admin);
-        GeoserverGrantedAuthority role_wfs_read = roleService.getGrantedAuthorityByName("ROLE_WFS_READ");
+        GeoserverRole role_wfs_read = roleService.getRoleByName("ROLE_WFS_READ");
         assertNotNull(role_wfs_read);
-        GeoserverGrantedAuthority role_wfs_write = roleService.getGrantedAuthorityByName("ROLE_WFS_WRITE");
+        GeoserverRole role_wfs_write = roleService.getRoleByName("ROLE_WFS_WRITE");
         assertNotNull(role_wfs_write);
-        GeoserverGrantedAuthority role_test = roleService.getGrantedAuthorityByName("ROLE_TEST");
+        GeoserverRole role_test = roleService.getRoleByName("ROLE_TEST");
         assertNotNull(role_test);
-        assertNotNull(roleService.getGrantedAuthorityByName("NO_ONE"));
-        assertNotNull(roleService.getGrantedAuthorityByName("TRUSTED_ROLE"));
-        assertNotNull(roleService.getGrantedAuthorityByName("ROLE_SERVICE_1"));
-        assertNotNull(roleService.getGrantedAuthorityByName("ROLE_SERVICE_2"));
+        assertNotNull(roleService.getRoleByName("NO_ONE"));
+        assertNotNull(roleService.getRoleByName("TRUSTED_ROLE"));
+        assertNotNull(roleService.getRoleByName("ROLE_SERVICE_1"));
+        assertNotNull(roleService.getRoleByName("ROLE_SERVICE_2"));
 
         
 

@@ -7,7 +7,7 @@ package org.geoserver.security.jdbc;
 import java.io.IOException;
 
 import org.geoserver.security.GeoServerSecurityProvider;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -36,14 +36,14 @@ public class JDBCSecurityProvider extends GeoServerSecurityProvider {
     }
 
     @Override
-    public Class<? extends GeoserverGrantedAuthorityService> getRoleServiceClass() {
-        return JDBCGrantedAuthorityService.class; 
+    public Class<? extends GeoserverRoleService> getRoleServiceClass() {
+        return JDBCRoleService.class; 
     }
 
     @Override
-    public GeoserverGrantedAuthorityService createRoleService(SecurityNamedServiceConfig config)
+    public GeoserverRoleService createRoleService(SecurityNamedServiceConfig config)
             throws IOException {
-        return new JDBCGrantedAuthorityService();
+        return new JDBCRoleService();
     }
 
 }

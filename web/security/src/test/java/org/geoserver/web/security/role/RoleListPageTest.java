@@ -7,11 +7,11 @@ import java.util.SortedSet;
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.security.AbstractListPageTest;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public class RoleListPageTest extends AbstractListPageTest<GeoserverGrantedAuthority> {
+public class RoleListPageTest extends AbstractListPageTest<GeoserverRole> {
     
      public static final String SECOND_COLUM_PATH="itemProperties:1:component:link";
     
@@ -34,7 +34,7 @@ public class RoleListPageTest extends AbstractListPageTest<GeoserverGrantedAutho
         
         tester.startPage(listPageClass());
                    
-        GeoserverGrantedAuthority role = gaService.getGrantedAuthorityByName("ROLE_AUTHENTICATED");
+        GeoserverRole role = gaService.getRoleByName("ROLE_AUTHENTICATED");
         assertNotNull(role);
         Component c = getFromList(SECOND_COLUM_PATH, role,RoleListProvider.PARENTROLENAME); 
         assertNotNull(c);
@@ -53,16 +53,16 @@ public class RoleListPageTest extends AbstractListPageTest<GeoserverGrantedAutho
 
     @Override
     protected String getSearchString() throws Exception{
-        GeoserverGrantedAuthority role = 
-                gaService.getGrantedAuthorityByName(
-                GeoserverGrantedAuthority.ADMIN_ROLE.getAuthority());
+        GeoserverRole role = 
+                gaService.getRoleByName(
+                GeoserverRole.ADMIN_ROLE.getAuthority());
         assertNotNull(role);
         return role.getAuthority();
     }
 
 
     @Override
-    protected Property<GeoserverGrantedAuthority> getEditProperty() {
+    protected Property<GeoserverRole> getEditProperty() {
         return RoleListProvider.ROLENAME;
     }
 
@@ -94,9 +94,9 @@ public class RoleListPageTest extends AbstractListPageTest<GeoserverGrantedAutho
         Method m = link.delegate.getClass().getDeclaredMethod("onSubmit", AjaxRequestTarget.class,Component.class);
         m.invoke(link.delegate, null,null);
         
-        SortedSet<GeoserverGrantedAuthority> roles = gaService.getRoles();
+        SortedSet<GeoserverRole> roles = gaService.getRoles();
         assertEquals(0,roles.size(),4);
-        assertTrue(roles.contains(GeoserverGrantedAuthority.ADMIN_ROLE));
+        assertTrue(roles.contains(GeoserverRole.ADMIN_ROLE));
     }
     
     public void testRemoveJDBC() throws Exception {
@@ -108,8 +108,8 @@ public class RoleListPageTest extends AbstractListPageTest<GeoserverGrantedAutho
 
     @Override
     protected void doRemove(String pathForLink) throws Exception {
-        GeoserverGrantedAuthority newRole = gaStore.createGrantedAuthorityObject("NEW_ROLE");
-        gaStore.addGrantedAuthority(newRole);
+        GeoserverRole newRole = gaStore.createRoleObject("NEW_ROLE");
+        gaStore.addRole(newRole);
         gaStore.store();
         assertEquals(5,gaService.getRoles().size());
         

@@ -5,7 +5,7 @@
 
 package org.geoserver.security.config;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 
 
@@ -19,15 +19,15 @@ public interface SecurityManagerConfig  extends SecurityConfig {
 
     /**
      * @return the name for a 
-     * {@link GeoserverGrantedAuthorityService} object
+     * {@link GeoserverRoleService} object
      * 
      */
-    public String getGrantedAuthorityServiceName();
+    public String getRoleServiceName();
     /**
-     * @param grantedAuthorityServiceName, the name of a
-     * {@link GeoserverGrantedAuthorityService} object 
+     * @param roleServiceName, the name of a
+     * {@link GeoserverRoleService} object 
      */
-    public void setGrantedAuthorityServiceName(String grantedAuthorityServiceName);
+    public void setRoleServiceName(String roleServiceName);
     
     /**
      * @return the name for a 

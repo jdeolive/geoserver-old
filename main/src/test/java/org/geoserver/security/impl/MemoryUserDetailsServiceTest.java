@@ -7,14 +7,14 @@ package org.geoserver.security.impl;
 
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 
 public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 
     @Override
-    public GeoserverGrantedAuthorityService createGrantedAuthorityService(String name) throws IOException {
-        return new MemoryGrantedAuthorityService(name);
+    public GeoserverRoleService createRoleService(String name) throws IOException {
+        return new MemoryRoleService(name);
     }
     
     @Override

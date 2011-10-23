@@ -5,11 +5,11 @@
 
 package org.geoserver.security.jdbc;
 
-public class PostGisGrantedAuthorityServiceTest extends JDBCGrantedAuthorityServiceTest {
+public class SqlServerRoleServiceTest extends JDBCRoleServiceTest {
 
     @Override
     protected String getFixtureId() {
-        return "postgis";
+        return "sqlserver";
     }
 
 }

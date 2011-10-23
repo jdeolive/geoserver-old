@@ -21,18 +21,18 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.io.FileUtils;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.XMLBasedSecurityServiceConfig;
-import org.geoserver.security.impl.AbstractGrantedAuthorityService;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.AbstractRoleService;
+import org.geoserver.security.impl.GeoserverRole;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService {
+public class XMLRoleService extends AbstractRoleService {
 
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
     protected DocumentBuilder builder;
@@ -45,11 +45,11 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
     private boolean validatingXMLSchema = true;
     
     
-    public XMLGrantedAuthorityService() throws IOException{
+    public XMLRoleService() throws IOException{
         this(null);
     }
     
-    public XMLGrantedAuthorityService(String name) throws IOException{
+    public XMLRoleService(String name) throws IOException{
         super(name);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -96,8 +96,8 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
     }
 
     @Override
-    public GeoserverGrantedAuthorityStore createStore() throws IOException {
-        XMLGrantedAuthorityStore store = new XMLGrantedAuthorityStore(getName());
+    public GeoserverRoleStore createStore() throws IOException {
+        XMLRoleStore store = new XMLRoleStore(getName());
         store.initializeFromService(this);
         return store;
     }
@@ -122,12 +122,12 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
                 throw new IOException(e);
             }
             if (isValidatingXMLSchema()) {
-                XMLValidator.Singleton.validateGrantedAuthorityRegistry(doc);
+                XMLValidator.Singleton.validateRoleRegistry(doc);
             }
             
             XPathExpression expr = XMLXpathFactory.Singleton.getVersionExpressionRR();
             String versioNummer = expr.evaluate(doc);
-            GrantedAuthorityXMLXpath xmlXPath = XMLXpathFactory.Singleton.getGrantedAuthorityXMLXpath(versioNummer);
+            RoleXMLXpath xmlXPath = XMLXpathFactory.Singleton.getRoleXMLXpath(versioNummer);
             
         
             clearMaps();
@@ -146,7 +146,7 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
                     String propertyValue = xmlXPath.getPropertyValueExpression().evaluate(propertyNode);
                     roleProps.put(propertyName, propertyValue);
                 }
-                GeoserverGrantedAuthority role =createGrantedAuthorityObject(roleName);                                
+                GeoserverRole role =createRoleObject(roleName);                                
          
                 role.getProperties().clear();       // set properties
                 for (Object key: roleProps.keySet()) {
@@ -170,7 +170,7 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
             for ( int i=0 ; i <userRolesNodes.getLength();i++) {
                 Node userRolesNode = userRolesNodes.item(i);
                 String userName = xmlXPath.getUserNameExpression().evaluate(userRolesNode);
-                SortedSet<GeoserverGrantedAuthority> roleSet = new TreeSet<GeoserverGrantedAuthority>();
+                SortedSet<GeoserverRole> roleSet = new TreeSet<GeoserverRole>();
                 user_roleMap.put(userName,roleSet);
                 NodeList userRolesRefNodes = (NodeList) xmlXPath.getUserRolRefsExpression().evaluate(userRolesNode,XPathConstants.NODESET);
                 for ( int j=0 ; j <userRolesRefNodes.getLength();j++) {
@@ -185,7 +185,7 @@ public class XMLGrantedAuthorityService extends AbstractGrantedAuthorityService 
             for ( int i=0 ; i <groupRolesNodes.getLength();i++) {
                 Node groupRolesNode = groupRolesNodes.item(i);
                 String groupName = xmlXPath.getGroupNameExpression().evaluate(groupRolesNode);
-                SortedSet<GeoserverGrantedAuthority> roleSet = new TreeSet<GeoserverGrantedAuthority>();
+                SortedSet<GeoserverRole> roleSet = new TreeSet<GeoserverRole>();
                 group_roleMap.put(groupName,roleSet);
                 NodeList groupRolesRefNodes = (NodeList) xmlXPath.getGroupRolRefsExpression().evaluate(groupRolesNode,XPathConstants.NODESET);
                 for ( int j=0 ; j <groupRolesRefNodes.getLength();j++) {

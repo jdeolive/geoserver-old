@@ -14,30 +14,19 @@ import org.geoserver.security.config.SecurityManagerConfig;
  *
  */
 public class SecurityManagerConfigImpl extends SecurityConfigImpl implements SecurityManagerConfig {
-    private String grantedAuthorityServiceName;
+    
+    private String roleServiceName;
     private String userGroupServiceName;
     
-    /* (non-Javadoc)
-     * @see org.geoserver.security.config.SecurityServiceConfig#getGrantedAuthorityServiceName()
-     */
-    public String getGrantedAuthorityServiceName() {
-        return grantedAuthorityServiceName;
+    public String getRoleServiceName() {
+        return roleServiceName;
     }
-    /* (non-Javadoc)
-     * @see org.geoserver.security.config.SecurityServiceConfig#setGrantedAuthorityServiceName(java.lang.String)
-     */
-    public void setGrantedAuthorityServiceName(String grantedAuthorityServiceName) {
-        this.grantedAuthorityServiceName = grantedAuthorityServiceName;
+    public void setRoleServiceName(String roleServiceName) {
+        this.roleServiceName = roleServiceName;
     }
-    /* (non-Javadoc)
-     * @see org.geoserver.security.config.SecurityServiceConfig#getUserGroupServiceName()
-     */
     public String getUserGroupServiceName() {
         return userGroupServiceName;
     }
-    /* (non-Javadoc)
-     * @see org.geoserver.security.config.SecurityServiceConfig#setUserGroupServiceName(java.lang.String)
-     */
     public void setUserGroupServiceName(String userGroupServiceName) {
         this.userGroupServiceName = userGroupServiceName;
     }

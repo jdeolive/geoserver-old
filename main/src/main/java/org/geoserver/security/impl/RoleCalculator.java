@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 
 /**
@@ -24,29 +24,29 @@ import org.geoserver.security.GeoserverUserGroupService;
 public class RoleCalculator  {
     
 
-    protected GeoserverGrantedAuthorityService grantedAuthoriyService;
+    protected GeoserverRoleService roleService;
     protected GeoserverUserGroupService userGroupService;
 
     /**
      * Constructor
      * 
      * @param userGroupService
-     * @param grantedAuthoriyService
+     * @param roleService
      */
-    public RoleCalculator (GeoserverUserGroupService userGroupService,GeoserverGrantedAuthorityService grantedAuthoriyService) {
+    public RoleCalculator (GeoserverUserGroupService userGroupService,GeoserverRoleService roleService) {
         this.userGroupService=userGroupService;
-        this.grantedAuthoriyService=grantedAuthoriyService;
+        this.roleService=roleService;
         assertServicesNotNull();
     }
         
-    public void setGrantedAuthorityService(GeoserverGrantedAuthorityService service) {
-        grantedAuthoriyService=service;
+    public void setRoleService(GeoserverRoleService service) {
+        roleService=service;
         assertServicesNotNull();
 
     }
 
-    public GeoserverGrantedAuthorityService getGrantedAuthorityService() {
-        return grantedAuthoriyService;
+    public GeoserverRoleService getRoleService() {
+        return roleService;
     }
 
 
@@ -68,14 +68,14 @@ public class RoleCalculator  {
         if (userGroupService==null ) {
             throw new RuntimeException("User/Group service is null");
         }
-        if (grantedAuthoriyService==null) {
-            throw new RuntimeException("Granted authoritry service Service is null");
+        if (roleService==null) {
+            throw new RuntimeException("role service Service is null");
         }
     }
 
 
     /**
-     * Calculate the Granted Authorities for a user
+     * Calculate the {@link GeoserverRole} objects for a user
      * 
      * The algorithm
      * 
@@ -92,38 +92,38 @@ public class RoleCalculator  {
      * @return
      * @throws IOException
      */  
-    public SortedSet<GeoserverGrantedAuthority> calculateGrantedAuthorities(GeoserverUser user)
+    public SortedSet<GeoserverRole> calculateRoles(GeoserverUser user)
             throws IOException {
         
-        Set<GeoserverGrantedAuthority> set1 = new HashSet<GeoserverGrantedAuthority>();
+        Set<GeoserverRole> set1 = new HashSet<GeoserverRole>();
         
         // alle roles for the user
-        set1.addAll(getGrantedAuthorityService().getRolesForUser(user.getUsername()));
+        set1.addAll(getRoleService().getRolesForUser(user.getUsername()));
         addInheritedRoles(set1);
         
         // add all roles for enabled groups
         for (GeoserverUserGroup group : 
             getUserGroupService().getGroupsForUser(user)) {
             if (group.isEnabled())
-                set1.addAll(calculateGrantedAuthorities(group));
+                set1.addAll(calculateRoles(group));
         }
         
        // personalize roles
-        SortedSet<GeoserverGrantedAuthority> set2 = 
+        SortedSet<GeoserverRole> set2 = 
                 personalizeRoles(user, set1);
         
         return set2;
     }
     
     /**
-     * Collects the ascendents for a {@link GeoserverGrantedAuthority} object
+     * Collects the ascendents for a {@link GeoserverRole} object
      * 
      * @param role
      * @param inherited
      */
-    protected void addParentRole(GeoserverGrantedAuthority role,Collection<GeoserverGrantedAuthority> inherited) throws IOException{
-        GeoserverGrantedAuthority parentRole = 
-            getGrantedAuthorityService().getParentRole(role);
+    protected void addParentRole(GeoserverRole role,Collection<GeoserverRole> inherited) throws IOException{
+        GeoserverRole parentRole = 
+            getRoleService().getParentRole(role);
         if (parentRole==null) 
             return; // end of recursion
         
@@ -136,17 +136,17 @@ public class RoleCalculator  {
     }
 
     /**
-     * Calculate the Granted Authorities for a group
+     * Calculate the {@link GeoserverRole} objects for a group
      * including inherited roles
      * 
      * @param group
      * @return
      * @throws IOException
      */
-    public SortedSet<GeoserverGrantedAuthority> calculateGrantedAuthorities(GeoserverUserGroup group) throws IOException {
+    public SortedSet<GeoserverRole> calculateRoles(GeoserverUserGroup group) throws IOException {
         
-        SortedSet<GeoserverGrantedAuthority> roles = new TreeSet<GeoserverGrantedAuthority>();
-        roles.addAll(getGrantedAuthorityService().getRolesForGroup(group.getGroupname()));
+        SortedSet<GeoserverRole> roles = new TreeSet<GeoserverRole>();
+        roles.addAll(getRoleService().getRolesForGroup(group.getGroupname()));
         addInheritedRoles(roles);
         return roles;
     }
@@ -157,9 +157,9 @@ public class RoleCalculator  {
      * @param coll
      * @throws IOException
      */
-    public void addInheritedRoles(Collection<GeoserverGrantedAuthority> coll) throws IOException {
-        Set<GeoserverGrantedAuthority> inherited = new HashSet<GeoserverGrantedAuthority>();
-        for (GeoserverGrantedAuthority role : coll)
+    public void addInheritedRoles(Collection<GeoserverRole> coll) throws IOException {
+        Set<GeoserverRole> inherited = new HashSet<GeoserverRole>();
+        for (GeoserverRole role : coll)
             addParentRole(role, inherited);
         coll.addAll(inherited);        
     }
@@ -174,16 +174,16 @@ public class RoleCalculator  {
      * @return
      * @throws IOException
      */
-    public SortedSet<GeoserverGrantedAuthority> personalizeRoles(GeoserverUser user, Collection<GeoserverGrantedAuthority> roles) throws IOException{
-        SortedSet<GeoserverGrantedAuthority> set = new TreeSet<GeoserverGrantedAuthority>();
-        for (GeoserverGrantedAuthority role : roles) {
-            Properties personalizedProps = getGrantedAuthorityService().personalizeRoleParams(
+    public SortedSet<GeoserverRole> personalizeRoles(GeoserverUser user, Collection<GeoserverRole> roles) throws IOException{
+        SortedSet<GeoserverRole> set = new TreeSet<GeoserverRole>();
+        for (GeoserverRole role : roles) {
+            Properties personalizedProps = getRoleService().personalizeRoleParams(
                     role.getAuthority(), role.getProperties(), 
                     user.getUsername(), user.getProperties());
             if (personalizedProps==null) {
                 set.add(role);
             } else { // create personalized role
-                GeoserverGrantedAuthority pRole = getGrantedAuthorityService().createGrantedAuthorityObject(role.getAuthority());
+                GeoserverRole pRole = getRoleService().createRoleObject(role.getAuthority());
                 pRole.setUserName(user.getUsername());
                 for (Object key : personalizedProps.keySet())
                     pRole.getProperties().put(key, personalizedProps.get(key));

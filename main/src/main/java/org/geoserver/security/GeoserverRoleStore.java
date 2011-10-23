@@ -6,18 +6,18 @@ package org.geoserver.security;
 
 import java.io.IOException;
 
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 
 /**
  * A class implementing this interface is capable of storing
  * roles to a backend. The store always operates on a
- * {@link GeoserverGrantedAuthorityService} object.
+ * {@link GeoserverRoleService} object.
  * 
  * 
  * @author christian
  *
  */
-public interface GeoserverGrantedAuthorityStore extends GeoserverGrantedAuthorityService {
+public interface GeoserverRoleStore extends GeoserverRoleService {
 
     
     
@@ -27,7 +27,7 @@ public interface GeoserverGrantedAuthorityStore extends GeoserverGrantedAuthorit
      * 
      * @param service
      */
-    public void initializeFromService(GeoserverGrantedAuthorityService service) throws IOException;
+    public void initializeFromService(GeoserverRoleService service) throws IOException;
 
     
     /**
@@ -42,20 +42,20 @@ public interface GeoserverGrantedAuthorityStore extends GeoserverGrantedAuthorit
      * Adds a role 
      * @param role
      */
-    public abstract void addGrantedAuthority(GeoserverGrantedAuthority role)  throws IOException;
+    public abstract void addRole(GeoserverRole role)  throws IOException;
 
     /**
      * Updates a role 
      * @param role
      */
-    public abstract void updateGrantedAuthority(GeoserverGrantedAuthority role)  throws IOException;
+    public abstract void updateRole(GeoserverRole role)  throws IOException;
 
     /**
-     * Removes the specified GeoserverGrantedAuthority role 
+     * Removes the specified {@link GeoserverRole} role 
      * @param role
      * @return
      */
-    public abstract boolean removeGrantedAuthority(GeoserverGrantedAuthority role)  throws IOException;
+    public abstract boolean removeRole(GeoserverRole role)  throws IOException;
 
 
     /**
@@ -64,7 +64,7 @@ public interface GeoserverGrantedAuthorityStore extends GeoserverGrantedAuthorit
      * @param role
      * @param groupname
      */
-    public void associateRoleToGroup(GeoserverGrantedAuthority role, String groupname)  throws IOException;
+    public void associateRoleToGroup(GeoserverRole role, String groupname)  throws IOException;
     
     /**
      * Disassociates a role from a group.
@@ -72,7 +72,7 @@ public interface GeoserverGrantedAuthorityStore extends GeoserverGrantedAuthorit
      * @param role
      * @param groupname
      */
-    public void disAssociateRoleFromGroup(GeoserverGrantedAuthority role, String groupname)  throws IOException;
+    public void disAssociateRoleFromGroup(GeoserverRole role, String groupname)  throws IOException;
 
 
     /**
@@ -81,7 +81,7 @@ public interface GeoserverGrantedAuthorityStore extends GeoserverGrantedAuthorit
      * @param role
      * @param username
      */
-    public void associateRoleToUser(GeoserverGrantedAuthority role, String username)  throws IOException;
+    public void associateRoleToUser(GeoserverRole role, String username)  throws IOException;
     
     /**
      * Disassociates a role from a user.
@@ -89,7 +89,7 @@ public interface GeoserverGrantedAuthorityStore extends GeoserverGrantedAuthorit
      * @param role
      * @param groupname
      */
-    public void disAssociateRoleFromUser(GeoserverGrantedAuthority role, String username)  throws IOException;
+    public void disAssociateRoleFromUser(GeoserverRole role, String username)  throws IOException;
     
     
         
@@ -124,7 +124,7 @@ public interface GeoserverGrantedAuthorityStore extends GeoserverGrantedAuthorit
      * @param role
      * @param parentRole, may be null to remove a parent
      */
-    public void setParentRole(GeoserverGrantedAuthority role, GeoserverGrantedAuthority parentRole)  throws IOException;
+    public void setParentRole(GeoserverRole role, GeoserverRole parentRole)  throws IOException;
     
     
 }

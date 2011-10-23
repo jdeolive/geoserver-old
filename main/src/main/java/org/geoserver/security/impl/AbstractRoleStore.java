@@ -18,8 +18,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 
 /**
@@ -28,22 +28,22 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
  * @author christian
  *
  */
-public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAuthorityService implements GeoserverGrantedAuthorityStore {
+public abstract class AbstractRoleStore extends AbstractRoleService implements GeoserverRoleStore {
 
     /** logger */
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security");
     
     private boolean modified=false;
-    protected AbstractGrantedAuthorityService service;
+    protected AbstractRoleService service;
 
-    public AbstractGrantedAuthorityStore(String name) {
+    public AbstractRoleStore(String name) {
         super(name);
         
     }
     
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#isModified()
+     * @see org.geoserver.security.GeoserverRoleStore#isModified()
      */
     public boolean isModified() {
         return modified;
@@ -57,9 +57,9 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
         modified=value;
     }
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#addGrantedAuthority(org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleStore#addRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public void addGrantedAuthority(GeoserverGrantedAuthority role)  throws IOException{
+    public void addRole(GeoserverRole role)  throws IOException{
         
         
         if(roleMap.containsKey(role.getAuthority()))
@@ -73,9 +73,9 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
 
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#updateGrantedAuthority(org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleStore#updateRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public void updateGrantedAuthority(GeoserverGrantedAuthority role)  throws IOException {
+    public void updateRole(GeoserverRole role)  throws IOException {
         
         if(roleMap.containsKey(role.getAuthority())) {
             roleMap.put(role.getAuthority(),role);
@@ -88,28 +88,28 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
 
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#removeGrantedAuthority(org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleStore#removeRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public boolean removeGrantedAuthority(GeoserverGrantedAuthority role)  throws IOException{
+    public boolean removeRole(GeoserverRole role)  throws IOException{
         
         if (roleMap.containsKey(role.getAuthority())==false) // nothing to do
             return false;
         
-        for (SortedSet<GeoserverGrantedAuthority> set: user_roleMap.values()) {
+        for (SortedSet<GeoserverRole> set: user_roleMap.values()) {
             set.remove(role);
         }
-        for (SortedSet<GeoserverGrantedAuthority> set: group_roleMap.values()) {
+        for (SortedSet<GeoserverRole> set: group_roleMap.values()) {
             set.remove(role);
         }
         
         // role hierarchy
         role_parentMap.remove(role);
-        Set<GeoserverGrantedAuthority> toBeRemoved = new HashSet<GeoserverGrantedAuthority>();
-        for (Entry<GeoserverGrantedAuthority,GeoserverGrantedAuthority> entry : role_parentMap.entrySet()) {
+        Set<GeoserverRole> toBeRemoved = new HashSet<GeoserverRole>();
+        for (Entry<GeoserverRole,GeoserverRole> entry : role_parentMap.entrySet()) {
             if (role.equals(entry.getValue()))
                 toBeRemoved.add(entry.getKey());
         }
-        for (GeoserverGrantedAuthority  ga : toBeRemoved) {
+        for (GeoserverRole  ga : toBeRemoved) {
             role_parentMap.put(ga,null);
         }    
         
@@ -122,7 +122,7 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
 
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#store()
+     * @see org.geoserver.security.GeoserverRoleStore#store()
      */
     public void store() throws IOException {
         if (isModified()) {
@@ -149,10 +149,10 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
 
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#disAssociateRoleFromGroup(org.geoserver.security.impl.GeoserverGrantedAuthority, java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void disAssociateRoleFromGroup(GeoserverGrantedAuthority role, String groupname) throws IOException{
-        SortedSet<GeoserverGrantedAuthority> roles = group_roleMap.get(groupname);
+    public void disAssociateRoleFromGroup(GeoserverRole role, String groupname) throws IOException{
+        SortedSet<GeoserverRole> roles = group_roleMap.get(groupname);
         if (roles!=null && roles.contains(role)) {
             roles.remove(role);
             setModified(true);
@@ -161,12 +161,12 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
 
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#associateRoleToGroup(org.geoserver.security.impl.GeoserverGrantedAuthority, java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleStore#associateRoleToGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void associateRoleToGroup(GeoserverGrantedAuthority role, String groupname) throws IOException{
-        SortedSet<GeoserverGrantedAuthority> roles = group_roleMap.get(groupname);
+    public void associateRoleToGroup(GeoserverRole role, String groupname) throws IOException{
+        SortedSet<GeoserverRole> roles = group_roleMap.get(groupname);
         if (roles == null) {
-            roles=new TreeSet<GeoserverGrantedAuthority>();
+            roles=new TreeSet<GeoserverRole>();
             group_roleMap.put(groupname, roles);
         }
         if (roles.contains(role)==false) { // something changed ?
@@ -177,12 +177,12 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
     
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#associateRoleToUser(org.geoserver.security.impl.GeoserverGrantedAuthority, java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleStore#associateRoleToUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void associateRoleToUser(GeoserverGrantedAuthority role, String username) throws IOException{
-        SortedSet<GeoserverGrantedAuthority> roles = user_roleMap.get(username);
+    public void associateRoleToUser(GeoserverRole role, String username) throws IOException{
+        SortedSet<GeoserverRole> roles = user_roleMap.get(username);
         if (roles == null) {
-            roles=new TreeSet<GeoserverGrantedAuthority>();
+            roles=new TreeSet<GeoserverRole>();
             user_roleMap.put(username, roles);
         }
         if (roles.contains(role)==false) { // something changed
@@ -193,10 +193,10 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
     }
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#disAssociateRoleFromUser(org.geoserver.security.impl.GeoserverGrantedAuthority, java.lang.String)
+     * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void disAssociateRoleFromUser(GeoserverGrantedAuthority role, String username) throws IOException{
-        SortedSet<GeoserverGrantedAuthority> roles = user_roleMap.get(username);
+    public void disAssociateRoleFromUser(GeoserverRole role, String username) throws IOException{
+        SortedSet<GeoserverRole> roles = user_roleMap.get(username);
         if (roles!=null && roles.contains(role)) {
             roles.remove(role);
             setModified(true);
@@ -206,9 +206,9 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
 
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#setParentRole(org.geoserver.security.impl.GeoserverGrantedAuthority, org.geoserver.security.impl.GeoserverGrantedAuthority)
+     * @see org.geoserver.security.GeoserverRoleStore#setParentRole(org.geoserver.security.impl.GeoserverRole, org.geoserver.security.impl.GeoserverRole)
      */
-    public void setParentRole(GeoserverGrantedAuthority role, GeoserverGrantedAuthority parentRole) throws IOException{
+    public void setParentRole(GeoserverRole role, GeoserverRole parentRole) throws IOException{
         
         RoleHierarchyHelper helper = new RoleHierarchyHelper(getParentMappings());
         if (helper.isValidParent(role.getAuthority(), 
@@ -227,7 +227,7 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
     }
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#clear()
+     * @see org.geoserver.security.GeoserverRoleStore#clear()
      */
     public void clear() throws IOException {
         clearMaps();
@@ -239,7 +239,7 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
      * service to the store.
      *  
      * 
-     * @see org.geoserver.security.impl.AbstractGrantedAuthorityService#deserialize()
+     * @see org.geoserver.security.impl.AbstractRoleService#deserialize()
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -261,10 +261,10 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
         ByteArrayInputStream in = new ByteArrayInputStream(byteArray);
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            roleMap = (TreeMap<String,GeoserverGrantedAuthority>) oin.readObject();
-            role_parentMap =(HashMap<GeoserverGrantedAuthority,GeoserverGrantedAuthority>) oin.readObject();
-            user_roleMap = (TreeMap<String,SortedSet<GeoserverGrantedAuthority>>)oin.readObject();
-            group_roleMap = (TreeMap<String,SortedSet<GeoserverGrantedAuthority>>)oin.readObject();
+            roleMap = (TreeMap<String,GeoserverRole>) oin.readObject();
+            role_parentMap =(HashMap<GeoserverRole,GeoserverRole>) oin.readObject();
+            user_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
+            group_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
@@ -272,17 +272,17 @@ public abstract class AbstractGrantedAuthorityStore extends AbstractGrantedAutho
     }
 
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityStore#initializeFromService(org.geoserver.security.GeoserverGrantedAuthorityService)
+     * @see org.geoserver.security.GeoserverRoleStore#initializeFromService(org.geoserver.security.GeoserverRoleService)
      */
     @Override
-    public void initializeFromService(GeoserverGrantedAuthorityService service)
+    public void initializeFromService(GeoserverRoleService service)
             throws IOException {
-        this.service=(AbstractGrantedAuthorityService)service;
+        this.service=(AbstractRoleService)service;
         deserialize();
     }
     
     /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverGrantedAuthorityService#initializeFromConfig(org.geoserver.security.config.SecurityNamedServiceConfig)
+     * @see org.geoserver.security.GeoServerSecurityService#initializeFromConfig(org.geoserver.security.config.SecurityNamedServiceConfig)
      */
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {

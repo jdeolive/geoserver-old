@@ -12,7 +12,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.IModel;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.CatalogIconFactory;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
@@ -27,7 +27,7 @@ import org.geoserver.web.wicket.SimpleAjaxLink;
 @SuppressWarnings("serial")
 public class RolePage extends AbstractSecurityPage {
 
-    protected GeoServerTablePanel<GeoserverGrantedAuthority> roles;
+    protected GeoServerTablePanel<GeoserverRole> roles;
     protected GeoServerDialog dialog;
     protected SelectionRoleRemovalLink removal;
     protected BookmarkablePageLink<NewRolePage> add;
@@ -35,11 +35,11 @@ public class RolePage extends AbstractSecurityPage {
     public RolePage() {
         super(null);
         RoleListProvider provider = new RoleListProvider();
-        add(roles = new GeoServerTablePanel<GeoserverGrantedAuthority>("table", provider, true) {
+        add(roles = new GeoServerTablePanel<GeoserverRole>("table", provider, true) {
 
             @Override
             protected Component getComponentForProperty(String id, IModel itemModel,
-                    Property<GeoserverGrantedAuthority> property) {
+                    Property<GeoserverRole> property) {
                 if (property == RoleListProvider.ROLENAME) {
                     return editRoleLink(id, itemModel, property);
                 } else if (property == RoleListProvider.PARENTROLENAME) {
@@ -71,13 +71,13 @@ public class RolePage extends AbstractSecurityPage {
 
         // the add button
         header.add(add=new BookmarkablePageLink<NewRolePage>("addNew", NewRolePage.class));
-        add.setVisible(hasGrantedAuthorityStore());
+        add.setVisible(hasRoleStore());
 
         // the removal button
         header.add(removal = new SelectionRoleRemovalLink("removeSelected", roles, dialog));
         removal.setOutputMarkupId(true);
         removal.setEnabled(false);
-        removal.setVisible(hasGrantedAuthorityStore());
+        removal.setVisible(hasRoleStore());
 
         return header;
     }
@@ -94,25 +94,25 @@ public class RolePage extends AbstractSecurityPage {
 //    }
 
     @SuppressWarnings("unchecked")
-    Component editRoleLink(String id, IModel itemModel, Property<GeoserverGrantedAuthority> property) {
+    Component editRoleLink(String id, IModel itemModel, Property<GeoserverRole> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                setResponsePage(new EditRolePage( (GeoserverGrantedAuthority) getDefaultModelObject()));
+                setResponsePage(new EditRolePage( (GeoserverRole) getDefaultModelObject()));
             }
 
         };
     }
     
     @SuppressWarnings("unchecked")
-    Component editParentRoleLink(String id, IModel itemModel, Property<GeoserverGrantedAuthority> property) {
+    Component editParentRoleLink(String id, IModel itemModel, Property<GeoserverRole> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                GeoserverGrantedAuthority role = (GeoserverGrantedAuthority) getDefaultModelObject();
-                GeoserverGrantedAuthority parentRole;
+                GeoserverRole role = (GeoserverRole) getDefaultModelObject();
+                GeoserverRole parentRole;
                 try {
                     parentRole = getSecurityManager().getActiveRoleService().getParentRole(role);
                 } catch (IOException e) {

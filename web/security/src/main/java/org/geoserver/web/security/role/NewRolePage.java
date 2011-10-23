@@ -15,13 +15,13 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
 import org.apache.wicket.model.ResourceModel;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.GeoserverRoleStore;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.wicket.ParamResourceModel;
 
 
 /**
- * Page for adding a new {@link GeoserverGrantedAuthority} object
+ * Page for adding a new {@link GeoserverRole} object
  * 
  * @author christian
  *
@@ -37,7 +37,7 @@ public class NewRolePage extends AbstractRolePage {
     
     public NewRolePage() {
         this (null);
-        if (hasGrantedAuthorityStore()==false) {
+        if (hasRoleStore()==false) {
             throw new RuntimeException("Workflow error, new role not possible for read only service");
         }        
     }
@@ -62,8 +62,8 @@ public class NewRolePage extends AbstractRolePage {
             rolenameField.updateModel();
             String newName = uiRole.getRolename();            
             try {
-                GeoserverGrantedAuthority role =
-                    getSecurityManager().getActiveRoleService().getGrantedAuthorityByName(newName);
+                GeoserverRole role =
+                    getSecurityManager().getActiveRoleService().getRoleByName(newName);
                 if (role!=null) {
                     form.error(new ResourceModel("NewRolePage.roleConflict").getObject(),
                             Collections.singletonMap("role", (Object) newName));
@@ -84,18 +84,18 @@ public class NewRolePage extends AbstractRolePage {
         
         
         try {
-            GeoserverGrantedAuthorityStore store = getGrantedAuthorityStore();
-            GeoserverGrantedAuthority role = store.createGrantedAuthorityObject(uiRole.getRolename());
+            GeoserverRoleStore store = getRoleStore();
+            GeoserverRole role = store.createRoleObject(uiRole.getRolename());
             
             role.getProperties().clear();
             for (Entry<Object,Object> entry : roleParamEditor.getProperties().entrySet())
                 role.getProperties().put(entry.getKey(),entry.getValue());
 
-            store.addGrantedAuthority(role);
+            store.addRole(role);
                     
-            GeoserverGrantedAuthority parentRole = null;
+            GeoserverRole parentRole = null;
             if (uiRole.getParentrolename()!=null && uiRole.getParentrolename().length() > 0) {
-                parentRole=store.getGrantedAuthorityByName(uiRole.getParentrolename());
+                parentRole=store.getRoleByName(uiRole.getParentrolename());
             }
             store.setParentRole(role,parentRole);
             store.store();

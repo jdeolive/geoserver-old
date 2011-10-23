@@ -10,9 +10,9 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import org.apache.wicket.Page;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.wicket.ParamResourceModel;
 
@@ -43,14 +43,14 @@ public class EditGroupPage extends AbstractGroupPage {
                 store.store();
             };   
 
-            if (hasGrantedAuthorityStore()) {
-                GeoserverGrantedAuthorityStore gaStore = getGrantedAuthorityStore();
-                Set<GeoserverGrantedAuthority> addedRoles = new HashSet<GeoserverGrantedAuthority>();
-                Set<GeoserverGrantedAuthority> removedRoles = new HashSet<GeoserverGrantedAuthority>();
+            if (hasRoleStore()) {
+                GeoserverRoleStore gaStore = getRoleStore();
+                Set<GeoserverRole> addedRoles = new HashSet<GeoserverRole>();
+                Set<GeoserverRole> removedRoles = new HashSet<GeoserverRole>();
                 groupRolesFormComponent.calculateAddedRemovedCollections(addedRoles, removedRoles);
-                for (GeoserverGrantedAuthority role : addedRoles)
+                for (GeoserverRole role : addedRoles)
                     gaStore.associateRoleToGroup(role, group.getGroupname());
-                for (GeoserverGrantedAuthority role : removedRoles)
+                for (GeoserverRole role : removedRoles)
                     gaStore.disAssociateRoleFromGroup(role, group.getGroupname());
             
                 gaStore.store();

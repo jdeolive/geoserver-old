@@ -2,7 +2,7 @@ package org.geoserver.web.security.role;
 
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.util.tester.FormTester;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 
 public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
@@ -54,11 +54,11 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
         tester.assertErrorMessages(new String[0]);
         tester.assertRenderedPage(RolePage.class);
         
-        GeoserverGrantedAuthority role = gaService.getGrantedAuthorityByName("ROLE_TEST");
+        GeoserverRole role = gaService.getRoleByName("ROLE_TEST");
         assertNotNull(role);
         assertEquals(1,role.getProperties().size());
         assertEquals("10 10 20 20",role.getProperties().get("bbox"));
-        GeoserverGrantedAuthority parentRole = gaService.getParentRole(role);
+        GeoserverRole parentRole = gaService.getParentRole(role);
         assertNotNull(parentRole);
         assertEquals("ROLE_AUTHENTICATED",parentRole.getAuthority());
         
@@ -88,7 +88,7 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
             fail = false;
         }
         if (fail)
-            fail("No runtime exception for read only GrantedAuthorityService");
+            fail("No runtime exception for read only RoleService");
     }
 
 }

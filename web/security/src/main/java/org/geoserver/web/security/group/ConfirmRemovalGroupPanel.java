@@ -5,7 +5,7 @@ import java.util.SortedSet;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.wicket.model.Model;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractConfirmRemovalPanel;
@@ -28,11 +28,11 @@ public class ConfirmRemovalGroupPanel extends AbstractConfirmRemovalPanel<Geoser
     protected String getConfirmationMessage(GeoserverUserGroup object) throws Exception{
         StringBuffer buffer = new StringBuffer(BeanUtils.getProperty(object, "groupname"));
         if ((Boolean) getDefaultModelObject()) {
-            SortedSet<GeoserverGrantedAuthority> roles =
+            SortedSet<GeoserverRole> roles =
                 GeoServerApplication.get().getSecurityManager()
                     .getActiveRoleService().getRolesForGroup(object.getGroupname());
             buffer.append(" [");
-            for (GeoserverGrantedAuthority role: roles) {
+            for (GeoserverRole role: roles) {
                 buffer.append(role.getAuthority()).append(" ");
             }
             if (roles.size()>0) { // remove last delimiter

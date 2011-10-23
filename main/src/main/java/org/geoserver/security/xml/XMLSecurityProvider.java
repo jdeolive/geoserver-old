@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.security.GeoServerSecurityProvider;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
@@ -39,14 +39,14 @@ public class XMLSecurityProvider extends GeoServerSecurityProvider {
     }
 
     @Override
-    public Class<? extends GeoserverGrantedAuthorityService> getRoleServiceClass() {
-        return XMLGrantedAuthorityService.class;
+    public Class<? extends GeoserverRoleService> getRoleServiceClass() {
+        return XMLRoleService.class;
     }
 
     @Override
-    public GeoserverGrantedAuthorityService createRoleService(SecurityNamedServiceConfig config)
+    public GeoserverRoleService createRoleService(SecurityNamedServiceConfig config)
             throws IOException {
-        return new XMLGrantedAuthorityService();
+        return new XMLRoleService();
     }
 
 }

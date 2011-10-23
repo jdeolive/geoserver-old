@@ -18,13 +18,13 @@ import javax.xml.xpath.XPathFactory;
  * @author christian
  *
  */
-public class GrantedAuthorityXMLXpath_1_0  extends GrantedAuthorityXMLXpath {
+public class RoleXMLXpath_1_0  extends RoleXMLXpath {
 
     /**
      * 
      * Singleton, the implementation is stateless
      */
-    public final static GrantedAuthorityXMLXpath_1_0 Singleton = new GrantedAuthorityXMLXpath_1_0();
+    public final static RoleXMLXpath_1_0 Singleton = new RoleXMLXpath_1_0();
     
 
     /**
@@ -52,7 +52,7 @@ public class GrantedAuthorityXMLXpath_1_0  extends GrantedAuthorityXMLXpath {
     /**
      * Constructor is protected, use the static Singleton instance
      */
-    protected GrantedAuthorityXMLXpath_1_0() {
+    protected RoleXMLXpath_1_0() {
         
                            
         XPathFactory factory = XPathFactory.newInstance();

@@ -9,14 +9,14 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
-import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverRoleService;
 
-public class MemoryGrantedAuthorityServiceTest extends AbstractGrantedAuthorityServiceTest {
+public class MemoryRoleServiceTest extends AbstractRoleServiceTest {
   
 
     @Override
-    public GeoserverGrantedAuthorityService createGrantedAuthorityService(String name) throws IOException {
-        return new MemoryGrantedAuthorityService(name);
+    public GeoserverRoleService createRoleService(String name) throws IOException {
+        return new MemoryRoleService(name);
     }
 
     @Override
@@ -29,8 +29,8 @@ public class MemoryGrantedAuthorityServiceTest extends AbstractGrantedAuthorityS
     public void testInsert() {
         super.testInsert();
         try {
-            for (GeoserverGrantedAuthority role : store.getRoles()) {
-                assertTrue(role.getClass()==MemoryGeoserverGrantedAuthority.class);
+            for (GeoserverRole role : store.getRoles()) {
+                assertTrue(role.getClass()==MemoryGeoserverRole.class);
             }
         } catch (IOException e) {
             Assert.fail(e.getMessage());

@@ -8,11 +8,11 @@ import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.model.StringResourceModel;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverGrantedAuthorityStore;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
-import org.geoserver.security.impl.GeoserverGrantedAuthority;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
 import org.geoserver.web.GeoServerApplication;
@@ -26,13 +26,13 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
     
     private static final long serialVersionUID = 1L;
 
-    GeoServerTablePanel<GeoserverGrantedAuthority> roles;
+    GeoServerTablePanel<GeoserverRole> roles;
     GeoServerDialog dialog;
     GeoServerDialog.DialogDelegate delegate;
     ConfirmRemovalRolePanel removePanel;
     
 
-    public SelectionRoleRemovalLink(String id, GeoServerTablePanel<GeoserverGrantedAuthority> roles,
+    public SelectionRoleRemovalLink(String id, GeoServerTablePanel<GeoserverRole> roles,
             GeoServerDialog dialog) {
         super(id);
         this.roles = roles;
@@ -42,7 +42,7 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
 
     @Override
     public void onClick(AjaxRequestTarget target) {
-        final List<GeoserverGrantedAuthority> selection = roles.getSelection();
+        final List<GeoserverRole> selection = roles.getSelection();
         if (selection.size() == 0)
             return;
 
@@ -58,7 +58,7 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    protected StringResourceModel canRemove(GeoserverGrantedAuthority role) {
+                    protected StringResourceModel canRemove(GeoserverRole role) {
                         return SelectionRoleRemovalLink.this.canRemove(role);
                     }
                 };
@@ -68,13 +68,13 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
                 // cascade delete the whole selection
 
                 
-                GeoserverGrantedAuthorityService gaService =
+                GeoserverRoleService gaService =
                     GeoServerApplication.get().getSecurityManager().getActiveRoleService();
 
                 try {
-                    GeoserverGrantedAuthorityStore gaStore = gaService.createStore();
-                    for (GeoserverGrantedAuthority role : removePanel.getRoots()) {                     
-                         gaStore.removeGrantedAuthority(role);
+                    GeoserverRoleStore gaStore = gaService.createStore();
+                    for (GeoserverRole role : removePanel.getRoots()) {                     
+                         gaStore.removeRole(role);
                     }
                     gaStore.store();
                 } catch (IOException e) {
@@ -100,8 +100,8 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
         
     }
 
-    protected StringResourceModel canRemove(GeoserverGrantedAuthority role) {        
-        if (role.equals(GeoserverGrantedAuthority.ADMIN_ROLE))
+    protected StringResourceModel canRemove(GeoserverRole role) {        
+        if (role.equals(GeoserverRole.ADMIN_ROLE))
             return new StringResourceModel(getClass().getSimpleName()+".noDelete",null,new Object[] {role.getAuthority()});
                         
         List<String> keys = new ArrayList<String>();

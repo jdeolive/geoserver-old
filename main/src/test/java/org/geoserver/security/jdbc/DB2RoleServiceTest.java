@@ -5,7 +5,7 @@
 
 package org.geoserver.security.jdbc;
 
-public class DB2GrantedAuthorityServiceTest extends JDBCGrantedAuthorityServiceTest {
+public class DB2RoleServiceTest extends JDBCRoleServiceTest {
 
     @Override
     protected String getFixtureId() {
