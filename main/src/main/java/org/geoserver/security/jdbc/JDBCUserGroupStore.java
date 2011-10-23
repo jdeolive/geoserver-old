@@ -23,14 +23,14 @@ import org.geoserver.security.impl.GeoserverUserGroup;
  */
 public class JDBCUserGroupStore extends JDBCUserGroupService implements GeoserverUserGroupStore {
 
+    public JDBCUserGroupStore() throws IOException {
+        super();        
+    }
+    
     protected boolean modified;
     protected Connection connection;
     protected JDBCUserGroupService jdbcService;
     
-    public JDBCUserGroupStore(String name) throws IOException {
-        super(name);
-        
-    }
 
     
     /**
@@ -73,7 +73,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     public void initializeFromService(GeoserverUserGroupService service) throws IOException {
         jdbcService= (JDBCUserGroupService) service;
         setSecurityManager(service.getSecurityManager());
-
+        this.name=jdbcService.getName();
         this.datasource=jdbcService.datasource;
         this.ddlProps=jdbcService.ddlProps;
         this.dmlProps=jdbcService.dmlProps;

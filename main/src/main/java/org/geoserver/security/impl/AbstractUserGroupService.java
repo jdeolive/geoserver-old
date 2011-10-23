@@ -43,9 +43,6 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     protected AbstractUserGroupService() {
     }
 
-    protected AbstractUserGroupService(String name) {
-        super(name);
-    }
 
     @Override
     public GeoserverUserGroupStore createStore() throws IOException {

@@ -46,9 +46,6 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     protected AbstractRoleService() {
     }
 
-    protected AbstractRoleService(String name) {
-        super(name);
-    }
     
     @Override
     public GeoserverRoleStore createStore() throws IOException {

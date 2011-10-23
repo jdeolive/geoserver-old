@@ -28,10 +28,6 @@ public class MemoryRoleService extends AbstractRoleService {
 
     byte[] byteArray;
 
-    public MemoryRoleService(String name) {
-        super(name);
-        
-    }
 
     @Override
     public boolean canCreateStore() {
@@ -40,7 +36,7 @@ public class MemoryRoleService extends AbstractRoleService {
 
     @Override
     public GeoserverRoleStore createStore() throws IOException {
-        MemoryRoleStore store = new MemoryRoleStore(getName());
+        MemoryRoleStore store = new MemoryRoleStore();
         store.initializeFromService(this);
         return store;
     }

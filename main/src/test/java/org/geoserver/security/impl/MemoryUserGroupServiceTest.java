@@ -9,14 +9,22 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
+import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 
 public class MemoryUserGroupServiceTest extends AbstractUserGroupServiceTest {
 
 
     @Override
     public GeoserverUserGroupService createUserGroupService(String name) throws IOException {
-        MemoryUserGroupService service = new MemoryUserGroupService(name, getSecurityManager()); 
+        SecurityNamedServiceConfig config = new SecurityNamedServiceConfigImpl();
+        config.setName(name);
+        GeoserverUserGroupService service = new MemoryUserGroupService();
+        service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
+        service.initializeFromConfig(config);        
         return service;
     }
 

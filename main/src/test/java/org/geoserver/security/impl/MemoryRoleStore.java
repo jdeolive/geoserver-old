@@ -25,10 +25,6 @@ public class MemoryRoleStore extends AbstractRoleStore {
     
     
     
-    public MemoryRoleStore(String name) {
-        super(name);        
-    }
-
 
     @Override
     protected void serialize() throws IOException {
