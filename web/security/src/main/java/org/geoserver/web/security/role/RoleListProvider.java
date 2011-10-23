@@ -39,8 +39,8 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
         public Object getPropertyValue(GeoserverGrantedAuthority item) {
             GeoserverGrantedAuthority parent=null;
             try {
-                parent = GeoServerApplication.get().getUserDetails()
-                    .getGrantedAuthorityService().getParentRole(item);
+                parent = GeoServerApplication.get().getSecurityManager()
+                    .getActiveRoleService().getParentRole(item);
             } catch (IOException e) {
                 //TODO is this correct
                 throw new RuntimeException(e);
@@ -114,7 +114,7 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverGrantedAuth
     protected List<GeoserverGrantedAuthority> getItems() {
         SortedSet<GeoserverGrantedAuthority> roles=null;
         try {
-            roles = GeoServerApplication.get().getUserDetails().getGrantedAuthorityService().getRoles();
+            roles = GeoServerApplication.get().getSecurityManager().getActiveRoleService().getRoles();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 

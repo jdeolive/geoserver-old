@@ -267,8 +267,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     protected void checkValuesInserted(GeoserverUserGroupService userGroupService) throws IOException {
         assertEquals(4, userGroupService.getUsers().size());
         
-        GeoserverUser admin = (GeoserverUser) userGroupService.getUserByUsername(
-                GeoserverUser.DEFAULT_ADMIN.getUsername());
+        GeoserverUser admin = GeoserverUser.createDefaultAdmin();
         GeoserverUser user1 = (GeoserverUser) userGroupService.getUserByUsername("user1");
         GeoserverUser user2 = (GeoserverUser) userGroupService.getUserByUsername("user2");
         GeoserverUser disableduser = (GeoserverUser) userGroupService.getUserByUsername("disableduser");
@@ -380,8 +379,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     }
     protected void checkValuesRemoved(GeoserverUserGroupService userGroupService) throws IOException {
         
-        GeoserverUser admin = (GeoserverUser) userGroupService.getUserByUsername(
-                GeoserverUser.DEFAULT_ADMIN.getUsername());
+        GeoserverUser admin = GeoserverUser.createDefaultAdmin();
         GeoserverUser user1 = (GeoserverUser) userGroupService.getUserByUsername("user1");
         GeoserverUser disableduser = (GeoserverUser) userGroupService.getUserByUsername("disableduser");
     
@@ -401,12 +399,9 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         assertTrue(userGroupService.getUsersForGroup(group1).contains(user1));
     }
     public void insertValues(GeoserverUserGroupStore userGroupStore) throws IOException {
-        
-        GeoserverUser admin = userGroupStore.createUserObject(
-                GeoserverUser.DEFAULT_ADMIN.getUsername(),
-                GeoserverUser.DEFAULT_ADMIN.getPassword(),
-                GeoserverUser.DEFAULT_ADMIN.isEnabled());
-        
+                
+        GeoserverUser admin = userGroupStore.createUserObject(GeoserverUser.AdminName, 
+                GeoserverUser.AdminPasword, GeoserverUser.AdminEnabled);
         GeoserverUser user1 = userGroupStore.createUserObject("user1", "11111", true);
         GeoserverUser user2 = userGroupStore.createUserObject("user2", "22222", true);
         GeoserverUser disableduser = userGroupStore.createUserObject("disableduser", "", false);

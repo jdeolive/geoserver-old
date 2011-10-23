@@ -86,10 +86,9 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         gaTest = new XMLGrantedAuthorityServiceTest();        
         ugTest = new XMLUserGroupServiceTest();
         gaService=gaTest.createGrantedAuthorityService("test");
-        
-        getUserDetails().setGrantedAuthorityService(gaService);
+        getSecurityManager().setActiveRoleService(gaService);
         ugService=ugTest.createUserGroupService("test");
-        getUserDetails().setUserGroupService(ugService);
+        getSecurityManager().setActiveUserGroupService(ugService);
         
         gaStore =  gaTest.createStore(gaService);                
         ugStore =  ugTest.createStore(ugService);
@@ -102,11 +101,11 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         gaTest = new H2GrantedAuthorityServiceTest();        
         ugTest = new H2UserGroupServiceTest();
         gaService=gaTest.createGrantedAuthorityService("");
-        getUserDetails().setGrantedAuthorityService(gaService);
+        getSecurityManager().setActiveRoleService(gaService);
         ugService=ugTest.createUserGroupService("");
-        getUserDetails().setUserGroupService(ugService);
-        
+        getSecurityManager().setActiveUserGroupService(ugService);
 
+                
         // create tables
         gaStore =  gaTest.createStore(gaService);                
         ugStore =  ugTest.createStore(ugService);
@@ -148,7 +147,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         gaStore.initializeFromService(gaService);
         gaTest.insertValues(gaStore);
         gaStore.store();
-        getUserDetails().setGrantedAuthorityService(gaService);
+        getSecurityManager().setActiveRoleService(gaService);
         gaStore=null;
     }
     
@@ -158,7 +157,8 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         ugStore.initializeFromService(ugService);
         ugTest.insertValues(ugStore);
         ugStore.store();
-        getUserDetails().setUserGroupService(ugService);
+        getSecurityManager().setActiveUserGroupService(ugService);
+        
         ugStore=null;
     }
     

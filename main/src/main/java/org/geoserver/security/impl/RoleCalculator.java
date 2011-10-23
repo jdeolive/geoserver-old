@@ -6,7 +6,6 @@ package org.geoserver.security.impl;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -14,80 +13,50 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
 
-import org.geoserver.security.event.GrantedAuthorityLoadedEvent;
-import org.geoserver.security.event.GrantedAuthorityLoadedListener;
-import org.geoserver.security.event.UserGroupLoadedEvent;
-import org.geoserver.security.event.UserGroupLoadedListener;
-import org.springframework.dao.DataAccessException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
 /**
- * An implementation of {@link GeoserverUserDetailsService}
+ * Helper Object for role calculations 
  * 
  * @author christian
  *
  */
-public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsService,GrantedAuthorityLoadedListener,UserGroupLoadedListener {
+public class RoleCalculator  {
     
-
 
     protected GeoserverGrantedAuthorityService grantedAuthoriyService;
     protected GeoserverUserGroupService userGroupService;
-    
-    /* (non-Javadoc)
-     * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
-     */
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
-            DataAccessException {
-        assertServicesNotNull();
-        GeoserverUser user=null;
-        try {
-            user = userGroupService.getUserByUsername(username);
-        } catch (IOException e) {
-            throw new UsernameNotFoundException("User not found: " + username,e);
-        }
-        if (user == null)
-            throw new UsernameNotFoundException("User not found: " + username);
-        
-        user.resetGrantedAuthorities();
-        return user;
-    }
 
-    public void setGrantedAuthorityService(GeoserverGrantedAuthorityService service) {
-        if (grantedAuthoriyService!=null)
-            grantedAuthoriyService.unregisterGrantedAuthorityLoadedListener(this);
+    /**
+     * Constructor
+     * 
+     * @param userGroupService
+     * @param grantedAuthoriyService
+     */
+    public RoleCalculator (GeoserverUserGroupService userGroupService,GeoserverGrantedAuthorityService grantedAuthoriyService) {
+        this.userGroupService=userGroupService;
+        this.grantedAuthoriyService=grantedAuthoriyService;
+        assertServicesNotNull();
+    }
         
+    public void setGrantedAuthorityService(GeoserverGrantedAuthorityService service) {
         grantedAuthoriyService=service;
-        grantedAuthoriyService.registerGrantedAuthorityLoadedListener(this);
+        assertServicesNotNull();
+
     }
 
     public GeoserverGrantedAuthorityService getGrantedAuthorityService() {
         return grantedAuthoriyService;
     }
 
-    public boolean isGrantedAuthorityStore() {
-        assertServicesNotNull();
-        return getGrantedAuthorityService().canCreateStore();
-    }
 
     public void setUserGroupService(GeoserverUserGroupService service) {
-        if (userGroupService!=null)
-            userGroupService.unregisterUserGroupLoadedListener(this);
         userGroupService=service;
-        userGroupService.registerUserGroupLoadedListener(this);
-    }
+        assertServicesNotNull();
+   }
 
     public GeoserverUserGroupService getUserGroupService() {
         return userGroupService;
-    }
-
-    public boolean isUserGroupStore() {
-        assertServicesNotNull();
-        return getUserGroupService().canCreateStore();
     }
 
 
@@ -105,24 +74,24 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
     }
 
 
-    /* (non-Javadoc)
-     * @see org.geoserver.security.event.UserGroupChangedListener#usersAndGroupsChanged(org.geoserver.security.event.UserGroupChangedEvent)
-     */
-    public void usersAndGroupsChanged(UserGroupLoadedEvent event) {
-    }
-
-
-    /* (non-Javadoc)
-     * @see org.geoserver.security.event.GrantedAuthorityChangedListener#grantedAuthoritiesChanged(org.geoserver.security.event.GrantedAuthorityChangedEvent)
-     */
-    public void grantedAuthoritiesChanged(GrantedAuthorityLoadedEvent event) {
-    }
-
-
-    /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverSecurityService#calculateGrantedAuthorities(org.geoserver.security.impl.GeoserverUser)
-     */
-    @Override
+    /**
+     * Calculate the Granted Authorities for a user
+     * 
+     * The algorithm
+     * 
+     * get the roles directly assigned to the user
+     * get the groups of the user
+     * for each "enabled" group, add the roles of the group
+     * for all roles so far, search for ancestor roles and
+     * add them to the set
+     * 
+     * After role calculation has finished, personalize each
+     * role with role attributes if necessary
+     * 
+     * @param user
+     * @return
+     * @throws IOException
+     */  
     public SortedSet<GeoserverGrantedAuthority> calculateGrantedAuthorities(GeoserverUser user)
             throws IOException {
         
@@ -143,7 +112,7 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
         SortedSet<GeoserverGrantedAuthority> set2 = 
                 personalizeRoles(user, set1);
         
-        return Collections.unmodifiableSortedSet(set2);
+        return set2;
     }
     
     /**
@@ -166,8 +135,13 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
         addParentRole(parentRole, inherited);
     }
 
-    /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverUserDetailsService#calculateGrantedAuthorities(org.geoserver.security.impl.GeoserverUserGroup)
+    /**
+     * Calculate the Granted Authorities for a group
+     * including inherited roles
+     * 
+     * @param group
+     * @return
+     * @throws IOException
      */
     public SortedSet<GeoserverGrantedAuthority> calculateGrantedAuthorities(GeoserverUserGroup group) throws IOException {
         
@@ -177,8 +151,11 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
         return roles;
     }
     
-    /* (non-Javadoc)
-     * @see org.geoserver.security.GeoserverUserDetailsService#addInheritedRoles(java.util.SortedSet)
+    /**
+     * Adds inherited roles to a role set
+     * 
+     * @param coll
+     * @throws IOException
      */
     public void addInheritedRoles(Collection<GeoserverGrantedAuthority> coll) throws IOException {
         Set<GeoserverGrantedAuthority> inherited = new HashSet<GeoserverGrantedAuthority>();
@@ -186,7 +163,17 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
             addParentRole(role, inherited);
         coll.addAll(inherited);        
     }
-    
+
+    /**
+     * Takes the role set for a user and
+     * personalizes the roles (matching user properties
+     * and role parameters)
+     * 
+     * @param user
+     * @param roles
+     * @return
+     * @throws IOException
+     */
     public SortedSet<GeoserverGrantedAuthority> personalizeRoles(GeoserverUser user, Collection<GeoserverGrantedAuthority> roles) throws IOException{
         SortedSet<GeoserverGrantedAuthority> set = new TreeSet<GeoserverGrantedAuthority>();
         for (GeoserverGrantedAuthority role : roles) {
@@ -206,3 +193,8 @@ public class GeoserverUserDetailsServiceImpl implements GeoserverUserDetailsServ
         return set;        
     }
 }
+
+
+
+
+

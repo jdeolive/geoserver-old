@@ -60,7 +60,7 @@ public class NewGroupPage extends AbstractGroupPage {
             String newName = uiGroup.getGroupname();            
             try {
                 GeoserverUserGroup group =
-                    getUserDetails().getUserGroupService().getGroupByGroupname(newName);
+                    getSecurityManager().getActiveUserGroupService().getGroupByGroupname(newName);
                 if (group!=null) {
                     form.error(new ResourceModel("NewGroupPage.groupConflict").getObject(),
                             Collections.singletonMap("group", (Object) newName));

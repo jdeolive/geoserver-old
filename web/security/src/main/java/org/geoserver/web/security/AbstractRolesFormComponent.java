@@ -21,7 +21,7 @@ import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
-import org.geoserver.security.GeoserverUserDetailsService;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.role.NewRolePage;
@@ -59,7 +59,7 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
                     protected SortedSet<GeoserverGrantedAuthority> load() {                        
                         try {
                             SortedSet<GeoserverGrantedAuthority> result = new TreeSet<GeoserverGrantedAuthority>();
-                            result.addAll(getUserDetails().getGrantedAuthorityService().getRoles());
+                            result.addAll(getSecurityManager().getActiveRoleService().getRoles());
                             return result;
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -98,11 +98,11 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
           }            
         }; 
         add(addRole);        
-        addRole.setVisible(getUserDetails().isGrantedAuthorityStore());
+        addRole.setVisible(getSecurityManager().getActiveRoleService().canCreateStore());
     }
 
-    public GeoserverUserDetailsService getUserDetails() {
-        return GeoServerApplication.get().getSecurityManager().getUserDetails();
+    public GeoServerSecurityManager getSecurityManager() {
+        return GeoServerApplication.get().getSecurityManager();
     }
 
     public Palette<GeoserverGrantedAuthority> getRolePalette() {

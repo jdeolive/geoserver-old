@@ -28,10 +28,12 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
-import org.geoserver.security.GeoserverUserDetailsService;
+import org.geoserver.security.GeoserverGrantedAuthorityService;
+import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.PropertyEditorFormComponent;
@@ -204,15 +206,17 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     public List<GeoserverGrantedAuthority> getCalculatedroles() {
         List<GeoserverGrantedAuthority> tmpList = new ArrayList<GeoserverGrantedAuthority>();
         List<GeoserverGrantedAuthority> resultList = new ArrayList<GeoserverGrantedAuthority>();
-        GeoserverUserDetailsService gsDetails = getUserDetails();
+        GeoserverUserGroupService ugService= getSecurityManager().getActiveUserGroupService();
+        GeoserverGrantedAuthorityService gaService = getSecurityManager().getActiveRoleService();
+        RoleCalculator calc = new RoleCalculator(ugService, gaService);
         try {
             tmpList.addAll(userRolesFormComponent.getSelectedRoles());
-            gsDetails.addInheritedRoles(tmpList);
+            calc.addInheritedRoles(tmpList);
             for (GeoserverUserGroup group : userGroupFormComponent.getSelectedGroups()) {
                 if (group.isEnabled())
-                    tmpList.addAll(gsDetails.calculateGrantedAuthorities(group));
+                    tmpList.addAll(calc.calculateGrantedAuthorities(group));
             }
-            resultList.addAll(gsDetails.personalizeRoles(uiUser.toGeoserverUser(), tmpList));
+            resultList.addAll(calc.personalizeRoles(uiUser.toGeoserverUser(), tmpList));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -278,8 +282,8 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         public GeoserverUser toGeoserverUser() {
             GeoserverUser user;
             try {
-                user = GeoServerApplication.get().getUserDetails()
-                    .getUserGroupService().createUserObject(username, password, enabled);
+                user = GeoServerApplication.get().getSecurityManager()
+                    .getActiveUserGroupService().createUserObject(username, password, enabled);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

@@ -5,16 +5,11 @@
 
 package org.geoserver.security.concurrent;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityService;
-import org.geoserver.security.GeoserverGrantedAuthorityService;
-import org.geoserver.security.GeoserverUserDetailsService;
 
 /**
  * Abstract base class for locking support.

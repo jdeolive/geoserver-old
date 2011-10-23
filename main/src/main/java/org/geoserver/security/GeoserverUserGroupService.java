@@ -12,6 +12,7 @@ import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.springframework.dao.DataAccessException;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 /**
  * This interface is an extenstion to {@link UserDetailsService}
@@ -22,7 +23,7 @@ import org.springframework.dao.DataAccessException;
  * @author christian
  *
  */
-public interface GeoserverUserGroupService extends GeoServerSecurityService {
+public interface GeoserverUserGroupService extends GeoServerSecurityService,UserDetailsService {
 
     /**
      * Creates the user group store that corresponds to this service, or null if creating a store

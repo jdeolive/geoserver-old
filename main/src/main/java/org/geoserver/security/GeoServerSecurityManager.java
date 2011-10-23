@@ -33,8 +33,8 @@ import org.geoserver.security.concurrent.LockingUserGroupService;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.UserDetailsServiceConfig;
-import org.geoserver.security.config.impl.UserDetailsServiceConfigImpl;
+import org.geoserver.security.config.SecurityManagerConfig;
+import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
 
 import org.geoserver.security.file.GrantedAuthorityFileWatcher;
@@ -52,24 +52,42 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.AnonymousAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.RememberMeAuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.memory.UserAttribute;
 import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
 
 /**
  * Top level singleton/facade/dao for the security authentication/authorization subsystem.  
  * 
+ * Christian: implementing UserDetailsservice is temporary.
+ * 
+ * Reason: applicationSecurityContext.xml
+ * 
+   <bean id="rememberMeServices"
+    class="org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices">
+    <!--  TODO, temporary, use GeoserverSecurityManager as UserDetailService -->
+    <property name="userDetailsService" ref="authenticationManager" />
+    <property name="key" value="geoserver" />
+  </bean>
+ * 
+ * The rememberMeServices Bean needs a UserDetailsService Object
+ * 
  * @author Justin Deoliveira, OpenGeo
  *
  */
-public class GeoServerSecurityManager extends ProviderManager implements ApplicationContextAware {
+public class GeoServerSecurityManager extends ProviderManager implements ApplicationContextAware, UserDetailsService {
 
     static Logger LOGGER = Logging.getLogger("org.geoserver.security");
+    
 
     /** data directory file system access */
     GeoServerDataDirectory dataDir;
@@ -77,8 +95,23 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /** app context for loading plugins */
     ApplicationContext appContext;
 
-    /** user details service */
-    GeoserverUserDetailsService userDetails;
+    /** the active role service */
+    GeoserverGrantedAuthorityService activeRoleService;
+    
+    /** the active user group servie */
+    // TODO, this is needed for current migration !!!! 
+    // We have to remove this later. There is no single
+    // active usergroup serverGeoServerSecurityManager
+    GeoserverUserGroupService activeUserGroupService;
+
+        
+    public GeoserverUserGroupService getActiveUserGroupService() {
+        return activeUserGroupService;
+    }
+
+    public void setActiveUserGroupService(GeoserverUserGroupService activeUserGroupService) {
+        this.activeUserGroupService = activeUserGroupService;
+    }
 
     /** cached user groups */
     ConcurrentHashMap<String, GeoserverUserGroupService> userGroups = 
@@ -93,15 +126,13 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     UserGroupServiceHelper userGroupServiceHelper = new UserGroupServiceHelper();
     //AuthProviderHelper authProviderHelper = new AuthProviderHelper();
 
-    public GeoServerSecurityManager(GeoserverUserDetailsService userDetails, 
+    public GeoServerSecurityManager( 
         GeoServerDataDirectory dataDir) throws IOException {
-       
-        this.userDetails = userDetails;
+        
         this.dataDir = dataDir;
 
         //migrate from old security config
         migrateIfNecessary();
-
     }
 
     @Override
@@ -121,7 +152,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * loads configuration and initializes the security subsystem.
      */
     void init() throws Exception {
-        UserDetailsServiceConfig config = loadSecurityConfig();
+        SecurityManagerConfig config = loadSecurityConfig();
 
         //load the user group service and ensure it is properly configured
         String userGroupServiceName = config.getUserGroupServiceName();
@@ -174,8 +205,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
 
         //configure the user details instance
-        getUserDetails().setUserGroupService(userGroupService);
-        getUserDetails().setGrantedAuthorityService(roleService);
+        setActiveUserGroupService(userGroupService);
+        setActiveRoleService(roleService);
 
         //set up authentcation providers
         List<AuthenticationProvider> authProviders = new ArrayList<AuthenticationProvider>();
@@ -188,7 +219,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         //dao based authentication that wraps user service
         DaoAuthenticationProvider daoAuthProvider = new DaoAuthenticationProvider();
-        daoAuthProvider.setUserDetailsService(getUserDetails());
+        daoAuthProvider.setUserDetailsService(getActiveUserGroupService());
         daoAuthProvider.afterPropertiesSet();
         authProviders.add(daoAuthProvider);
 
@@ -205,13 +236,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         authProviders.add(rap);
 
         setProviders(authProviders);
-    }
-
-    /**
-     * The user details service.
-     */
-    public GeoserverUserDetailsService getUserDetails() {
-        return userDetails;
     }
 
     /**
@@ -290,8 +314,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      */
     public void removeRoleService(String name) throws IOException {
         //remove the service
-        GeoserverGrantedAuthorityService grantedAuth = userDetails.getGrantedAuthorityService();
-        if (grantedAuth != null && grantedAuth.getName().equals(name)) {
+        if (getActiveRoleService() != null && getActiveRoleService().getName().equals(name)) {
             throw new IllegalArgumentException("Can't delete active authority service: " + name);
         }
 
@@ -344,11 +367,18 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      */
     public void removeUserGroupService(String name) throws IOException {
         //remove the service
-        GeoserverUserGroupService userGroup = getUserDetails().getUserGroupService();
-        if (userGroup != null && userGroup.getName().equals(name)) {
-            throw new IllegalArgumentException("Can't delete active user group service: " + name);
-        }
-
+        
+        
+        
+         
+        // First, I we have only one usergroupservice, we cannot delete it.
+        if (userGroups.size()==1)
+            throw new IllegalArgumentException("Can't delete last user group service: " + name);
+        
+        // TODO: this check is more complicated.
+        // Second, if deletion would also delete the last user with ROLE_ADMINSTRATOR,
+        // we have to refuse deletion. To be implemented
+        
         //remove the cached service
         userGroups.remove(name);
         
@@ -419,7 +449,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
 
         //save the top level config
-        UserDetailsServiceConfig config = new UserDetailsServiceConfigImpl();
+        SecurityManagerConfig config = new SecurityManagerConfigImpl();
         config.setGrantedAuthorityServiceName(XMLGrantedAuthorityService.DEFAULT_NAME);
         config.setUserGroupServiceName(XMLUserGroupService.DEFAULT_NAME);
         saveSecurityConfig(config);
@@ -466,11 +496,11 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             }
         } else  {
             // no user.properties, populate with default user and roles
-            if (userGroupService.getUserByUsername(GeoserverUser.DEFAULT_ADMIN.getUsername()) == null) {
-                userGroupStore.addUser(GeoserverUser.DEFAULT_ADMIN);
+            if (userGroupService.getUserByUsername(GeoserverUser.AdminName) == null) {
+                userGroupStore.addUser(GeoserverUser.createDefaultAdmin());
                 roleStore.addGrantedAuthority(GeoserverGrantedAuthority.ADMIN_ROLE);
                 roleStore.associateRoleToUser(GeoserverGrantedAuthority.ADMIN_ROLE,
-                        GeoserverUser.DEFAULT_ADMIN.getUsername());
+                        GeoserverUser.AdminName);
             }
         }
 
@@ -552,9 +582,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
     XStreamPersister globalPersister() throws IOException {
         XStreamPersister xp = persister();
-        xp.getXStream().alias("security", UserDetailsServiceConfigImpl.class);
+        xp.getXStream().alias("security", SecurityManagerConfigImpl.class);
         xp.getXStream().aliasField("roleServiceName", 
-            UserDetailsServiceConfigImpl.class, "grantedAuthorityServiceName");
+            SecurityManagerConfigImpl.class, "grantedAuthorityServiceName");
         return xp;
     }
 
@@ -566,7 +596,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
         //create and configure an xstream persister to load the configuration files
         XStreamPersister xp = new XStreamPersisterFactory().createXMLPersister();
-        xp.getXStream().alias("security", UserDetailsServiceConfigImpl.class);
+        xp.getXStream().alias("security", SecurityManagerConfigImpl.class);
         for (GeoServerSecurityProvider roleService : all) {
             roleService.configure(xp);
         }
@@ -576,14 +606,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /*
      * loads the global security config
      */
-    UserDetailsServiceConfig loadSecurityConfig() throws IOException {
-        return (UserDetailsServiceConfig) loadConfigFile(getSecurityRoot(), globalPersister());
+    SecurityManagerConfig loadSecurityConfig() throws IOException {
+        return (SecurityManagerConfig) loadConfigFile(getSecurityRoot(), globalPersister());
     }
 
     /*
      * saves the global security config
      */
-    void saveSecurityConfig(UserDetailsServiceConfig config) throws IOException {
+    void saveSecurityConfig(SecurityManagerConfig config) throws IOException {
         FileOutputStream fout = new FileOutputStream(new File(getSecurityRoot(), "config.xml"));
         try {
             XStreamPersister xp = globalPersister();
@@ -802,6 +832,35 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
     }
 
+    
+    /**
+     *
+     * @return the active {@link GeoserverGrantedAuthorityService}
+     */
+    public GeoserverGrantedAuthorityService getActiveRoleService() {
+        return activeRoleService;
+    }
+
+    /**
+     * set the active {@link GeoserverGrantedAuthorityService}
+     * @param activeRoleService
+     */
+    public void setActiveRoleService(GeoserverGrantedAuthorityService activeRoleService) {
+        this.activeRoleService = activeRoleService;
+    }
+
+    /**
+     * Temporary, need by rememberMeServices
+     *  
+     * @see org.springframework.security.core.userdetails.UserDetailsService#loadUserByUsername(java.lang.String)
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
+            DataAccessException {
+        return getActiveUserGroupService().loadUserByUsername(username);
+    }
+    
+    
 //    class AuthProviderHelper {
 //        /**
 //         * Loads the auth provider for the named config from persistence.

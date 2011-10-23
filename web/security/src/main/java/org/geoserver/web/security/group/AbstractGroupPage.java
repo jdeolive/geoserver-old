@@ -97,8 +97,8 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
         public GeoserverUserGroup toGeoserverUserGroup() {
             GeoserverUserGroup group;
             try {
-                group = GeoServerApplication.get().getUserDetails()
-                    .getUserGroupService().createGroupObject(groupname,enabled);
+                group = GeoServerApplication.get().getSecurityManager()
+                    .getActiveUserGroupService().createGroupObject(groupname,enabled);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

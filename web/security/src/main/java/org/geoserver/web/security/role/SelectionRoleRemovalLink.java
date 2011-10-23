@@ -69,7 +69,7 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
 
                 
                 GeoserverGrantedAuthorityService gaService =
-                    GeoServerApplication.get().getUserDetails().getGrantedAuthorityService();
+                    GeoServerApplication.get().getSecurityManager().getActiveRoleService();
 
                 try {
                     GeoserverGrantedAuthorityStore gaStore = gaService.createStore();

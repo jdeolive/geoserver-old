@@ -10,7 +10,6 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.GeoserverGrantedAuthorityStore;
-import org.geoserver.security.GeoserverUserDetailsService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverGrantedAuthority;
@@ -66,8 +65,8 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
 
             protected boolean onSubmit(AjaxRequestTarget target, Component contents) {
 
-                GeoserverUserDetailsService userDetails = GeoServerApplication.get().getUserDetails();
-                GeoserverUserGroupService ugService = userDetails.getUserGroupService();
+                GeoserverUserGroupService ugService =
+                        GeoServerApplication.get().getSecurityManager().getActiveUserGroupService();
                 try {
                     GeoserverUserGroupStore ugStore = ugService.createStore();
                     for (GeoserverUserGroup group : removePanel.getRoots()) {                     
@@ -75,7 +74,7 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
                         // TODO, keep admins ?
                          if (disassociateRoles) {
                              GeoserverGrantedAuthorityStore gaStore =
-                                 userDetails.getGrantedAuthorityService().createStore();
+                                     GeoServerApplication.get().getSecurityManager().getActiveRoleService().createStore();
 
                              List<GeoserverGrantedAuthority> list= new ArrayList<GeoserverGrantedAuthority>();
                              list.addAll(gaStore.getRolesForGroup(group.getGroupname()));

@@ -290,5 +290,14 @@ public abstract class AbstractUserGroupStore extends AbstractUserGroupService im
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         // Do nothing
     }
+    
+    /** 
+     * Delegates to the {@link GeoserverUserGroupService} backend
+     */
+    @Override
+    public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{        
+        return service.createUserObject(username, password, isEnabled);
+     }
+
 
 }
