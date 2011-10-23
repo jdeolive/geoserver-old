@@ -48,13 +48,6 @@ public  class JDBCRoleService extends AbstractJDBCService implements GeoserverRo
     public JDBCRoleService() {
     }
 
-    /**
-     * @param name
-     * @throws IOException
-     */
-    public JDBCRoleService(String name) throws IOException{
-        super(name);
-    }
 
     @Override
     public boolean canCreateStore() {
@@ -63,7 +56,7 @@ public  class JDBCRoleService extends AbstractJDBCService implements GeoserverRo
 
     @Override
     public GeoserverRoleStore createStore() throws IOException {
-        JDBCRoleStore store = new JDBCRoleStore(getName());
+        JDBCRoleStore store = new JDBCRoleStore();        
         store.initializeFromService(this);
         return store;
     }
@@ -77,6 +70,7 @@ public  class JDBCRoleService extends AbstractJDBCService implements GeoserverRo
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         
+        this.name=config.getName();
         initializeDSFromConfig(config);
 
         if (config instanceof JdbcBaseSecurityServiceConfig) {

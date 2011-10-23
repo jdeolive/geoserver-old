@@ -28,11 +28,6 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     protected Connection connection;
     
     
-    public JDBCRoleStore(String name) throws IOException {
-        super(name);
-        
-    }
-
     /** 
      * The identical connection is used until {@link #store()} or
      * {@link #load()} is called. Within a transaction it is not possible
@@ -387,6 +382,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
      */
     public void initializeFromService(GeoserverRoleService service) throws IOException {
         JDBCRoleService jdbcService= (JDBCRoleService) service;
+        this.name=service.getName();
         this.datasource=jdbcService.datasource;
         this.ddlProps=jdbcService.ddlProps;
         this.dmlProps=jdbcService.dmlProps;

@@ -24,9 +24,6 @@ import java.util.TreeMap;
 public class MemoryUserGroupStore extends AbstractUserGroupStore {
     
     
-    public MemoryUserGroupStore(String name) {
-        super(name);        
-    }
 
 
     @Override

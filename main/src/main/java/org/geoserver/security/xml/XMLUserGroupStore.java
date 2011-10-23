@@ -4,7 +4,23 @@
  */
 package org.geoserver.security.xml;
 
-import static org.geoserver.security.xml.XMLConstants.*;
+import static org.geoserver.security.xml.XMLConstants.A_GROUP_ENABLED_UR;
+import static org.geoserver.security.xml.XMLConstants.A_GROUP_NAME_UR;
+import static org.geoserver.security.xml.XMLConstants.A_MEMBER_NAME_UR;
+import static org.geoserver.security.xml.XMLConstants.A_PROPERTY_NAME_UR;
+import static org.geoserver.security.xml.XMLConstants.A_USER_ENABLED_UR;
+import static org.geoserver.security.xml.XMLConstants.A_USER_NAME_UR;
+import static org.geoserver.security.xml.XMLConstants.A_USER_PASSWORD_UR;
+import static org.geoserver.security.xml.XMLConstants.A_VERSION_UR;
+import static org.geoserver.security.xml.XMLConstants.E_GROUPS_UR;
+import static org.geoserver.security.xml.XMLConstants.E_GROUP_UR;
+import static org.geoserver.security.xml.XMLConstants.E_MEMBER_UR;
+import static org.geoserver.security.xml.XMLConstants.E_PROPERTY_UR;
+import static org.geoserver.security.xml.XMLConstants.E_USERREGISTRY_UR;
+import static org.geoserver.security.xml.XMLConstants.E_USERS_UR;
+import static org.geoserver.security.xml.XMLConstants.E_USER_UR;
+import static org.geoserver.security.xml.XMLConstants.NS_UR;
+import static org.geoserver.security.xml.XMLConstants.VERSION_UR_1_0;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,15 +31,9 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractUserGroupStore;
@@ -47,10 +57,6 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
      * default = true;
      */
     
-    public XMLUserGroupStore(String name) {
-        super(name);
-        
-    }
 
     private boolean validatingXMLSchema = true;
 
@@ -68,6 +74,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
      * @see org.geoserver.security.GeoserverUserGroupStore#initializeFromServer(org.geoserver.security.GeoserverUserGroupService)
      */
     public void initializeFromService(GeoserverUserGroupService service) throws IOException {
+        this.name=service.getName();
         this.userFile=((XMLUserGroupService) service).userFile;
         this.validatingXMLSchema=((XMLUserGroupService) service).isValidatingXMLSchema();
         super.initializeFromService(service);

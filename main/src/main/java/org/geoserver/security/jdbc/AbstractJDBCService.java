@@ -51,10 +51,6 @@ public abstract class AbstractJDBCService extends AbstractGeoServerSecurityServi
     protected AbstractJDBCService() {
     }
 
-    protected AbstractJDBCService(String name) {
-        super(name);
-    }
-
     /**
      * initialize a {@link DataSource} form a
      * {@link JdbcSecurityServiceConfig} object

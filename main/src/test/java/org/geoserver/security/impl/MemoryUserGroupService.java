@@ -11,7 +11,6 @@ import java.io.ObjectInputStream;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
-import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 
@@ -28,9 +27,7 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
 
     byte[] byteArray;
     
-    public MemoryUserGroupService(String name, GeoServerSecurityManager securityManager) {
-        super(name);
-        this.securityManager = securityManager;
+    public MemoryUserGroupService() {
     }
 
     @Override
@@ -40,7 +37,7 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
 
     @Override
     public GeoserverUserGroupStore createStore() throws IOException {
-        MemoryUserGroupStore store = new MemoryUserGroupStore(getName());
+        MemoryUserGroupStore store = new MemoryUserGroupStore();
         store.initializeFromService(this);
         return store;
     }
@@ -79,6 +76,7 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
 
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
+        this.name=config.getName();
     }
 
 }

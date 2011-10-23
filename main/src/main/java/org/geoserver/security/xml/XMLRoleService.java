@@ -45,12 +45,9 @@ public class XMLRoleService extends AbstractRoleService {
     private boolean validatingXMLSchema = true;
     
     
-    public XMLRoleService() throws IOException{
-        this(null);
-    }
     
-    public XMLRoleService(String name) throws IOException{
-        super(name);
+    public XMLRoleService() throws IOException{
+        super();
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
         factory.setIgnoringComments(true);
@@ -64,6 +61,7 @@ public class XMLRoleService extends AbstractRoleService {
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
 
+        this.name=config.getName();
         validatingXMLSchema=false;
         if (config instanceof XMLBasedSecurityServiceConfig) {
             validatingXMLSchema =((XMLBasedSecurityServiceConfig) config).isValidating();
@@ -97,7 +95,7 @@ public class XMLRoleService extends AbstractRoleService {
 
     @Override
     public GeoserverRoleStore createStore() throws IOException {
-        XMLRoleStore store = new XMLRoleStore(getName());
+        XMLRoleStore store = new XMLRoleStore();
         store.initializeFromService(this);
         return store;
     }

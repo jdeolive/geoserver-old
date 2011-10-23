@@ -52,9 +52,6 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     public JDBCUserGroupService() throws IOException{
     }
 
-    public JDBCUserGroupService(String name) throws IOException{
-        super(name);
-    }
 
     @Override
     public boolean canCreateStore() {
@@ -63,7 +60,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
 
     @Override
     public GeoserverUserGroupStore createStore() throws IOException {
-        JDBCUserGroupStore store = new JDBCUserGroupStore(getName());
+        JDBCUserGroupStore store = new JDBCUserGroupStore();
         store.initializeFromService(this);
         return store;
     }
@@ -75,6 +72,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         
+        this.name=config.getName();
         initializeDSFromConfig(config);
 
         if (config instanceof JdbcBaseSecurityServiceConfig) {

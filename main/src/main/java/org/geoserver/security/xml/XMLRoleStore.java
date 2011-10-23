@@ -4,7 +4,24 @@
  */
 package org.geoserver.security.xml;
 
-import static org.geoserver.security.xml.XMLConstants.*;
+import static org.geoserver.security.xml.XMLConstants.A_GROUPNAME_RR;
+import static org.geoserver.security.xml.XMLConstants.A_PARENTID_RR;
+import static org.geoserver.security.xml.XMLConstants.A_PROPERTY_NAME_RR;
+import static org.geoserver.security.xml.XMLConstants.A_ROLEID_RR;
+import static org.geoserver.security.xml.XMLConstants.A_ROLEREFID_RR;
+import static org.geoserver.security.xml.XMLConstants.A_USERNAME_RR;
+import static org.geoserver.security.xml.XMLConstants.A_VERSION_RR;
+import static org.geoserver.security.xml.XMLConstants.E_GROUPLIST_RR;
+import static org.geoserver.security.xml.XMLConstants.E_GROUPROLES_RR;
+import static org.geoserver.security.xml.XMLConstants.E_PROPERTY_RR;
+import static org.geoserver.security.xml.XMLConstants.E_ROLELIST_RR;
+import static org.geoserver.security.xml.XMLConstants.E_ROLEREF_RR;
+import static org.geoserver.security.xml.XMLConstants.E_ROLEREGISTRY_RR;
+import static org.geoserver.security.xml.XMLConstants.E_ROLE_RR;
+import static org.geoserver.security.xml.XMLConstants.E_USERLIST_RR;
+import static org.geoserver.security.xml.XMLConstants.E_USERROLES_RR;
+import static org.geoserver.security.xml.XMLConstants.NS_RR;
+import static org.geoserver.security.xml.XMLConstants.VERSION_RR_1_0;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,13 +35,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractRoleStore;
@@ -43,9 +53,6 @@ public class XMLRoleStore extends AbstractRoleStore {
      */
     private boolean validatingXMLSchema = true;
     
-    public XMLRoleStore(String name) {
-        super(name);
-    }
     
     public boolean isValidatingXMLSchema() {
         return validatingXMLSchema;
@@ -58,7 +65,8 @@ public class XMLRoleStore extends AbstractRoleStore {
     /* (non-Javadoc)
      * @see org.geoserver.security.impl.AbstractRoleStore#initializeFromService(org.geoserver.security.GeoserverRoleService)
      */
-    public void initializeFromService(GeoserverRoleService service) throws IOException {                        
+    public void initializeFromService(GeoserverRoleService service) throws IOException {
+        this.name=service.getName();
         this.roleFile=((XMLRoleService)service).roleFile;
         this.validatingXMLSchema=((XMLRoleService)service).isValidatingXMLSchema();
         super.initializeFromService(service);
