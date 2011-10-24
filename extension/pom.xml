@@ -230,4 +230,7 @@
 
   </profiles>
 
+  <modules>
+    <module>security</module>
+  </modules>
 </project>

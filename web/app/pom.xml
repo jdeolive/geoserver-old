@@ -371,11 +371,11 @@
      </dependencies>
     </profile>
     <profile>
-     <id>security</id>
+     <id>security-jdbc</id>
      <dependencies>
       <dependency>
-       <groupId>org.geoserver.extension</groupId>
-       <artifactId>web-security</artifactId>
+       <groupId>org.geoserver.extension.security</groupId>
+       <artifactId>security-jdbc</artifactId>
        <version>${project.version}</version>
       </dependency>
      </dependencies>

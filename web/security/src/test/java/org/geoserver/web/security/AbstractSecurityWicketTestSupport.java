@@ -36,8 +36,6 @@ import org.geoserver.security.impl.MemoryUserGroupService;
 import org.geoserver.security.impl.MemoryUserGroupStore;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
-import org.geoserver.security.jdbc.H2RoleServiceTest;
-import org.geoserver.security.jdbc.H2UserGroupServiceTest;
 import org.geoserver.security.xml.XMLRoleServiceTest;
 import org.geoserver.security.xml.XMLUserGroupServiceTest;
 import org.geoserver.web.GeoServerApplication;
@@ -83,38 +81,27 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         Locale.setDefault(Locale.ENGLISH);
     }
 
-    
-    protected void initializeForXML() throws IOException {
-        gaTest = new XMLRoleServiceTest();        
-        ugTest = new XMLUserGroupServiceTest();
+    protected void initialize(AbstractUserGroupServiceTest ugTest, AbstractRoleServiceTest gaTest) 
+        throws IOException {
+
+        this.ugTest = ugTest;
+        this.gaTest = gaTest;
+
         gaService=gaTest.createRoleService("test");
         getSecurityManager().setActiveRoleService(gaService);
         ugService=ugTest.createUserGroupService("test");
         getSecurityManager().setActiveUserGroupService(ugService);
         
-        gaStore =  gaTest.createStore(gaService);                
-        ugStore =  ugTest.createStore(ugService);
-        initializeServiceRules();
-        initializeDataAccessRules();
-
-    }
-
-    protected void initializeForJDBC() throws Exception {
-        gaTest = new H2RoleServiceTest();        
-        ugTest = new H2UserGroupServiceTest();
-        gaService=gaTest.createRoleService("");
-        getSecurityManager().setActiveRoleService(gaService);
-        ugService=ugTest.createUserGroupService("");
-        getSecurityManager().setActiveUserGroupService(ugService);
-
-                
-        // create tables
-        gaStore =  gaTest.createStore(gaService);                
+        gaStore =  gaTest.createStore(gaService);
         ugStore =  ugTest.createStore(ugService);
         initializeServiceRules();
         initializeDataAccessRules();
     }
-    
+
+    protected void initializeForXML() throws IOException {
+        initialize(new XMLUserGroupServiceTest() ,new XMLRoleServiceTest());
+    }
+
     protected void addAdditonalData() throws Exception {
         gaStore.associateRoleToGroup(
                 gaStore.getRoleByName("ROLE_WMS"), "group1");

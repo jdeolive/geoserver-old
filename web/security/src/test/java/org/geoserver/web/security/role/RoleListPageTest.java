@@ -98,13 +98,6 @@ public class RoleListPageTest extends AbstractListPageTest<GeoserverRole> {
         assertEquals(0,roles.size(),4);
         assertTrue(roles.contains(GeoserverRole.ADMIN_ROLE));
     }
-    
-    public void testRemoveJDBC() throws Exception {
-        initializeForJDBC();
-        insertValues();
-        addAdditonalData();
-        doRemove("headerPanel:removeSelected");
-    }
 
     @Override
     protected void doRemove(String pathForLink) throws Exception {
