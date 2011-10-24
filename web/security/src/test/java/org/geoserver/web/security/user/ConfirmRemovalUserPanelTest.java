@@ -43,31 +43,17 @@ public class ConfirmRemovalUserPanelTest extends AbstractConfirmRemovalPanelTest
         }));
     }
     
-    public void testRemoveUserJDBC() throws Exception {
-        disassociateRoles=false;
-        initializeForJDBC();
-        removeObject();
-        
-    }
-    public void testRemoveUserXML() throws Exception {
+    public void testRemoveUser() throws Exception {
         disassociateRoles=false;
         initializeForXML();
         removeObject();                                       
     }
 
-    public void testRemoveUserWithRolesJDBC() throws Exception {
-        disassociateRoles=true;
-        initializeForJDBC();
-        removeObject();
-        
-    }
-    public void testRemoveUserWithRolesXML() throws Exception {
+    public void testRemoveUserWithRoles() throws Exception {
         disassociateRoles=true;
         initializeForXML();
         removeObject();                                       
     }
-
-    
 
     @Override
     protected GeoserverUser getRemoveableObject() throws Exception{

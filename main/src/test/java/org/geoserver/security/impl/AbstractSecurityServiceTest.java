@@ -8,7 +8,10 @@ package org.geoserver.security.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
 
+import org.apache.commons.io.FileUtils;
 import org.geoserver.data.test.LiveData;
 import org.geoserver.data.test.TestData;
 import org.geoserver.security.GeoserverRoleService;
@@ -16,6 +19,7 @@ import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.test.GeoServerAbstractTestSupport;
+import org.geotools.data.DataUtilities;
 
 
 /**
@@ -457,11 +461,27 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     
     @Override
     protected TestData buildTestData() throws Exception {
-        
-        File data = new File("./src/test/resources/datadir");        
-        return new LiveData(data);
+        return new LiveData(unpackTestDataDir());
     }
-    
+
+    public static File unpackTestDataDir() throws Exception {
+        URL url = AbstractSecurityServiceTest.class.getResource("/datadir");
+        if (!"file".equals(url.getProtocol())) {
+            //means a dependency is using this directory via a jarfile, copy out manually
+            File dataDir = File.createTempFile("data", "live", new File("./target"));
+            dataDir.delete();
+            dataDir.mkdirs();
+
+            //TODO: instead of harcoding files, dynamically read all subentries from the jar
+            // and copy them out
+            FileUtils.copyURLToFile(AbstractSecurityServiceTest.class.getResource("/datadir/dummy.txt"), 
+                new File(dataDir, "dummy.txt"));
+            return dataDir;
+        }
+        
+        return DataUtilities.urlToFile(url);
+    }
+
     /**
      * Indicates if the test is a JDBC test
      * All test are based on the fact that locking appears

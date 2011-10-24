@@ -18,14 +18,7 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         initializeForXML();
         doTestFill();
     }
-    
-    public void testFillJDBC() throws Exception{
-        initializeForJDBC();
-        doTestFill();
-    }
 
-    
-    
     protected void doTestFill() throws Exception {
         initializeForXML();
         insertValues();        
@@ -84,13 +77,7 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         initializeForXML();
         doTestReadOnlyUserGroupService();
     }
-    
-    public void testReadOnlyUserGroupServiceJDBC() throws Exception {
-        initializeForJDBC();
-        doTestReadOnlyUserGroupService();
-    }
 
-        
     protected void doTestReadOnlyUserGroupService() throws Exception {
         insertValues();
         activateROUGService();
@@ -116,13 +103,7 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         initializeForXML();
         doTestReadOnlyRoleService();
     }
-    
-    public void testReadOnlyRoleServiceJDBC() throws Exception {
-        initializeForJDBC();
-        doTestReadOnlyRoleService();
-    }
 
-    
     protected void doTestReadOnlyRoleService() throws Exception {
         insertValues();
         

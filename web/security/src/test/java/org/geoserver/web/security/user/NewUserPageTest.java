@@ -18,12 +18,6 @@ public class NewUserPageTest extends AbstractUserPageTest {
         initializeForXML();
         doTestFill();
     }
-    
-    public void testFillJDBC() throws Exception{
-        initializeForJDBC();
-        doTestFill();
-    }
-
 
     protected void doTestFill() throws Exception {
         insertValues();
@@ -85,13 +79,7 @@ public class NewUserPageTest extends AbstractUserPageTest {
         initializeForXML();
         doTestFill3();
     }
-    
-    public void testFill3JDBC() throws Exception{
-        initializeForJDBC();
-        doTestFill3();
-    }
-    
-    
+
     protected void doTestFill3() throws Exception {
         insertValues();
         initializeTester();
@@ -140,13 +128,7 @@ public class NewUserPageTest extends AbstractUserPageTest {
         initializeForXML();
         doTestFill2();
     }
-    
-    public void testFill2JDBC() throws Exception{
-        initializeForJDBC();
-        doTestFill2();
-    }
-    
-    
+
     protected void doTestFill2() throws Exception {
         insertValues();
         addAdditonalData();

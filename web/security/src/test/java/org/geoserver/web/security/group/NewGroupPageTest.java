@@ -19,12 +19,6 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
         initializeForXML();
         doTestFill();
     }
-    
-    public void testFillJDBC() throws Exception{
-        initializeForJDBC();
-        doTestFill();
-    }
-
 
     protected void doTestFill() throws Exception {
         initializeForXML();
