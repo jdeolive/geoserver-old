@@ -316,9 +316,6 @@
   </bean>
   <alias name="authenticationManager" alias="geoServerSecurityManager"/>
   
-  <!-- jdbc backend provider -->
-  <bean id="jdbcSecurityProvider" class="org.geoserver.security.jdbc.JDBCSecurityProvider"/>
-
   <!-- password encoders -->
   <bean id="shaPasswordEncoder"
     class="org.springframework.security.authentication.encoding.ShaPasswordEncoder">

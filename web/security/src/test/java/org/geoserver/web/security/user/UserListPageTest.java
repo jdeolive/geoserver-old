@@ -87,27 +87,11 @@ public class UserListPageTest extends AbstractListPageTest<GeoserverUser> {
             assertTrue(gaService.getRolesForUser("user1").size()==2);
     }
 
-    public void testRemoveWithRolesXML() throws Exception {
+    public void testRemoveWithRoles() throws Exception {
         withRoles=true;
         initializeForXML();
         insertValues();
         addAdditonalData();
         doRemove("headerPanel:removeSelectedWithRoles");
     }
-    
-    public void testRemoveWithRolesJDBC() throws Exception {
-        withRoles=true;
-        initializeForJDBC();
-        insertValues();
-        addAdditonalData();
-        doRemove("headerPanel:removeSelectedWithRoles");
-    }
-    
-    public void testRemoveJDBC() throws Exception {
-        initializeForJDBC();
-        insertValues();
-        addAdditonalData();
-        doRemove("headerPanel:removeSelected");
-    }
-
 }

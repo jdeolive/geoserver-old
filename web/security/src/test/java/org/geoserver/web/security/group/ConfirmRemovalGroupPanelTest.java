@@ -42,25 +42,13 @@ public class ConfirmRemovalGroupPanelTest extends AbstractConfirmRemovalPanelTes
         }));
     }
     
-    public void testRemoveGroupJDBC() throws Exception {
-        disassociateRoles=false;
-        initializeForJDBC();
-        removeObject();
-        
-    }
-    public void testRemoveGroupXML() throws Exception {
+    public void testRemoveGroup() throws Exception {
         disassociateRoles=false;
         initializeForXML();
         removeObject();                                       
     }
 
-    public void testRemoveGroupWithRolesJDBC() throws Exception {
-        disassociateRoles=true;
-        initializeForJDBC();
-        removeObject();
-        
-    }
-    public void testRemoveGroupWithRolesXML() throws Exception {
+    public void testRemoveGroupWithRoles() throws Exception {
         disassociateRoles=true;
         initializeForXML();
         removeObject();                                       

@@ -16,14 +16,7 @@ public class EditUserPageTest extends AbstractUserPageTest {
         initializeForXML();
         doTestFill();
     }
-    
-    public void testFillJDBC() throws Exception{
-        initializeForJDBC();
-        doTestFill();
-    }
 
-    
-    
     protected void doTestFill() throws Exception {
         initializeForXML();
         insertValues();
@@ -89,13 +82,7 @@ public class EditUserPageTest extends AbstractUserPageTest {
         initializeForXML();
         doTestReadOnlyUserGroupService();
     }
-    
-    public void testReadOnlyUserGroupServiceJDBC() throws Exception {
-        initializeForJDBC();
-        doTestReadOnlyUserGroupService();
-    }
 
-        
     protected void doTestReadOnlyUserGroupService() throws Exception {
         insertValues();
         activateROUGService();
@@ -128,13 +115,7 @@ public class EditUserPageTest extends AbstractUserPageTest {
         initializeForXML();
         doTestReadOnlyRoleService();
     }
-    
-    public void testReadOnlyRoleServiceJDBC() throws Exception {
-        initializeForJDBC();
-        doTestReadOnlyRoleService();
-    }
 
-    
     protected void doTestReadOnlyRoleService() throws Exception {
         insertValues();        
         activateROGAService();        

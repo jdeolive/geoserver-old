@@ -40,12 +40,7 @@ public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest
         }));
     }
     
-    public void testRemoveRoleJDBC() throws Exception {
-        initializeForJDBC();
-        removeObject();
-        
-    }
-    public void testRemoveRoleXML() throws Exception {
+    public void testRemoveRole() throws Exception {
         initializeForXML();
         removeObject();                                       
     }

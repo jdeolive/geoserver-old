@@ -7,31 +7,17 @@ import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
 
     EditRolePage page;
-    
-    
 
     public void testFill() throws Exception{
         initializeForXML();
         doTestFill();
     }
     
-    public void testFillJDBC() throws Exception{
-        initializeForJDBC();
-        doTestFill();
-    }
-
-    
     public void testFill2() throws Exception{
         initializeForXML();
         doTestFill2();
     }
-    
-    public void testFill2JDBC() throws Exception{
-        initializeForJDBC();
-        doTestFill2();
-    }
 
-    
     protected void doTestFill() throws Exception {
         initializeForXML();
         insertValues();        

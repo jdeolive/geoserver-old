@@ -8,18 +8,11 @@ import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
 
     NewRolePage page;
-    
-    
+
     public void testFill() throws Exception{
         initializeForXML();
         doTestFill();
     }
-    
-    public void testFillJDBC() throws Exception{
-        initializeForJDBC();
-        doTestFill();
-    }
-
 
     protected void doTestFill() throws Exception {
         
