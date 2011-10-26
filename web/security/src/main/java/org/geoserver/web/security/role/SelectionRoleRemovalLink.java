@@ -100,8 +100,10 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
         
     }
 
-    protected StringResourceModel canRemove(GeoserverRole role) {        
-        if (role.equals(GeoserverRole.ADMIN_ROLE))
+    protected StringResourceModel canRemove(GeoserverRole role) {
+        GeoserverRoleService gaService =
+                GeoServerApplication.get().getSecurityManager().getActiveRoleService();
+        if (role.equals(gaService.getAdminRole()))
             return new StringResourceModel(getClass().getSimpleName()+".noDelete",null,new Object[] {role.getAuthority()});
                         
         List<String> keys = new ArrayList<String>();

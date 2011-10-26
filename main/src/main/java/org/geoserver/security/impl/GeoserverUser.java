@@ -10,6 +10,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.password.GeoserverPasswordEncoder;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,8 +39,9 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
      * 
      * @return
      */
-    public static GeoserverUser createDefaultAdmin() {
+    public static GeoserverUser createDefaultAdmin(GeoserverUserGroupService service) {
         GeoserverUser admin = new GeoserverUser(AdminName);
+        admin.setPasswordEncoderName(service.getPasswordEncoderName());
         admin.setPassword(AdminPasword);
         admin.setEnabled(AdminEnabled);
         return admin;
@@ -49,8 +53,18 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
     private boolean accountNonLocked;
     private boolean credentialsNonExpired;
     private boolean enabled;
+    private String passwordEncoderName;
+    
 
     
+    public String getPasswordEncoderName() {
+        return passwordEncoderName;
+    }
+
+    public void setPasswordEncoderName(String passwordEncoderName) {
+        this.passwordEncoderName = passwordEncoderName;
+    }
+
     protected Properties properties;
     
 
@@ -71,8 +85,29 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
     }
 
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPassword(String passwd) {
+        // no encoding at all
+        
+        if (passwd==null) {
+            this.password=null;
+            return; 
+        }
+        
+        
+        if (getPasswordEncoderName()==null) {
+            this.password = passwd;
+            return;
+        }
+        GeoserverPasswordEncoder encoder = (GeoserverPasswordEncoder) 
+                GeoServerExtensions.bean(getPasswordEncoderName());
+
+        // password already encoded
+        if (encoder.isResponsibleForEncoding(passwd)) {
+            this.password = passwd;
+            return;
+        } 
+        
+        this.password = encoder.encodePassword(passwd, null);
     }
 
 

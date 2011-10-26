@@ -3,9 +3,11 @@ package org.geoserver.web.security.user;
 import java.util.SortedSet;
 
 import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.password.GeoserverPasswordEncoder;
 
 public class EditUserPageTest extends AbstractUserPageTest {
 
@@ -30,8 +32,12 @@ public class EditUserPageTest extends AbstractUserPageTest {
         assertFalse(tester.getComponentFromLastRenderedPage("userForm:username").isEnabled());
 
         tester.assertModelValue("userForm:username", "user1");
-        tester.assertModelValue("userForm:password", "11111");
-        tester.assertModelValue("userForm:confirmPassword", "11111");
+        GeoserverPasswordEncoder encoder = (GeoserverPasswordEncoder)
+                GeoServerExtensions.bean(ugService.getPasswordEncoderName());
+        String enc = (String) tester.getComponentFromLastRenderedPage("userForm:password").getDefaultModelObject();
+        assertTrue(encoder.isPasswordValid(enc,"11111", null));
+        enc = (String) tester.getComponentFromLastRenderedPage("userForm:confirmPassword").getDefaultModelObject();
+        assertTrue(encoder.isPasswordValid(enc,"11111", null));
         tester.assertModelValue("userForm:enabled", Boolean.TRUE);
         
         newFormTester();        

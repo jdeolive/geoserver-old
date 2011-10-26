@@ -274,6 +274,7 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
     public void initializeFromService(GeoserverRoleService service)
             throws IOException {
         this.name=service.getName();
+        this.adminRole=service.getAdminRole();
         this.service=(AbstractRoleService)service;
         deserialize();
     }

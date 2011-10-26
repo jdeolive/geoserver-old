@@ -383,6 +383,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     public void initializeFromService(GeoserverRoleService service) throws IOException {
         JDBCRoleService jdbcService= (JDBCRoleService) service;
         this.name=service.getName();
+        this.adminRole=service.getAdminRole();
         this.datasource=jdbcService.datasource;
         this.ddlProps=jdbcService.ddlProps;
         this.dmlProps=jdbcService.dmlProps;

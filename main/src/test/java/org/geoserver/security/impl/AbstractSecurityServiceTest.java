@@ -14,12 +14,15 @@ import java.net.URLConnection;
 import org.apache.commons.io.FileUtils;
 import org.geoserver.data.test.LiveData;
 import org.geoserver.data.test.TestData;
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.password.GeoserverPasswordEncoder;
 import org.geoserver.test.GeoServerAbstractTestSupport;
 import org.geotools.data.DataUtilities;
+import org.springframework.security.config.authentication.UserServiceBeanDefinitionParser;
 
 
 /**
@@ -271,7 +274,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     protected void checkValuesInserted(GeoserverUserGroupService userGroupService) throws IOException {
         assertEquals(4, userGroupService.getUsers().size());
         
-        GeoserverUser admin = GeoserverUser.createDefaultAdmin();
+        GeoserverUser admin = GeoserverUser.createDefaultAdmin(userGroupService);
         GeoserverUser user1 = (GeoserverUser) userGroupService.getUserByUsername("user1");
         GeoserverUser user2 = (GeoserverUser) userGroupService.getUserByUsername("user2");
         GeoserverUser disableduser = (GeoserverUser) userGroupService.getUserByUsername("disableduser");
@@ -297,12 +300,13 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         assertTrue(user1.isEnabled());
         assertTrue(user1.isEnabled());
         assertFalse(disableduser.isEnabled());
-        
-        assertEquals("geoserver",admin.getPassword());
-        assertEquals("11111",user1.getPassword());
-        assertEquals("22222",user2.getPassword());
-        assertEquals("",disableduser.getPassword());
-        
+                
+        GeoserverPasswordEncoder encoder = getEncoder(userGroupService);
+        assertTrue(encoder.isPasswordValid(admin.getPassword(), "geoserver", null));
+        assertTrue(encoder.isPasswordValid(user1.getPassword(), "11111", null));
+        assertTrue(encoder.isPasswordValid(user2.getPassword(), "22222", null));
+        assertTrue(encoder.isPasswordValid(disableduser.getPassword(), "", null));
+                        
         assertEquals(0,admin.getProperties().size());
         assertEquals(0,user1.getProperties().size());
         assertEquals(0,disableduser.getProperties().size());
@@ -363,7 +367,8 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     protected void checkValuesModified(GeoserverUserGroupService userGroupService) throws IOException {
         GeoserverUser disableduser = userGroupService.getUserByUsername("disableduser");
         assertTrue(disableduser.isEnabled());
-        assertEquals("hallo", disableduser.getPassword());
+        GeoserverPasswordEncoder encoder = getEncoder(userGroupService);
+        assertTrue(encoder.isPasswordValid(disableduser.getPassword(), "hallo", null));
         assertEquals(1, disableduser.getProperties().size());
         assertEquals("miller", disableduser.getProperties().getProperty("lastname"));
         
@@ -383,7 +388,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     }
     protected void checkValuesRemoved(GeoserverUserGroupService userGroupService) throws IOException {
         
-        GeoserverUser admin = GeoserverUser.createDefaultAdmin();
+        GeoserverUser admin = GeoserverUser.createDefaultAdmin(userGroupService);
         GeoserverUser user1 = (GeoserverUser) userGroupService.getUserByUsername("user1");
         GeoserverUser disableduser = (GeoserverUser) userGroupService.getUserByUsername("disableduser");
     
@@ -500,4 +505,8 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         return false;
     }
 
+    protected GeoserverPasswordEncoder getEncoder(GeoserverUserGroupService ugService) {
+        return (GeoserverPasswordEncoder)
+                GeoServerExtensions.bean(ugService.getPasswordEncoderName());
+    }
 }

@@ -3,9 +3,10 @@
  * application directory.
  */
 
-package org.geoserver.security.config.impl;
+package org.geoserver.security.jdbc.config.impl;
 
 import org.geoserver.security.config.JdbcBaseSecurityServiceConfig;
+import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 
 /**
  * Implementation of {@link JdbcBaseSecurityServiceConfig} 

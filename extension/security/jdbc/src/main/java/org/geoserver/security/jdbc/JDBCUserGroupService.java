@@ -22,6 +22,7 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.JdbcBaseSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.impl.GeoserverUser;
@@ -48,11 +49,16 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     protected Set<UserGroupLoadedListener> listeners = 
         Collections.synchronizedSet(new HashSet<UserGroupLoadedListener>());
     
+    protected String passwordEncoderName;
     
     public JDBCUserGroupService() throws IOException{
     }
 
-
+    @Override
+    public String getPasswordEncoderName() {
+        return passwordEncoderName;
+    }
+    
     @Override
     public boolean canCreateStore() {
         return true;
@@ -73,6 +79,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         
         this.name=config.getName();
+        passwordEncoderName=((SecurityUserGoupServiceConfig)config).getPasswordEncoderName();
         initializeDSFromConfig(config);
 
         if (config instanceof JdbcBaseSecurityServiceConfig) {
@@ -268,6 +275,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
      */
     public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
        GeoserverUser user = new GeoserverUser(username);
+       user.setPasswordEncoderName(this.getPasswordEncoderName());
        user.setEnabled(isEnabled);
        user.setPassword(password==null ? "" : password);
        return user;

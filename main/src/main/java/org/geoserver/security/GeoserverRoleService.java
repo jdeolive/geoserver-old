@@ -177,4 +177,10 @@ public interface GeoserverRoleService extends GeoServerSecurityService {
     Properties personalizeRoleParams (String roleName,Properties roleParams, 
             String userName,Properties userProps) throws IOException;
         
+    /**
+     * @return the admin role, default is
+     * {@link GeoserverRole#ADMIN_ROLE#getAuthority()}
+     */
+    public GeoserverRole getAdminRole();
+
 }

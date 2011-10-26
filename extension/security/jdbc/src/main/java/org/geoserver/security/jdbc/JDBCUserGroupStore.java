@@ -74,6 +74,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
         jdbcService= (JDBCUserGroupService) service;
         setSecurityManager(service.getSecurityManager());
         this.name=jdbcService.getName();
+        this.passwordEncoderName=service.getPasswordEncoderName();
         this.datasource=jdbcService.datasource;
         this.ddlProps=jdbcService.ddlProps;
         this.dmlProps=jdbcService.dmlProps;

@@ -16,9 +16,10 @@ import java.util.logging.Logger;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.config.JdbcSecurityServiceConfig;
-import org.geoserver.security.config.impl.JdbcSecurityServiceConfigImpl;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.Util;
+import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
+import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
 
 
 
@@ -66,7 +67,7 @@ public class JDBCTestSupport {
     protected static GeoserverUserGroupService createH2UserGroupService(String serviceName, 
         GeoServerSecurityManager securityManager) throws IOException {
         
-        JdbcSecurityServiceConfig config = new JdbcSecurityServiceConfigImpl();           
+        JdbcUserGroupServiceConfigImpl config = new JdbcUserGroupServiceConfigImpl();           
         config.setName(serviceName);
         config.setConnectURL("jdbc:h2:target/h2/security");
         config.setDriverClassName("org.h2.Driver");
@@ -76,6 +77,7 @@ public class JDBCTestSupport {
         config.setStateless(true);
         config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
+        config.setPasswordEncoderName("digestPasswordEncoder");
         securityManager.saveUserGroupService(config);
 
         return securityManager.loadUserGroupService(serviceName);
@@ -84,7 +86,7 @@ public class JDBCTestSupport {
     protected static GeoserverRoleService createH2RoleService(
         String serviceName, GeoServerSecurityManager securityManager) throws IOException {
         
-        JdbcSecurityServiceConfig config = new JdbcSecurityServiceConfigImpl();
+        JdbcRoleServiceConfigImpl config = new JdbcRoleServiceConfigImpl();
         
         config.setName(serviceName);
         config.setConnectURL("jdbc:h2:target/h2/security");
@@ -95,6 +97,7 @@ public class JDBCTestSupport {
         config.setStateless(true);
         config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
+        config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
         securityManager.saveRoleService(config);
         return securityManager.loadRoleService(serviceName);
     }
@@ -103,8 +106,8 @@ public class JDBCTestSupport {
         String fixtureId, LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) 
             throws IOException {
     
-        JdbcSecurityServiceConfigImpl config = new
-        JdbcSecurityServiceConfigImpl();
+        JdbcRoleServiceConfigImpl config = new
+        JdbcRoleServiceConfigImpl();
         
         Properties props=Util.loadUniversal(new FileInputStream(data.getFixture()));
     
@@ -114,6 +117,7 @@ public class JDBCTestSupport {
         config.setUserName(props.getProperty("user") == null ? props.getProperty("username") : props.getProperty("user"));
         config.setPassword(props.getProperty("password"));            
         config.setClassName(JDBCRoleService.class.getName());
+        config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
         config.setStateless(true);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("rolesddl.mysql.xml");            
@@ -129,8 +133,8 @@ public class JDBCTestSupport {
     static protected GeoserverUserGroupService createUserGroupService(String fixtureId,
         LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) throws IOException {
         
-        JdbcSecurityServiceConfigImpl config = new
-        JdbcSecurityServiceConfigImpl();
+        JdbcUserGroupServiceConfigImpl config = new
+        JdbcUserGroupServiceConfigImpl();
         
         Properties props=Util.loadUniversal(new FileInputStream(data.getFixture()));
     
@@ -140,6 +144,7 @@ public class JDBCTestSupport {
         config.setUserName(props.getProperty("user")== null ? props.getProperty("username"): props.getProperty("user"));
         config.setPassword(props.getProperty("password"));                       
         config.setClassName(JDBCUserGroupService.class.getName());
+        config.setPasswordEncoderName("digestPasswordEncoder");
         config.setStateless(true);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("usersddl.mysql.xml");            

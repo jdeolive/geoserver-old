@@ -75,6 +75,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
      */
     public void initializeFromService(GeoserverUserGroupService service) throws IOException {
         this.name=service.getName();
+        this.passwordEncoderName=service.getPasswordEncoderName();
         this.userFile=((XMLUserGroupService) service).userFile;
         this.validatingXMLSchema=((XMLUserGroupService) service).isValidatingXMLSchema();
         super.initializeFromService(service);
