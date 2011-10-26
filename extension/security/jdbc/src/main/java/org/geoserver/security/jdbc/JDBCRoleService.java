@@ -22,6 +22,7 @@ import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.config.JdbcBaseSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.event.RoleLoadedEvent;
 import org.geoserver.security.event.RoleLoadedListener;
 import org.geoserver.security.impl.GeoserverRole;
@@ -44,11 +45,20 @@ public  class JDBCRoleService extends AbstractJDBCService implements GeoserverRo
     protected Set<RoleLoadedListener> listeners = 
         Collections.synchronizedSet(new HashSet<RoleLoadedListener>());
     
+    protected GeoserverRole adminRole;
+    
     
     public JDBCRoleService() {
     }
 
+    
+    @Override
+    public GeoserverRole getAdminRole() {
+        if (adminRole!=null) return adminRole;
+        return GeoserverRole.ADMIN_ROLE;
+    }
 
+    
     @Override
     public boolean canCreateStore() {
         return true;
@@ -86,7 +96,10 @@ public  class JDBCRoleService extends AbstractJDBCService implements GeoserverRo
 
             ddlProps = Util.loadUniversal(new FileInputStream(file));            
         }
-        
+        if (((SecurityRoleServiceConfig)config).getAdminRoleName()!=null) {
+            adminRole = createRoleObject(GeoserverRole.ADMIN_ROLE.getAuthority());
+        }
+
     }
 
     

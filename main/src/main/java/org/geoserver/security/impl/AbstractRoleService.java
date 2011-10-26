@@ -40,12 +40,21 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     protected HashMap<GeoserverRole, GeoserverRole> role_parentMap =
         new HashMap<GeoserverRole, GeoserverRole>();
     
+    protected GeoserverRole adminRole;
+    
+    
+    
     protected Set<RoleLoadedListener> listeners = 
         Collections.synchronizedSet(new HashSet<RoleLoadedListener>());
 
     protected AbstractRoleService() {
     }
 
+    @Override
+    public GeoserverRole getAdminRole() {
+        if (adminRole!=null) return adminRole;
+        return GeoserverRole.ADMIN_ROLE;
+    }
     
     @Override
     public GeoserverRoleStore createStore() throws IOException {

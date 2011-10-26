@@ -126,5 +126,4 @@ public interface GeoserverRoleStore extends GeoserverRoleService {
      */
     public void setParentRole(GeoserverRole role, GeoserverRole parentRole)  throws IOException;
     
-    
 }

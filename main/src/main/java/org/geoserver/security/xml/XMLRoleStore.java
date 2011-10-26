@@ -67,6 +67,7 @@ public class XMLRoleStore extends AbstractRoleStore {
      */
     public void initializeFromService(GeoserverRoleService service) throws IOException {
         this.name=service.getName();
+        this.adminRole=service.getAdminRole();
         this.roleFile=((XMLRoleService)service).roleFile;
         this.validatingXMLSchema=((XMLRoleService)service).isValidatingXMLSchema();
         super.initializeFromService(service);

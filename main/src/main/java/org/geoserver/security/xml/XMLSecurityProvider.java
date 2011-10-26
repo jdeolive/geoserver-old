@@ -7,7 +7,8 @@ import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
+import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
+import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.springframework.security.authentication.AuthenticationProvider;
 
 /**
@@ -19,7 +20,8 @@ public class XMLSecurityProvider extends GeoServerSecurityProvider {
 
     @Override
     public void configure(XStreamPersister xp) {
-        xp.getXStream().alias("xml", XMLFileBasedSecurityServiceConfigImpl.class);
+        xp.getXStream().alias("usergroupservice", XMLFileBasedUserGroupServiceConfigImpl.class);
+        xp.getXStream().alias("roleservice", XMLFileBasedRoleServiceConfigImpl.class);
     }
     
     @Override

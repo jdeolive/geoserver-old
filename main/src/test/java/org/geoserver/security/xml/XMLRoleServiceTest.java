@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
+import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
 import org.geoserver.security.event.RoleLoadedEvent;
 import org.geoserver.security.event.RoleLoadedListener;
@@ -41,13 +42,14 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
     
     protected GeoserverRoleService createRoleService(String serviceName, String xmlFileName) throws IOException {
          
-        XMLFileBasedSecurityServiceConfigImpl gaConfig = new XMLFileBasedSecurityServiceConfigImpl();                 
+        XMLFileBasedRoleServiceConfigImpl gaConfig = new XMLFileBasedRoleServiceConfigImpl();                 
         gaConfig.setName(serviceName);
         gaConfig.setClassName(XMLRoleService.class.getName());
         gaConfig.setCheckInterval(10);  // extreme short for testing 
         gaConfig.setFileName(xmlFileName);
         gaConfig.setStateless(false);
         gaConfig.setValidating(true);
+        gaConfig.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
         getSecurityManager().saveRoleService(gaConfig);
         return getSecurityManager().loadRoleService(serviceName);
     }

@@ -13,22 +13,25 @@ import org.geoserver.data.test.TestData;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
+import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
+import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.impl.AbstractUserDetailsServiceTest;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.password.GeoserverPasswordEncoder;
 
 public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 
     @Override
     public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {
-        XMLFileBasedSecurityServiceConfigImpl ugConfig = new XMLFileBasedSecurityServiceConfigImpl();                 
+        XMLFileBasedUserGroupServiceConfigImpl ugConfig = new XMLFileBasedUserGroupServiceConfigImpl();                 
         ugConfig.setName(serviceName);
         ugConfig.setClassName(XMLUserGroupService.class.getName());
         ugConfig.setCheckInterval(10); 
         ugConfig.setFileName(XMLConstants.FILE_UR);
         ugConfig.setStateless(false);
         ugConfig.setValidating(true);
+        ugConfig.setPasswordEncoderName("digestPasswordEncoder");
         getSecurityManager().saveUserGroupService(ugConfig);
 
         GeoserverUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
@@ -38,13 +41,14 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 
     public GeoserverRoleService createRoleService(String serviceName) throws IOException {
         
-        XMLFileBasedSecurityServiceConfigImpl gaConfig = new XMLFileBasedSecurityServiceConfigImpl();                 
+        XMLFileBasedRoleServiceConfigImpl gaConfig = new XMLFileBasedRoleServiceConfigImpl();                 
         gaConfig.setName(serviceName);
         gaConfig.setClassName(XMLRoleService.class.getName());
         gaConfig.setCheckInterval(10); 
         gaConfig.setFileName(XMLConstants.FILE_RR);
         gaConfig.setStateless(false);
         gaConfig.setValidating(true);
+        gaConfig.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
         getSecurityManager().saveRoleService(gaConfig);
 
         GeoserverRoleService service = 
@@ -69,17 +73,19 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         
         GeoserverUser admin = (GeoserverUser) userService.loadUserByUsername("admin");
         assertNotNull(admin);
-        assertEquals("gs",admin.getPassword());
+        GeoserverPasswordEncoder enc= getEncoder(userService);
+        assertTrue(enc.isPasswordValid(admin.getPassword(), "gs", null));
+        
         assertTrue(admin.isEnabled());
         
         GeoserverUser wfs = (GeoserverUser) userService.loadUserByUsername("wfs");
         assertNotNull(wfs);
-        assertEquals("webFeatureService",wfs.getPassword());
+        assertTrue(enc.isPasswordValid(wfs.getPassword(), "webFeatureService", null));
         assertTrue(wfs.isEnabled());
 
         GeoserverUser disabledUser = (GeoserverUser) userService.loadUserByUsername("disabledUser");
         assertNotNull(disabledUser);
-        assertEquals("nah",disabledUser.getPassword());
+        assertTrue(enc.isPasswordValid(disabledUser.getPassword(), "nah", null));
         assertFalse(disabledUser.isEnabled());
         
         GeoserverRole role_admin = roleService.getRoleByName("ROLE_ADMINISTRATOR");
