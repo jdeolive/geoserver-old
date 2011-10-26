@@ -55,6 +55,7 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.RememberMeAuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -217,6 +218,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         //dao based authentication that wraps user service
         DaoAuthenticationProvider daoAuthProvider = new DaoAuthenticationProvider();
         daoAuthProvider.setUserDetailsService(getActiveUserGroupService());
+        daoAuthProvider.setPasswordEncoder((PasswordEncoder)
+                GeoServerExtensions.bean(userGroupService.getPasswordEncoderName()));
         daoAuthProvider.afterPropertiesSet();
         authProviders.add(daoAuthProvider);
 
