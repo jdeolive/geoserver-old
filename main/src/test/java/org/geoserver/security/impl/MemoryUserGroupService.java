@@ -62,6 +62,7 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
     @Override
     public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
         GeoserverUser user = new MemoryGeoserverUser(username, this);
+        user.setPasswordEncoderName(this.getPasswordEncoderName());
         user.setEnabled(isEnabled);
         user.setPassword(password);
         return user;
@@ -77,6 +78,7 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         this.name=config.getName();
+        passwordEncoderName="pbePasswordEncoder";
     }
 
 }

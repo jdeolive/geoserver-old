@@ -317,21 +317,13 @@
   <alias name="authenticationManager" alias="geoServerSecurityManager"/>
   
   <!-- password encoders -->
-  <bean id="shaPasswordEncoder"
-    class="org.springframework.security.authentication.encoding.ShaPasswordEncoder">
-    <property name="iterations" value="1024"/>
-    </bean>
-  <bean id="md5PasswordEncoder"
-    class="org.springframework.security.authentication.encoding.Md5PasswordEncoder">
-    <property name="iterations" value="1024"/>
-  </bean>
-  <bean id="plaintextPasswordEncoder"
-    class="org.springframework.security.authentication.encoding.PlaintextPasswordEncoder" />
+  <bean id="plainTextPasswordEncoder"
+    class="org.geoserver.security.password.GeoserverPlainTextPasswordEncoder"/>
+  <bean id="digestPasswordEncoder"
+    class="org.geoserver.security.password.GeoserverDigestPasswordEncoder"/>
+  <bean id="pbePasswordEncoder"
+    class="org.geoserver.security.password.GeoserverPBEPasswordEncoder" />
             
-  <bean id="saltSource"
-    class="org.springframework.security.authentication.dao.ReflectionSaltSource">
-    <property name="userPropertyToUse" value="username"/> 
-  </bean>    	
   	
   
   <!-- The dao used to deal with layer level security -->

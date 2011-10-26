@@ -244,6 +244,7 @@ public abstract class AbstractUserGroupStore extends AbstractUserGroupService im
             throws IOException {
         this.service=(AbstractUserGroupService)service;
         this.name=service.getName();
+        this.passwordEncoderName=service.getPasswordEncoderName();
         setSecurityManager(service.getSecurityManager());
         deserialize();
     }

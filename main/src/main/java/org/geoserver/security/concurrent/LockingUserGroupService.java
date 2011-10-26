@@ -245,4 +245,12 @@ public class LockingUserGroupService extends AbstractLockingService implements
         }            
     }
 
+    /**
+     * NO_LOCK
+     */
+    @Override
+    public String getPasswordEncoderName() {
+        return getService().getPasswordEncoderName();
+    }
+
 }

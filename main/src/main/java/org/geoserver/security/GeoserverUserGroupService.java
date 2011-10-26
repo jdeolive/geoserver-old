@@ -11,6 +11,7 @@ import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.password.GeoserverPasswordEncoder;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
@@ -130,4 +131,10 @@ public interface GeoserverUserGroupService extends GeoServerSecurityService,User
      */
     void load() throws IOException;
 
+    
+    /**
+     * @return the Spring name of the {@link GeoserverPasswordEncoder} object.
+     * <code>null</code> if no encoder is used.
+     */
+    String getPasswordEncoderName();
 }

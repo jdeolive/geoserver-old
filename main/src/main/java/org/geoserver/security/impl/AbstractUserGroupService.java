@@ -39,11 +39,16 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     
     protected Set<UserGroupLoadedListener> listeners = 
         Collections.synchronizedSet(new HashSet<UserGroupLoadedListener>());
+    protected String passwordEncoderName;
     
     protected AbstractUserGroupService() {
     }
 
-
+    @Override
+    public String getPasswordEncoderName() {
+        return passwordEncoderName;
+    }
+    
     @Override
     public GeoserverUserGroupStore createStore() throws IOException {
         //return null, subclasses can override if they support a store along with a service
@@ -105,6 +110,7 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
      */
     public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
        GeoserverUser user = new GeoserverUser(username);
+       user.setPasswordEncoderName(this.getPasswordEncoderName());
        user.setEnabled(isEnabled);
        user.setPassword(password);
        return user;

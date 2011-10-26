@@ -67,6 +67,8 @@ public class MemoryRoleService extends AbstractRoleService {
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         this.name=config.getName();
+        //adminRole = createRoleObject(GeoserverRole.ADMIN_ROLE.getAuthority());
+        adminRole = createRoleObject("admin"); // lets work with another admin role
     }
 
 }

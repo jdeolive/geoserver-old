@@ -9,17 +9,15 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,11 +30,11 @@ import org.geoserver.security.concurrent.LockingRoleService;
 import org.geoserver.security.concurrent.LockingUserGroupService;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityConfig;
-import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityManagerConfig;
+import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
-import org.geoserver.security.config.impl.XMLFileBasedSecurityServiceConfigImpl;
-
+import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
+import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.file.RoleFileWatcher;
 import org.geoserver.security.file.UserGroupFileWatcher;
 import org.geoserver.security.impl.GeoserverRole;
@@ -46,7 +44,6 @@ import org.geoserver.security.xml.XMLConstants;
 import org.geoserver.security.xml.XMLRoleService;
 import org.geoserver.security.xml.XMLSecurityProvider;
 import org.geoserver.security.xml.XMLUserGroupService;
-
 import org.geotools.util.logging.Logging;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -420,14 +417,16 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         GeoserverUserGroupService userGroupService = 
             loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
 
+        
         if (userGroupService == null) {
-            XMLFileBasedSecurityServiceConfigImpl ugConfig = new XMLFileBasedSecurityServiceConfigImpl();
+            XMLFileBasedUserGroupServiceConfigImpl ugConfig = new XMLFileBasedUserGroupServiceConfigImpl();            
             ugConfig.setName(XMLUserGroupService.DEFAULT_NAME);
             ugConfig.setClassName(XMLUserGroupService.class.getName());
             ugConfig.setCheckInterval(checkInterval); 
             ugConfig.setFileName(XMLConstants.FILE_UR);
             ugConfig.setStateless(false);
             ugConfig.setValidating(true);
+            ugConfig.setPasswordEncoderName("digestPasswordEncoder");
             saveUserGroupService(ugConfig);
             userGroupService = loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
         }
@@ -437,15 +436,15 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             loadRoleService(XMLRoleService.DEFAULT_NAME);
 
         if (roleService == null) {
-            XMLFileBasedSecurityServiceConfigImpl gaConfig = new XMLFileBasedSecurityServiceConfigImpl();                 
+            XMLFileBasedRoleServiceConfigImpl gaConfig = new XMLFileBasedRoleServiceConfigImpl();                 
             gaConfig.setName(XMLRoleService.DEFAULT_NAME);
             gaConfig.setClassName(XMLRoleService.class.getName());
             gaConfig.setCheckInterval(checkInterval); 
             gaConfig.setFileName(XMLConstants.FILE_RR);
             gaConfig.setStateless(false);
             gaConfig.setValidating(true);
+            gaConfig.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
             saveRoleService(gaConfig);
-
             roleService = loadRoleService(XMLRoleService.DEFAULT_NAME);
         }
 
@@ -498,7 +497,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         } else  {
             // no user.properties, populate with default user and roles
             if (userGroupService.getUserByUsername(GeoserverUser.AdminName) == null) {
-                userGroupStore.addUser(GeoserverUser.createDefaultAdmin());
+                userGroupStore.addUser(GeoserverUser.createDefaultAdmin(userGroupService));
                 roleStore.addRole(GeoserverRole.ADMIN_ROLE);
                 roleStore.associateRoleToUser(GeoserverRole.ADMIN_ROLE,
                         GeoserverUser.AdminName);

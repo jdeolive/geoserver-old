@@ -13,9 +13,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 
-import javax.management.relation.RoleStatus;
-
-
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
@@ -260,6 +257,15 @@ public class LockingRoleService extends AbstractLockingService implements
         } finally {
             writeUnLock();
         }
+    }
+
+    /**
+     * NO_LOCK
+     *  
+     */
+    @Override
+    public GeoserverRole getAdminRole() {
+        return getService().getAdminRole();
     }
 
 }
