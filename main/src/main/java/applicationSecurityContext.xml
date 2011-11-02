@@ -35,7 +35,7 @@
           http://www.springframework.org/schema/security
           http://www.springframework.org/schema/security/spring-security-3.0.4.xsd">
 
-  <bean id="filterChainProxy" class="org.springframework.security.web.FilterChainProxy">
+  <!--bean id="filterChainProxy" class="org.springframework.security.web.FilterChainProxy">
     <sec:filter-chain-map path-type="ant" >
        <sec:filter-chain pattern="/web/**" filters="httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor" />      
        <sec:filter-chain pattern="/j_spring_security_check/**" filters="httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor" />
@@ -45,8 +45,25 @@
        <sec:filter-chain pattern="/gwc/rest/**" filters="httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilterWithoutRememberMeService,owsExceptionTranslationFilter,restFilterInvocationInterceptor" />
        <sec:filter-chain pattern="/**" filters="httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilter,anonymousProcessingFilter,owsExceptionTranslationFilter,filterInvocationInterceptor" />
    </sec:filter-chain-map>
+  </bean-->
+
+  <bean id="filterChainProxy" class="org.geoserver.security.GeoServerSecurityFilterChainProxy">
+    <constructor-arg ref="authenticationManager"/>
+    <property name="httpSessionContextWithASCFilter" ref="httpSessionContextIntegrationFilterWithASCTrue"/>
+    <property name="httpSessionContextWithNoASCFilter" ref="httpSessionContextIntegrationFilterWithASCFalse"/>
+    <property name="securityContextHolderFilter" ref="securityContextHolderAwareRequestFilter"/>
+    <property name="usernamePasswordAuthFilter" ref="authenticationProcessingFilter"/>
+    <property name="rememberMeAuthFilter" ref="rememberMeProcessingFilter"/>
+    <property name="anonymousAuthFilter" ref="anonymousProcessingFilter"/>
+    <property name="basicAuthFilter" ref="basicProcessingFilter"/>
+    <property name="basicAuthNoRememberMeFilter" ref="basicProcessingFilterWithoutRememberMeService"/>
+    <property name="exceptionTranslationFilter" ref="consoleExceptionTranslationFilter"/>
+    <property name="owsExceptionTranslationFilter" ref="owsExceptionTranslationFilter"/>
+    <property name="logoutFilter" ref="logoutFilter"/>
+    <property name="filterSecurityInterceptor" ref="filterInvocationInterceptor"/>
+    <property name="restFilterSecurityInterceptor" ref="restFilterInvocationInterceptor"/>
   </bean>
-  
+
   <bean id="restFilterInvocationInterceptor"
       class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
       <property name="authenticationManager" ref="authenticationManager" />
