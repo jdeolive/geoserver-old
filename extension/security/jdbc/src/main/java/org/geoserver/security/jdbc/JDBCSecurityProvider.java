@@ -10,7 +10,6 @@ import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.springframework.security.authentication.AuthenticationProvider;
 
 /**
  * Provider for JDBC based security services.
@@ -18,11 +17,6 @@ import org.springframework.security.authentication.AuthenticationProvider;
  * @author Justin Deoliveira, OpenGeo
  */
 public class JDBCSecurityProvider extends GeoServerSecurityProvider {
-
-    @Override
-    public AuthenticationProvider createAuthProvider(SecurityNamedServiceConfig config) {
-        return null;
-    }
 
     @Override
     public Class<? extends GeoserverUserGroupService> getUserGroupServiceClass() {

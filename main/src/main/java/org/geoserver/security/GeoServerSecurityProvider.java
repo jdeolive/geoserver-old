@@ -38,12 +38,27 @@ public abstract class GeoServerSecurityProvider {
     }
 
     /**
+     * Returns the concrete class of authentication provider created by 
+     *  {@link #createAuthenticationProvider(SecurityNamedServiceConfig)}.
+     * <p>
+     * If the extension does not provide an authentication provider this method should simply return
+     * <code>null</code>.
+     * </p> 
+     */
+    public Class<? extends GeoServerAuthenticationProvider> getAuthenticationProviderClass() {
+        return null;
+    }
+
+    /**
      * Creates an authentication provider.
      * <p>
      * If the extension does not provide an authentication provider this method should simply return
-     * <code>null</code>. 
+     * <code>null</code>.
+     * </p> 
      */
-    public abstract AuthenticationProvider createAuthProvider(SecurityNamedServiceConfig config);
+    public GeoServerAuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
+        return null;
+    }
 
     /**
      * Returns the specific class of the user group service created by 
@@ -53,7 +68,9 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p> 
      */
-    public abstract Class<? extends GeoserverUserGroupService> getUserGroupServiceClass();
+    public Class<? extends GeoserverUserGroupService> getUserGroupServiceClass() {
+        return null;
+    }
     
     /**
      * Creates a new user group service.
@@ -62,8 +79,10 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p>
      */
-    public abstract GeoserverUserGroupService createUserGroupService(SecurityNamedServiceConfig config)
-        throws IOException;
+    public GeoserverUserGroupService createUserGroupService(SecurityNamedServiceConfig config)
+        throws IOException {
+        return null;
+    }
 
     /**
      * Returns the specific class of the role service created by 
@@ -73,7 +92,9 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p> 
      */
-    public abstract Class<? extends GeoserverRoleService> getRoleServiceClass();
+    public Class<? extends GeoserverRoleService> getRoleServiceClass() {
+        return null;
+    }
     
     /**
      * Creates a new role group service.
@@ -82,8 +103,10 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p>
      */
-    public abstract GeoserverRoleService createRoleService(SecurityNamedServiceConfig config) 
-        throws IOException;
+    public GeoserverRoleService createRoleService(SecurityNamedServiceConfig config) 
+        throws IOException {
+        return null;
+    }
 
     
 }
