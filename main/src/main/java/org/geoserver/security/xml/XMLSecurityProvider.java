@@ -9,7 +9,6 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
-import org.springframework.security.authentication.AuthenticationProvider;
 
 /**
  * Security provider for default XML-based implementation.
@@ -22,11 +21,6 @@ public class XMLSecurityProvider extends GeoServerSecurityProvider {
     public void configure(XStreamPersister xp) {
         xp.getXStream().alias("usergroupservice", XMLFileBasedUserGroupServiceConfigImpl.class);
         xp.getXStream().alias("roleservice", XMLFileBasedRoleServiceConfigImpl.class);
-    }
-    
-    @Override
-    public AuthenticationProvider createAuthProvider(SecurityNamedServiceConfig config) {
-        return null;
     }
 
     @Override

@@ -5,6 +5,8 @@
 
 package org.geoserver.security.config;
 
+import java.util.List;
+
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 
@@ -40,5 +42,20 @@ public interface SecurityManagerConfig  extends SecurityConfig {
      * {@link GeoserverUserGroupService} object
      */
     public void setUserGroupServiceName(String userGroupServiceName);
+
+    /**
+     * @return list of names for {@link GeoServerAuthenticationProvider} objects
+     */
+    public List<String> getAuthProviderNames();
+
+    /**
+     * Flag determining if anonymous authentication is active.
+     */
+    public Boolean isAnonymousAuth();
+
+    /**
+     * Sets flag determining if anonymous authentication is active.
+     */
+    public void setAnonymousAuth(Boolean anonymousAuth);
 
 }
