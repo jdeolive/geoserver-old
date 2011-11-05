@@ -24,11 +24,9 @@ import org.apache.commons.io.FileUtils;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 import org.geoserver.security.config.XMLBasedSecurityServiceConfig;
 import org.geoserver.security.impl.AbstractUserGroupService;
-import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.security.impl.Util;
@@ -70,7 +68,7 @@ public class XMLUserGroupService extends AbstractUserGroupService {
         this.name=config.getName();
         validatingXMLSchema=false;
         passwordEncoderName=((SecurityUserGoupServiceConfig)config).getPasswordEncoderName();
-        
+        passwordValidatorName=((SecurityUserGoupServiceConfig)config).getPasswordPolicyName();
 
         if (config instanceof XMLBasedSecurityServiceConfig) {
             validatingXMLSchema =((XMLBasedSecurityServiceConfig) config).isValidating();
@@ -160,7 +158,7 @@ public class XMLUserGroupService extends AbstractUserGroupService {
                     userProps.put(propertyName, propertyValue);
                 }                                
                 GeoserverUser user=createUserObject(userName, userPassword, userEnabled);
-                userMap.put(user.getUsername(), user);
+                helper.userMap.put(user.getUsername(), user);
                 user.getProperties().clear();       // set properties
                 for (Object key: userProps.keySet()) {
                     user.getProperties().put(key, userProps.get(key));
@@ -173,24 +171,24 @@ public class XMLUserGroupService extends AbstractUserGroupService {
                 String groupName = xmlXPath.getGroupNameExpression().evaluate(groupNode);
                 boolean groupEnabled = Util.convertToBoolean(xmlXPath.getGroupEnabledExpression().evaluate(groupNode),true);
                 GeoserverUserGroup group= createGroupObject(groupName, groupEnabled);
-                groupMap.put(groupName, group);
+                helper.groupMap.put(groupName, group);
                 NodeList memberNodes = (NodeList) xmlXPath.getGroupMemberListExpression().evaluate(groupNode,XPathConstants.NODESET);
                 for ( int j=0 ; j <memberNodes.getLength();j++) {
                     Node memberNode = memberNodes.item(j);
                     String memberName = xmlXPath.getGroupMemberNameExpression().evaluate(memberNode);
-                    GeoserverUser member=userMap.get(memberName);
+                    GeoserverUser member=helper.userMap.get(memberName);
                     
-                    SortedSet<GeoserverUser> members=group_userMap.get(group);
+                    SortedSet<GeoserverUser> members=helper.group_userMap.get(group);
                     if (members==null) {
                         members=new TreeSet<GeoserverUser>();
-                        group_userMap.put(group, members);
+                        helper.group_userMap.put(group, members);
                     }
                     members.add(member);
                     
-                    SortedSet<GeoserverUserGroup> userGroups=user_groupMap.get(member);
+                    SortedSet<GeoserverUserGroup> userGroups=helper.user_groupMap.get(member);
                     if (userGroups==null) {
                         userGroups=new TreeSet<GeoserverUserGroup>();
-                        user_groupMap.put(member, userGroups);
+                        helper.user_groupMap.put(member, userGroups);
                     }
                     userGroups.add(group);
                     

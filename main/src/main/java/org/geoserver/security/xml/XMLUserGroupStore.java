@@ -39,6 +39,7 @@ import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractUserGroupStore;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.password.PasswordValidationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -74,8 +75,6 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
      * @see org.geoserver.security.GeoserverUserGroupStore#initializeFromServer(org.geoserver.security.GeoserverUserGroupService)
      */
     public void initializeFromService(GeoserverUserGroupService service) throws IOException {
-        this.name=service.getName();
-        this.passwordEncoderName=service.getPasswordEncoderName();
         this.userFile=((XMLUserGroupService) service).userFile;
         this.validatingXMLSchema=((XMLUserGroupService) service).isValidatingXMLSchema();
         super.initializeFromService(service);
@@ -107,7 +106,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
         
         Element users = doc.createElement(E_USERS_UR);
         userreg.appendChild(users);
-        for (GeoserverUser userObject : userMap.values()) {
+        for (GeoserverUser userObject : helper.userMap.values()) {
             Element user = doc.createElement(E_USER_UR);
             users.appendChild(user);
             user.setAttribute( A_USER_NAME_UR, userObject.getUsername());
@@ -123,12 +122,12 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
         
         Element groups = doc.createElement(E_GROUPS_UR);
         userreg.appendChild(groups);
-        for (GeoserverUserGroup groupObject : groupMap.values()) {
+        for (GeoserverUserGroup groupObject : helper.groupMap.values()) {
             Element group = doc.createElement(E_GROUP_UR);
             groups.appendChild(group);
             group.setAttribute( A_GROUP_NAME_UR, groupObject.getGroupname());
             group.setAttribute( A_GROUP_ENABLED_UR, groupObject.isEnabled() ? "true" : "false");
-            SortedSet<GeoserverUser> userObjects = group_userMap.get(groupObject);
+            SortedSet<GeoserverUser> userObjects = helper.group_userMap.get(groupObject);
             if (userObjects !=null) {
                 for (GeoserverUser userObject : userObjects) {
                     Element member = doc.createElement(E_MEMBER_UR);
@@ -213,7 +212,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
     }
 
     @Override
-    public void addUser(GeoserverUser user) throws IOException {
+    public void addUser(GeoserverUser user) throws IOException, PasswordValidationException {
         ensureLock();
         super.addUser(user);
     }
@@ -225,7 +224,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
     }
 
     @Override
-    public void updateUser(GeoserverUser user) throws IOException {
+    public void updateUser(GeoserverUser user) throws IOException, PasswordValidationException {
         ensureLock();
         super.updateUser(user);
     }

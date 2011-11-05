@@ -11,7 +11,16 @@ public class JdbcJndiRoleServiceConfigImpl extends JdbcJndiSecurityServiceConfig
         implements SecurityRoleServiceConfig {
     
     protected String adminRoleName;
+    protected boolean lockingNeeded;
     
+    public boolean isLockingNeeded() {
+        return lockingNeeded;
+    }
+
+    public void setLockingNeeded(boolean lockingNeeded) {
+        this.lockingNeeded = lockingNeeded;
+    }
+
     @Override
     public String getAdminRoleName() {
         return adminRoleName;

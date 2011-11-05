@@ -14,6 +14,8 @@ import java.util.TreeMap;
 
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.SecurityRoleServiceConfig;
+import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 
 
 /**
@@ -27,6 +29,12 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
 public class MemoryRoleService extends AbstractRoleService {
 
     byte[] byteArray;
+    protected String toBeEncrypted;
+    
+    public String getToBeEncrypted() {
+        return toBeEncrypted;
+    }
+
 
 
     @Override
@@ -49,10 +57,10 @@ public class MemoryRoleService extends AbstractRoleService {
         ByteArrayInputStream in = new ByteArrayInputStream(byteArray);
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            roleMap = (TreeMap<String,GeoserverRole>) oin.readObject();
-            role_parentMap =(HashMap<GeoserverRole,GeoserverRole>) oin.readObject();
-            user_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
-            group_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
+            helper.roleMap = (TreeMap<String,GeoserverRole>) oin.readObject();
+            helper.role_parentMap =(HashMap<GeoserverRole,GeoserverRole>) oin.readObject();
+            helper.user_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
+            helper.group_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }            
@@ -67,8 +75,8 @@ public class MemoryRoleService extends AbstractRoleService {
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         this.name=config.getName();
-        //adminRole = createRoleObject(GeoserverRole.ADMIN_ROLE.getAuthority());
-        adminRole = createRoleObject("admin"); // lets work with another admin role
+        adminRole = createRoleObject (((SecurityRoleServiceConfig)config).getAdminRoleName());
+        toBeEncrypted = (((MemoryRoleServiceConfigImpl)config).getToBeEncrypted());
     }
 
 }

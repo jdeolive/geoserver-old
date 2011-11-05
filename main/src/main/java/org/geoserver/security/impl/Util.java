@@ -19,10 +19,15 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.logging.Logger;
 
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.password.PasswordEncodingType;
+import org.geoserver.security.password.PasswordValidationException;
 
 
 /**
@@ -50,6 +55,24 @@ public class Util {
     }
 
     /**
+     * Checks if users can be copied from one {@link GeoserverUserGroupService} to another.
+     * This depends on the password encoding
+     * 
+     * @param service
+     * @param store
+     * @return
+     */
+    static public boolean copyPossible(GeoserverUserGroupService service, GeoserverUserGroupStore store) {
+        GeoserverPasswordEncoder from = (GeoserverPasswordEncoder) 
+                 GeoServerExtensions.bean(service.getPasswordEncoderName());
+        if (from.getEncodingType()==PasswordEncodingType.PLAIN || 
+                from.getEncodingType()==PasswordEncodingType.ENCRYPT)
+            return true;
+        
+        return service.getPasswordEncoderName().equals(store.getPasswordEncoderName());
+    }
+    
+    /**
      * Deep copy of the whole User/Group database
      * 
      * @param service
@@ -57,16 +80,42 @@ public class Util {
      * @throws IOException
      */
     static public void copyFrom(GeoserverUserGroupService service, GeoserverUserGroupStore store) throws IOException {
+        
+        
+        if (copyPossible(service, store)==false)
+            throw new IOException("Cannot copy user/group data, passwords encoders are not compatible");
+        
+        GeoserverUserPasswordEncoder storeEncoder = null;
+        GeoserverUserPasswordEncoder serviceEncoder = (GeoserverUserPasswordEncoder) 
+                GeoServerExtensions.bean(service.getPasswordEncoderName());
+        serviceEncoder.initializeFor(service);
+        if (serviceEncoder.getEncodingType()==PasswordEncodingType.PLAIN || 
+                serviceEncoder.getEncodingType()==PasswordEncodingType.ENCRYPT) {
+            storeEncoder = (GeoserverUserPasswordEncoder) 
+                    GeoServerExtensions.bean(store.getPasswordEncoderName());
+            storeEncoder.initializeFor(store);
+        }
+        
+        
         store.clear();
         Map<String,GeoserverUser> newUserDict = new HashMap<String,GeoserverUser>();
         Map<String,GeoserverUserGroup> newGroupDict = new HashMap<String,GeoserverUserGroup>();
         
         for (GeoserverUser user : service.getUsers()) {
             GeoserverUser newUser = store.createUserObject(user.getUsername(),user.getPassword(), user.isEnabled());
+            if (storeEncoder!=null) {
+                String plainText =serviceEncoder.decode(user.getPassword());
+                newUser.setPassword(storeEncoder.encodePassword(plainText, null));
+            }
             for (Object key: user.getProperties().keySet()) {
                 newUser.getProperties().put(key, user.getProperties().get(key));
             }
-            store.addUser(newUser);
+            try {
+                store.addUser(newUser);
+            } catch (PasswordValidationException e) {
+                throw new IOException("should not have reached this point, " +
+                		"copy works with alread encoded passwords",e);
+            }
             newUserDict.put(newUser.getUsername(),newUser);
         }
         for (GeoserverUserGroup group : service.getUserGroups()) {

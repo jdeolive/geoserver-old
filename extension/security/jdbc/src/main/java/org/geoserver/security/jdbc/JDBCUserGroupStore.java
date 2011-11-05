@@ -10,10 +10,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.password.PasswordValidationException;
 
 /**
  * JDBC Implementation of {@link GeoserverUserGroupStore}
@@ -75,6 +78,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
         setSecurityManager(service.getSecurityManager());
         this.name=jdbcService.getName();
         this.passwordEncoderName=service.getPasswordEncoderName();
+        this.passwordValidatorName=service.getPasswordValidatorName();
         this.datasource=jdbcService.datasource;
         this.ddlProps=jdbcService.ddlProps;
         this.dmlProps=jdbcService.dmlProps;
@@ -132,11 +136,39 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
 
     }
     
+    /**
+     * validates and encdoes the password. Do nothing
+     * for a not changed password of an existing user
+     * 
+     * @param user
+     * @throws IOException
+     * @throws PasswordValidationException
+     */
+    protected void preparePassword(GeoserverUser user) throws IOException,PasswordValidationException {
+        
+        GeoserverUserPasswordEncoder enc  = (GeoserverUserPasswordEncoder) 
+                GeoServerExtensions.bean(getPasswordEncoderName());
+        
+        if (enc.isResponsibleForEncoding(user.getPassword()))
+            return; // do nothing, already encoded
+            
+        // we have a plain text password
+        // validate it
+        getSecurityManager().loadPasswordValidator(getPasswordValidatorName()).
+        validatePassword(user.getPassword());    
+
+        // validation ok, initializer encoder and set encoded password
+        enc.initializeFor(this);
+        user.setPassword(enc.encodePassword(user.getPassword(), null));        
+    }
+
     
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#addUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void addUser(GeoserverUser user) throws IOException {
+    public void addUser(GeoserverUser user) throws IOException,PasswordValidationException {
+        
+        preparePassword(user);
         Connection con = null;
         PreparedStatement ps = null;
         try {
@@ -160,7 +192,9 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#updateUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void updateUser(GeoserverUser user) throws IOException {
+    public void updateUser(GeoserverUser user) throws IOException,PasswordValidationException {
+        
+        preparePassword(user);
         Connection con = null;
         PreparedStatement ps = null;
         try {

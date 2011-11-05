@@ -6,15 +6,17 @@
 package org.geoserver.security.password;
 
 /**
- * Enumeration for password encoding type
- * {@link #PLAIN}       plain text
- * {@link #ENCRYPT}     symmetric encryption 
- * {@link #DIGEST}        password hashing (recommended)
+ * Enumeration of reasons why a password is invalid
  * 
  * @author christian
  *
  */
-public enum PasswordEncoding {
-    PLAIN,ENCRYPT,DIGEST;
-
+public enum PasswordInvalidReason  {
+    PW_IS_NULL,
+    PW_NO_DIGIT,
+    PW_NO_UPPERCASE,
+    PW_NO_LOWERCASE,
+    PW_MIN_LENGTH,
+    PW_MAX_LENGTH,
+    PW_RESERVED_PREFIX;
 }

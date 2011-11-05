@@ -20,6 +20,8 @@ import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.Util;
 import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
+import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
+import org.geoserver.security.password.PasswordValidator;
 
 
 
@@ -74,10 +76,12 @@ public class JDBCTestSupport {
         config.setUserName("sa");
         config.setPassword("");                            
         config.setClassName(JDBCUserGroupService.class.getName());
-        config.setStateless(true);
+        config.setLockingNeeded(false);
         config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
-        config.setPasswordEncoderName("digestPasswordEncoder");
+        config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+        config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
+
         securityManager.saveUserGroupService(config);
 
         return securityManager.loadUserGroupService(serviceName);
@@ -94,7 +98,7 @@ public class JDBCTestSupport {
         config.setUserName("sa");
         config.setPassword("");                    
         config.setClassName(JDBCRoleService.class.getName());
-        config.setStateless(true);
+        config.setLockingNeeded(false);
         config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
         config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
@@ -117,8 +121,8 @@ public class JDBCTestSupport {
         config.setUserName(props.getProperty("user") == null ? props.getProperty("username") : props.getProperty("user"));
         config.setPassword(props.getProperty("password"));            
         config.setClassName(JDBCRoleService.class.getName());
-        config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
-        config.setStateless(true);
+        config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());        
+        config.setLockingNeeded(false);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("rolesddl.mysql.xml");            
         } else {
@@ -144,8 +148,9 @@ public class JDBCTestSupport {
         config.setUserName(props.getProperty("user")== null ? props.getProperty("username"): props.getProperty("user"));
         config.setPassword(props.getProperty("password"));                       
         config.setClassName(JDBCUserGroupService.class.getName());
-        config.setPasswordEncoderName("digestPasswordEncoder");
-        config.setStateless(true);
+        config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+        config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
+        config.setLockingNeeded(false);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("usersddl.mysql.xml");            
         } else {

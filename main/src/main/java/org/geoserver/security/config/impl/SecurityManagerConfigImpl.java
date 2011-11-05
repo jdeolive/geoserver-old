@@ -17,7 +17,15 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
     
     private String roleServiceName;
     private String userGroupServiceName;
+    private String configPasswordEncrypterName;
+    private boolean encryptingUrlParams;
     
+    public boolean isEncryptingUrlParams() {
+        return encryptingUrlParams;
+    }
+    public void setEncryptingUrlParams(boolean encryptingUrlParams) {
+        this.encryptingUrlParams = encryptingUrlParams;
+    }
     public String getRoleServiceName() {
         return roleServiceName;
     }
@@ -30,5 +38,12 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
     public void setUserGroupServiceName(String userGroupServiceName) {
         this.userGroupServiceName = userGroupServiceName;
     }
-    
+
+    public String getConfigPasswordEncrypterName() {
+        return configPasswordEncrypterName;
+    }
+    public void setConfigPasswordEncrypterName(String configPasswordEncrypterName) {
+        this.configPasswordEncrypterName = configPasswordEncrypterName;
+    }
+
 }

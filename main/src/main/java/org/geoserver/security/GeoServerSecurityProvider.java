@@ -5,10 +5,24 @@
 package org.geoserver.security;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
+import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
+import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.password.PasswordValidator;
+import org.geoserver.security.password.PasswordValidatorImpl;
 import org.springframework.security.authentication.AuthenticationProvider;
+
+import com.thoughtworks.xstream.converters.SingleValueConverter;
 
 /**
  * Extension point for backend authentication and authorization services.
@@ -19,6 +33,55 @@ import org.springframework.security.authentication.AuthenticationProvider;
  * @author Justin Deoliveira, OpenGeo
  */
 public abstract class GeoServerSecurityProvider {
+    
+    /**
+     * An implementation of {@link SingleValueConverter} for enryption and
+     * decryption of configuation passwords.
+     * 
+     * Register the fields in {@link #configure(XStreamPersister)}
+     * 
+     * <code>
+     * xp.getXStream().registerLocalConverter(class, fieldName, encrypter);
+     * </code>
+     * 
+     */
+    public SingleValueConverter encrypter = new SingleValueConverter() {
+
+        @Override
+        public boolean canConvert(Class type) {
+            return type.equals(String.class);
+        }
+
+        @Override
+        public String toString(Object obj) {
+            String source = obj == null ? "" : (String) obj;
+            GeoServerSecurityManager manager = 
+                    GeoServerExtensions.bean(GeoServerSecurityManager.class);
+            if (manager.getConfigPasswordEncrypterName()==null ||
+                    manager.getConfigPasswordEncrypterName().isEmpty())
+                    return source; //end
+            
+            GeoserverConfigPBEPasswordEncoder enc = (GeoserverConfigPBEPasswordEncoder)
+                    GeoServerExtensions.bean(manager.getConfigPasswordEncrypterName());
+            
+            if (source.startsWith(enc.getPrefix()+GeoserverPasswordEncoder.PREFIX_DELIMTER))
+                throw new RuntimeException("Cannot encode a password with prefix: "+
+                        enc.getPrefix()+GeoserverPasswordEncoder.PREFIX_DELIMTER);
+            
+            return enc.encodePassword(source, null);    
+        };
+
+        @Override
+        public Object fromString(String str) {
+            List<GeoserverConfigPBEPasswordEncoder> encoders = 
+                    GeoServerExtensions.extensions(GeoserverConfigPBEPasswordEncoder.class);
+            for (GeoserverConfigPBEPasswordEncoder enc : encoders) {                    
+                if (enc.isResponsibleForEncoding(str))
+                    return enc.decode(str);
+            }    
+            return str;                        
+        }        
+    };
 
     /**
      * Flag determining if this provider is available.
@@ -27,6 +90,7 @@ public abstract class GeoServerSecurityProvider {
      * where a meaningful check can be made... for instance checking for a jdbc driver, etc...
      * </p>
      */
+            
     public boolean isAvaialble() {
         return true;
     }
@@ -35,6 +99,14 @@ public abstract class GeoServerSecurityProvider {
      * Configures the xstream instance used to serialize/deserialize provider configuration. 
      */
     public void configure(XStreamPersister xp) {
+        xp.getXStream().alias("passwordpolicy", PasswordPolicyConfigImpl.class);
+        
+        // register converter for fields to be encrypted
+        for (Entry<Class<?>, Set<String>> entry: getFieldsForEncryption().entrySet()) {
+            for (String fieldName: entry.getValue()) {
+                xp.getXStream().registerLocalConverter(entry.getKey(), fieldName, encrypter);
+            }                        
+        }        
     }
 
     /**
@@ -85,5 +157,37 @@ public abstract class GeoServerSecurityProvider {
     public abstract GeoserverRoleService createRoleService(SecurityNamedServiceConfig config) 
         throws IOException;
 
+    /**
+     * Returns the specific class of the password validator created by 
+     * {@link #createPasswordValidator(PasswordPolicyConfig))}.
+     * <p>
+     * If the extension does not provide a user group service this method should simply return
+     * <code>null</code>. 
+     * </p> 
+     */
+    public  Class<? extends PasswordValidator> getPasswordValidatorClass() {
+        return PasswordValidatorImpl.class;
+    }
+
     
+    /**
+     * Create the standard password validator
+     * 
+     * @param config
+     * @return
+     */
+    public PasswordValidator createPasswordValidator(PasswordPolicyConfig config) {
+        return new PasswordValidatorImpl();
+    }
+    
+    /**
+     * Returns a map containing the field names
+     * which should be encrypted. (backend store 
+     * passwords as an example) 
+     * 
+     * @return
+     */
+    public Map<Class<?>, Set<String>> getFieldsForEncryption() {
+        return Collections.emptyMap();        
+    }
 }

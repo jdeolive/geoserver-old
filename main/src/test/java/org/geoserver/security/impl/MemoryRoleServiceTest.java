@@ -12,16 +12,17 @@ import junit.framework.Assert;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
+import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 
 public class MemoryRoleServiceTest extends AbstractRoleServiceTest {
   
 
     @Override
     public GeoserverRoleService createRoleService(String name) throws IOException {
-        SecurityNamedServiceConfig config = new SecurityNamedServiceConfigImpl();
+        MemoryRoleServiceConfigImpl config = new MemoryRoleServiceConfigImpl();
         config.setName(name);
+        config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
+        config.setLockingNeeded(false);
         GeoserverRoleService service = new MemoryRoleService();
         service.initializeFromConfig(config);
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));

@@ -5,8 +5,6 @@
 
 package org.geoserver.security.config;
 
-import org.geoserver.security.concurrent.LockingRoleService;
-import org.geoserver.security.concurrent.LockingUserGroupService;
 
 /**
  * Common base interface for all named security
@@ -27,25 +25,7 @@ public interface SecurityNamedServiceConfig extends SecurityConfig {
      */
     public void setName(String name);
     
-    /**
-     * the boolean flag if this service has
-     * member variables which need protection
-     * during concurrent access
-     * 
-     * @return
-     */
-    public boolean isStateless();
-    
-    /**
-     * a value of false will hide this object
-     * behind a {@link LockingRoleService}
-     * or a {@link LockingUserGroupService}
-     * 
-     * @param value
-     */
-    public void setStateless(boolean value);
-    
-    
+        
     /**
      * The class name of the service to be constructed
      * The class must have a constructor with a string

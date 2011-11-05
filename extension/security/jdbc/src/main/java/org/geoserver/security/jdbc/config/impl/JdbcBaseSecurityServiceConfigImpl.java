@@ -5,8 +5,8 @@
 
 package org.geoserver.security.jdbc.config.impl;
 
-import org.geoserver.security.config.JdbcBaseSecurityServiceConfig;
 import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
+import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
 
 /**
  * Implementation of {@link JdbcBaseSecurityServiceConfig} 

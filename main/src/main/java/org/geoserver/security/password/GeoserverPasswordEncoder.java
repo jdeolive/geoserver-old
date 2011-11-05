@@ -6,7 +6,6 @@
 
 package org.geoserver.security.password;
 
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
 
 /**
@@ -15,14 +14,14 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
  * @author christian
  *
  */
-public interface GeoserverPasswordEncoder extends PasswordEncoder, BeanNameAware {
+public interface GeoserverPasswordEncoder extends PasswordEncoder {
 
     public final static String PREFIX_DELIMTER=":";
     
     /**
-     * @return the {@link PasswordEncoding} 
+     * @return the {@link PasswordEncodingType} 
      */
-    public PasswordEncoding getEncodingType();
+    public PasswordEncodingType getEncodingType();
     
     
     /**
@@ -33,7 +32,7 @@ public interface GeoserverPasswordEncoder extends PasswordEncoder, BeanNameAware
 
     /**
      * decodes an encoded password. Only supported for
-     * {@link PasswordEncoding#ENCRYPT} and {@link PasswordEncoding#PLAIN}
+     * {@link PasswordEncodingType#ENCRYPT} and {@link PasswordEncodingType#PLAIN}
      * encoders 
      * 
      * @param encPass
@@ -42,7 +41,6 @@ public interface GeoserverPasswordEncoder extends PasswordEncoder, BeanNameAware
      */
     public String decode(String encPass) throws UnsupportedOperationException;
     
-    public String getBeanName();
     
     /**
      * @return a prefix which is stored with the password.

@@ -23,6 +23,9 @@ import org.apache.wicket.protocol.http.WebRequest;
 import org.apache.wicket.protocol.http.WebRequestCycle;
 import org.apache.wicket.protocol.http.WebRequestCycleProcessor;
 import org.apache.wicket.protocol.http.WebResponse;
+import org.apache.wicket.protocol.http.request.CryptedUrlWebRequestCodingStrategy;
+import org.apache.wicket.protocol.http.request.WebRequestCodingStrategy;
+import org.apache.wicket.request.IRequestCodingStrategy;
 import org.apache.wicket.request.IRequestCycleProcessor;
 import org.apache.wicket.request.RequestParameters;
 import org.apache.wicket.resource.loader.ClassStringResourceLoader;
@@ -193,6 +196,7 @@ public class GeoServerApplication extends SpringWebApplication {
         getDebugSettings().setAjaxDebugModeEnabled(false);
 
         getApplicationSettings().setPageExpiredErrorPage(GeoServerExpiredPage.class);
+        getSecuritySettings().setCryptFactory(GeoserverWicketEncrypterFactory.get());
     }
     
     @Override
@@ -222,7 +226,7 @@ public class GeoServerApplication extends SpringWebApplication {
      * order to support "dynamic dispatching" from web.xml.
      */
     protected IRequestCycleProcessor newRequestCycleProcessor() {
-        return new RequestCycleProcessor();
+        return new RequestCycleProcessor(getSecurityManager().isEncryptingUrlParams());
     }
 
     public final RequestCycle newRequestCycle(final Request request, final Response response) {
@@ -248,6 +252,10 @@ public class GeoServerApplication extends SpringWebApplication {
     }
 
     static class RequestCycleProcessor extends WebRequestCycleProcessor {
+        boolean isEncryptingUrlParams;
+        public RequestCycleProcessor(boolean isEncryptingUrlParams) {
+            this.isEncryptingUrlParams=isEncryptingUrlParams;
+        }
         public IRequestTarget resolve(RequestCycle requestCycle,
                 RequestParameters requestParameters) {
             IRequestTarget target = super.resolve(requestCycle,
@@ -258,6 +266,14 @@ public class GeoServerApplication extends SpringWebApplication {
 
             return resolveHomePageTarget(requestCycle, requestParameters);
         }
+        @Override
+        protected IRequestCodingStrategy newRequestCodingStrategy() {
+            if (isEncryptingUrlParams)
+                return new CryptedUrlWebRequestCodingStrategy(super.newRequestCodingStrategy());
+            else
+                return super.newRequestCodingStrategy();
+        }
+
     }
 
     static class RequestCycle extends WebRequestCycle {
