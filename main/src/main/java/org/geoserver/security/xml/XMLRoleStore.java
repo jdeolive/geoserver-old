@@ -66,8 +66,6 @@ public class XMLRoleStore extends AbstractRoleStore {
      * @see org.geoserver.security.impl.AbstractRoleStore#initializeFromService(org.geoserver.security.GeoserverRoleService)
      */
     public void initializeFromService(GeoserverRoleService service) throws IOException {
-        this.name=service.getName();
-        this.adminRole=service.getAdminRole();
         this.roleFile=((XMLRoleService)service).roleFile;
         this.validatingXMLSchema=((XMLRoleService)service).isValidatingXMLSchema();
         super.initializeFromService(service);
@@ -95,11 +93,11 @@ public class XMLRoleStore extends AbstractRoleStore {
         Element rolelist = doc.createElement(E_ROLELIST_RR);
         rolereg.appendChild(rolelist);
         
-        for (GeoserverRole roleObject : roleMap.values()) {
+        for (GeoserverRole roleObject : helper.roleMap.values()) {
             Element role = doc.createElement(E_ROLE_RR);
             rolelist.appendChild(role);
             role.setAttribute(A_ROLEID_RR, roleObject.getAuthority());
-            GeoserverRole parentObject = role_parentMap.get(roleObject);
+            GeoserverRole parentObject = helper.role_parentMap.get(roleObject);
             if (parentObject!=null) {
                 role.setAttribute(A_PARENTID_RR, parentObject.getAuthority());
             }            
@@ -113,11 +111,11 @@ public class XMLRoleStore extends AbstractRoleStore {
         
         Element userList = doc.createElement(E_USERLIST_RR);
         rolereg.appendChild(userList);
-        for (String userName: user_roleMap.keySet()) {
+        for (String userName: helper.user_roleMap.keySet()) {
             Element userroles = doc.createElement(E_USERROLES_RR);
             userList.appendChild(userroles);
             userroles.setAttribute(A_USERNAME_RR, userName);
-            SortedSet<GeoserverRole> roleObjects =  user_roleMap.get(userName);
+            SortedSet<GeoserverRole> roleObjects =  helper.user_roleMap.get(userName);
             for (GeoserverRole roleObject: roleObjects) {
                 Element ref = doc.createElement(E_ROLEREF_RR);
                 userroles.appendChild(ref);
@@ -128,11 +126,11 @@ public class XMLRoleStore extends AbstractRoleStore {
         Element groupList = doc.createElement(E_GROUPLIST_RR);
         rolereg.appendChild(groupList);
         
-        for (String groupName: group_roleMap.keySet()) {
+        for (String groupName: helper.group_roleMap.keySet()) {
             Element grouproles = doc.createElement(E_GROUPROLES_RR);
             groupList.appendChild(grouproles);
             grouproles.setAttribute(A_GROUPNAME_RR, groupName);
-            SortedSet<GeoserverRole> roleObjects =  group_roleMap.get(groupName);
+            SortedSet<GeoserverRole> roleObjects =  helper.group_roleMap.get(groupName);
             for (GeoserverRole roleObject: roleObjects) {
                 Element ref = doc.createElement(E_ROLEREF_RR);
                 grouproles.appendChild(ref);

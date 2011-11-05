@@ -5,6 +5,10 @@
 
 package org.geoserver.security.password;
 
+import java.io.IOException;
+
+import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoserverUserGroupService;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.authentication.encoding.PlaintextPasswordEncoder;
 
@@ -14,8 +18,16 @@ import org.springframework.security.authentication.encoding.PlaintextPasswordEnc
  * @author christian
  *
  */
-public class GeoserverPlainTextPasswordEncoder extends AbstractGeoserverPasswordEncoder {
+public class GeoserverPlainTextPasswordEncoder extends AbstractGeoserverPasswordEncoder implements GeoserverUserPasswordEncoder {
     
+    public final static String BeanName="plainTextPasswordEncoder";
+    protected String beanName;
+    
+    public static GeoserverPlainTextPasswordEncoder get() {
+          return (GeoserverPlainTextPasswordEncoder)
+                    GeoServerExtensions.bean(BeanName);        
+    }
+
     
     @Override
     protected PasswordEncoder getActualEncoder() {
@@ -23,16 +35,30 @@ public class GeoserverPlainTextPasswordEncoder extends AbstractGeoserverPassword
     }
 
     @Override
-    public PasswordEncoding getEncodingType() {
-        return PasswordEncoding.PLAIN;
+    public PasswordEncodingType getEncodingType() {
+        return PasswordEncodingType.PLAIN;
     }
     
-    public String getPrefix() {
-        return "plain";
-    }
-
     public String decode(String encPass) throws UnsupportedOperationException {
         return removePrefix(encPass);
+    }
+
+
+    @Override
+    public void setBeanName(String name) {
+        beanName=name;
+    }
+
+
+    @Override
+    public void initializeFor(GeoserverUserGroupService service) throws IOException {
+        // do nothing
+    }
+
+
+    @Override
+    public String getNameReference() {
+        return beanName;
     }
 
 }

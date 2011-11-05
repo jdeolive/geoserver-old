@@ -37,14 +37,16 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
         roleStore = createStore(roleService);
         usergroupStore =createStore(usergroupService);
         getSecurityManager().setActiveRoleService(roleService);
-        getSecurityManager().setActiveUserGroupService(usergroupService);
+        //getSecurityManager().saveSecurityConfig(config)setActiveUserGroupService(usergroupService);
     }
     
     public void testConfiguration() {
         try {
             setServices("config");
             assertEquals(roleService,getSecurityManager().getActiveRoleService());
-            assertEquals(usergroupService,getSecurityManager().getActiveUserGroupService());
+            //assertEquals(usergroupService,getSecurityManager().getActiveUserGroupService());
+            assertEquals(usergroupService.getName(),
+                    getSecurityManager().loadUserGroupService("config").getName());
             assertTrue(roleService.canCreateStore());
             assertTrue(usergroupService.canCreateStore());
         } catch (IOException ex) {
@@ -172,7 +174,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             roles.remove(tmp);
             checkRoles(username, roles);
             
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Assert.fail(ex.getMessage());
         }
     }
@@ -238,7 +240,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
                 }                                        
             }
             
-       } catch (IOException ex) {       
+       } catch (Exception ex) {       
            Assert.fail(ex.getMessage());
        }                
     }

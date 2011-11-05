@@ -8,6 +8,8 @@ package org.geoserver.security.jdbc;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import junit.framework.Assert;
+
 import org.geoserver.data.test.TestData;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
@@ -95,6 +97,20 @@ public abstract class JDBCUserDetailsServiceTest extends AbstractUserDetailsServ
         if ("h2".equalsIgnoreCase(getFixtureId()))
             return super.buildTestData();
         return new LiveDbmsDataSecurity(getFixtureId());
+    }
+
+    public void testConfiguration() {
+        try {
+            setServices("config");
+            assertEquals(roleService,getSecurityManager().getActiveRoleService());
+            //assertEquals(usergroupService,getSecurityManager().getActiveUserGroupService());
+            assertEquals(usergroupService.getName(),
+                    getSecurityManager().loadUserGroupService(getFixtureId()).getName());
+            assertTrue(roleService.canCreateStore());
+            assertTrue(usergroupService.canCreateStore());
+        } catch (IOException ex) {
+            Assert.fail(ex.getMessage());
+        }
     }
 
 }

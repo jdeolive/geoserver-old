@@ -750,6 +750,11 @@
       <version>1.8</version>
    </dependency>
    <dependency>
+    <groupId>org.bouncycastle</groupId>
+    <artifactId>bcprov-jdk14</artifactId>
+    <version>1.46</version>
+   </dependency>
+   <dependency>
      <groupId>org.apache.wicket</groupId>
      <artifactId>wicket</artifactId>
      <version>${wicket.version}</version>

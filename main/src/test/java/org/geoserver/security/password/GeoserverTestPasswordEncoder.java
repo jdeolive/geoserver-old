@@ -16,8 +16,8 @@ public class GeoserverTestPasswordEncoder extends  AbstractGeoserverPasswordEnco
     }
 
     @Override
-    public PasswordEncoding getEncodingType() {
-        return PasswordEncoding.PLAIN;
+    public PasswordEncodingType getEncodingType() {
+        return PasswordEncodingType.PLAIN;
     }
 
 }

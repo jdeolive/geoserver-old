@@ -11,8 +11,15 @@ import java.io.ObjectInputStream;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
+import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.password.KeyStoreProvider;
+import org.geoserver.security.password.PasswordEncodingType;
+import org.geoserver.security.password.RandomPasswordProvider;
 
 
 /**
@@ -26,6 +33,12 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
 public class MemoryUserGroupService extends AbstractUserGroupService {
 
     byte[] byteArray;
+    protected String toBeEncrypted;
+    
+    public String getToBeEncrypted() {
+        return toBeEncrypted;
+    }
+
     
     public MemoryUserGroupService() {
     }
@@ -50,10 +63,10 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
         ByteArrayInputStream in = new ByteArrayInputStream(byteArray);
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            userMap = (TreeMap<String,GeoserverUser>) oin.readObject();
-            groupMap =(TreeMap<String,GeoserverUserGroup>) oin.readObject();
-            user_groupMap = (TreeMap<GeoserverUser,SortedSet<GeoserverUserGroup>>)oin.readObject();
-            group_userMap = (TreeMap<GeoserverUserGroup,SortedSet<GeoserverUser>>)oin.readObject();
+            helper.userMap = (TreeMap<String,GeoserverUser>) oin.readObject();
+            helper.groupMap =(TreeMap<String,GeoserverUserGroup>) oin.readObject();
+            helper.user_groupMap = (TreeMap<GeoserverUser,SortedSet<GeoserverUserGroup>>)oin.readObject();
+            helper.group_userMap = (TreeMap<GeoserverUserGroup,SortedSet<GeoserverUser>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
@@ -62,7 +75,6 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
     @Override
     public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
         GeoserverUser user = new MemoryGeoserverUser(username, this);
-        user.setPasswordEncoderName(this.getPasswordEncoderName());
         user.setEnabled(isEnabled);
         user.setPassword(password);
         return user;
@@ -78,7 +90,22 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         this.name=config.getName();
-        passwordEncoderName="pbePasswordEncoder";
+        SecurityUserGoupServiceConfig ugConfig =(SecurityUserGoupServiceConfig) config;        
+        passwordEncoderName=ugConfig.getPasswordEncoderName();
+        GeoserverUserPasswordEncoder enc = (GeoserverUserPasswordEncoder) 
+                GeoServerExtensions.bean(passwordEncoderName);
+        if (enc.getEncodingType()==PasswordEncodingType.ENCRYPT) {
+            KeyStoreProvider prov = KeyStoreProvider.get();
+            String alias = prov.aliasForGroupService(name);
+            if (prov.containsAlias(alias)==false) {
+                prov.setUserGroupKey(name, RandomPasswordProvider.get().getRandomPassword(32));
+                prov.storeKeyStore();
+            }
+        }
+        enc.initializeFor(this);
+        passwordValidatorName=ugConfig.getPasswordPolicyName();
+        toBeEncrypted = (((MemoryUserGroupServiceConfigImpl)config).getToBeEncrypted());
     }
+    
 
 }

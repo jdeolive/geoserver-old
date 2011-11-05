@@ -30,10 +30,10 @@ public class MemoryRoleStore extends AbstractRoleStore {
     protected void serialize() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream oout = new ObjectOutputStream(out);
-        oout.writeObject(roleMap);
-        oout.writeObject(role_parentMap);
-        oout.writeObject(user_roleMap);
-        oout.writeObject(group_roleMap);
+        oout.writeObject(helper.roleMap);
+        oout.writeObject(helper.role_parentMap);
+        oout.writeObject(helper.user_roleMap);
+        oout.writeObject(helper.group_roleMap);
         ((MemoryRoleService)service).byteArray=out.toByteArray();
         oout.close();            
     }
@@ -50,10 +50,10 @@ public class MemoryRoleStore extends AbstractRoleStore {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            roleMap = (TreeMap<String,GeoserverRole>) oin.readObject();
-            role_parentMap =(HashMap<GeoserverRole,GeoserverRole>) oin.readObject();
-            user_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
-            group_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
+            helper.roleMap = (TreeMap<String,GeoserverRole>) oin.readObject();
+            helper.role_parentMap =(HashMap<GeoserverRole,GeoserverRole>) oin.readObject();
+            helper.user_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
+            helper.group_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }

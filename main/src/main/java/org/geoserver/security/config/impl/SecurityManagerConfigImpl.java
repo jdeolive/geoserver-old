@@ -34,6 +34,16 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
         this.anonymousAuth = config.isAnonymousAuth();
     }
 
+    private String configPasswordEncrypterName;
+    private boolean encryptingUrlParams;
+    
+    public boolean isEncryptingUrlParams() {
+        return encryptingUrlParams;
+    }
+    public void setEncryptingUrlParams(boolean encryptingUrlParams) {
+        this.encryptingUrlParams = encryptingUrlParams;
+    }
+
     public String getRoleServiceName() {
         return roleServiceName;
     }
@@ -46,6 +56,7 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
     public void setUserGroupServiceName(String userGroupServiceName) {
         this.userGroupServiceName = userGroupServiceName;
     }
+
     public List<String> getAuthProviderNames() {
         return authProviderNames;
     }
@@ -60,4 +71,12 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
         anonymousAuth = anonymousAuth != null ? anonymousAuth : Boolean.TRUE;
         return this;
     }
+
+    public String getConfigPasswordEncrypterName() {
+        return configPasswordEncrypterName;
+    }
+    public void setConfigPasswordEncrypterName(String configPasswordEncrypterName) {
+        this.configPasswordEncrypterName = configPasswordEncrypterName;
+    }
+
 }
