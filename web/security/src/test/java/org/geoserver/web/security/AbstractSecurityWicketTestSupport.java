@@ -23,8 +23,8 @@ import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
+import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
+import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
 import org.geoserver.security.impl.AbstractRoleServiceTest;
 import org.geoserver.security.impl.AbstractUserGroupServiceTest;
 import org.geoserver.security.impl.DataAccessRule;
@@ -36,6 +36,8 @@ import org.geoserver.security.impl.MemoryUserGroupService;
 import org.geoserver.security.impl.MemoryUserGroupStore;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
+import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
+import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.xml.XMLRoleServiceTest;
 import org.geoserver.security.xml.XMLUserGroupServiceTest;
 import org.geoserver.web.GeoServerApplication;
@@ -79,6 +81,8 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     protected void setUpInternal() throws Exception {
         login();        
         Locale.setDefault(Locale.ENGLISH);
+        // run all tests with url param encryption
+        getSecurityManager().setEncryptingUrlParams(true); 
     }
 
     protected void initialize(AbstractUserGroupServiceTest ugTest, AbstractRoleServiceTest gaTest) 
@@ -132,8 +136,10 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     
                 
     protected void activateROGAService() throws Exception{
-        SecurityNamedServiceConfig config = new SecurityNamedServiceConfigImpl();
-        config.setName("ReadOnlyGAService");        
+        MemoryRoleServiceConfigImpl config = new MemoryRoleServiceConfigImpl();
+        config.setName("ReadOnlyGAService");
+        config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
+        config.setLockingNeeded(false);
         gaService = new ReadOnlyGAService();
         gaService.initializeFromConfig(config);
         gaService.setSecurityManager(GeoServerApplication.get().getSecurityManager());
@@ -146,8 +152,11 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     }
     
     protected void activateROUGService() throws Exception{
-        SecurityNamedServiceConfig config = new SecurityNamedServiceConfigImpl();
+        MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName("ReadOnlyUGService");        
+        config.setLockingNeeded(false);
+        config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+        config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         ugService = new ReadOnlyUGService();
         ugService.initializeFromConfig(config);
         ugService.setSecurityManager(GeoServerApplication.get().getSecurityManager());

@@ -5,8 +5,11 @@
 
 package org.geoserver.security.password;
 
+import java.io.IOException;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.spring.security3.PBEPasswordEncoder;
-import org.jasypt.util.text.BasicTextEncryptor;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
 
 /**
@@ -21,31 +24,67 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
  * @author christian
  *
  */
-public class GeoserverPBEPasswordEncoder extends AbstractGeoserverPasswordEncoder {
+public abstract class GeoserverPBEPasswordEncoder extends AbstractGeoserverPasswordEncoder {
 
-    BasicTextEncryptor encrypter;
+    StandardPBEStringEncryptor encrypter;
+    
+    private String providerName,algorithm;
+
+
+    
+    public String getProviderName() {
+        return providerName;
+    }
+
+
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
+    }
+
+
+    public String getAlgorithm() {
+        return algorithm;
+    }
+
+
+    public void setAlgorithm(String algorithm) {
+        this.algorithm = algorithm;
+    }
+
+
+
+    public abstract String getKeyAliasInKeyStore();
+
+
     @Override
     protected PasswordEncoder getActualEncoder() {
+        
+        String password=null;
+        try {
+            if (KeyStoreProvider.get().containsAlias(getKeyAliasInKeyStore())==false)
+                throw new IOException();
+            password = new String (KeyStoreProvider.get().getSecretKey(getKeyAliasInKeyStore()).getEncoded());
+        } catch (IOException e) {
+            throw new RuntimeException( "Cannot find alias: "+getKeyAliasInKeyStore() +
+                    " in "+ KeyStoreProvider.get().getKeyStoreProvderFile().getAbsolutePath());
+        }            
+
         PBEPasswordEncoder encoder = new PBEPasswordEncoder();
-        // TODO, Cannot use due to US export restrictions
-        //encrypter = new StrongTextEncryptor();
-        encrypter = new BasicTextEncryptor();
-        String masterPassword = MasterPasswordProvider.get().getMasterPassword();
-        if (masterPassword==null)
-            throw new RuntimeException( this.getClass().getName()+ " needs a master password");
-        encrypter.setPassword(masterPassword);
-        encoder.setTextEncryptor(encrypter);        
+        encrypter = new StandardPBEStringEncryptor();
+        
+        encrypter.setPassword(password);
+        if (getProviderName()!=null && getProviderName().isEmpty()==false)
+            encrypter.setProviderName(getProviderName());
+        encrypter.setAlgorithm(getAlgorithm());
+        encoder.setPbeStringEncryptor(encrypter);
         return encoder;
     }
 
     @Override
-    public PasswordEncoding getEncodingType() {
-        return PasswordEncoding.ENCRYPT;
+    public PasswordEncodingType getEncodingType() {
+        return PasswordEncodingType.ENCRYPT;
     }
     
-    public String getPrefix() {
-        return "crypt1";
-    }
 
     public String decode(String encPass) throws UnsupportedOperationException {
         String encPass2= removePrefix(encPass);
@@ -54,5 +93,4 @@ public class GeoserverPBEPasswordEncoder extends AbstractGeoserverPasswordEncode
         }
         return encrypter.decrypt(encPass2);
     }
-
 }

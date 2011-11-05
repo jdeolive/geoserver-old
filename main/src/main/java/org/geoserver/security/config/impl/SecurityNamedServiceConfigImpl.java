@@ -15,7 +15,6 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
  */
 public class SecurityNamedServiceConfigImpl extends SecurityConfigImpl implements SecurityNamedServiceConfig {
     private String name;
-    private boolean isStateless;
     private String className;
 
     
@@ -42,18 +41,6 @@ public class SecurityNamedServiceConfigImpl extends SecurityConfigImpl implement
      */
     public void setName(String name) {
         this.name = name;
-    }
-    /* (non-Javadoc)
-     * @see org.geoserver.security.config.SecurityNamedServiceConfig#isStateless()
-     */
-    public boolean isStateless() {
-        return isStateless;
-    }
-    /* (non-Javadoc)
-     * @see org.geoserver.security.config.SecurityNamedServiceConfig#setStateless(boolean)
-     */
-    public void setStateless(boolean isStateless) {
-        this.isStateless = isStateless;
     }
     
     

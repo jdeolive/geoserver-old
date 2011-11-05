@@ -332,15 +332,45 @@
     <constructor-arg ref="dataDirectory"/>
   </bean>
   <alias name="authenticationManager" alias="geoServerSecurityManager"/>
+
+ <!-- password encoders for passwords in configuration files  -->
+   <bean id="configPasswordEncoder"    
+    class="org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder" scope="prototype">
+    <property name="prefix" value="crypt1" />
+    <property name="algorithm" value="PBEWITHMD5ANDDES" />
+  </bean>
+  <bean id="strongConfigPasswordEncoder"    
+    class="org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder" scope="prototype">
+    <property name="prefix" value="crypt2" />
+    <property name="providerName" value="BC" />
+    <property name="algorithm" value="PBEWITHSHA256AND256BITAES-CBC-BC" />
+  </bean>  
+ 
   
-  <!-- password encoders -->
-  <bean id="plainTextPasswordEncoder"
-    class="org.geoserver.security.password.GeoserverPlainTextPasswordEncoder"/>
-  <bean id="digestPasswordEncoder"
-    class="org.geoserver.security.password.GeoserverDigestPasswordEncoder"/>
-  <bean id="pbePasswordEncoder"
-    class="org.geoserver.security.password.GeoserverPBEPasswordEncoder" />
-            
+  <!-- password encoders for user passwords-->
+  <bean id="pbePasswordEncoder"    
+    class="org.geoserver.security.password.GeoserverUserPBEPasswordEncoder" scope="prototype">
+    <property name="prefix" value="crypt3" />
+    <property name="algorithm" value="PBEWITHMD5ANDDES" />
+  </bean>
+  <bean id="strongPbePasswordEncoder"    
+    class="org.geoserver.security.password.GeoserverUserPBEPasswordEncoder" scope="prototype">
+    <property name="prefix" value="crypt4" />
+    <property name="providerName" value="BC" />
+    <property name="algorithm" value="PBEWITHSHA256AND256BITAES-CBC-BC" />
+  </bean>  
+  <bean id="digestPasswordEncoder"    
+    class="org.geoserver.security.password.GeoserverDigestPasswordEncoder">
+    <property name="prefix" value="digest1" />    
+  </bean>
+  <bean id="plainTextPasswordEncoder"        
+    class="org.geoserver.security.password.GeoserverPlainTextPasswordEncoder">
+    <property name="prefix" value="plain" />
+  </bean>
+  
+    
+  <bean id="keyStoreProvider"
+		class="org.geoserver.security.password.KeyStoreProvider" />            
   	
   
   <!-- The dao used to deal with layer level security -->

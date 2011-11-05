@@ -1,6 +1,6 @@
 package org.geoserver.security.password;
 
-public class TestMasterPasswordProvider extends MasterPasswordProvider {
+public class TestMasterPasswordProvider implements MasterPasswordProvider {
 
     @Override
     public String getMasterPassword() {

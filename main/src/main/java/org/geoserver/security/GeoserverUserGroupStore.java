@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.password.PasswordValidationException;
 
 /**
  * A class implementing this interface implements a backend for
@@ -38,16 +39,34 @@ public interface GeoserverUserGroupStore extends GeoserverUserGroupService {
 
     
     /**
-     * Adds a user 
+     * Adds a user, the {@link GeoserverUser#getPassword()
+     * returns the raw password
+     * 
+     * The method must use #getPasswordValidatorName() to
+     * validate the raw password and
+     * #getPasswordEncoderName() to
+     * encode the password.
+     * 
      * @param user
      */
-    public abstract void addUser(GeoserverUser user)  throws IOException;
+    public abstract void addUser(GeoserverUser user) throws  IOException,PasswordValidationException;
 
     /**
-     * Updates a user 
+     * Updates a user
+     * 
+     * The method must be able to determine if
+     * {@link GeoserverUser#getPassword() has changed
+     * (reread from backend, check for a prefix, ...)
+     * 
+     * if the password has changed, it is a raw password
+     * and the method must use #getPasswordValidatorName() to
+     * validate the raw password and
+     * #getPasswordEncoderName() to
+     * encode the password.
+     *  
      * @param user
      */
-    public abstract void updateUser(GeoserverUser user)  throws IOException;
+    public abstract void updateUser(GeoserverUser user)  throws IOException,PasswordValidationException;
 
     /**
      * Removes the specified user 

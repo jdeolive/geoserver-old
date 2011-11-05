@@ -5,7 +5,7 @@
 
 package org.geoserver.security.jdbc.config.impl;
 
-import org.geoserver.security.config.JdbcSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JdbcSecurityServiceConfig;
 
 /**
  * Implementation of {@link JdbcSecurityServiceConfig} 

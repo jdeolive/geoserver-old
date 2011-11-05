@@ -12,16 +12,20 @@ import junit.framework.Assert;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
+import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
+import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
+import org.geoserver.security.password.PasswordValidator;
 
 public class MemoryUserGroupServiceTest extends AbstractUserGroupServiceTest {
 
 
     @Override
     public GeoserverUserGroupService createUserGroupService(String name) throws IOException {
-        SecurityNamedServiceConfig config = new SecurityNamedServiceConfigImpl();
-        config.setName(name);
+        MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
+        config.setName(name);        
+        config.setLockingNeeded(false);
+        config.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
+        config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         GeoserverUserGroupService service = new MemoryUserGroupService();
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
         service.initializeFromConfig(config);        
@@ -50,4 +54,6 @@ public class MemoryUserGroupServiceTest extends AbstractUserGroupServiceTest {
             Assert.fail(e.getMessage());
         }
     }
+    
+
 }

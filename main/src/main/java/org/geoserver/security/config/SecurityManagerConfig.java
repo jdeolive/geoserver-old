@@ -58,4 +58,21 @@ public interface SecurityManagerConfig  extends SecurityConfig {
      */
     public void setAnonymousAuth(Boolean anonymousAuth);
 
+    /**
+     * Admin Console encrypts URL Parameters ?
+     * @return
+     */
+    public boolean isEncryptingUrlParams();
+    public void setEncryptingUrlParams(boolean encryptingUrlParams);
+
+    /**
+     * if passwords in configuration files are encrypted, the
+     * Spring name of the encrypter 
+     * 
+     * @return
+     */
+    public String getConfigPasswordEncrypterName();
+    public void setConfigPasswordEncrypterName(String configPasswordEncrypterName);
+
+
 }

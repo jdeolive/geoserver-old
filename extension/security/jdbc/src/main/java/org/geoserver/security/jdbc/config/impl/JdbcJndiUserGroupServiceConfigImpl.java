@@ -10,6 +10,26 @@ import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 public class JdbcJndiUserGroupServiceConfigImpl extends JdbcJndiSecurityServiceConfigImpl implements SecurityUserGoupServiceConfig {
 
     protected String passwordEncoderName;
+    protected String passwordPolicyName;
+    protected boolean lockingNeeded;
+    
+    public boolean isLockingNeeded() {
+        return lockingNeeded;
+    }
+
+    public void setLockingNeeded(boolean lockingNeeded) {
+        this.lockingNeeded = lockingNeeded;
+    }
+
+    
+    public String getPasswordPolicyName() {
+        return passwordPolicyName;
+    }
+
+    public void setPasswordPolicyName(String passwordPolicyName) {
+        this.passwordPolicyName = passwordPolicyName;
+    }
+
     @Override
     public String getPasswordEncoderName() {
         return passwordEncoderName;

@@ -20,13 +20,13 @@ import java.util.logging.Logger;
 
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.config.JdbcBaseSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.event.RoleLoadedEvent;
 import org.geoserver.security.event.RoleLoadedListener;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.Util;
+import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
 
 /**
  * JDBC implementation of {@link GeoserverRoleService}
