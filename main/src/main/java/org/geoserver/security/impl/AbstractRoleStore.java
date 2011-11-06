@@ -6,21 +6,26 @@ package org.geoserver.security.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.HashSet;
-import java.util.Map.Entry;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.event.RoleLoadedListener;
 
 /**
  * Abstract base class for role store implementations
@@ -28,13 +33,64 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
  * @author christian
  *
  */
-public abstract class AbstractRoleStore extends AbstractRoleService implements GeoserverRoleStore {
+public abstract  class AbstractRoleStore  implements GeoserverRoleStore {
 
     /** logger */
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security");
     
     private boolean modified=false;
     protected AbstractRoleService service;
+    protected RoleStoreHelper helper;
+    
+
+
+    public AbstractRoleStore() {
+        helper=new RoleStoreHelper();
+    }
+
+    public String getName() {
+        return service.getName();
+    }
+
+    public void setName(String name) {
+        service.setName(name);
+    }
+
+    public GeoServerSecurityManager getSecurityManager() {
+        return service.getSecurityManager();
+    }
+
+    public void setSecurityManager(GeoServerSecurityManager securityManager) {
+        service.setSecurityManager(securityManager);
+    }
+
+    public boolean canCreateStore() {
+        return service.canCreateStore();
+    }
+
+    public GeoserverRole getAdminRole() {
+        return service.getAdminRole();
+    }
+
+    public GeoserverRoleStore createStore() throws IOException {
+        return service.createStore();
+    }
+
+    public void registerRoleLoadedListener(RoleLoadedListener listener) {
+        service.registerRoleLoadedListener(listener);
+    }
+
+    public void unregisterRoleLoadedListener(RoleLoadedListener listener) {
+        service.unregisterRoleLoadedListener(listener);
+    }
+
+    public GeoserverRole createRoleObject(String role) throws IOException {
+        return service.createRoleObject(role);
+    }
+
+    public File getConfigRoot() throws IOException {
+        return service.getConfigRoot();
+    }
 
     
     
@@ -58,10 +114,10 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
     public void addRole(GeoserverRole role)  throws IOException{
         
         
-        if(roleMap.containsKey(role.getAuthority()))
+        if(helper.roleMap.containsKey(role.getAuthority()))
             throw new IllegalArgumentException("The role " + role.getAuthority() + " already exists");
         else {
-            roleMap.put(role.getAuthority(),role);
+            helper.roleMap.put(role.getAuthority(),role);
             setModified(true);
         }
     }
@@ -73,8 +129,8 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
      */
     public void updateRole(GeoserverRole role)  throws IOException {
         
-        if(roleMap.containsKey(role.getAuthority())) {
-            roleMap.put(role.getAuthority(),role);
+        if(helper.roleMap.containsKey(role.getAuthority())) {
+            helper.roleMap.put(role.getAuthority(),role);
             setModified(true);
         }
         else
@@ -88,29 +144,29 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
      */
     public boolean removeRole(GeoserverRole role)  throws IOException{
         
-        if (roleMap.containsKey(role.getAuthority())==false) // nothing to do
+        if (helper.roleMap.containsKey(role.getAuthority())==false) // nothing to do
             return false;
         
-        for (SortedSet<GeoserverRole> set: user_roleMap.values()) {
+        for (SortedSet<GeoserverRole> set: helper.user_roleMap.values()) {
             set.remove(role);
         }
-        for (SortedSet<GeoserverRole> set: group_roleMap.values()) {
+        for (SortedSet<GeoserverRole> set: helper.group_roleMap.values()) {
             set.remove(role);
         }
         
         // role hierarchy
-        role_parentMap.remove(role);
+        helper.role_parentMap.remove(role);
         Set<GeoserverRole> toBeRemoved = new HashSet<GeoserverRole>();
-        for (Entry<GeoserverRole,GeoserverRole> entry : role_parentMap.entrySet()) {
+        for (Entry<GeoserverRole,GeoserverRole> entry : helper.role_parentMap.entrySet()) {
             if (role.equals(entry.getValue()))
                 toBeRemoved.add(entry.getKey());
         }
         for (GeoserverRole  ga : toBeRemoved) {
-            role_parentMap.put(ga,null);
+            helper.role_parentMap.put(ga,null);
         }    
         
         // remove role
-        roleMap.remove(role.getAuthority());
+        helper.roleMap.remove(role.getAuthority());
         setModified(true);
         return true;
 
@@ -148,7 +204,7 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
      * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
     public void disAssociateRoleFromGroup(GeoserverRole role, String groupname) throws IOException{
-        SortedSet<GeoserverRole> roles = group_roleMap.get(groupname);
+        SortedSet<GeoserverRole> roles = helper.group_roleMap.get(groupname);
         if (roles!=null && roles.contains(role)) {
             roles.remove(role);
             setModified(true);
@@ -160,10 +216,10 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
      * @see org.geoserver.security.GeoserverRoleStore#associateRoleToGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
     public void associateRoleToGroup(GeoserverRole role, String groupname) throws IOException{
-        SortedSet<GeoserverRole> roles = group_roleMap.get(groupname);
+        SortedSet<GeoserverRole> roles = helper.group_roleMap.get(groupname);
         if (roles == null) {
             roles=new TreeSet<GeoserverRole>();
-            group_roleMap.put(groupname, roles);
+            helper.group_roleMap.put(groupname, roles);
         }
         if (roles.contains(role)==false) { // something changed ?
             roles.add(role);
@@ -176,10 +232,10 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
      * @see org.geoserver.security.GeoserverRoleStore#associateRoleToUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
     public void associateRoleToUser(GeoserverRole role, String username) throws IOException{
-        SortedSet<GeoserverRole> roles = user_roleMap.get(username);
+        SortedSet<GeoserverRole> roles = helper.user_roleMap.get(username);
         if (roles == null) {
             roles=new TreeSet<GeoserverRole>();
-            user_roleMap.put(username, roles);
+            helper.user_roleMap.put(username, roles);
         }
         if (roles.contains(role)==false) { // something changed
             roles.add(role);
@@ -192,7 +248,7 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
      * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
     public void disAssociateRoleFromUser(GeoserverRole role, String username) throws IOException{
-        SortedSet<GeoserverRole> roles = user_roleMap.get(username);
+        SortedSet<GeoserverRole> roles = helper.user_roleMap.get(username);
         if (roles!=null && roles.contains(role)) {
             roles.remove(role);
             setModified(true);
@@ -206,18 +262,18 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
      */
     public void setParentRole(GeoserverRole role, GeoserverRole parentRole) throws IOException{
         
-        RoleHierarchyHelper helper = new RoleHierarchyHelper(getParentMappings());
-        if (helper.isValidParent(role.getAuthority(), 
+        RoleHierarchyHelper hhelper = new RoleHierarchyHelper(getParentMappings());
+        if (hhelper.isValidParent(role.getAuthority(), 
                 parentRole==null ? null : parentRole.getAuthority())==false)
             throw new IOException(parentRole.getAuthority() +
                     " is not a valid parent for " + role.getAuthority());    
         
         checkRole(role);
         if (parentRole==null) {
-            role_parentMap.remove(role);
+            helper.role_parentMap.remove(role);
         } else {
             checkRole(parentRole);
-            role_parentMap.put(role,parentRole);
+            helper.role_parentMap.put(role,parentRole);
         }
         setModified(true);
     }
@@ -238,17 +294,16 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
      * @see org.geoserver.security.impl.AbstractRoleService#deserialize()
      */
     @SuppressWarnings("unchecked")
-    @Override
     protected void deserialize() throws IOException {
         
         // make a deep copy of the maps using serialization
         
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream oout = new ObjectOutputStream(out);
-        oout.writeObject(service.roleMap);
-        oout.writeObject(service.role_parentMap);
-        oout.writeObject(service.user_roleMap);
-        oout.writeObject(service.group_roleMap);
+        oout.writeObject(service.helper.roleMap);
+        oout.writeObject(service.helper.role_parentMap);
+        oout.writeObject(service.helper.user_roleMap);
+        oout.writeObject(service.helper.group_roleMap);
         byte[] byteArray=out.toByteArray();
         oout.close();            
 
@@ -257,10 +312,10 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
         ByteArrayInputStream in = new ByteArrayInputStream(byteArray);
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            roleMap = (TreeMap<String,GeoserverRole>) oin.readObject();
-            role_parentMap =(HashMap<GeoserverRole,GeoserverRole>) oin.readObject();
-            user_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
-            group_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
+            helper.roleMap = (TreeMap<String,GeoserverRole>) oin.readObject();
+            helper.role_parentMap =(HashMap<GeoserverRole,GeoserverRole>) oin.readObject();
+            helper.user_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
+            helper.group_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
@@ -273,10 +328,8 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
     @Override
     public void initializeFromService(GeoserverRoleService service)
             throws IOException {
-        this.name=service.getName();
-        this.adminRole=service.getAdminRole();
         this.service=(AbstractRoleService)service;
-        deserialize();
+        load();
     }
     
     /* (non-Javadoc)
@@ -284,7 +337,70 @@ public abstract class AbstractRoleStore extends AbstractRoleService implements G
      */
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
-        // Do nothing
+        service.initializeFromConfig(config);
+    }
+
+    protected void checkRole(GeoserverRole role) {
+        if (helper.roleMap.containsKey(role.getAuthority())==false)
+            throw new IllegalArgumentException("Role: " +  role.getAuthority()+ " does not exist");
+    }
+
+    /**
+     * internal use, clear the maps
+     */
+    protected void clearMaps() {
+        helper.clearMaps();
+    }
+
+    @Override
+    public SortedSet<String> getGroupNamesForRole(GeoserverRole role) throws IOException {
+        return helper.getGroupNamesForRole(role);
+    }
+
+    @Override
+    public SortedSet<String> getUserNamesForRole(GeoserverRole role) throws IOException {
+        return helper.getUserNamesForRole(role);
+    }
+
+    @Override
+    public SortedSet<GeoserverRole> getRolesForUser(String username) throws IOException {
+        return helper.getRolesForUser(username);
+    }
+
+    @Override
+    public SortedSet<GeoserverRole> getRolesForGroup(String groupname) throws IOException {
+        return helper.getRolesForGroup(groupname);
+    }
+
+    @Override
+    public SortedSet<GeoserverRole> getRoles() throws IOException {
+        return helper.getRoles();
+    }
+
+    @Override
+    public Map<String, String> getParentMappings() throws IOException {
+        return helper.getParentMappings();
+    }
+
+    @Override
+    public GeoserverRole getParentRole(GeoserverRole role) throws IOException {
+        return helper.getParentRole(role);
+    }
+
+    @Override
+    public GeoserverRole getRoleByName(String role) throws IOException {
+        return helper.getRoleByName(role);
+    }
+
+    @Override
+    public void load() throws IOException {
+        deserialize();
+    }
+
+    @Override
+    public Properties personalizeRoleParams(String roleName, Properties roleParams,
+            String userName, Properties userProps) throws IOException {
+        return service.personalizeRoleParams(roleName, roleParams, userName, userProps);
     }
 
 }

@@ -3,7 +3,9 @@
  * application directory.
  */
 
-package org.geoserver.security.config;
+package org.geoserver.security.jdbc.config;
+
+import org.geoserver.security.config.SecurityNamedServiceConfig;
 
 
 

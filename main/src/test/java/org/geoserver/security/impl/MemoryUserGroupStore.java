@@ -30,10 +30,10 @@ public class MemoryUserGroupStore extends AbstractUserGroupStore {
     protected void serialize() throws IOException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         ObjectOutputStream oout = new ObjectOutputStream(out);
-        oout.writeObject(userMap);
-        oout.writeObject(groupMap);
-        oout.writeObject(user_groupMap);
-        oout.writeObject(group_userMap);
+        oout.writeObject(helper.userMap);
+        oout.writeObject(helper.groupMap);
+        oout.writeObject(helper.user_groupMap);
+        oout.writeObject(helper.group_userMap);
         ((MemoryUserGroupService) service).byteArray=out.toByteArray();
         oout.close();            
     }
@@ -50,10 +50,10 @@ public class MemoryUserGroupStore extends AbstractUserGroupStore {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);                
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            userMap = (TreeMap<String,GeoserverUser>) oin.readObject();
-            groupMap =(TreeMap<String,GeoserverUserGroup>) oin.readObject();
-            user_groupMap = (TreeMap<GeoserverUser,SortedSet<GeoserverUserGroup>>)oin.readObject();
-            group_userMap = (TreeMap<GeoserverUserGroup,SortedSet<GeoserverUser>>)oin.readObject();
+            helper.userMap = (TreeMap<String,GeoserverUser>) oin.readObject();
+            helper.groupMap =(TreeMap<String,GeoserverUserGroup>) oin.readObject();
+            helper.user_groupMap = (TreeMap<GeoserverUser,SortedSet<GeoserverUserGroup>>)oin.readObject();
+            helper.group_userMap = (TreeMap<GeoserverUserGroup,SortedSet<GeoserverUser>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }

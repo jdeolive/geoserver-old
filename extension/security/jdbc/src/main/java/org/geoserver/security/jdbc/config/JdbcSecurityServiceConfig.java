@@ -3,7 +3,8 @@
  * application directory.
  */
 
-package org.geoserver.security.config;
+package org.geoserver.security.jdbc.config;
+
 
 
 

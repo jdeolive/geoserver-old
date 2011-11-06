@@ -201,5 +201,9 @@
       <groupId>org.jasypt</groupId>
       <artifactId>jasypt</artifactId>
    </dependency>
+   <dependency>
+    <groupId>org.bouncycastle</groupId>
+    <artifactId>bcprov-jdk14</artifactId>    
+  </dependency>
  </dependencies> 
 </project>

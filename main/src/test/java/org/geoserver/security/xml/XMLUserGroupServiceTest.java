@@ -21,7 +21,9 @@ import org.geoserver.security.impl.AbstractUserGroupServiceTest;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.security.impl.Util;
+import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
 import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.password.PasswordValidator;
 
 public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
 
@@ -46,10 +48,11 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
         ugConfig.setName(serviceName);
         ugConfig.setClassName(XMLUserGroupService.class.getName());
         ugConfig.setCheckInterval(10); 
-        ugConfig.setFileName(xmlFileName);
-        ugConfig.setStateless(false);
+        ugConfig.setFileName(xmlFileName);        
+        ugConfig.setLockingNeeded(true);
         ugConfig.setValidating(true);
-        ugConfig.setPasswordEncoderName("digestPasswordEncoder");
+        ugConfig.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+        ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         getSecurityManager().saveUserGroupService(ugConfig);
         
         GeoserverUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
@@ -85,9 +88,12 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
 
     public void testDefault() {
         try {
-            GeoserverUserGroupService service = createUserGroupService(
-                    XMLUserGroupService.DEFAULT_NAME);
+//            GeoserverUserGroupService service = createUserGroupService(
+//                    XMLUserGroupService.DEFAULT_NAME);
             
+            GeoserverUserGroupService service = 
+                    getSecurityManager().loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
+                        
             assertEquals(1, service.getUsers().size());
             assertEquals(0, service.getUserGroups().size());
                         
@@ -106,7 +112,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
         }                
     }
 
-    public void testLocking() throws IOException {
+    public void testLocking() throws Exception {
         File xmlFile = File.createTempFile("users", ".xml");
         FileUtils.copyURLToFile(getClass().getResource("usersTemplate.xml"),xmlFile);
         GeoserverUserGroupService service1 =  

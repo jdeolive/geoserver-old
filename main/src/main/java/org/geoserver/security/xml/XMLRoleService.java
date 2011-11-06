@@ -155,7 +155,7 @@ public class XMLRoleService extends AbstractRoleService {
                 for (Object key: roleProps.keySet()) {
                     role.getProperties().put(key, roleProps.get(key));
                 }
-                roleMap.put(roleName,role);
+                helper.roleMap.put(roleName,role);
             }
             // second pass for hierarchy
             for ( int i=0 ; i <roleNodes.getLength();i++) { 
@@ -163,7 +163,7 @@ public class XMLRoleService extends AbstractRoleService {
                 String roleName = xmlXPath.getRoleNameExpression().evaluate(roleNode);
                 String parentName = xmlXPath.getParentExpression().evaluate(roleNode);
                 if  (parentName!=null && parentName.length()>0) {
-                    role_parentMap.put(roleMap.get(roleName),roleMap.get(parentName));
+                    helper.role_parentMap.put(helper.roleMap.get(roleName),helper.roleMap.get(parentName));
                 }
             }
             
@@ -174,12 +174,12 @@ public class XMLRoleService extends AbstractRoleService {
                 Node userRolesNode = userRolesNodes.item(i);
                 String userName = xmlXPath.getUserNameExpression().evaluate(userRolesNode);
                 SortedSet<GeoserverRole> roleSet = new TreeSet<GeoserverRole>();
-                user_roleMap.put(userName,roleSet);
+                helper.user_roleMap.put(userName,roleSet);
                 NodeList userRolesRefNodes = (NodeList) xmlXPath.getUserRolRefsExpression().evaluate(userRolesNode,XPathConstants.NODESET);
                 for ( int j=0 ; j <userRolesRefNodes.getLength();j++) {
                     Node userRolesRefNode = userRolesRefNodes.item(j);
                     String roleRef = xmlXPath.getUserRolRefNameExpression().evaluate(userRolesRefNode);
-                    roleSet.add(roleMap.get(roleRef));
+                    roleSet.add(helper.roleMap.get(roleRef));
                 }            
             }
             
@@ -189,12 +189,12 @@ public class XMLRoleService extends AbstractRoleService {
                 Node groupRolesNode = groupRolesNodes.item(i);
                 String groupName = xmlXPath.getGroupNameExpression().evaluate(groupRolesNode);
                 SortedSet<GeoserverRole> roleSet = new TreeSet<GeoserverRole>();
-                group_roleMap.put(groupName,roleSet);
+                helper.group_roleMap.put(groupName,roleSet);
                 NodeList groupRolesRefNodes = (NodeList) xmlXPath.getGroupRolRefsExpression().evaluate(groupRolesNode,XPathConstants.NODESET);
                 for ( int j=0 ; j <groupRolesRefNodes.getLength();j++) {
                     Node groupRolesRefNode = groupRolesRefNodes.item(j);
                     String roleRef = xmlXPath.getGroupRolRefNameExpression().evaluate(groupRolesRefNode);
-                    roleSet.add(roleMap.get(roleRef));
+                    roleSet.add(helper.roleMap.get(roleRef));
                 }            
             }
         } catch (XPathExpressionException ex) {

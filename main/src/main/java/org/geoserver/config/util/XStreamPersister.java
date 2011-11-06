@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -80,7 +81,12 @@ import org.geoserver.config.impl.JAIInfoImpl;
 import org.geoserver.config.impl.LoggingInfoImpl;
 import org.geoserver.config.impl.ServiceInfoImpl;
 import org.geoserver.ows.util.OwsUtils;
+import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.SecureCatalogImpl;
+import org.geoserver.security.password.ConfigurationPasswordHelper;
+import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
+import org.geoserver.security.password.GeoserverPBEPasswordEncoder;
 import org.geotools.coverage.grid.GeneralGridEnvelope;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.GeneralEnvelope;
@@ -629,6 +635,10 @@ public class XStreamPersister {
         public void marshal(Object source, HierarchicalStreamWriter writer,
                 MarshallingContext context) {
         
+            Set<String> encryptionFields = (Set<String>)
+                    context.get(StoreInfoConverter.ENCRYPTIONLIST);
+            if (encryptionFields==null)
+                encryptionFields=Collections.emptySet();
             Map map = (Map) source;
             for (Iterator iterator = map.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry entry = (Map.Entry) iterator.next();
@@ -647,6 +657,15 @@ public class XStreamPersister {
                         if(str == null) {
                             str = value.toString();
                         }
+                        if (encryptionFields.contains(entry.getKey())) {
+                            String encoderName = GeoServerExtensions.bean(
+                                    GeoServerSecurityManager.class).getConfigPasswordEncrypterName();
+                            if (encoderName!=null && encoderName.isEmpty()==false) {
+                                GeoserverPBEPasswordEncoder encoder = (GeoserverPBEPasswordEncoder) 
+                                        GeoServerExtensions.bean(encoderName);
+                                str=encoder.encodePassword(str, null);
+                            }
+                        }            
                         writer.setValue(str);
                     } else {
                         writer.startNode(complexTypeId);
@@ -662,6 +681,12 @@ public class XStreamPersister {
         @Override
         protected void populateMap(HierarchicalStreamReader reader,
                 UnmarshallingContext context, Map map) {
+
+            Set<String> encryptionFields = (Set<String>)
+                    context.get(StoreInfoConverter.ENCRYPTIONLIST);
+            if (encryptionFields==null)
+                encryptionFields=Collections.emptySet();
+
             
             while (reader.hasMoreChildren()) {
                 reader.moveDown();
@@ -719,7 +744,7 @@ public class XStreamPersister {
                         reader.moveUp();    
                     }
                 }
-
+               
                 map.put(key, value);
 
                 reader.moveUp();
@@ -1262,10 +1287,22 @@ public class XStreamPersister {
      */
     class StoreInfoConverter extends AbstractReflectionConverter {
 
+        public final static String ENCRYPTIONLIST="EncryptionList";
+        
         public StoreInfoConverter() {
             super(StoreInfo.class);
         }
 
+        @Override
+        protected void doMarshal(Object source, HierarchicalStreamWriter writer,
+                MarshallingContext context) {
+            if (GeoServerExtensions.bean(GeoServerSecurityManager.class).getConfigPasswordEncrypterName()!=null) {
+                Set<String> encryptionFiels = ConfigurationPasswordHelper.getEncryptionFields((StoreInfo) source);
+                context.put(ENCRYPTIONLIST, encryptionFiels);
+            }
+            super.doMarshal(source, writer, context);
+        }
+        
         @Override
         protected void postDoMarshal(Object result,
                 HierarchicalStreamWriter writer, MarshallingContext context) {
@@ -1283,7 +1320,25 @@ public class XStreamPersister {
         public Object doUnmarshal(Object result,
                 HierarchicalStreamReader reader, UnmarshallingContext context) {
             StoreInfo store = (StoreInfo) super.doUnmarshal(result, reader, context);
-            
+
+            List<GeoserverPBEPasswordEncoder> encoders = GeoServerExtensions.extensions(GeoserverPBEPasswordEncoder.class);
+            Set<String> encryptionFiels = ConfigurationPasswordHelper.getEncryptionFields(store);
+            if (store.getConnectionParameters() !=null) {
+                for (String key : store.getConnectionParameters().keySet()) {
+                    if (encryptionFiels.contains(key)) {
+                        String value = (String)store.getConnectionParameters().get(key);
+                        if (value!=null) {
+                            for (GeoserverPBEPasswordEncoder encoder : encoders) {
+                                if (encoder.isResponsibleForEncoding(value)) {
+                                    value = encoder.decode(value);
+                                    store.getConnectionParameters().put(key, value);
+                                    break;
+                                }
+                            }
+                        }
+                    }                    
+                }
+            }
             LOGGER.info( "Loaded store '" +  store.getName() +  "', " + (store.isEnabled() ? "enabled" : "disabled") );
             return store;
         }

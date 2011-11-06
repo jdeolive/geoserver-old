@@ -9,7 +9,6 @@ package org.geoserver.security.impl;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
 
 import org.apache.commons.io.FileUtils;
 import org.geoserver.data.test.LiveData;
@@ -20,9 +19,10 @@ import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.password.PasswordValidationException;
 import org.geoserver.test.GeoServerAbstractTestSupport;
 import org.geotools.data.DataUtilities;
-import org.springframework.security.config.authentication.UserServiceBeanDefinitionParser;
 
 
 /**
@@ -274,7 +274,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     protected void checkValuesInserted(GeoserverUserGroupService userGroupService) throws IOException {
         assertEquals(4, userGroupService.getUsers().size());
         
-        GeoserverUser admin = GeoserverUser.createDefaultAdmin(userGroupService);
+        GeoserverUser admin = (GeoserverUser) userGroupService.getUserByUsername(GeoserverUser.AdminName);
         GeoserverUser user1 = (GeoserverUser) userGroupService.getUserByUsername("user1");
         GeoserverUser user2 = (GeoserverUser) userGroupService.getUserByUsername("user2");
         GeoserverUser disableduser = (GeoserverUser) userGroupService.getUserByUsername("disableduser");
@@ -388,7 +388,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     }
     protected void checkValuesRemoved(GeoserverUserGroupService userGroupService) throws IOException {
         
-        GeoserverUser admin = GeoserverUser.createDefaultAdmin(userGroupService);
+        GeoserverUser admin = GeoserverUser.createDefaultAdmin();
         GeoserverUser user1 = (GeoserverUser) userGroupService.getUserByUsername("user1");
         GeoserverUser disableduser = (GeoserverUser) userGroupService.getUserByUsername("disableduser");
     
@@ -417,11 +417,15 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         
         user2.getProperties().put("mail","user2@gmx.com");
         user2.getProperties().put("tel","12-34-38");
-                
-        userGroupStore.addUser(admin);
-        userGroupStore.addUser(user1);
-        userGroupStore.addUser(user2);
-        userGroupStore.addUser(disableduser);
+        
+        try {
+            userGroupStore.addUser(admin);
+            userGroupStore.addUser(user1);
+            userGroupStore.addUser(user2);
+            userGroupStore.addUser(disableduser);
+        } catch (PasswordValidationException ex) {
+            throw new IOException(ex);
+        }
         
         GeoserverUserGroup admins = userGroupStore.createGroupObject("admins", true);
         GeoserverUserGroup group1 = userGroupStore.createGroupObject("group1",true);
@@ -442,12 +446,21 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         disableduser.setEnabled(true);
         disableduser.setPassword("hallo");
         disableduser.getProperties().put("lastname","miller");
-        userGroupStore.updateUser(disableduser);
+        try {
+            userGroupStore.updateUser(disableduser);
+        } catch (PasswordValidationException ex) {
+            throw new IOException(ex);
+        }
+
         
         GeoserverUser user2 = userGroupStore.getUserByUsername("user2");
         user2.getProperties().remove("mail");
         user2.getProperties().put("tel", "11-22-33");
-        userGroupStore.updateUser(user2);        
+        try {
+            userGroupStore.updateUser(user2);
+        } catch (PasswordValidationException ex) {
+            throw new IOException(ex);
+        }
         
         GeoserverUserGroup disabledgroup = userGroupStore.getGroupByGroupname("disabledgroup");
         disabledgroup.setEnabled(true);
@@ -505,8 +518,10 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         return false;
     }
 
-    protected GeoserverPasswordEncoder getEncoder(GeoserverUserGroupService ugService) {
-        return (GeoserverPasswordEncoder)
+    protected GeoserverPasswordEncoder getEncoder(GeoserverUserGroupService ugService) throws IOException {
+        GeoserverUserPasswordEncoder enc = (GeoserverUserPasswordEncoder)
                 GeoServerExtensions.bean(ugService.getPasswordEncoderName());
+        enc.initializeFor(ugService);
+        return enc;
     }
 }

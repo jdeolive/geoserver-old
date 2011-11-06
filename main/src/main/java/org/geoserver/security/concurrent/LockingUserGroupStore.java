@@ -11,6 +11,7 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.password.PasswordValidationException;
 
 /**
  * This is a wrapper class for a {@link GeoserverUserGroupStore}
@@ -41,7 +42,7 @@ public class LockingUserGroupStore extends LockingUserGroupService implements Ge
      * WRITE_LOCK
      * @see org.geoserver.security.GeoserverUserGroupStore#addUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void addUser(GeoserverUser user) throws IOException{
+    public void addUser(GeoserverUser user) throws IOException,PasswordValidationException{
         writeLock();
         try {
             getStore().addUser(user);
@@ -54,7 +55,7 @@ public class LockingUserGroupStore extends LockingUserGroupService implements Ge
      * WRITE_LOCK
      * @see org.geoserver.security.GeoserverUserGroupStore#updateUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void updateUser(GeoserverUser user) throws IOException{
+    public void updateUser(GeoserverUser user) throws IOException,PasswordValidationException{
         writeLock();
         try {
             getStore().updateUser(user);

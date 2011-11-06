@@ -23,10 +23,10 @@ import javax.sql.DataSource;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
-import org.geoserver.security.config.JdbcJndiSecurityServiceConfig;
-import org.geoserver.security.config.JdbcSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.impl.AbstractGeoServerSecurityService;
+import org.geoserver.security.jdbc.config.JdbcJndiSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JdbcSecurityServiceConfig;
 
 
 

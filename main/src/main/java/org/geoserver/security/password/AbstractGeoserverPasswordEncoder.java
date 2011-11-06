@@ -5,6 +5,17 @@
 
 package org.geoserver.security.password;
 
+import java.security.InvalidKeyException;
+import java.security.Security;
+import java.util.logging.Logger;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.geotools.util.logging.Logging;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
 
@@ -18,9 +29,55 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
 public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPasswordEncoder {
 
     protected PasswordEncoder delegate = null;
-    protected String beanName;
     protected Object lock = new Object();
+    private String prefix;
     
+    static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
+    static protected Boolean StrongCryptographyAvailable = null;
+    
+    
+
+    
+    /**
+     * Checks if strong encryption is available 
+     * by trying to encrypt with AES 256 Bit
+     * 
+     * @return
+     */
+    public static boolean isStrongCryptographyAvailable() {
+        if (StrongCryptographyAvailable!=null)
+            return StrongCryptographyAvailable;
+        
+        KeyGenerator kgen;
+        try {
+            kgen = KeyGenerator.getInstance("AES");
+            kgen.init(256);
+            SecretKey skey = kgen.generateKey();
+            byte[] raw = skey.getEncoded();
+            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+            cipher.doFinal("This is just an example".getBytes());            
+            StrongCryptographyAvailable = true;
+            LOGGER.info("Strong cryptograhpy is available");
+        } catch (InvalidKeyException e) {
+            StrongCryptographyAvailable = false; 
+            LOGGER.warning("Strong cryptograhpy is NOT available"+
+            "\nDownload and install of policy files recommended"+
+            "\nfrom http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html");
+        } catch (Exception ex) {
+            LOGGER.warning("Strong cryptograhpy is NOT available"+            
+            "\nUnexpected error: "+ex.getMessage());
+            StrongCryptographyAvailable =false; //should not happen
+        }
+        return StrongCryptographyAvailable;
+    }
+    
+    
+    public AbstractGeoserverPasswordEncoder() {
+        Security.addProvider(new BouncyCastleProvider());
+    }
     
     /**
      * @return the concrete {@link PasswordEncoder} object
@@ -54,17 +111,9 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPassw
         return getDelegate().isPasswordValid(encPass2, rawPass, salt);
     }
 
-    @Override
-    public void setBeanName(String name) {
-        beanName=name;
-    }
-    
-    public String getBeanName() {
-        return beanName;
-    }
 
     @Override
-    public abstract PasswordEncoding getEncodingType();
+    public abstract PasswordEncodingType getEncodingType();
 
     protected String removePrefix(String encPass) {
         return encPass.replaceFirst(getPrefix()+GeoserverPasswordEncoder.PREFIX_DELIMTER, "");
@@ -75,8 +124,7 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPassw
      * @return true if this encoder has encoded encPass
      */
     public boolean isResponsibleForEncoding(String encPass) {
-        if (encPass==null) return false;
-        getDelegate(); // ensure initalization
+        if (encPass==null) return false;        
         return encPass.startsWith(getPrefix()+GeoserverPasswordEncoder.PREFIX_DELIMTER);
     }
     
@@ -84,4 +132,14 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPassw
     public String decode(String encPass) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("decoding passwords not supported");
     }
+    
+    public String getPrefix() {
+        return prefix;
+    }
+
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
+
 }
