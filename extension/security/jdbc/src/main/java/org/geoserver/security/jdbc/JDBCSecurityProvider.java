@@ -47,11 +47,6 @@ public class JDBCSecurityProvider extends GeoServerSecurityProvider {
         map.put(JdbcUserGroupServiceConfigImpl.class,fields);
         return map;
     }
-    
-    @Override
-    public AuthenticationProvider createAuthProvider(SecurityNamedServiceConfig config) {
-        return null;
-    }
 
     @Override
     public Class<? extends GeoserverUserGroupService> getUserGroupServiceClass() {
