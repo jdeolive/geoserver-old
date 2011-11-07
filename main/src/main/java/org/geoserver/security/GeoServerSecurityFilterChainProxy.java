@@ -1,11 +1,17 @@
 package org.geoserver.security;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.springframework.security.web.FilterChainProxy;
@@ -21,6 +27,8 @@ import org.springframework.security.web.servletapi.SecurityContextHolderAwareReq
 public class GeoServerSecurityFilterChainProxy extends FilterChainProxy 
     implements SecurityManagerListener  {
     
+    static ThreadLocal<HttpServletRequest> REQUEST = new ThreadLocal<HttpServletRequest>();
+
     //security manager
     GeoServerSecurityManager securityManager;
 
@@ -106,6 +114,19 @@ public class GeoServerSecurityFilterChainProxy extends FilterChainProxy
     }
 
     @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        //set the request thread local
+        REQUEST.set((HttpServletRequest) request);
+        try {
+            super.doFilter(request, response, chain);
+        }
+        finally {
+            REQUEST.remove();
+        }
+    }
+
+    @Override
     public void handlePostChanged(GeoServerSecurityManager securityManager) {
         createFilterChain();
     }
@@ -130,7 +151,7 @@ public class GeoServerSecurityFilterChainProxy extends FilterChainProxy
         //callback to security providers to hack the filter chains
         for (GeoServerAuthenticationProvider authProvider : 
             securityManager.getAuthenticationProviders()) {
-            authProvider.configure(filterChain);
+            authProvider.configureFilterChain(filterChain);
         }
 
         synchronized (this) {
@@ -186,7 +207,7 @@ public class GeoServerSecurityFilterChainProxy extends FilterChainProxy
         if (config.isAnonymousAuth()) {
             list.add(anonymousAuthFilter);
         }
-        list.add(exceptionTranslationFilter);
+        list.add(owsExceptionTranslationFilter);
         list.add(restFilterSecurityInterceptor);
         return list;
     }
@@ -207,7 +228,7 @@ public class GeoServerSecurityFilterChainProxy extends FilterChainProxy
         List<Filter> list = new ArrayList<Filter>();
         list.add(httpSessionContextWithNoASCFilter);
         list.add(basicAuthNoRememberMeFilter);
-        list.add(exceptionTranslationFilter);
+        list.add(owsExceptionTranslationFilter);
         list.add(restFilterSecurityInterceptor);
         return list;
     }
@@ -220,7 +241,7 @@ public class GeoServerSecurityFilterChainProxy extends FilterChainProxy
         if (config.isAnonymousAuth()) {
             list.add(anonymousAuthFilter);
         }
-        list.add(exceptionTranslationFilter);
+        list.add(owsExceptionTranslationFilter);
         list.add(filterSecurityInterceptor);
         return list;
     }

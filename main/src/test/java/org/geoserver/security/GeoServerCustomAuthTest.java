@@ -6,6 +6,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
@@ -67,7 +69,7 @@ public class GeoServerCustomAuthTest extends GeoServerTestSupport {
     static class AuthProvider extends GeoServerAuthenticationProvider {
 
         @Override
-        public Authentication authenticate(Authentication authentication)
+        public Authentication authenticate(Authentication authentication, HttpServletRequest request)
                 throws AuthenticationException {
             if (authentication instanceof UsernamePasswordAuthenticationToken) {
                 UsernamePasswordAuthenticationToken up = 
@@ -81,7 +83,7 @@ public class GeoServerCustomAuthTest extends GeoServerTestSupport {
         }
 
         @Override
-        public boolean supports(Class<? extends Object> authentication) {
+        public boolean supports(Class<? extends Object> authentication, HttpServletRequest request) {
             return UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication);
         }
     }
