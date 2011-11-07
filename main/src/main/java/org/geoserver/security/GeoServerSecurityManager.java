@@ -4,10 +4,11 @@
  */
 package org.geoserver.security;
 
+import static org.geoserver.data.util.IOUtils.xStreamPersist;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,7 +38,6 @@ import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityConfig;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.SecurityConfigImpl;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
@@ -52,7 +52,6 @@ import org.geoserver.security.impl.Util;
 import org.geoserver.security.password.ConfigurationPasswordHelper;
 import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
-import org.geoserver.security.password.GeoserverUserPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
 import org.geoserver.security.password.PasswordValidationException;
 import org.geoserver.security.password.PasswordValidator;
@@ -72,15 +71,12 @@ import org.springframework.security.authentication.AnonymousAuthenticationProvid
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.RememberMeAuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.memory.UserAttribute;
 import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
-import static org.geoserver.data.util.IOUtils.xStreamPersist;
 
 /**
  * Top level singleton/facade/dao for the security authentication/authorization subsystem.  
@@ -292,16 +288,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         List<AuthenticationProvider> allAuthProviders = new ArrayList<AuthenticationProvider>();
         allAuthProviders.addAll(authProviders);
-
-        //dao based authentication that wraps user service
-        DaoAuthenticationProvider daoAuthProvider = new DaoAuthenticationProvider();
-        daoAuthProvider.setUserDetailsService(getActiveUserGroupService());
-        GeoserverUserPasswordEncoder encoder = (GeoserverUserPasswordEncoder)
-                GeoServerExtensions.bean(userGroupService.getPasswordEncoderName());
-        encoder.initializeFor(getActiveUserGroupService());
-        daoAuthProvider.setPasswordEncoder(encoder);                
-        daoAuthProvider.afterPropertiesSet();
-        allAuthProviders.add(daoAuthProvider);
 
         //anonymous
         if (config.isAnonymousAuth()) {
@@ -550,14 +536,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         return listFiles(getAuthRoot());
     }
 
-//    /**
-//     * Loads an authentication provider from a named configuration.
-//     * 
-//     * @param name The name of the authentication provider service configuration.
-//     */
-//    public GeoServerAuthenticationProvider loadAuthenticationProvider(String name) throws IOException {
-//        return authProviderHelper.load(name);
-//    }
+    /**
+     * Loads an authentication provider from a named configuration.
+     * 
+     * @param name The name of the authentication provider service configuration.
+     */
+    public GeoServerAuthenticationProvider loadAuthenticationProvider(String name) throws IOException {
+        return authProviderHelper.load(name);
+    }
     
     public void saveAuthenticationProvider(SecurityNamedServiceConfig config) throws IOException {
         authProviderHelper.saveConfig(config);
@@ -709,12 +695,25 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             savePasswordPolicy(pwpconfig);
             validator = loadPasswordValidator(PasswordValidator.MASTERPASSWORD_NAME);    
         }
-                
-        
+
+        //check for the default auth provider, create if necessary
+        GeoServerAuthenticationProvider authProvider = 
+            loadAuthenticationProvider(GeoServerAuthenticationProvider.DEFAULT_NAME);
+        if (authProvider == null) {
+            UsernamePasswordAuthenticationProviderConfig upAuthConfig = 
+                    new UsernamePasswordAuthenticationProviderConfig();
+            upAuthConfig.setName(GeoServerAuthenticationProvider.DEFAULT_NAME);
+            upAuthConfig.setClassName(UsernamePasswordAuthenticationProvider.class.getName());
+            upAuthConfig.setUserGroupServiceName(userGroupService.getName());
+            saveAuthenticationProvider(upAuthConfig);
+            authProvider = loadAuthenticationProvider(GeoServerAuthenticationProvider.DEFAULT_NAME);
+        }
+
         //save the top level config
         SecurityManagerConfig config = new SecurityManagerConfigImpl();
-        config.setRoleServiceName(XMLRoleService.DEFAULT_NAME);
-        config.setUserGroupServiceName(XMLUserGroupService.DEFAULT_NAME);
+        config.setRoleServiceName(roleService.getName());
+        config.setUserGroupServiceName(userGroupService.getName());
+        config.getAuthProviderNames().add(authProvider.getName());
         config.setEncryptingUrlParams(false);
         // start with weak encryption
         config.setConfigPasswordEncrypterName(GeoserverConfigPBEPasswordEncoder.BeanName);
@@ -833,7 +832,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     List<GeoServerSecurityProvider> lookupSecurityProviders() {
         List<GeoServerSecurityProvider> list = new ArrayList<GeoServerSecurityProvider>( 
             GeoServerExtensions.extensions(GeoServerSecurityProvider.class, appContext));
+
+        //add the defaults
         list.add(new XMLSecurityProvider());
+        list.add(new UsernamePasswordAuthenticationProvider.SecurityProvider());
         return list;
     }
 
@@ -1279,6 +1281,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             if (authProvider == null) {
                 throw new IOException("No authentication provider matching config: " + config);
             }
+
+            authProvider.setName(name);
+            authProvider.setSecurityManager(GeoServerSecurityManager.this);
+            authProvider.initializeFromConfig(config);
 
             return authProvider;
         }
