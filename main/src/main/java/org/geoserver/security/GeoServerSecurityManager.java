@@ -52,6 +52,7 @@ import org.geoserver.security.impl.Util;
 import org.geoserver.security.password.ConfigurationPasswordHelper;
 import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
+import org.geoserver.security.password.GeoserverUserPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
 import org.geoserver.security.password.PasswordValidationException;
 import org.geoserver.security.password.PasswordValidator;
@@ -296,8 +297,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         //dao based authentication that wraps user service
         DaoAuthenticationProvider daoAuthProvider = new DaoAuthenticationProvider();
         daoAuthProvider.setUserDetailsService(getActiveUserGroupService());
-        daoAuthProvider.setPasswordEncoder((PasswordEncoder)
-                GeoServerExtensions.bean(userGroupService.getPasswordEncoderName()));
+        GeoserverUserPasswordEncoder encoder = (GeoserverUserPasswordEncoder)
+                GeoServerExtensions.bean(userGroupService.getPasswordEncoderName());
+        encoder.initializeFor(getActiveUserGroupService());
+        daoAuthProvider.setPasswordEncoder(encoder);                
         daoAuthProvider.afterPropertiesSet();
         allAuthProviders.add(daoAuthProvider);
 
