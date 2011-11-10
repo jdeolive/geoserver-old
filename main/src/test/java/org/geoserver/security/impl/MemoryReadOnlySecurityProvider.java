@@ -7,25 +7,27 @@ import java.util.Map;
 import java.util.Set;
 
 import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
+import org.springframework.security.authentication.AuthenticationProvider;
 
 /* Copyright (c) 2001 - 2011 TOPP - www.openplans.org. All rights reserved.
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
 
-public class MemorySecurityProvider extends GeoServerSecurityProvider {
+public class MemoryReadOnlySecurityProvider extends GeoServerSecurityProvider {
     
     
     public void configure(XStreamPersister xp) {
         super.configure(xp);
-        xp.getXStream().alias("memorygroupservice", MemoryUserGroupServiceConfigImpl.class);
-        xp.getXStream().alias("memoryroleservice", MemoryRoleServiceConfigImpl.class);
+        xp.getXStream().alias("memoryreadonlygroupservice", MemoryUserGroupServiceConfigImpl.class);
+        xp.getXStream().alias("memoryreadonlyroleservice", MemoryRoleServiceConfigImpl.class);
     }
 
     @Override
@@ -39,27 +41,27 @@ public class MemorySecurityProvider extends GeoServerSecurityProvider {
         return map;
     }
 
+
     @Override
     public Class<? extends GeoserverUserGroupService> getUserGroupServiceClass() {
-        return MemoryUserGroupService.class;
+        return ReadOnlyUGService.class;
     }
 
     @Override
     public GeoserverUserGroupService createUserGroupService(SecurityNamedServiceConfig config)
             throws IOException {
-        return new MemoryUserGroupService();
+        return new ReadOnlyUGService();
     }
 
     @Override
     public Class<? extends GeoserverRoleService> getRoleServiceClass() {
-        return MemoryRoleService.class;
+        return ReadOnlyRoleService.class;
     }
 
     @Override
     public GeoserverRoleService createRoleService(SecurityNamedServiceConfig config)
             throws IOException {
-        return new MemoryRoleService();
+        return new ReadOnlyRoleService();
     }
-
 
 }

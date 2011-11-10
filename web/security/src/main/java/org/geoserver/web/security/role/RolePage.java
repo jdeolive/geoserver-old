@@ -7,6 +7,7 @@ package org.geoserver.web.security.role;
 import java.io.IOException;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
@@ -31,10 +32,12 @@ public class RolePage extends AbstractSecurityPage {
     protected GeoServerDialog dialog;
     protected SelectionRoleRemovalLink removal;
     protected BookmarkablePageLink<NewRolePage> add;
+    protected String roleServiceName;
 
-    public RolePage() {
-        super(null);
-        RoleListProvider provider = new RoleListProvider();
+    public RolePage(PageParameters params) {
+        this.roleServiceName=params.getString(ServiceNameKey);
+                
+        RoleListProvider provider = new RoleListProvider(this.roleServiceName);
         add(roles = new GeoServerTablePanel<GeoserverRole>("table", provider, true) {
 
             @Override
@@ -42,7 +45,7 @@ public class RolePage extends AbstractSecurityPage {
                     Property<GeoserverRole> property) {
                 if (property == RoleListProvider.ROLENAME) {
                     return editRoleLink(id, itemModel, property);
-                } else if (property == RoleListProvider.PARENTROLENAME) {
+                } else if (RoleListProvider.ParentPropertyName.equals(property.getName())) {
                         return editParentRoleLink(id, itemModel, property);                    
                 } else if (property == RoleListProvider.HASROLEPARAMS) {
                     if((Boolean) property.getModel(itemModel).getObject())
@@ -71,13 +74,14 @@ public class RolePage extends AbstractSecurityPage {
 
         // the add button
         header.add(add=new BookmarkablePageLink<NewRolePage>("addNew", NewRolePage.class));
-        add.setVisible(hasRoleStore());
+        add.setParameter(ServiceNameKey, roleServiceName);
+        add.setVisible(hasRoleStore(roleServiceName));
 
         // the removal button
-        header.add(removal = new SelectionRoleRemovalLink("removeSelected", roles, dialog));
+        header.add(removal = new SelectionRoleRemovalLink(roleServiceName,"removeSelected", roles, dialog));
         removal.setOutputMarkupId(true);
         removal.setEnabled(false);
-        removal.setVisible(hasRoleStore());
+        removal.setVisible(hasRoleStore(roleServiceName));
 
         return header;
     }
@@ -99,7 +103,7 @@ public class RolePage extends AbstractSecurityPage {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                setResponsePage(new EditRolePage( (GeoserverRole) getDefaultModelObject()));
+                setResponsePage(new EditRolePage(roleServiceName, (GeoserverRole) getDefaultModelObject(),RolePage.this));
             }
 
         };
@@ -114,11 +118,11 @@ public class RolePage extends AbstractSecurityPage {
                 GeoserverRole role = (GeoserverRole) getDefaultModelObject();
                 GeoserverRole parentRole;
                 try {
-                    parentRole = getSecurityManager().getActiveRoleService().getParentRole(role);
+                    parentRole = getSecurityManager().loadRoleService(roleServiceName).getParentRole(role);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                setResponsePage(new EditRolePage( parentRole));
+                setResponsePage(new EditRolePage(roleServiceName, parentRole,RolePage.this));
             }
 
         };

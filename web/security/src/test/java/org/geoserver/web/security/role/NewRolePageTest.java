@@ -17,7 +17,7 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
     protected void doTestFill() throws Exception {
         
         insertValues();        
-        tester.startPage(page=new NewRolePage());
+        tester.startPage(page=new NewRolePage(getRoleServiceName()));
         
         tester.assertRenderedPage(NewRolePage.class);
         
@@ -60,7 +60,7 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
     public void testRoleNameConflict() throws Exception {
         initializeForXML();
         insertValues();        
-        tester.startPage(page=new NewRolePage());
+        tester.startPage(page=new NewRolePage(getRoleServiceName()));
         
         FormTester form = tester.newFormTester("roleForm");
         form.setValue("rolename", "ROLE_WFS");
@@ -73,10 +73,10 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
 
     public void testInvalidWorkflow() throws Exception{
         initializeForXML();
-        activateROGAService();
+        activateRORoleService();
         boolean fail = true;
         try {
-            tester.startPage(page=new NewRolePage());
+            tester.startPage(page=new NewRolePage(getRORoleServiceName()));
         } catch (RuntimeException ex) {
             fail = false;
         }

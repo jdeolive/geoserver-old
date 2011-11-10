@@ -21,9 +21,8 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
     }
 
     protected void doTestFill() throws Exception {
-        initializeForXML();
         insertValues();        
-        tester.startPage(page=new NewGroupPage());        
+        tester.startPage(page=new NewGroupPage(getUserGroupServiceName()));        
         tester.assertRenderedPage(NewGroupPage.class);
         
         FormTester form = tester.newFormTester("groupForm");
@@ -74,7 +73,7 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
     public void testGroupNameConflict() throws Exception {
         initializeForXML();
         insertValues();        
-        tester.startPage(page=new NewGroupPage());
+        tester.startPage(page=new NewGroupPage(getUserGroupServiceName()));
         
         FormTester form = tester.newFormTester("groupForm");
         form.setValue("groupname", "group1");
@@ -90,7 +89,7 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
         activateROUGService();
         boolean fail = true;
         try {
-            tester.startPage(page=new NewGroupPage());
+            tester.startPage(page=new NewGroupPage(getROUserGroupServiceName()));
         } catch (RuntimeException ex) {
             fail = false;
         }
@@ -100,8 +99,8 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
     
     public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
-        activateROGAService();
-        tester.startPage(page=new NewGroupPage());
+        activateRORoleService();
+        tester.startPage(page=new NewGroupPage(getUserGroupServiceName()));
         assertFalse(page.groupRolesFormComponent.isEnabled());
         
         FormTester form = tester.newFormTester("groupForm");

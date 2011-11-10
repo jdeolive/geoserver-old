@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
@@ -22,19 +23,24 @@ import org.geoserver.web.wicket.ParamResourceModel;
 
 public class NewGroupPage extends AbstractGroupPage {
 
-    public NewGroupPage() {
-        this(null);
+    public NewGroupPage(String userGroupServiceName) {
+        this(userGroupServiceName,null);
     }   
     
-    public NewGroupPage(Page responsePage) {
-        super(new GroupUIModel("", true),responsePage);
+    public NewGroupPage(String userGroupServiceName,Page responsePage) {
+        super(userGroupServiceName,new GroupUIModel("", true),responsePage);
         //groupnameField.add(new GroupConflictValidator());
         form.add(new GroupConflictValidator());
-        if (hasUserGroupStore()==false) {
+        if (hasUserGroupStore(userGroupServiceName)==false) {
             throw new RuntimeException("Workflow error, new role not possible for read only service");
         }
         
     }
+    
+    public NewGroupPage(PageParameters params) {
+        this(params.getString(ServiceNameKey));    
+    }
+
         
     
     /**
@@ -60,7 +66,7 @@ public class NewGroupPage extends AbstractGroupPage {
             String newName = uiGroup.getGroupname();            
             try {
                 GeoserverUserGroup group =
-                    getSecurityManager().getActiveUserGroupService().getGroupByGroupname(newName);
+                    getSecurityManager().loadUserGroupService(userGroupServiceName).getGroupByGroupname(newName);
                 if (group!=null) {
                     form.error(new ResourceModel("NewGroupPage.groupConflict").getObject(),
                             Collections.singletonMap("group", (Object) newName));
@@ -79,14 +85,14 @@ public class NewGroupPage extends AbstractGroupPage {
     protected void onFormSubmit() {
         
         try {
-            GeoserverUserGroupStore store = getUserGroupStore();
+            GeoserverUserGroupStore store = getUserGroupStore(userGroupServiceName);
             GeoserverUserGroup group = store.createGroupObject(
                     uiGroup.getGroupname(),uiGroup.isEnabled());
             store.addGroup(group);
             store.store();
             
-            if (hasRoleStore()) {
-                GeoserverRoleStore gaStore = getRoleStore();
+            if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
+                GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
                 Iterator<GeoserverRole> roleIt =groupRolesFormComponent.
                     getRolePalette().getSelectedChoices();
                 while (roleIt.hasNext()) {
@@ -95,7 +101,6 @@ public class NewGroupPage extends AbstractGroupPage {
                 gaStore.store();
             }
                             
-            setActualResponsePage(GroupPage.class);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error occurred while saving group", e);
             error(new ParamResourceModel("saveError", getPage(), e.getMessage()));

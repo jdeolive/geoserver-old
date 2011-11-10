@@ -32,7 +32,7 @@ public class ConfirmRemovalGroupPanelTest extends AbstractConfirmRemovalPanelTes
                 return new ConfirmRemovalGroupPanel(id, model,roots.toArray(new GeoserverUserGroup[roots.size()])) {
                     @Override
                     protected StringResourceModel canRemove(GeoserverUserGroup data) {
-                        SelectionGroupRemovalLink link = new SelectionGroupRemovalLink("XXX",null,null,disassociateRoles);
+                        SelectionGroupRemovalLink link = new SelectionGroupRemovalLink(getUserGroupServiceName(),"XXX",null,null,disassociateRoles);
                         return link.canRemove(data);
                     }
 

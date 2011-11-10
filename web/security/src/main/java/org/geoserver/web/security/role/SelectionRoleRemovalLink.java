@@ -30,13 +30,15 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
     GeoServerDialog dialog;
     GeoServerDialog.DialogDelegate delegate;
     ConfirmRemovalRolePanel removePanel;
+    String roleServiceName;
     
 
-    public SelectionRoleRemovalLink(String id, GeoServerTablePanel<GeoserverRole> roles,
+    public SelectionRoleRemovalLink(String roleServiceName,String id, GeoServerTablePanel<GeoserverRole> roles,
             GeoServerDialog dialog) {
         super(id);
         this.roles = roles;
         this.dialog = dialog;
+        this.roleServiceName=roleServiceName;
         
     }
 
@@ -68,10 +70,10 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
                 // cascade delete the whole selection
 
                 
-                GeoserverRoleService gaService =
-                    GeoServerApplication.get().getSecurityManager().getActiveRoleService();
 
                 try {
+                    GeoserverRoleService gaService =
+                            GeoServerApplication.get().getSecurityManager().loadRoleService(roleServiceName);
                     GeoserverRoleStore gaStore = gaService.createStore();
                     for (GeoserverRole role : removePanel.getRoots()) {                     
                          gaStore.removeRole(role);
@@ -101,8 +103,19 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
     }
 
     protected StringResourceModel canRemove(GeoserverRole role) {
-        GeoserverRoleService gaService =
+        GeoserverRoleService activeService =
                 GeoServerApplication.get().getSecurityManager().getActiveRoleService();
+
+        GeoserverRoleService gaService=null;
+        try {
+            gaService = GeoServerApplication.get().getSecurityManager().loadRoleService(roleServiceName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        if (activeService.getName().equals(gaService.getName()) ==false)
+            return null;
+        
         if (role.equals(gaService.getAdminRole()))
             return new StringResourceModel(getClass().getSimpleName()+".noDelete",null,new Object[] {role.getAuthority()});
                         

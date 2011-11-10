@@ -126,7 +126,7 @@ public class NewDataAccessRulePageTest extends AbstractSecurityWicketTestSupport
     
     public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
-        activateROGAService();
+        activateRORoleService();
         tester.startPage(page=new NewDataAccessRulePage());
         tester.assertInvisible("ruleForm:roles:addRole");
     }

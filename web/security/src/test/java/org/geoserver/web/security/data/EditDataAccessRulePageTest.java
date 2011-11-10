@@ -80,7 +80,7 @@ public class EditDataAccessRulePageTest extends AbstractSecurityWicketTestSuppor
     
     public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
-        activateROGAService();
+        activateRORoleService();
         tester.startPage(page=new EditDataAccessRulePage(getRule(ruleName)));
         tester.assertInvisible("ruleForm:roles:addRole");
     }

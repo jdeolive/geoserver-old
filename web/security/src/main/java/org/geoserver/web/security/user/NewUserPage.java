@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
@@ -29,18 +30,21 @@ import org.geoserver.web.wicket.ParamResourceModel;
  */
 public class NewUserPage extends AbstractUserPage {
 
-    public NewUserPage() {
-        this(null);
+    public NewUserPage(String userGroupServiceName) {
+        this(userGroupServiceName,null);
     }   
-    public NewUserPage(Page responsePage) {
-       super(new UserUIModel(),new Properties(),responsePage);       
+    public NewUserPage(String userGroupServiceName,Page responsePage) {
+       super(userGroupServiceName,new UserUIModel(),new Properties(),responsePage);       
        form.add(new UserConflictValidator());
-       if (hasUserGroupStore()==false) {
+       if (hasUserGroupStore(userGroupServiceName)==false) {
            throw new RuntimeException("Workflow error, new role not possible for read only service");
        }
 
     }
     
+    public NewUserPage(PageParameters params) {
+        this(params.getString(ServiceNameKey));    
+    }
     
     class UserConflictValidator extends AbstractFormValidator {
 
@@ -62,7 +66,7 @@ public class NewUserPage extends AbstractUserPage {
             String newName = uiUser.getUsername();            
             try {
                 GeoserverUser user = 
-                    getSecurityManager().getActiveUserGroupService().getUserByUsername(newName);
+                    getSecurityManager().loadUserGroupService(userGroupServiceName).getUserByUsername(newName);
                 if (user != null) {
                     form.error(new ResourceModel("NewUserPage.userConflict").getObject(),
                             Collections.singletonMap("user", (Object) newName));
@@ -83,8 +87,8 @@ public class NewUserPage extends AbstractUserPage {
         try {
              
             
-            GeoserverUserGroupStore ugStore = getUserGroupStore();
-            GeoserverUser user =uiUser.toGeoserverUser();             
+            GeoserverUserGroupStore ugStore = getUserGroupStore(userGroupServiceName);
+            GeoserverUser user =uiUser.toGeoserverUser(userGroupServiceName);             
             user.getProperties().clear();
             for (Entry<Object,Object> entry : userpropertyeditor.getProperties().entrySet())
                 user.getProperties().put(entry.getKey(),entry.getValue());
@@ -96,8 +100,8 @@ public class NewUserPage extends AbstractUserPage {
                 ugStore.associateUserToGroup(user, it.next());
             }
             
-            if (hasRoleStore()) {
-                GeoserverRoleStore gaStore = getRoleStore();
+            if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
+                GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
                 Iterator<GeoserverRole> roleIt =userRolesFormComponent.
                         getRolePalette().getSelectedChoices();
                 while (roleIt.hasNext()) {
@@ -108,9 +112,7 @@ public class NewUserPage extends AbstractUserPage {
             
                                     
             ugStore.store();
-            
-            
-            setActualResponsePage(UserPage.class);
+                        
         } catch(Exception e) {
             LOGGER.log(Level.SEVERE, "Error occurred while saving user", e);
             error(new ParamResourceModel("saveError", getPage(), e.getMessage()));

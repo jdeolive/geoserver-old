@@ -39,7 +39,6 @@ public abstract class AbstractServiceAccessRulePage extends AbstractSecurityPage
     ServiceAccessRule model;
 
     public AbstractServiceAccessRulePage(ServiceAccessRule rule) {
-        super(null);
         
         //setDefaultModel(new CompoundPropertyModel<ServiceAccessRule>(new ServiceAccessRule(rule)));
 

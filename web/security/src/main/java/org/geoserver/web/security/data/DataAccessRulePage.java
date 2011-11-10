@@ -29,8 +29,7 @@ public class DataAccessRulePage extends AbstractSecurityPage {
 
     GeoServerDialog dialog;
 
-    public DataAccessRulePage() {
-        super(null);
+    public DataAccessRulePage() {        
         DataAccessRuleProvider provider = new DataAccessRuleProvider();
         add(rules = new GeoServerTablePanel<DataAccessRule>("table", provider, true) {
 

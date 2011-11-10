@@ -19,7 +19,6 @@ import org.geoserver.security.jdbc.config.impl.JdbcJndiRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcJndiUserGroupServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
-import org.springframework.security.authentication.AuthenticationProvider;
 
 /**
  * Provider for JDBC based security services.
@@ -47,6 +46,7 @@ public class JDBCSecurityProvider extends GeoServerSecurityProvider {
         map.put(JdbcUserGroupServiceConfigImpl.class,fields);
         return map;
     }
+    
 
     @Override
     public Class<? extends GeoserverUserGroupService> getUserGroupServiceClass() {

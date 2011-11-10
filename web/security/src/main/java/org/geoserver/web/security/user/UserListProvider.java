@@ -23,6 +23,11 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
     
     public static final Property<GeoserverUser> USERNAME = new BeanProperty<GeoserverUser>("username", "username");
     public static final Property<GeoserverUser> ENABLED = new BeanProperty<GeoserverUser>("enabled", "enabled");
+    protected String userGroupServiceName;
+    
+    public UserListProvider(String userGroupServiceName) {
+        this.userGroupServiceName=userGroupServiceName;
+    }
 /*     
     public static final Property<GeoserverUser> ROLES = new Property<GeoserverUser>() {
 
@@ -140,7 +145,7 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
     protected List<GeoserverUser> getItems() {
         SortedSet<GeoserverUser> users=null;
         try {
-            users = getApplication().getSecurityManager().getActiveUserGroupService().getUsers();
+            users = getApplication().getSecurityManager().loadUserGroupService(userGroupServiceName).getUsers();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 

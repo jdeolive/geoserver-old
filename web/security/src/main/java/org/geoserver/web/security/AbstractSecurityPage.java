@@ -21,28 +21,15 @@ import org.geoserver.web.GeoServerSecuredPage;
  */
 public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
     
+    protected static String ServiceNameKey="serviceName"; 
     protected Page responsePage;
-    
-    public AbstractSecurityPage(Page responsePage) {
-        this.responsePage=responsePage;        
-    }
-
-    public void setActualResponsePage (Class<? extends Page> aClass) {
-        if (responsePage!=null)
-            setResponsePage(responsePage);
-        else
-            setResponsePage(aClass);
-    }
-    
-    public Link<Page> getCancelLink(final Class<? extends Page> aClass) {
+        
+    public Link<Page> getCancelLink(final Page returnPage) {
         return new Link<Page>("cancel") {
             private static final long serialVersionUID = 1L;
             @Override
             public void onClick() {
-                if (responsePage!=null) 
-                    setResponsePage(responsePage);
-                else    
-                    setResponsePage(aClass);
+                setResponsePage(returnPage);
             }            
         }; 
     }
@@ -52,28 +39,36 @@ public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
     }
 
     
-    public GeoserverUserGroupService getUserGroupService() {
-        return getSecurityManager().getActiveUserGroupService();
+    public GeoserverUserGroupService getUserGroupService(String name)  {
+        try {
+            return getSecurityManager().loadUserGroupService(name);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
     
-    public GeoserverRoleService getRoleService() {
-        return getSecurityManager().getActiveRoleService();
+    public GeoserverRoleService getRoleService(String name)  {
+        try {
+            return getSecurityManager().loadRoleService(name);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public boolean hasRoleStore() {
-        return getRoleService().canCreateStore();
+    public boolean hasRoleStore(String name) {
+        return getRoleService(name).canCreateStore();
     }
     
-    public GeoserverRoleStore getRoleStore() throws IOException {
-        return getRoleService().createStore();
+    public GeoserverRoleStore getRoleStore(String name) throws IOException {
+        return getRoleService(name).createStore();
     }
     
-    public boolean hasUserGroupStore() {
-        return getUserGroupService().canCreateStore();
+    public boolean hasUserGroupStore(String name) {
+        return getUserGroupService(name).canCreateStore();
     }
 
-    public GeoserverUserGroupStore getUserGroupStore() throws IOException{
-        return getUserGroupService().createStore();
+    public GeoserverUserGroupStore getUserGroupStore(String name) throws IOException{
+        return getUserGroupService(name).createStore();
     }
 
     

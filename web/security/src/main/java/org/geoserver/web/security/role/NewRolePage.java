@@ -11,6 +11,7 @@ import java.util.Properties;
 import java.util.logging.Level;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
@@ -29,17 +30,21 @@ import org.geoserver.web.wicket.ParamResourceModel;
 public class NewRolePage extends AbstractRolePage {
 
     
-    public NewRolePage(Page responsePage) {
-        super(new RoleUIModel("", "",null),new Properties(),responsePage);        
+    public NewRolePage(String roleServiceName,Page responsePage) {
+        super(roleServiceName,new RoleUIModel("", "",null),new Properties(),responsePage);        
         form.add(new RoleConflictValidator());
     }
 
     
-    public NewRolePage() {
-        this (null);
-        if (hasRoleStore()==false) {
+    public NewRolePage(String roleServiceName) {
+        this (roleServiceName,null);        
+        if (hasRoleStore(this.roleServiceName)==false) {
             throw new RuntimeException("Workflow error, new role not possible for read only service");
         }        
+    }
+    
+    public NewRolePage(PageParameters params) {
+        this(params.getString(ServiceNameKey));    
     }
         
 
@@ -63,7 +68,7 @@ public class NewRolePage extends AbstractRolePage {
             String newName = uiRole.getRolename();            
             try {
                 GeoserverRole role =
-                    getSecurityManager().getActiveRoleService().getRoleByName(newName);
+                    getSecurityManager().loadRoleService(roleServiceName).getRoleByName(newName);
                 if (role!=null) {
                     form.error(new ResourceModel("NewRolePage.roleConflict").getObject(),
                             Collections.singletonMap("role", (Object) newName));
@@ -84,7 +89,7 @@ public class NewRolePage extends AbstractRolePage {
         
         
         try {
-            GeoserverRoleStore store = getRoleStore();
+            GeoserverRoleStore store = getRoleStore(roleServiceName);
             GeoserverRole role = store.createRoleObject(uiRole.getRolename());
             
             role.getProperties().clear();
@@ -99,8 +104,7 @@ public class NewRolePage extends AbstractRolePage {
             }
             store.setParentRole(role,parentRole);
             store.store();
-            
-            setActualResponsePage(RolePage.class);
+                        
             
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error occurred while saving role", e);

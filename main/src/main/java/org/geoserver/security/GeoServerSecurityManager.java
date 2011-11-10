@@ -116,25 +116,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     private String configPasswordEncrypterName;
     
 
-    /** the active user group servie */
-    // TODO, this is needed for current migration !!!! 
-    // We have to remove this later. There is no single
-    // active usergroup serverGeoServerSecurityManager
-    GeoserverUserGroupService activeUserGroupService;
 
     /** configured authentication providers */
     List<GeoServerAuthenticationProvider> authProviders;
 
     /** current security config */
     SecurityManagerConfig securityConfig = new SecurityManagerConfigImpl();
-
-    public GeoserverUserGroupService getActiveUserGroupService() {
-        return activeUserGroupService;
-    }
-
-    public void setActiveUserGroupService(GeoserverUserGroupService activeUserGroupService) {
-        this.activeUserGroupService = activeUserGroupService;
-    }
 
     /** cached user groups */
     ConcurrentHashMap<String, GeoserverUserGroupService> userGroupServices = 
@@ -218,30 +205,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         setConfigPasswordEncrypterName(config.getConfigPasswordEncrypterName());
         setEncryptingUrlParams(config.isEncryptingUrlParams());
 
-        //load the user group service and ensure it is properly configured
-        String userGroupServiceName = config.getUserGroupServiceName();
-        GeoserverUserGroupService userGroupService = null;
-        try {
-            userGroupService = loadUserGroupService(userGroupServiceName);
-            
-            //TODO:
-            //if (!userGroupService.isConfigured()) {
-            //    userGroupService = null;
-            //}
-        }
-        catch(Exception e) {
-            LOGGER.log(Level.WARNING, String.format("Error occured loading user group service %s, "
-                +  "falling back to default user group service", userGroupServiceName), e);
-        }
-
-        if (userGroupService == null) {
-            try {
-                userGroupService = loadUserGroupService("default");
-            }
-            catch(Exception e) {
-                throw new RuntimeException("Fatal error occurred loading default role service", e);
-            }
-        }
 
         //load the role authority and ensure it is properly configured
         String roleServiceName = config.getRoleServiceName();
@@ -269,7 +232,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
 
         //configure the user details instance
-        setActiveUserGroupService(userGroupService);
         setActiveRoleService(roleService);
 
         //set up authentication providers
@@ -712,7 +674,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         //save the top level config
         SecurityManagerConfig config = new SecurityManagerConfigImpl();
         config.setRoleServiceName(roleService.getName());
-        config.setUserGroupServiceName(userGroupService.getName());
         config.getAuthProviderNames().add(authProvider.getName());
         config.setEncryptingUrlParams(false);
         // start with weak encryption
@@ -1178,7 +1139,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
             DataAccessException {
-        return getActiveUserGroupService().loadUserByUsername(username);
+        // TODO, get rid of this
+        throw new RuntimeException("Should not reach thsi point");
     }
 
     public boolean isEncryptingUrlParams() {

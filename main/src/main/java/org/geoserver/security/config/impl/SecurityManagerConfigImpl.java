@@ -19,7 +19,6 @@ import org.geoserver.security.config.SecurityManagerConfig;
 public class SecurityManagerConfigImpl extends SecurityConfigImpl implements SecurityManagerConfig {
     
     private String roleServiceName;
-    private String userGroupServiceName;
 
     private List<String> authProviderNames = new ArrayList<String>();
     private Boolean anonymousAuth = Boolean.TRUE;
@@ -31,7 +30,6 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
 
     public SecurityManagerConfigImpl(SecurityManagerConfig config) {
         this.roleServiceName = config.getRoleServiceName();
-        this.userGroupServiceName = config.getUserGroupServiceName();
         this.authProviderNames = config.getAuthProviderNames() != null ? 
             new ArrayList<String>(config.getAuthProviderNames()) : null;
         this.anonymousAuth = config.isAnonymousAuth();
@@ -42,12 +40,6 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
     }
     public void setRoleServiceName(String roleServiceName) {
         this.roleServiceName = roleServiceName;
-    }
-    public String getUserGroupServiceName() {
-        return userGroupServiceName;
-    }
-    public void setUserGroupServiceName(String userGroupServiceName) {
-        this.userGroupServiceName = userGroupServiceName;
     }
 
     public List<String> getAuthProviderNames() {

@@ -108,7 +108,7 @@ public class NewServiceAccessRulePageTest extends AbstractSecurityWicketTestSupp
     
     public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
-        activateROGAService();
+        activateRORoleService();
         tester.startPage(page=new NewServiceAccessRulePage());
         tester.assertInvisible("ruleForm:roles:addRole");
     }

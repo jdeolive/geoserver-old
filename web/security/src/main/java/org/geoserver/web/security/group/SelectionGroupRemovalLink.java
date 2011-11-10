@@ -32,13 +32,15 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
     boolean disassociateRoles =false;
     ConfirmRemovalGroupPanel removePanel;
     GeoServerDialog.DialogDelegate delegate;
+    String userGroupsServiceName;
 
-    public SelectionGroupRemovalLink(String id, GeoServerTablePanel<GeoserverUserGroup> groups,
+    public SelectionGroupRemovalLink(String userGroupServiceName,String id, GeoServerTablePanel<GeoserverUserGroup> groups,
             GeoServerDialog dialog,boolean disassociateRoles) {
         super(id);
         this.groups = groups;
         this.dialog = dialog;
         this.disassociateRoles=disassociateRoles;
+        this.userGroupsServiceName=userGroupServiceName;
     }
 
     @Override
@@ -65,9 +67,10 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
 
             protected boolean onSubmit(AjaxRequestTarget target, Component contents) {
 
-                GeoserverUserGroupService ugService =
-                        GeoServerApplication.get().getSecurityManager().getActiveUserGroupService();
                 try {
+                    GeoserverUserGroupService ugService =
+                            GeoServerApplication.get().getSecurityManager()
+                            .loadUserGroupService(userGroupsServiceName);
                     GeoserverUserGroupStore ugStore = ugService.createStore();
                     for (GeoserverUserGroup group : removePanel.getRoots()) {                     
                          ugStore.removeGroup(group);

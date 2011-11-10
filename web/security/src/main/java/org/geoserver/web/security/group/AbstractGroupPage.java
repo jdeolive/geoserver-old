@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.SubmitLink;
@@ -27,9 +28,9 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
     protected GroupUIModel uiGroup;
     protected SubmitLink saveLink;
     protected Form<Serializable> form;
+    protected String userGroupServiceName;
 
-    protected AbstractGroupPage(GroupUIModel uiGroup,Page responsePage) {
-        super(responsePage);
+    protected AbstractGroupPage(String userGroupServiceName,GroupUIModel uiGroup,Page responsePage) {
         
         //final CompoundPropertyModel<GroupUIModel> groupModel = new CompoundPropertyModel<GroupUIModel>(uiGroup);
         
@@ -38,6 +39,7 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
                 //new Form<CompoundPropertyModel<GroupUIModel>>("groupForm");
         //setDefaultModel(groupModel);        
         
+        this.userGroupServiceName=userGroupServiceName;
         this.uiGroup=uiGroup;
         form =new Form<Serializable>("groupForm");                
         add(form);
@@ -49,33 +51,42 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
                 return form.getRootForm().findSubmittingButton() == saveLink;
             }
         };        
-        groupnameField.setEnabled(hasUserGroupStore());
+        boolean hasUserGroupStore = hasUserGroupStore(userGroupServiceName);
+        groupnameField.setEnabled(hasUserGroupStore);
         groupnameField.setDefaultModel(new PropertyModel<GroupUIModel>(uiGroup, "groupname"));
         form.add(groupnameField);
                 
         CheckBox enable = new CheckBox("enabled");
         enable.setDefaultModel(new PropertyModel<GroupUIModel>(uiGroup, "enabled"));
-        enable.setEnabled(hasUserGroupStore());
+        enable.setEnabled(hasUserGroupStore);
         form.add(enable);
 
         
-        form.add(groupRolesFormComponent =new GroupRolesFormComponent(uiGroup.toGeoserverUserGroup(),form));
-        groupRolesFormComponent.setEnabled(hasRoleStore());
+        form.add(groupRolesFormComponent =new GroupRolesFormComponent(
+                uiGroup.toGeoserverUserGroup(userGroupServiceName),form));
+        groupRolesFormComponent.setEnabled(hasRoleStore(getSecurityManager().getActiveRoleService().getName()));
         
         // build the submit/cancel
-        form.add(getCancelLink(GroupPage.class));
-        saveLink = saveLink();
+        form.add(getCancelLink(responsePage));
+        saveLink = saveLink(responsePage);
         form.add(saveLink);
-        saveLink.setVisible(hasUserGroupStore() || hasRoleStore());
+        saveLink.setVisible(hasUserGroupStore || hasRoleStore(getSecurityManager().getActiveRoleService().getName()));
         
         
     }
 
-    SubmitLink saveLink() {
+    SubmitLink saveLink(final Page responsePage) {
         return new SubmitLink("save") {
             @Override
             public void onSubmit() {
                 onFormSubmit();
+                if (responsePage!=null) {
+                    setResponsePage(responsePage);
+                } else {
+                    PageParameters params = new PageParameters();
+                    params.put(ServiceNameKey, userGroupServiceName);
+                    setResponsePage(GroupPage.class,params);
+                }
             }
         };
     }
@@ -94,11 +105,12 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
             this.enabled=enabled;
         }        
 
-        public GeoserverUserGroup toGeoserverUserGroup() {
+        public GeoserverUserGroup toGeoserverUserGroup(String userGroupServiceName) {
             GeoserverUserGroup group;
             try {
                 group = GeoServerApplication.get().getSecurityManager()
-                    .getActiveUserGroupService().createGroupObject(groupname,enabled);
+                    .loadUserGroupService(userGroupServiceName).
+                    createGroupObject(groupname,enabled);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

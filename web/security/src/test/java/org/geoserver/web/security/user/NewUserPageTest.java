@@ -11,7 +11,7 @@ import org.geoserver.security.impl.GeoserverUserGroup;
 public class NewUserPageTest extends AbstractUserPageTest {
 
     protected void initializeTester() {
-        tester.startPage(page=new NewUserPage());
+        tester.startPage(page=new NewUserPage(getUserGroupServiceName()));
     }
     
     public void testFill() throws Exception{
@@ -197,7 +197,7 @@ public class NewUserPageTest extends AbstractUserPageTest {
         activateROUGService();        
         boolean fail = true;
         try {
-            initializeTester();
+            tester.startPage(page=new NewUserPage(getROUserGroupServiceName()));
         } catch (RuntimeException ex) {
             fail = false;
         }

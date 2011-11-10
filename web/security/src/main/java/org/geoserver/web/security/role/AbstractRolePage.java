@@ -14,6 +14,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
@@ -38,9 +39,11 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
     SubmitLink saveLink;
     RoleUIModel uiRole;
     Form<Serializable> form;
+    String roleServiceName;
 
-    protected AbstractRolePage(RoleUIModel uiRole,Properties properties,Page responsePage ) {
-        super(responsePage);
+    protected AbstractRolePage(String roleService,RoleUIModel uiRole,Properties properties,Page responsePage ) {
+
+        this.roleServiceName=roleService;
 
         this.uiRole=uiRole;
         prepareForHierarchy(uiRole);
@@ -66,33 +69,43 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
                     return form.getRootForm().findSubmittingButton() == saveLink;
                 }
         };
+        boolean hasRoleStore = hasRoleStore(roleServiceName);
         rolenameField.setDefaultModel(new PropertyModel<RoleUIModel>(uiRole, "rolename"));
-        rolenameField.setEnabled(hasRoleStore());
+        rolenameField.setEnabled(hasRoleStore);
         form.add(rolenameField);
         
         
         parentRoles=new DropDownChoice<String>(
                 "parentRoles", new PropertyModel<String>(uiRole, "parentrolename"), uiRole.getPossibleParentRoleNames());
-        parentRoles.setEnabled(hasRoleStore());
+        parentRoles.setEnabled(hasRoleStore);
         form.add(parentRoles);
         
         
         roleParamEditor = new PropertyEditorFormComponent("roleparameditor",properties);
-        roleParamEditor.setEnabled(hasRoleStore());
+        roleParamEditor.setEnabled(hasRoleStore);
         form.add(roleParamEditor);
                         
         // build the submit/cancel        
-        form.add(getCancelLink(RolePage.class));
-        form.add(saveLink=saveLink());
-        saveLink.setVisibilityAllowed(hasRoleStore());
+        form.add(getCancelLink(responsePage));
+        form.add(saveLink=saveLink(responsePage));
+        saveLink.setVisibilityAllowed(hasRoleStore);
                 
     }
 
-    SubmitLink saveLink() {
+    SubmitLink saveLink(final Page responsePage) {
         return new SubmitLink("save") {
             @Override
             public void onSubmit() {
                 onFormSubmit();
+                if (responsePage!=null) {
+                    setResponsePage(responsePage);
+                }
+                else {
+                    PageParameters params = new PageParameters();
+                    params.put(ServiceNameKey, roleServiceName);
+                    setResponsePage(RolePage.class,params);
+                }
+
             }
         };
     }
@@ -106,7 +119,7 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
         uimodel.setPossibleParentRoleNames(new ArrayList<String>());
         uimodel.getPossibleParentRoleNames().add(""); // no parent        
         try {
-            Map<String,String> parentMappings = getRoleService().getParentMappings();  
+            Map<String,String> parentMappings = getRoleService(roleServiceName).getParentMappings();  
             
             if (uimodel.getRolename() !=null && uimodel.getRolename().length()>0) { // rolename given
                 RoleHierarchyHelper helper = new RoleHierarchyHelper(parentMappings);

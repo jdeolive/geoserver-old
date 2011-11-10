@@ -71,7 +71,7 @@ public class EditServiceAccessRulePageTest extends AbstractSecurityWicketTestSup
     
     public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
-        activateROGAService();
+        activateRORoleService();
         tester.startPage(page=new EditServiceAccessRulePage(getRule("wms.GetMap")));
         tester.assertInvisible("ruleForm:roles:addRole");
     }

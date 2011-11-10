@@ -37,6 +37,7 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
     protected T rootObject;
     protected List <GeoserverRole> selectedRoles; 
     protected Form<?> form;
+    protected String roleServiceName;
     
     public AbstractRolesFormComponent(String id, T rootObject,   final boolean isRequired, Form<?> form) {
         this(id,rootObject,isRequired,form,null);
@@ -45,6 +46,7 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
     public AbstractRolesFormComponent(String id, T rootObject,   final boolean isRequired, Form<?> form,final IBehavior behavior) {
         
         super(id);
+        this.roleServiceName=getSecurityManager().getActiveRoleService().getName();
         this.rootObject=rootObject;
         this.form=form;
                 
@@ -94,7 +96,7 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
           new SubmitLink("addRole",form) {
           @Override
           public void onSubmit() {              
-              setResponsePage(new NewRolePage(this.getPage()));
+              setResponsePage(new NewRolePage(roleServiceName,this.getPage()));
           }            
         }; 
         add(addRole);        
