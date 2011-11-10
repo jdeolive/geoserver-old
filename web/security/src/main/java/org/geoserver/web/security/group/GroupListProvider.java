@@ -24,12 +24,18 @@ public class GroupListProvider extends GeoServerDataProvider<GeoserverUserGroup>
     
     public static final Property<GeoserverUserGroup> GROUPNAME = new BeanProperty<GeoserverUserGroup>("groupname", "groupname");
     public static final Property<GeoserverUserGroup> ENABLED = new BeanProperty<GeoserverUserGroup>("enabled", "enabled");
+    protected String userGroupServiceName;
+    
+    public GroupListProvider(String userGroupServiceName) {
+        this.userGroupServiceName= userGroupServiceName;
+    }
 
     @Override
     protected List<GeoserverUserGroup> getItems() {
         SortedSet<GeoserverUserGroup> groups=null;
         try {
-            groups = GeoServerApplication.get().getSecurityManager().getActiveUserGroupService().getUserGroups();
+            groups = GeoServerApplication.get().getSecurityManager().
+                    loadUserGroupService(userGroupServiceName).getUserGroups();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 

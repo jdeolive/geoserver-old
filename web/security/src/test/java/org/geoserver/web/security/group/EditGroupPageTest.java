@@ -20,10 +20,10 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
     }
 
     protected void doTestFill() throws Exception {
-        initializeForXML();
         insertValues();        
         
-        tester.startPage(page=new EditGroupPage(ugService.getGroupByGroupname("group1")));        
+        tester.startPage(page=new EditGroupPage(getUserGroupServiceName(),
+                ugService.getGroupByGroupname("group1")));        
         tester.assertRenderedPage(EditGroupPage.class);
         
         tester.assertRenderedPage(EditGroupPage.class);
@@ -82,7 +82,8 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         insertValues();
         activateROUGService();
         
-        tester.startPage(page=new EditGroupPage(ugService.getGroupByGroupname("group1")));
+        tester.startPage(page=new EditGroupPage(getROUserGroupServiceName(),
+                ugService.getGroupByGroupname("group1")));
         tester.assertRenderedPage(EditGroupPage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:groupname").isEnabled());
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:enabled").isEnabled());
@@ -107,9 +108,9 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
     protected void doTestReadOnlyRoleService() throws Exception {
         insertValues();
         
-        activateROGAService();
+        activateRORoleService();
         
-        tester.startPage(page=new EditGroupPage(ugService.getGroupByGroupname("group1")));
+        tester.startPage(page=new EditGroupPage(getUserGroupServiceName(),ugService.getGroupByGroupname("group1")));
         tester.assertRenderedPage(EditGroupPage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:groupname").isEnabled());
         assertTrue(tester.getComponentFromLastRenderedPage("groupForm:enabled").isEnabled());
@@ -129,9 +130,10 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
     public void testAllServicesReadOnly() throws Exception {
         initializeForXML();
         activateROUGService();
-        activateROGAService();
+        activateRORoleService();
         
-        tester.startPage(page=new EditGroupPage(ugService.getGroupByGroupname("group1")));
+        tester.startPage(page=new EditGroupPage(getROUserGroupServiceName(),
+                ugService.getGroupByGroupname("group1")));
         tester.assertRenderedPage(EditGroupPage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:groupname").isEnabled());
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:enabled").isEnabled());

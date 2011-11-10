@@ -11,6 +11,8 @@ import org.geoserver.security.jdbc.H2UserGroupServiceTest;
 
 public class JDBCConfirmRemovalRolePanelTest extends ConfirmRemovalRolePanelTest {
  
+    private static final long serialVersionUID = -7197515540318374854L;
+    
     public void testRemoveRole() throws Exception {
         initializeForJDBC();
         removeObject();
@@ -19,4 +21,12 @@ public class JDBCConfirmRemovalRolePanelTest extends ConfirmRemovalRolePanelTest
     void initializeForJDBC() throws IOException {
         initialize(new H2UserGroupServiceTest(), new H2RoleServiceTest());
     }
+    
+    public String getRoleServiceName() {
+        return "h2";
+    }
+    public String getUserGroupServiceName() {
+        return "h2";
+    }
+
 }

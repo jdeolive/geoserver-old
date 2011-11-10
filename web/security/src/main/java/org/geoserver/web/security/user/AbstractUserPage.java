@@ -13,6 +13,7 @@ import java.util.Properties;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.behavior.IBehavior;
@@ -37,6 +38,7 @@ import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.PropertyEditorFormComponent;
+import org.geoserver.web.security.group.GroupPage;
 import org.geoserver.web.security.role.EditRolePage;
 import org.geoserver.web.security.role.RoleListProvider;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
@@ -55,10 +57,10 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     protected Form<Serializable> form;
     protected SubmitLink saveLink;
     protected WebMarkupContainer calculatedrolesContainer;
+    protected String userGroupServiceName;
 
-    protected AbstractUserPage(UserUIModel uiUser,Properties properties, Page responsePage) {
-        super(responsePage);
-        
+    protected AbstractUserPage(String userGroupServiceName,UserUIModel uiUser,Properties properties, Page responsePage) {
+        this.userGroupServiceName=userGroupServiceName;
         this.uiUser=uiUser;
         // build the form
         form = new Form<Serializable>("userForm");                
@@ -74,12 +76,13 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
                     }
             };        
         form.add(username);
-        username.setEnabled(hasUserGroupStore());
+        boolean hasUserGroupStore = hasUserGroupStore(userGroupServiceName);
+        username.setEnabled(hasUserGroupStore);
         
         CheckBox enable = new CheckBox("enabled",
                 new PropertyModel<Boolean>(uiUser, "enabled"));        
         form.add(enable);
-        enable.setEnabled(hasUserGroupStore());
+        enable.setEnabled(hasUserGroupStore);
 
         PasswordTextField pw1 = new PasswordTextField("password",
                 new PropertyModel<String>(uiUser, "password")) {
@@ -92,7 +95,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         };
         form.add(pw1);
         pw1.setResetPassword(false);        
-        pw1.setEnabled(hasUserGroupStore());
+        pw1.setEnabled(hasUserGroupStore);
         
         PasswordTextField pw2 = new PasswordTextField("confirmPassword",
                 new PropertyModel<String>(uiUser, "confirmPassword")) {
@@ -105,7 +108,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         };
         form.add(pw2);
         pw2.setResetPassword(false);                
-        pw2.setEnabled(hasUserGroupStore());
+        pw2.setEnabled(hasUserGroupStore);
         
         
         LoadableDetachableModel<List<GeoserverRole>> caclulatedRolesModel = new 
@@ -135,19 +138,19 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         form.add(calculatedrolesContainer);
 
                         
-        GeoserverUser tmpUser = uiUser.toGeoserverUser();
+        GeoserverUser tmpUser = uiUser.toGeoserverUser(userGroupServiceName);
         
         form.add(userpropertyeditor=new PropertyEditorFormComponent("userpropertyeditor",properties));        
-        userpropertyeditor.setEnabled(hasUserGroupStore());
-        form.add(userGroupFormComponent = new UserGroupFormComponent(tmpUser,form,getCalculatedRolesBehavior()));
-        userGroupFormComponent.setEnabled(hasUserGroupStore());
+        userpropertyeditor.setEnabled(hasUserGroupStore);
+        form.add(userGroupFormComponent = new UserGroupFormComponent(userGroupServiceName,tmpUser,form,getCalculatedRolesBehavior()));
+        userGroupFormComponent.setEnabled(hasUserGroupStore);
         form.add(userRolesFormComponent =new UserRolesFormComponent(tmpUser,form,getCalculatedRolesBehavior()));
-        userRolesFormComponent.setEnabled(hasRoleStore());
+        userRolesFormComponent.setEnabled(hasRoleStore(getSecurityManager().getActiveRoleService().getName()));
                                        
         // build the submit/cancel
-        form.add(getCancelLink(UserPage.class));
-        form.add(saveLink=saveLink());
-        saveLink.setVisible(hasUserGroupStore() || hasRoleStore());
+        form.add(getCancelLink(responsePage));
+        form.add(saveLink=saveLink(responsePage));
+        saveLink.setVisible(hasUserGroupStore || hasRoleStore(getSecurityManager().getActiveRoleService().getName()));
         
                                
         // add the validators
@@ -168,14 +171,21 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         
     }
 
-
-    SubmitLink saveLink() {
+    SubmitLink saveLink(final Page responsePage) {
         return new SubmitLink("save") {
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onSubmit() {
                 onFormSubmit();
+                if (responsePage!=null) {
+                    setResponsePage(responsePage);
+                } else {
+                    PageParameters params = new PageParameters();
+                    params.put(ServiceNameKey, userGroupServiceName);
+                    setResponsePage(UserPage.class,params);
+                }
+
             }
         };
     }
@@ -187,7 +197,9 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {                
-                setResponsePage(new EditRolePage((GeoserverRole) getDefaultModelObject(), this.getPage()));
+                setResponsePage(new EditRolePage(
+                        getSecurityManager().getActiveRoleService().getName(),
+                        (GeoserverRole) getDefaultModelObject(), this.getPage()));
             }
         };
     }
@@ -206,17 +218,17 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     public List<GeoserverRole> getCalculatedroles() {
         List<GeoserverRole> tmpList = new ArrayList<GeoserverRole>();
         List<GeoserverRole> resultList = new ArrayList<GeoserverRole>();
-        GeoserverUserGroupService ugService= getSecurityManager().getActiveUserGroupService();
-        GeoserverRoleService gaService = getSecurityManager().getActiveRoleService();
-        RoleCalculator calc = new RoleCalculator(ugService, gaService);
         try {
+            GeoserverUserGroupService ugService= getSecurityManager().loadUserGroupService(userGroupServiceName);
+            GeoserverRoleService gaService = getSecurityManager().getActiveRoleService();
+            RoleCalculator calc = new RoleCalculator(ugService, gaService);
             tmpList.addAll(userRolesFormComponent.getSelectedRoles());
             calc.addInheritedRoles(tmpList);
             for (GeoserverUserGroup group : userGroupFormComponent.getSelectedGroups()) {
                 if (group.isEnabled())
                     tmpList.addAll(calc.calculateRoles(group));
             }
-            resultList.addAll(calc.personalizeRoles(uiUser.toGeoserverUser(), tmpList));
+            resultList.addAll(calc.personalizeRoles(uiUser.toGeoserverUser(userGroupServiceName), tmpList));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -279,11 +291,11 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
          * 
          * @return
          */
-        public GeoserverUser toGeoserverUser() {
+        public GeoserverUser toGeoserverUser(String userGroupServiceName) {
             GeoserverUser user;
             try {
                 user = GeoServerApplication.get().getSecurityManager()
-                    .getActiveUserGroupService().createUserObject(username, password, enabled);
+                    .loadUserGroupService(userGroupServiceName).createUserObject(username, password, enabled);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

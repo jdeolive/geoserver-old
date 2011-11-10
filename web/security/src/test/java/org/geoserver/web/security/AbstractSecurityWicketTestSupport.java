@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.behavior.AbstractAjaxBehavior;
 import org.apache.wicket.behavior.IBehavior;
@@ -30,10 +31,10 @@ import org.geoserver.security.impl.AbstractUserGroupServiceTest;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
 import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.MemoryRoleService;
 import org.geoserver.security.impl.MemoryRoleStore;
-import org.geoserver.security.impl.MemoryUserGroupService;
 import org.geoserver.security.impl.MemoryUserGroupStore;
+import org.geoserver.security.impl.ReadOnlyRoleService;
+import org.geoserver.security.impl.ReadOnlyUGService;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
 import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
@@ -45,29 +46,14 @@ import org.geoserver.web.GeoServerWicketTestSupport;
 
 public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSupport {
     
-    public static class ReadOnlyGAService extends MemoryRoleService {
-
-        public ReadOnlyGAService() {
-            super();            
-        }
-
-        @Override
-        public boolean canCreateStore() {
-            return false;
-        }
-    };
     
-    public static class ReadOnlyUGService extends MemoryUserGroupService {
+    public String getRoleServiceName() {
+        return "test";
+    }
+    public String getUserGroupServiceName() {
+        return "test";
+    }
 
-        public ReadOnlyUGService() {
-            super();            
-        }
-        
-        @Override
-        public boolean canCreateStore() {
-            return false;
-        }
-    };
     
     protected AbstractRoleServiceTest gaTest;
     protected AbstractUserGroupServiceTest ugTest;
@@ -91,10 +77,10 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         this.ugTest = ugTest;
         this.gaTest = gaTest;
 
-        gaService=gaTest.createRoleService("test");
+        gaService=gaTest.createRoleService(getRoleServiceName());
         getSecurityManager().setActiveRoleService(gaService);
-        ugService=ugTest.createUserGroupService("test");
-        getSecurityManager().setActiveUserGroupService(ugService);
+        ugService=ugTest.createUserGroupService(getUserGroupServiceName());
+        //getSecurityManager().setActiveUserGroupService(ugService);
         
         gaStore =  gaTest.createStore(gaService);
         ugStore =  ugTest.createStore(ugService);
@@ -134,38 +120,50 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         ugStore.store();
     }
     
+    public String getRORoleServiceName() {
+        return "ReadOnlyRoleService";
+    }
+    public String getROUserGroupServiceName() {
+        return "ReadOnlyUGService";
+    }
+
+    
                 
-    protected void activateROGAService() throws Exception{
+    protected void activateRORoleService() throws Exception{
         MemoryRoleServiceConfigImpl config = new MemoryRoleServiceConfigImpl();
-        config.setName("ReadOnlyGAService");
+        config.setName(getRORoleServiceName());
         config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
         config.setLockingNeeded(false);
-        gaService = new ReadOnlyGAService();
+        config.setClassName(ReadOnlyRoleService.class.getName());
+        getSecurityManager().saveRoleService(config);
+        gaService = getSecurityManager().loadRoleService(getRORoleServiceName());
         gaService.initializeFromConfig(config);
         gaService.setSecurityManager(GeoServerApplication.get().getSecurityManager());
         gaStore = new MemoryRoleStore();
         gaStore.initializeFromService(gaService);
         gaTest.insertValues(gaStore);
         gaStore.store();
-        getSecurityManager().setActiveRoleService(gaService);
+        
+        getSecurityManager().setActiveRoleService(gaService);        
         gaStore=null;
     }
     
     protected void activateROUGService() throws Exception{
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
-        config.setName("ReadOnlyUGService");        
+        config.setName(getROUserGroupServiceName());        
+        config.setClassName(ReadOnlyUGService.class.getName());
         config.setLockingNeeded(false);
         config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        ugService = new ReadOnlyUGService();
+        getSecurityManager().saveUserGroupService(config);
+        ugService = getSecurityManager().loadUserGroupService(getROUserGroupServiceName());
         ugService.initializeFromConfig(config);
         ugService.setSecurityManager(GeoServerApplication.get().getSecurityManager());
         ugStore = new MemoryUserGroupStore(); 
         ugStore.initializeFromService(ugService);
         ugTest.insertValues(ugStore);
         ugStore.store();
-        getSecurityManager().setActiveUserGroupService(ugService);
-        
+                
         ugStore=null;
     }
     
@@ -265,5 +263,11 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
                   return true;
           }
           return false;
+      }
+      
+      protected PageParameters getParamsForService(String serviceName) {
+          PageParameters result = new PageParameters();
+          result.put(AbstractSecurityPage.ServiceNameKey, serviceName);
+          return result;
       }
 }

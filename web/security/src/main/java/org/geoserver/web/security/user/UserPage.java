@@ -5,8 +5,8 @@
 package org.geoserver.web.security.user;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.panel.Fragment;
@@ -18,11 +18,11 @@ import org.geoserver.web.security.SelectionUserRemovalLink;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.web.CatalogIconFactory;
 import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.Icon;
 import org.geoserver.web.wicket.SimpleAjaxLink;
-import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
 /**
  * A page listing users, allowing for removal, addition and linking to an edit page
@@ -34,10 +34,12 @@ public class UserPage extends AbstractSecurityPage {
     protected GeoServerDialog dialog;
     protected SelectionUserRemovalLink removal,removalWithRoles;
     protected BookmarkablePageLink<NewUserPage> add;
+    protected String userGroupServiceName;
 
-    public UserPage() {
-        super(null);
-        UserListProvider provider = new UserListProvider();
+    
+    public UserPage(PageParameters params) {
+        this.userGroupServiceName=params.getString(ServiceNameKey);
+        UserListProvider provider = new UserListProvider(userGroupServiceName);
         add(users = new GeoServerTablePanel<GeoserverUser>("table", provider, true) {
 
             @SuppressWarnings("rawtypes")
@@ -91,19 +93,21 @@ public class UserPage extends AbstractSecurityPage {
 
         // the add button
         header.add(add=new BookmarkablePageLink<NewUserPage>("addNew", NewUserPage.class));
-        add.setVisible(hasUserGroupStore());
+        add.setParameter(ServiceNameKey, userGroupServiceName);
+        add.setVisible(hasUserGroupStore(userGroupServiceName));
 
         // the removal button
-        header.add(removal = new SelectionUserRemovalLink("removeSelected", users, dialog,false));
+        header.add(removal = new SelectionUserRemovalLink(userGroupServiceName,"removeSelected", users, dialog,false));
         removal.setOutputMarkupId(true);
         removal.setEnabled(false);
-        removal.setVisible(hasUserGroupStore());
+        removal.setVisible(hasUserGroupStore(userGroupServiceName));
         
 
-        header.add(removalWithRoles = new SelectionUserRemovalLink("removeSelectedWithRoles", users, dialog,true));
+        header.add(removalWithRoles = new SelectionUserRemovalLink(userGroupServiceName,"removeSelectedWithRoles", users, dialog,true));
         removalWithRoles.setOutputMarkupId(true);
         removalWithRoles.setEnabled(false);
-        removalWithRoles.setVisible(hasUserGroupStore() && hasRoleStore());
+        removalWithRoles.setVisible(hasUserGroupStore(userGroupServiceName) && 
+                hasRoleStore(getSecurityManager().getActiveRoleService().getName()));
         
         
         return header;
@@ -125,7 +129,7 @@ public class UserPage extends AbstractSecurityPage {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                setResponsePage(new EditUserPage((GeoserverUser) getDefaultModelObject()));
+                setResponsePage(new EditUserPage(userGroupServiceName,(GeoserverUser) getDefaultModelObject()));
             }
 
         };

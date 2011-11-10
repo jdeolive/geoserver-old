@@ -39,22 +39,25 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
     GeoserverUser user;
     Form<?> form;
     List<GeoserverUserGroup> selectedGroups;
+    String userGroupServiceName;
 
     public List<GeoserverUserGroup> getSelectedGroups() {
         return selectedGroups;
     }
 
-    public UserGroupFormComponent(GeoserverUser user, final Form<?> form ) {
-        this(user,form,null);
+    public UserGroupFormComponent(String userGroupServiceName,GeoserverUser user, final Form<?> form ) {
+        this(userGroupServiceName,user,form,null);
     }
-    public UserGroupFormComponent(GeoserverUser user, final Form<?> form, final IBehavior behavior ) {        
+    public UserGroupFormComponent(final String userGroupServiceName,GeoserverUser user, final Form<?> form, final IBehavior behavior ) {        
         super("groups");
+        this.userGroupServiceName=userGroupServiceName;
         this.user=user;
         this.form=form;
                                                         
         try {
             selectedGroups=new ArrayList<GeoserverUserGroup>();
-            selectedGroups.addAll(getSecurityManager().getActiveUserGroupService().getGroupsForUser(user));
+            selectedGroups.addAll(getSecurityManager().
+                    loadUserGroupService(userGroupServiceName).getGroupsForUser(user));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -72,7 +75,8 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
                         try {
                             SortedSet<GeoserverUserGroup> result=new TreeSet<GeoserverUserGroup>();
                             result.addAll(
-                                getSecurityManager().getActiveUserGroupService().getUserGroups());
+                                getSecurityManager().loadUserGroupService(userGroupServiceName).getUserGroups());
+                            
                             return result;
                         } catch (IOException e) {
                             throw new RuntimeException(e);
@@ -109,7 +113,7 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
             private static final long serialVersionUID = 1L;
             @Override
             public void onSubmit() {
-                setResponsePage(new NewGroupPage(this.getPage()));
+                setResponsePage(new NewGroupPage(userGroupServiceName,this.getPage()));
             }            
           };
         add(addGroup);
@@ -123,7 +127,7 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
     protected void calculateAddedRemovedCollections(Collection<GeoserverUserGroup> added, Collection<GeoserverUserGroup> removed) {
         SortedSet<GeoserverUserGroup> oldgroups;
         try {
-            oldgroups = getSecurityManager().getActiveUserGroupService().getGroupsForUser(user);
+            oldgroups = getSecurityManager().loadUserGroupService(userGroupServiceName).getGroupsForUser(user);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

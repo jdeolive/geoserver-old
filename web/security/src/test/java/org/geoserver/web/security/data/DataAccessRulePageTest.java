@@ -1,11 +1,14 @@
 package org.geoserver.web.security.data;
 
 import java.lang.reflect.Method;
+import java.util.Collections;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.data.test.MockData;
+import org.geoserver.security.AccessMode;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
 import org.geoserver.web.security.AbstractListPageTest;
@@ -15,20 +18,21 @@ import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 public class DataAccessRulePageTest extends AbstractListPageTest<DataAccessRule> {
 
     
-
-    protected Class<? extends Page> listPageClass() {
-        return DataAccessRulePage.class;
+    
+    protected Page listPage(PageParameters params) {
+        return new  DataAccessRulePage();
+    }
+    protected Page newPage(Object...params) {
+        return new  NewDataAccessRulePage();
+    }
+    protected Page editPage(Object...params) {
+        if (params.length==0)
+            return new  EditDataAccessRulePage( new DataAccessRule("it.geosolutions", "layer.dots", 
+                    AccessMode.READ, Collections.singleton("ROLE_ABC")));
+        else
+            return new  EditDataAccessRulePage( (DataAccessRule) params[0]);
     }
 
-    
-    protected Class<? extends Page> newPageClass() {
-        return NewDataAccessRulePage.class;
-    }
-    
-    
-    protected Class<? extends Page> editPageClass() {
-        return EditDataAccessRulePage.class;
-    }
 
     @Override
     protected Property<DataAccessRule> getEditProperty() {
