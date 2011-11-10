@@ -6,6 +6,7 @@ import java.util.Iterator;
 import org.apache.wicket.Component;
 import org.apache.wicket.MarkupContainer;
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.util.tester.FormTester;
@@ -24,11 +25,14 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
     }
 
     public void testRenders() throws Exception {
-        tester.startPage(listPageClass());
-        tester.assertRenderedPage(listPageClass());
+        initializeForXML();
+        tester.startPage(listPage(null));
+        tester.assertRenderedPage(listPage(null).getClass());
     }
     
-    abstract protected Class<? extends Page> listPageClass();
+    abstract protected Page listPage(PageParameters params);
+    abstract protected Page newPage(Object...params);
+    abstract protected Page editPage(Object...params);
  
     abstract protected String getSearchString() throws Exception;
     abstract protected Property<T> getEditProperty();
@@ -40,7 +44,7 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
         initializeForXML();
         insertValues();
         
-        tester.startPage(listPageClass());
+        tester.startPage(listPage(null));
                    
         String search = getSearchString();
         assertNotNull(search);
@@ -48,11 +52,11 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
         assertNotNull(c);
         tester.clickLink(c.getPageRelativePath());
         
-        tester.assertRenderedPage(editPageClass());
+        tester.assertRenderedPage(editPage().getClass());
         assertTrue(checkEditForm(search));                
     }
     
-    abstract protected Class<? extends Page> editPageClass();
+    
     
     
     protected Component getFromList(String columnPath, Object columnValue, Property<T> property) {
@@ -73,12 +77,14 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
     }
     
     public void testNew() throws Exception {
-        tester.startPage(listPageClass());        
+        initializeForXML();
+        tester.startPage(listPage(null));        
         tester.clickLink("headerPanel:addNew");
-        tester.assertRenderedPage(newPageClass());
+        Page newPage = tester.getLastRenderedPage();
+        tester.assertRenderedPage(newPage.getClass());
     }
     
-    abstract protected Class<? extends Page> newPageClass();
+    
     
     public void testRemove() throws Exception {
         initializeForXML();
@@ -97,7 +103,7 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
 
             public Component buildComponent(String id) {
                 try {
-                    return listPageClass().getDeclaredConstructor().newInstance();
+                    return listPage(null);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

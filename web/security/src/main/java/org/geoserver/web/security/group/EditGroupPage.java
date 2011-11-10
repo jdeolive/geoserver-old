@@ -18,12 +18,12 @@ import org.geoserver.web.wicket.ParamResourceModel;
 
 public class EditGroupPage extends AbstractGroupPage {
 
-    public EditGroupPage(GeoserverUserGroup group) {
-        this(group,null);
+    public EditGroupPage(String userGroupServiceName,GeoserverUserGroup group) {
+        this(userGroupServiceName,group,null);
     }
     
-    public EditGroupPage(GeoserverUserGroup group,Page responsePage) {
-        super(new GroupUIModel(group.getGroupname(), group.isEnabled()),responsePage);
+    public EditGroupPage(String userGroupServiceName,GeoserverUserGroup group,Page responsePage) {
+        super(userGroupServiceName,new GroupUIModel(group.getGroupname(), group.isEnabled()),responsePage);
         groupnameField.setEnabled(false);
     }
 
@@ -34,17 +34,17 @@ public class EditGroupPage extends AbstractGroupPage {
         //GroupUIModel uiGroup = (GroupUIModel) getDefaultModelObject();
         try {
             
-            GeoserverUserGroup group = getUserGroupService().getGroupByGroupname(uiGroup.getGroupname());
+            GeoserverUserGroup group = getUserGroupService(userGroupServiceName).getGroupByGroupname(uiGroup.getGroupname());
             
-            if (hasUserGroupStore()) {
-                GeoserverUserGroupStore store = getUserGroupStore();            
+            if (hasUserGroupStore(userGroupServiceName)) {
+                GeoserverUserGroupStore store = getUserGroupStore(userGroupServiceName);            
                 group.setEnabled(uiGroup.isEnabled());
                 store.updateGroup(group);
                 store.store();
             };   
 
-            if (hasRoleStore()) {
-                GeoserverRoleStore gaStore = getRoleStore();
+            if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
+                GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
                 Set<GeoserverRole> addedRoles = new HashSet<GeoserverRole>();
                 Set<GeoserverRole> removedRoles = new HashSet<GeoserverRole>();
                 groupRolesFormComponent.calculateAddedRemovedCollections(addedRoles, removedRoles);
@@ -55,7 +55,6 @@ public class EditGroupPage extends AbstractGroupPage {
             
                 gaStore.store();
             }            
-            setActualResponsePage(GroupPage.class);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error occurred while saving group", e);
             error(new ParamResourceModel("saveError", getPage(), e.getMessage()));

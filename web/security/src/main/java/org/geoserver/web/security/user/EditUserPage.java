@@ -22,12 +22,12 @@ import org.geoserver.web.wicket.ParamResourceModel;
  */
 public class EditUserPage extends AbstractUserPage {
 
-    public EditUserPage(GeoserverUser user) {
-        this(user,null);
+    public EditUserPage(String userGroupServiceName,GeoserverUser user) {
+        this(userGroupServiceName,user,null);
     }
     
-    public EditUserPage(GeoserverUser user,Page responsePage) {
-        super(new UserUIModel(user),user.getProperties(),responsePage);
+    public EditUserPage(String userGroupServiceName, GeoserverUser user,Page responsePage) {
+        super(userGroupServiceName,new UserUIModel(user),user.getProperties(),responsePage);
         username.setEnabled(false);
     }
 
@@ -35,9 +35,9 @@ public class EditUserPage extends AbstractUserPage {
     protected void onFormSubmit() {
         try {
             
-            GeoserverUser user = uiUser.toGeoserverUser();
-            if (hasUserGroupStore()) {
-                GeoserverUserGroupStore ugStore = getUserGroupStore();                                        
+            GeoserverUser user = uiUser.toGeoserverUser(userGroupServiceName);
+            if (hasUserGroupStore(userGroupServiceName)) {
+                GeoserverUserGroupStore ugStore = getUserGroupStore(userGroupServiceName);                                        
                 user.getProperties().clear();
                 for (Entry<Object,Object> entry : userpropertyeditor.getProperties().entrySet())
                     user.getProperties().put(entry.getKey(),entry.getValue());
@@ -54,8 +54,8 @@ public class EditUserPage extends AbstractUserPage {
                     ugStore.disAssociateUserFromGroup(user,g);
                 ugStore.store();
             }
-            if (hasRoleStore()) {                                
-                GeoserverRoleStore gaStore = getRoleStore();
+            if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {                                
+                GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
                 Set<GeoserverRole> addedRoles = new HashSet<GeoserverRole>();
                 Set<GeoserverRole> removedRoles = new HashSet<GeoserverRole>();
                 userRolesFormComponent.calculateAddedRemovedCollections(addedRoles, removedRoles);
@@ -66,7 +66,6 @@ public class EditUserPage extends AbstractUserPage {
                 gaStore.store();
             }
             
-            setActualResponsePage(UserPage.class);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error occurred while saving user", e);
             error(new ParamResourceModel("saveError", getPage(), e.getMessage()));

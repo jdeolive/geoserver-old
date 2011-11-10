@@ -19,10 +19,9 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
     }
 
     protected void doTestFill() throws Exception {
-        initializeForXML();
         insertValues();        
         
-        tester.startPage(page=new EditRolePage(gaService.getRoleByName("ROLE_WFS")));        
+        tester.startPage(page=new EditRolePage(getRoleServiceName(),gaService.getRoleByName("ROLE_WFS")));        
         tester.assertRenderedPage(EditRolePage.class);
         
         assertFalse(tester.getComponentFromLastRenderedPage("roleForm:rolename").isEnabled());
@@ -66,10 +65,9 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
     }
     
     protected void doTestFill2() throws Exception {
-        initializeForXML();
         insertValues();        
         
-        tester.startPage(page=new EditRolePage(gaService.getRoleByName("ROLE_AUTHENTICATED")));        
+        tester.startPage(page=new EditRolePage(getRoleServiceName(),gaService.getRoleByName("ROLE_AUTHENTICATED")));        
         tester.assertRenderedPage(EditRolePage.class);
         
         tester.assertModelValue("roleForm:rolename", "ROLE_AUTHENTICATED");
@@ -94,9 +92,9 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
         
     public void testReadOnlyRoleService() throws Exception {
         initializeForXML();
-        activateROGAService();
+        activateRORoleService();
         
-        tester.startPage(page=new EditRolePage(GeoserverRole.ADMIN_ROLE));
+        tester.startPage(page=new EditRolePage(getRORoleServiceName(),GeoserverRole.ADMIN_ROLE));
         tester.assertRenderedPage(EditRolePage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("roleForm:rolename").isEnabled());
         assertFalse(tester.getComponentFromLastRenderedPage("roleForm:roleparameditor").isEnabled());

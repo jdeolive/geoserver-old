@@ -30,8 +30,7 @@ public class ServiceAccessRulePage extends AbstractSecurityPage {
     GeoServerDialog dialog;
 
     public ServiceAccessRulePage() {
-        super(null);
-        
+                
         ServiceAccessRuleProvider provider = new ServiceAccessRuleProvider();
         add(rules = new GeoServerTablePanel<ServiceAccessRule>("table", provider, true) {
 

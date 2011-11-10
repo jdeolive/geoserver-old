@@ -26,13 +26,20 @@ import org.geoserver.web.wicket.GeoServerDataProvider;
 @SuppressWarnings("serial")
 public class RoleListProvider extends GeoServerDataProvider<GeoserverRole> {
 
+    protected String  roleServiceName;
+    public RoleListProvider(final String roleServiceName) {
+        this.roleServiceName=roleServiceName;
+    }
+
     
-    public static final Property<GeoserverRole> ROLENAME = new BeanProperty<GeoserverRole>("rolename", "authority");    
-    public static final Property<GeoserverRole> PARENTROLENAME = new Property<GeoserverRole>() {
-        
+    public static final Property<GeoserverRole> ROLENAME = new BeanProperty<GeoserverRole>("rolename", "authority");
+    
+    public final static String ParentPropertyName="parentrolename";
+    public  class ParentProperty implements Property<GeoserverRole>  {
+                
         @Override
         public String getName() {
-            return "parentrolename";
+            return ParentPropertyName;
         }
 
         @Override
@@ -40,12 +47,11 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverRole> {
             GeoserverRole parent=null;
             try {
                 parent = GeoServerApplication.get().getSecurityManager()
-                    .getActiveRoleService().getParentRole(item);
+                    .loadRoleService(roleServiceName).getParentRole(item);
             } catch (IOException e) {
                 //TODO is this correct
                 throw new RuntimeException(e);
-            }
-            
+            }            
             if (parent==null)
                 return "";
             else
@@ -114,7 +120,8 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverRole> {
     protected List<GeoserverRole> getItems() {
         SortedSet<GeoserverRole> roles=null;
         try {
-            roles = GeoServerApplication.get().getSecurityManager().getActiveRoleService().getRoles();
+            roles = GeoServerApplication.get().getSecurityManager().
+                    loadRoleService(roleServiceName).getRoles();
         } catch (IOException e) {
             // TODO, is this correct ?
             throw new RuntimeException(e); 
@@ -128,7 +135,7 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverRole> {
     protected List<Property<GeoserverRole>> getProperties() {
         List<Property<GeoserverRole>> result = new ArrayList<GeoServerDataProvider.Property<GeoserverRole>>();
         result.add(ROLENAME);
-        result.add(PARENTROLENAME);
+        result.add(new ParentProperty());
         result.add(HASROLEPARAMS);
         return result;
     }

@@ -6,29 +6,42 @@ import java.util.SortedSet;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.security.AbstractListPageTest;
+import org.geoserver.web.security.group.EditGroupPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
 public class UserListPageTest extends AbstractListPageTest<GeoserverUser> {
     boolean withRoles=false;
     
-    protected Class<? extends Page> listPageClass() {
-        return UserPage.class;
+    protected Page listPage(PageParameters params ) {
+        if (params==null)
+            params=getParamsForService(getUserGroupServiceName());
+        return new  UserPage(params);
     }
-
-    
-    
-    protected Class<? extends Page> editPageClass() {
-        return EditUserPage.class;
+    protected Page newPage(Object...params) {
+        if (params.length==0)
+            return new  NewUserPage(getUserGroupServiceName());
+        else
+            return new  NewUserPage((String) params[0]);
     }
+    protected Page editPage(Object...params) {
+        if (params.length==0) {
+            return new  EditUserPage(
+                    getUserGroupServiceName(),
+                    new GeoserverUser("dummyuser"));            
+        }
 
-    
-    
-        
-    protected Class<? extends Page> newPageClass() {
-        return NewUserPage.class;
+        if (params.length==1)
+            return new  EditUserPage(
+                    getUserGroupServiceName(),
+                    (GeoserverUser) params[0]);
+        else
+            return new  EditUserPage( (String) params[0],
+                    (GeoserverUser) params[1]);                    
     }
 
 
@@ -54,19 +67,19 @@ public class UserListPageTest extends AbstractListPageTest<GeoserverUser> {
     
     public void testReadOnlyService() throws Exception {
         initializeForXML();
-        tester.startPage(listPageClass());
+        tester.startPage(listPage(null));
         tester.assertVisible(getRemoveLink().getPageRelativePath());
         tester.assertVisible(getRemoveLinkWithRoles().getPageRelativePath());
         tester.assertVisible(getAddLink().getPageRelativePath());
         
-        activateROGAService();
-        tester.startPage(listPageClass());
+        activateRORoleService();
+        tester.startPage(listPage(null));
         tester.assertVisible(getRemoveLink().getPageRelativePath());
         tester.assertInvisible(getRemoveLinkWithRoles().getPageRelativePath());
         tester.assertVisible(getAddLink().getPageRelativePath());
         
         activateROUGService();
-        tester.startPage(listPageClass());
+        tester.startPage(listPage(getParamsForService(getROUserGroupServiceName())));
         tester.assertInvisible(getRemoveLink().getPageRelativePath());
         tester.assertInvisible(getAddLink().getPageRelativePath());
         tester.assertInvisible(getRemoveLinkWithRoles().getPageRelativePath());

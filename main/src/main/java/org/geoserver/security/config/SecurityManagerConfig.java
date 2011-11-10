@@ -32,18 +32,6 @@ public interface SecurityManagerConfig  extends SecurityConfig {
     public void setRoleServiceName(String roleServiceName);
     
     /**
-     * @return the name for a 
-     * {@link GeoserverUserGroupService} object
-     */
-    public String getUserGroupServiceName();
-    
-    /**
-     * @param userGroupServiceName, the name of a
-     * {@link GeoserverUserGroupService} object
-     */
-    public void setUserGroupServiceName(String userGroupServiceName);
-
-    /**
      * @return list of names for {@link GeoServerAuthenticationProvider} objects
      */
     public List<String> getAuthProviderNames();

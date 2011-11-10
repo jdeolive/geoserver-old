@@ -6,6 +6,7 @@ package org.geoserver.web.security.group;
 
 
 import org.apache.wicket.Component;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
@@ -30,10 +31,11 @@ public class GroupPage extends AbstractSecurityPage {
     protected GeoServerDialog dialog;
     protected SelectionGroupRemovalLink removal, removalWithRoles;
     protected BookmarkablePageLink<NewGroupPage> add;
+    protected String userGroupServiceName;
 
-    public GroupPage() {
-        super(null);
-        GroupListProvider provider = new GroupListProvider();
+    public GroupPage(PageParameters params) {
+        this.userGroupServiceName=params.getString(ServiceNameKey);
+        GroupListProvider provider = new GroupListProvider(userGroupServiceName);
         add(groups = new GeoServerTablePanel<GeoserverUserGroup>("table", provider, true) {
 
             @Override
@@ -71,19 +73,21 @@ public class GroupPage extends AbstractSecurityPage {
 
         // the add button
         header.add(add=new BookmarkablePageLink<NewGroupPage>("addNew", NewGroupPage.class));
-        add.setVisible(hasUserGroupStore());
+        add.setParameter(ServiceNameKey, userGroupServiceName);
+        add.setVisible(hasUserGroupStore(userGroupServiceName));
 
         // the removal button
-        header.add(removal = new SelectionGroupRemovalLink("removeSelected", groups, dialog,false));
+        header.add(removal = new SelectionGroupRemovalLink(userGroupServiceName,"removeSelected", groups, dialog,false));
         removal.setOutputMarkupId(true);
         removal.setEnabled(false);
-        removal.setVisibilityAllowed(hasUserGroupStore());
+        removal.setVisibilityAllowed(hasUserGroupStore(userGroupServiceName));
 
         // the removal button
-        header.add(removalWithRoles  = new SelectionGroupRemovalLink("removeSelectedWithRoles", groups, dialog,true));
+        header.add(removalWithRoles  = new SelectionGroupRemovalLink(userGroupServiceName,"removeSelectedWithRoles", groups, dialog,true));
         removalWithRoles.setOutputMarkupId(true);
         removalWithRoles.setEnabled(false);
-        removalWithRoles.setVisibilityAllowed(hasUserGroupStore()&& hasRoleStore());
+        removalWithRoles.setVisibilityAllowed(hasUserGroupStore(userGroupServiceName)&& 
+                hasRoleStore(getSecurityManager().getActiveRoleService().getName()));
         
         return header;
     }
@@ -102,7 +106,7 @@ public class GroupPage extends AbstractSecurityPage {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                setResponsePage(new EditGroupPage((GeoserverUserGroup) getDefaultModelObject()));
+                setResponsePage(new EditGroupPage(userGroupServiceName,(GeoserverUserGroup) getDefaultModelObject()));
             }
         };
     }

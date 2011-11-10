@@ -20,7 +20,6 @@ public class EditUserPageTest extends AbstractUserPageTest {
     }
 
     protected void doTestFill() throws Exception {
-        initializeForXML();
         insertValues();
         addAdditonalData();
         
@@ -94,7 +93,7 @@ public class EditUserPageTest extends AbstractUserPageTest {
         activateROUGService();
         
         current = ugService.getUserByUsername("user1");
-        initializeTester();
+        tester.startPage(page=new EditUserPage(getROUserGroupServiceName(),current));
         tester.assertRenderedPage(EditUserPage.class);
         
         assertFalse(tester.getComponentFromLastRenderedPage("userForm:username").isEnabled());
@@ -124,7 +123,7 @@ public class EditUserPageTest extends AbstractUserPageTest {
 
     protected void doTestReadOnlyRoleService() throws Exception {
         insertValues();        
-        activateROGAService();        
+        activateRORoleService();        
         current = ugService.getUserByUsername("user1");
         initializeTester();
         tester.assertRenderedPage(EditUserPage.class);
@@ -153,10 +152,10 @@ public class EditUserPageTest extends AbstractUserPageTest {
         initializeForXML();
         insertValues();
         activateROUGService();
-        activateROGAService();
+        activateRORoleService();
         
         current = ugService.getUserByUsername("user1");
-        initializeTester();
+        tester.startPage(page=new EditUserPage(getROUserGroupServiceName(),current));
         tester.assertRenderedPage(EditUserPage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("userForm:username").isEnabled());
         assertFalse(tester.getComponentFromLastRenderedPage("userForm:password").isEnabled());
@@ -170,7 +169,7 @@ public class EditUserPageTest extends AbstractUserPageTest {
 
     @Override
     protected void initializeTester() {
-        tester.startPage(page=new EditUserPage(current));
+        tester.startPage(page=new EditUserPage(getUserGroupServiceName(),current));
     }
 
     public void testPasswordsDontMatch() throws Exception {

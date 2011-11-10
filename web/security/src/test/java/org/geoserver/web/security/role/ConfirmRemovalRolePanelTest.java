@@ -30,7 +30,7 @@ public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest
                 return new ConfirmRemovalRolePanel(id, roots.toArray(new GeoserverRole[roots.size()])) {
                     @Override
                     protected StringResourceModel canRemove(GeoserverRole data) {
-                        SelectionRoleRemovalLink link = new SelectionRoleRemovalLink("XXX",null,null);
+                        SelectionRoleRemovalLink link = new SelectionRoleRemovalLink(getRoleServiceName(),"XXX",null,null);
                         return link.canRemove(data);
                     }
 

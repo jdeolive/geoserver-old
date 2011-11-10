@@ -22,14 +22,14 @@ import org.geoserver.web.wicket.ParamResourceModel;
  */
 public class EditRolePage extends AbstractRolePage {
 
-    public EditRolePage(GeoserverRole role) {
-        this(role,null);
+    public EditRolePage(String roleServiceName,GeoserverRole role) {
+        this(roleServiceName,role,null);
     }
     
-    public EditRolePage(GeoserverRole role,Page responsePage) {
+    public EditRolePage(String roleServiceName,GeoserverRole role,Page responsePage) {
         // parentrole name not known at this moment, parent
         // constructor will do the job 
-        super(new RoleUIModel(role.getAuthority(), null,role.getUserName()), 
+        super(roleServiceName,new RoleUIModel(role.getAuthority(), null,role.getUserName()), 
                 role.getProperties(),responsePage);        
         rolenameField.setEnabled(false);
         
@@ -46,12 +46,12 @@ public class EditRolePage extends AbstractRolePage {
     @Override
     protected void onFormSubmit() {
         
-        if (hasRoleStore()==false) {
+        if (hasRoleStore(roleServiceName)==false) {
             throw new RuntimeException("Invalid workflow, cannot store in a read only GA service");
         }
         
         try {
-            GeoserverRoleStore store = getRoleStore();
+            GeoserverRoleStore store = getRoleStore(roleServiceName);
             GeoserverRole role = store.getRoleByName(uiRole.getRolename());
             
             role.getProperties().clear();
@@ -69,7 +69,7 @@ public class EditRolePage extends AbstractRolePage {
             store.setParentRole(role,parentRole);
             store.store();
             
-            setActualResponsePage(RolePage.class);
+            //setActualResponsePage(RolePage.class);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error occurred while saving role", e);
             error(new ParamResourceModel("saveError", getPage(), e.getMessage()));

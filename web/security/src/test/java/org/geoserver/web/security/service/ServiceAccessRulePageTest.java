@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
+import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
@@ -19,20 +20,21 @@ public class ServiceAccessRulePageTest extends AbstractListPageTest<ServiceAcces
 
     
     
-    protected Class<? extends Page> listPageClass() {
-        return ServiceAccessRulePage.class;
-    }
-
     
-    protected Class<? extends Page> newPageClass() {
-        return NewServiceAccessRulePage.class;
+    protected Page listPage(PageParameters params ) {
+        return new  ServiceAccessRulePage();
+    }
+    protected Page newPage(Object...params) {
+        return new  NewServiceAccessRulePage();
+    }
+    protected Page editPage(Object...params) {
+        if (params.length==0) {
+            return new  EditServiceAccessRulePage( new ServiceAccessRule());
+        }
+        else 
+            return new  EditServiceAccessRulePage( (ServiceAccessRule) params[0]);
     }
     
-    
-    protected Class<? extends Page> editPageClass() {
-        return EditServiceAccessRulePage.class;
-    }
-
     @Override
     protected Property<ServiceAccessRule> getEditProperty() {
         return ServiceAccessRuleProvider.RULEKEY;

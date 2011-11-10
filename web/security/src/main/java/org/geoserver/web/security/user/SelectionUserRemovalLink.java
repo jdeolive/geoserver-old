@@ -32,13 +32,15 @@ public class SelectionUserRemovalLink extends AjaxLink<Object> {
     boolean disassociateRoles;
     ConfirmRemovalUserPanel removePanel;
     GeoServerDialog.DialogDelegate delegate;
+    String userGroupsServiceName;
 
-    public SelectionUserRemovalLink(String id, GeoServerTablePanel<GeoserverUser> users,
+    public SelectionUserRemovalLink(String userGroupsServiceName,String id, GeoServerTablePanel<GeoserverUser> users,
             GeoServerDialog dialog,boolean disassociateRoles) {
         super(id);
         this.users = users;
         this.dialog = dialog;
         this.disassociateRoles=disassociateRoles;
+        this.userGroupsServiceName=userGroupsServiceName;
     }
     //return new ConfirmRemovalPanel<GeoserverUserGroup>(id,"username", selection) {                //return new ConfirmRemovalPanel<GeoserverUserGroup>(id,"username", selection) {
 
@@ -69,8 +71,10 @@ public class SelectionUserRemovalLink extends AjaxLink<Object> {
                 // cascade delete the whole selection
 
 
-                GeoserverUserGroupService ugService = GeoServerApplication.get().getSecurityManager().getActiveUserGroupService();
+                
                 try {
+                    GeoserverUserGroupService ugService = GeoServerApplication.get()
+                            .getSecurityManager().loadUserGroupService(userGroupsServiceName);
                     GeoserverUserGroupStore ugStore = ugService.createStore();
                     for (GeoserverUser user : removePanel.getRoots()) { // keep admins                    
                         ugStore.removeUser(user);
