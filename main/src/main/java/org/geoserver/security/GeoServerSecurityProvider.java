@@ -20,7 +20,6 @@ import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
 import org.geoserver.security.password.GeoserverPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.password.PasswordValidatorImpl;
-import org.springframework.security.authentication.AuthenticationProvider;
 
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 
@@ -129,6 +128,27 @@ public abstract class GeoServerSecurityProvider {
      * </p> 
      */
     public GeoServerAuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
+        return null;
+    }
+
+    /**
+     * Returns the concrete class of security filter created by 
+     *  {@link #createFilter(SecurityNamedServiceConfig)}.
+     * <p>
+     * If the extension does not provide an filter this method should simply return <code>null</code>.
+     * </p> 
+     */
+    public Class<? extends GeoServerSecurityFilter> getFilterClass() {
+        return null;
+    }
+
+    /**
+     * Creates a security filter.
+     * <p>
+     * If the extension does not provide an filter this method should simply return <code>null</code>.
+     * </p> 
+     */
+    public GeoServerSecurityFilter createFilter(SecurityNamedServiceConfig config) {
         return null;
     }
 

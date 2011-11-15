@@ -35,36 +35,11 @@
           http://www.springframework.org/schema/security
           http://www.springframework.org/schema/security/spring-security-3.0.4.xsd">
 
-  <!--bean id="filterChainProxy" class="org.springframework.security.web.FilterChainProxy">
-    <sec:filter-chain-map path-type="ant" >
-       <sec:filter-chain pattern="/web/**" filters="httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor" />      
-       <sec:filter-chain pattern="/j_spring_security_check/**" filters="httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor" />
-       <sec:filter-chain pattern="/j_spring_security_logout/**" filters="httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor" />       
-       <sec:filter-chain pattern="/rest/**" filters="httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilter,anonymousProcessingFilter,owsExceptionTranslationFilter,restFilterInvocationInterceptor" />
-       <sec:filter-chain pattern="/gwc/rest/web/**" filters="anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor" />
-       <sec:filter-chain pattern="/gwc/rest/**" filters="httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilterWithoutRememberMeService,owsExceptionTranslationFilter,restFilterInvocationInterceptor" />
-       <sec:filter-chain pattern="/**" filters="httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilter,anonymousProcessingFilter,owsExceptionTranslationFilter,filterInvocationInterceptor" />
-   </sec:filter-chain-map>
-  </bean-->
-
   <bean id="filterChainProxy" class="org.geoserver.security.GeoServerSecurityFilterChainProxy">
     <constructor-arg ref="authenticationManager"/>
-    <property name="httpSessionContextWithASCFilter" ref="httpSessionContextIntegrationFilterWithASCTrue"/>
-    <property name="httpSessionContextWithNoASCFilter" ref="httpSessionContextIntegrationFilterWithASCFalse"/>
-    <property name="securityContextHolderFilter" ref="securityContextHolderAwareRequestFilter"/>
-    <property name="usernamePasswordAuthFilter" ref="authenticationProcessingFilter"/>
-    <property name="rememberMeAuthFilter" ref="rememberMeProcessingFilter"/>
-    <property name="anonymousAuthFilter" ref="anonymousProcessingFilter"/>
-    <property name="basicAuthFilter" ref="basicProcessingFilter"/>
-    <property name="basicAuthNoRememberMeFilter" ref="basicProcessingFilterWithoutRememberMeService"/>
-    <property name="exceptionTranslationFilter" ref="consoleExceptionTranslationFilter"/>
-    <property name="owsExceptionTranslationFilter" ref="owsExceptionTranslationFilter"/>
-    <property name="logoutFilter" ref="logoutFilter"/>
-    <property name="filterSecurityInterceptor" ref="filterInvocationInterceptor"/>
-    <property name="restFilterSecurityInterceptor" ref="restFilterInvocationInterceptor"/>
   </bean>
 
-  <bean id="restFilterInvocationInterceptor"
+  <bean id="filterSecurityRestInterceptor"
       class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
       <property name="authenticationManager" ref="authenticationManager" />
       <property name="accessDecisionManager">        
@@ -98,7 +73,7 @@
     The securityMetadataSource provides a set of path along with the
     roles that the user must have in order to access the secured resource
   -->
-  <bean id="filterInvocationInterceptor"
+  <bean id="filterSecurityInterceptor"
     class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">    
     <property name="authenticationManager" ref="authenticationManager" />
     <property name="accessDecisionManager">
@@ -129,7 +104,7 @@
     information can be gathered from a cookie set on the browser, too.
     This version will create the user session if missing, it's meant for web console operation.
   -->
-  <bean id="httpSessionContextIntegrationFilterWithASCTrue"
+  <bean id="securityContextAscFilter"
     class="org.springframework.security.web.context.SecurityContextPersistenceFilter">    
     <property name='securityContextRepository'>
        <bean class='org.springframework.security.web.context.HttpSessionSecurityContextRepository'>
@@ -144,7 +119,7 @@
     users that have already authenticated using a form based access to keep using that
     authentication when accessing services.
   -->
-  <bean id="httpSessionContextIntegrationFilterWithASCFalse"
+  <bean id="securityContextNoAscFilter"
     class="org.springframework.security.web.context.SecurityContextPersistenceFilter">
     <property name='securityContextRepository'>
        <bean class='org.springframework.security.web.context.HttpSessionSecurityContextRepository'>
@@ -187,7 +162,7 @@
   </bean>
   
   
-  <bean id="authenticationProcessingFilter"
+  <bean id="formLoginFilter"
     class="org.geoserver.security.GeoserverAuthenticationProcessingFilter">
     <property name="authenticationManager" ref="authenticationManager" />
 	<property name="authenticationFailureHandler" ref="failureHandler" />
@@ -200,7 +175,7 @@
   <!--  
     Double check, this may not be necessary
   -->
-  <bean id="securityContextHolderAwareRequestFilter"
+  <bean id="servletApiSupportFilter"
     class="org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter" />
 
   <!-- 
@@ -208,7 +183,7 @@
     information into the context using remember-me cookies. Will try to authenticate
     the contents of the cookie against the authentication manager
   -->
-  <bean id="rememberMeProcessingFilter"
+  <bean id="rememberMeFilter"
     class="org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter">
     <property name="authenticationManager" ref="authenticationManager" />
     <property name="rememberMeServices" ref="rememberMeServices" />
@@ -219,7 +194,7 @@
     we always get an anonymous user and anonymous role if all other authentication
     attempts failed
   -->
-  <bean id="anonymousProcessingFilter"
+  <bean id="anonymousFilter"
     class="org.springframework.security.web.authentication.AnonymousAuthenticationFilter">
     <property name="key" value="geoserver" />
     <property name="userAttribute" value="anonymousUser,ROLE_ANONYMOUS" />
@@ -229,7 +204,7 @@
     Handles the basic authentication headers. This integrates with the remember-me services, so that
     you'll have to provide username/password just once during interactive tests.
   -->
-  <bean id="basicProcessingFilter"
+  <bean id="basicAuthFilter"
     class="org.springframework.security.web.authentication.www.BasicAuthenticationFilter">
     <property name="authenticationManager">
       <ref local="authenticationManager" />
@@ -247,7 +222,7 @@
     Used for /gwc/rest/** entry points as somehow the presence of the remember-me service makes the
     POST'ed form to reach the gwc restlets empty.
   -->
-  <bean id="basicProcessingFilterWithoutRememberMeService"
+  <bean id="basicAuthNoRememberMeFilter"
     class="org.springframework.security.web.authentication.www.BasicAuthenticationFilter">
     <property name="authenticationManager">
       <ref local="authenticationManager" />
@@ -275,7 +250,7 @@
     to the login form, whilst returns the user to an access denied page if the authorization
     levels are not enough
   -->
-  <bean id="consoleExceptionTranslationFilter"
+  <bean id="exceptionTranslationFilter"
     class="org.springframework.security.web.access.ExceptionTranslationFilter">
     <property name="authenticationEntryPoint">
       <bean
@@ -297,7 +272,7 @@
     to the login form, whilst returns the user to an access denied page if the authorization
     levels are not enough
   -->
-  <bean id="owsExceptionTranslationFilter"
+  <bean id="exceptionTranslationOwsFilter"
     class="org.springframework.security.web.access.ExceptionTranslationFilter">
     <property name="authenticationEntryPoint">
       <ref bean="basicProcessingFilterEntryPoint" />

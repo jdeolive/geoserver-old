@@ -1,6 +1,5 @@
 package org.geoserver.security;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,11 +15,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.GrantedAuthorityImpl;
 
 public class GeoServerCustomAuthTest extends GeoServerTestSupport {
 
-    
     @Override
     protected String[] getSpringContextLocations() {
         List<String> list = new ArrayList<String>(Arrays.asList(super.getSpringContextLocations()));

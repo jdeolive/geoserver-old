@@ -11,9 +11,11 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -78,6 +80,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.userdetails.memory.UserAttribute;
 import org.springframework.security.core.userdetails.memory.UserAttributeEditor;
 
+import com.thoughtworks.xstream.converters.MarshallingContext;
+import com.thoughtworks.xstream.converters.UnmarshallingContext;
+import com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.mapper.Mapper;
+
+import static org.geoserver.security.GeoServerSecurityFilterChain.*;
+
 /**
  * Top level singleton/facade/dao for the security authentication/authorization subsystem.  
  * 
@@ -140,6 +151,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     RoleServiceHelper roleServiceHelper = new RoleServiceHelper();
     UserGroupServiceHelper userGroupServiceHelper = new UserGroupServiceHelper();
     AuthProviderHelper authProviderHelper = new AuthProviderHelper();
+    FilterHelper filterHelper = new FilterHelper();
 
     /**
      * listeners
@@ -311,6 +323,13 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      */
     public File getAuthRoot() throws IOException {
         return dataDir.findOrCreateSecurityDir("auth");
+    }
+
+    /**
+     * authentication filter root directory.
+     */
+    public File getFilterRoot() throws IOException {
+        return dataDir.findOrCreateSecurityDir("filter");
     }
 
     /**
@@ -512,6 +531,26 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         authProviderHelper.saveConfig(config);
     }
 
+    /**
+     * Lists all available authentication provider configurations.
+     */
+    public SortedSet<String> listFilters() throws IOException {
+        return listFiles(getFilterRoot());
+    }
+
+    /**
+     * Loads an authentication provider from a named configuration.
+     * 
+     * @param name The name of the authentication provider service configuration.
+     */
+    public GeoServerSecurityFilter loadFilter(String name) throws IOException {
+        return filterHelper.load(name);
+    }
+    
+    public void saveFilter(SecurityNamedServiceConfig config) throws IOException {
+        filterHelper.saveConfig(config);
+    }
+    
 //    /**
 //     * Removes an authentication provider configuration.
 //     * 
@@ -552,6 +591,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
         catch(Exception e) {
             //exception, revert back to known working config
+            LOGGER.log(Level.SEVERE, "Error saving security config, reverting back to previous", e);
             init(oldConfig);
             return;
         }
@@ -585,8 +625,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         getUserGroupRoot();
         getAuthRoot();
         getPasswordPolicyRoot();
-        //getAuthRoot();
-        
+        getFilterRoot();
+
         // check for service.properties, create if necessary
         File serviceFile = new File(getSecurityRoot(), "service.properties");
         if (serviceFile.exists()==false) {
@@ -673,13 +713,43 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             authProvider = loadAuthenticationProvider(GeoServerAuthenticationProvider.DEFAULT_NAME);
         }
 
+        //setup the default filter chain
+        GeoServerSecurityFilterChain filterChain = new GeoServerSecurityFilterChain();
+        
+        filterChain.put("/web/**", Arrays.asList(SECURITY_CONTEXT_ASC_FILTER, LOGOUT_FILTER, 
+            FORM_LOGIN_FILTER, SERVLET_API_SUPPORT_FILTER, REMEMBER_ME_FILTER, ANONYMOUS_FILTER, 
+            EXCEPTION_TRANSLATION_FILTER, FILTER_SECURITY_INTERCEPTOR));
+
+        filterChain.put("/j_spring_security_check/**", Arrays.asList(SECURITY_CONTEXT_ASC_FILTER, 
+            LOGOUT_FILTER, FORM_LOGIN_FILTER, SERVLET_API_SUPPORT_FILTER, REMEMBER_ME_FILTER, 
+            ANONYMOUS_FILTER, EXCEPTION_TRANSLATION_FILTER, FILTER_SECURITY_INTERCEPTOR));
+        
+        filterChain.put("/j_spring_security_logout/**", Arrays.asList(SECURITY_CONTEXT_ASC_FILTER, 
+            LOGOUT_FILTER, FORM_LOGIN_FILTER, SERVLET_API_SUPPORT_FILTER, REMEMBER_ME_FILTER, 
+            ANONYMOUS_FILTER, EXCEPTION_TRANSLATION_FILTER, FILTER_SECURITY_INTERCEPTOR));
+        
+        filterChain.put("/rest/**", Arrays.asList(SECURITY_CONTEXT_NO_ASC_FILTER, BASIC_AUTH_FILTER,
+            ANONYMOUS_FILTER, EXCEPTION_TRANSLATION_OWS_FILTER, FILTER_SECURITY_REST_INTERCEPTOR));
+
+        filterChain.put("/gwc/rest/web/**", Arrays.asList(ANONYMOUS_FILTER, 
+            EXCEPTION_TRANSLATION_FILTER, FILTER_SECURITY_INTERCEPTOR));
+
+        filterChain.put("/gwc/rest/**", Arrays.asList(SECURITY_CONTEXT_NO_ASC_FILTER, 
+            BASIC_AUTH_NO_REMEMBER_ME_FILTER, EXCEPTION_TRANSLATION_OWS_FILTER, 
+            FILTER_SECURITY_REST_INTERCEPTOR));
+        
+        filterChain.put("/**", Arrays.asList(SECURITY_CONTEXT_NO_ASC_FILTER, BASIC_AUTH_FILTER, 
+            ANONYMOUS_FILTER, EXCEPTION_TRANSLATION_OWS_FILTER, FILTER_SECURITY_INTERCEPTOR));
+
         //save the top level config
-        SecurityManagerConfig config = new SecurityManagerConfigImpl();
+        SecurityManagerConfigImpl config = new SecurityManagerConfigImpl();
         config.setRoleServiceName(roleService.getName());
         config.getAuthProviderNames().add(authProvider.getName());
         config.setEncryptingUrlParams(false);
         // start with weak encryption
         config.setConfigPasswordEncrypterName(GeoserverConfigPBEPasswordEncoder.BeanName);
+        config.setFilterChain(filterChain);
+
         saveSecurityConfig(config);
 
         //TODO: just call initializeFrom
@@ -822,10 +892,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     XStreamPersister globalPersister() throws IOException {
         XStreamPersister xp = persister();
         xp.getXStream().alias("security", SecurityManagerConfigImpl.class);
+        xp.getXStream().registerLocalConverter( SecurityManagerConfigImpl.class, "filterChain", 
+            new FilterChainConverter(xp.getXStream().getMapper()));
         
-//      Not needed anymore, property Name has chanted        
-//        xp.getXStream().aliasField("roleServiceName", 
-//            SecurityManagerConfigImpl.class, "grantedAuthorityServiceName");
         return xp;
     }
 
@@ -838,6 +907,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         //create and configure an xstream persister to load the configuration files
         XStreamPersister xp = new XStreamPersisterFactory().createXMLPersister();
         xp.getXStream().alias("security", SecurityManagerConfigImpl.class);
+        
         for (GeoServerSecurityProvider roleService : all) {
             roleService.configure(xp);
         }
@@ -884,7 +954,45 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
     }
 
-    class UserGroupServiceHelper {
+    abstract class HelperBase<T, C extends SecurityNamedServiceConfig> {
+        public abstract T load(String name) throws IOException;
+
+        /**
+         * loads the named entity config from persistence
+         */
+        public C loadConfig(String name) throws IOException {
+            File dir = new File(getRoot(), name);
+            if (!dir.exists()) {
+                return null;
+            }
+
+            XStreamPersister xp = persister();
+            return (C) loadConfigFile(dir, xp);
+        }
+
+        /**
+         * saves the user group service config to persistence
+         */
+        public void saveConfig(SecurityNamedServiceConfig config) throws IOException {
+            File dir = new File(getRoot(), config.getName());
+            dir.mkdir();
+
+            saveConfigFile(config, dir, persister());
+        }
+
+        /**
+         * removes the user group service config from persistence
+         */
+        public void removeConfig(String name) throws IOException {
+            FileUtils.deleteDirectory(new File(getRoot(), name));
+        }
+
+        /**
+         * config root
+         */
+        protected abstract File getRoot() throws IOException;
+    }
+    class UserGroupServiceHelper extends HelperBase<GeoserverUserGroupService,SecurityNamedServiceConfig> {
         public GeoserverUserGroupService load(String name) throws IOException {
             
             SecurityNamedServiceConfig config = loadConfig(name);
@@ -938,39 +1046,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             
             return service;
         }
-
-        /**
-         * loads the named user group service config from persistence
-         */
-        public SecurityNamedServiceConfig loadConfig(String name) throws IOException {
-            File dir = new File(getUserGroupRoot(), name);
-            if (!dir.exists()) {
-                return null;
-            }
-
-            XStreamPersister xp = persister();
-            return (SecurityNamedServiceConfig) loadConfigFile(dir, xp);
-        }
-
-        /**
-         * saves the user group service config to persistence
-         */
-        public void saveConfig(SecurityNamedServiceConfig config) throws IOException {
-            File dir = new File(getUserGroupRoot(), config.getName());
-            dir.mkdir();
-
-            saveConfigFile(config, dir, persister());
-        }
-
-        /**
-         * removes the user group service config from persistence
-         */
-        public void removeConfig(String name) throws IOException {
-            FileUtils.deleteDirectory(new File(getUserGroupRoot(), name));
+        
+        @Override
+        protected File getRoot() throws IOException {
+            return getUserGroupRoot();
         }
     }
 
-    class RoleServiceHelper {
+    class RoleServiceHelper extends HelperBase<GeoserverRoleService,SecurityNamedServiceConfig>{
 
          /**
          * Loads the role service for the named config from persistence.
@@ -1031,38 +1114,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             return service;
         }
 
-        /**
-         * loads the named authority service config from persistence
-         */
-        public SecurityNamedServiceConfig loadConfig(String name) throws IOException {
-            File dir = new File(getRoleRoot(), name);
-            if (!dir.exists()) {
-                return null;
-            }
-
-            XStreamPersister xp = persister();
-            return (SecurityNamedServiceConfig) loadConfigFile(dir, xp);
-        }
-
-        /**
-         * saves the authority service config to persistence
-         */
-        public void saveConfig(SecurityNamedServiceConfig config) throws IOException {
-            File dir = new File(getRoleRoot(), config.getName());
-            dir.mkdir();
-            saveConfigFile(config, dir, persister());
-        }
-
-        /**
-         * removes the authority service config from persistence
-         */
-        public void removeConfig(String name) throws IOException {
-            FileUtils.deleteDirectory(new File(getRoleRoot(), name));
+        @Override
+        protected File getRoot() throws IOException {
+            return getRoleRoot();
         }
     }
 
 
-    class PasswordValidatorHelper {
+    class PasswordValidatorHelper extends HelperBase<PasswordValidator,PasswordPolicyConfig> {
 
         /**
         * Loads the password policy for the named config from persistence.
@@ -1095,33 +1154,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
            return validator;
        }
 
-       /**
-        * loads the named password policy from persistence
-        */
-       public PasswordPolicyConfig loadConfig(String name) throws IOException {
-           File dir = new File(getPasswordPolicyRoot(), name);
-           if (!dir.exists()) {
-               return null;
-           }
-
-           XStreamPersister xp = persister();
-           return (PasswordPolicyConfig) loadConfigFile(dir, xp);
-       }
-
-       /**
-        * saves the password policy to persistence
-        */
-       public void saveConfig(PasswordPolicyConfig config) throws IOException {
-           File dir = new File(getPasswordPolicyRoot(), config.getName());
-           dir.mkdir();
-           saveConfigFile(config, dir, persister());
-       }
-
-       /**
-        * removes the password policy configuration from persistence
-        */
-       public void removeConfig(String name) throws IOException {
-           FileUtils.deleteDirectory(new File(getPasswordPolicyRoot(), name));
+       @Override
+       protected File getRoot() throws IOException {
+           return getPasswordPolicyRoot();
        }
    }
     
@@ -1224,9 +1259,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
     }
  
-    
-    
-    class AuthProviderHelper {
+    class AuthProviderHelper extends HelperBase<GeoServerAuthenticationProvider, SecurityNamedServiceConfig>{
         /**
          * Loads the auth provider for the named config from persistence.
          */
@@ -1262,33 +1295,115 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             return authProvider;
         }
 
+        @Override
+        protected File getRoot() throws IOException {
+             return getAuthRoot();
+        }
+    }
+
+    class FilterHelper extends HelperBase<GeoServerSecurityFilter, SecurityNamedServiceConfig>{
         /**
-         * loads the named authentication provider config from persistence
+         * Loads the filter for the named config from persistence.
          */
-        public SecurityNamedServiceConfig loadConfig(String name) throws IOException {
-            File dir = new File(getAuthRoot(), name);
-            if (!dir.exists()) {
+        public GeoServerSecurityFilter load(String name) throws IOException {
+            
+            SecurityNamedServiceConfig config = loadConfig(name);
+            if (config == null) {
+                //no such config
                 return null;
             }
 
-            XStreamPersister xp = persister();
-            return (SecurityNamedServiceConfig) loadConfigFile(dir, xp);
+            //look up the service for this config
+            GeoServerSecurityFilter filter = null;
+
+            for (GeoServerSecurityProvider p  : lookupSecurityProviders()) {
+                if (p.getFilterClass() == null) {
+                    continue;
+                }
+                if (p.getFilterClass().getName().equals(config.getClassName())) {
+                    filter = p.createFilter(config);
+                    break;
+                }
+            }
+
+            if (filter == null) {
+                throw new IOException("No authentication provider matching config: " + config);
+            }
+
+            filter.setName(name);
+            filter.setSecurityManager(GeoServerSecurityManager.this);
+            filter.initializeFromConfig(config);
+
+            return filter;
         }
 
-        /**
-         * saves the authentication provider config to persistence
-         */
-        public void saveConfig(SecurityNamedServiceConfig config) throws IOException {
-            File dir = new File(getAuthRoot(), config.getName());
-            dir.mkdir();
-            saveConfigFile(config, dir, persister());
+        @Override
+        protected File getRoot() throws IOException {
+            return getFilterRoot();
+        }
+    }
+
+    /**
+     * custom converter for filter chain
+     */
+    static class FilterChainConverter extends AbstractCollectionConverter {
+
+        public FilterChainConverter(Mapper mapper) {
+            super(mapper);
         }
 
-        /**
-         * removes the authentication provider config from persistence
-         */
-        public void removeConfig(String name) throws IOException {
-            FileUtils.deleteDirectory(new File(getAuthRoot(), name));
+        @Override
+        public boolean canConvert(Class type) {
+            return GeoServerSecurityFilterChain.class.isAssignableFrom(type);
         }
+
+        @Override
+        public void marshal(Object source, HierarchicalStreamWriter writer,
+                MarshallingContext context) {
+            GeoServerSecurityFilterChain filterChain = (GeoServerSecurityFilterChain) source;
+            for (Map.Entry<String, List<String>> e : filterChain.entrySet()) {
+            
+                //<filterChain>
+                //  <filters path="...">
+                //    <filter>name1</filter>
+                //    <filter>name2</filter>
+                //    ...
+                writer.startNode("filters");
+                writer.addAttribute("path", e.getKey());
+                
+                for (String filterName : e.getValue()) {
+                    writer.startNode("filter");
+                    writer.setValue(filterName);
+                    writer.endNode();
+                }
+
+                writer.endNode();
+            }
+        }
+
+        @Override
+        public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
+            GeoServerSecurityFilterChain filterChain = new GeoServerSecurityFilterChain();
+            while(reader.hasMoreChildren()) {
+                
+                //<filters path="..."
+                reader.moveDown();
+                String path = reader.getAttribute("path");
+
+                //<filter
+                List<String> filterNames = new ArrayList<String>();
+                while(reader.hasMoreChildren()) {
+                    reader.moveDown();
+                    filterNames.add(reader.getValue());
+                    reader.moveUp();
+                }
+
+                filterChain.put(path, filterNames);
+                reader.moveUp();
+            }
+            
+            return filterChain;
+        }
+
     }
 }
