@@ -8,6 +8,7 @@ package org.geoserver.security.config.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geoserver.security.GeoServerSecurityFilterChain;
 import org.geoserver.security.config.SecurityManagerConfig;
 
 /**
@@ -25,6 +26,8 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
     private String configPasswordEncrypterName;
     private boolean encryptingUrlParams;
 
+    private GeoServerSecurityFilterChain filterChain = new GeoServerSecurityFilterChain();
+
     public SecurityManagerConfigImpl() {
     }
 
@@ -33,6 +36,8 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
         this.authProviderNames = config.getAuthProviderNames() != null ? 
             new ArrayList<String>(config.getAuthProviderNames()) : null;
         this.anonymousAuth = config.isAnonymousAuth();
+        this.filterChain = config.getFilterChain() != null ? 
+            new GeoServerSecurityFilterChain(config.getFilterChain()) : null;
     }
 
     public String getRoleServiceName() {
@@ -45,15 +50,27 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
     public List<String> getAuthProviderNames() {
         return authProviderNames;
     }
+
     public void setAnonymousAuth(Boolean anonymousAuth) {
         this.anonymousAuth = anonymousAuth;
     }
     public Boolean isAnonymousAuth() {
         return anonymousAuth;
     }
+
+    @Override
+    public GeoServerSecurityFilterChain getFilterChain() {
+        return filterChain;
+    }
+
+    public void setFilterChain(GeoServerSecurityFilterChain filterChain) {
+        this.filterChain = filterChain;
+    }
+
     private Object readResolve() {
         authProviderNames = authProviderNames != null ? authProviderNames : new ArrayList<String>();
         anonymousAuth = anonymousAuth != null ? anonymousAuth : Boolean.TRUE;
+        filterChain = filterChain != null ? filterChain : new GeoServerSecurityFilterChain();
         return this;
     }
 

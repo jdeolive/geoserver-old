@@ -7,6 +7,7 @@ package org.geoserver.security.config;
 
 import java.util.List;
 
+import org.geoserver.security.GeoServerSecurityFilterChain;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 
@@ -45,6 +46,11 @@ public interface SecurityManagerConfig  extends SecurityConfig {
      * Sets flag determining if anonymous authentication is active.
      */
     public void setAnonymousAuth(Boolean anonymousAuth);
+
+    /**
+     * @return The security filter chain.
+     */
+    public GeoServerSecurityFilterChain getFilterChain();
 
     /**
      * Admin Console encrypts URL Parameters ?
