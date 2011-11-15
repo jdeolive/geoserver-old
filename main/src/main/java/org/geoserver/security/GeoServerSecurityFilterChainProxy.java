@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -13,7 +15,12 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.SecurityManagerConfig;
+import org.geotools.util.logging.Logging;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.access.intercept.FilterSecurityInterceptor;
@@ -25,92 +32,26 @@ import org.springframework.security.web.context.SecurityContextPersistenceFilter
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 
 public class GeoServerSecurityFilterChainProxy extends FilterChainProxy 
-    implements SecurityManagerListener  {
+    implements SecurityManagerListener, ApplicationContextAware  {
     
+    static Logger LOGGER = Logging.getLogger("org.geoserver.security");
+
     static ThreadLocal<HttpServletRequest> REQUEST = new ThreadLocal<HttpServletRequest>();
 
     //security manager
     GeoServerSecurityManager securityManager;
 
-    //security context integration filters
-    SecurityContextPersistenceFilter httpSessionContextWithASCFilter, httpSessionContextWithNoASCFilter;
-    SecurityContextHolderAwareRequestFilter securityContextHolderFilter;
-
-    //auth filters
-    GeoserverAuthenticationProcessingFilter usernamePasswordAuthFilter;
-    RememberMeAuthenticationFilter rememberMeAuthFilter;
-    AnonymousAuthenticationFilter anonymousAuthFilter;
-    BasicAuthenticationFilter basicAuthFilter, basicAuthNoRememberMeFilter;
-
-    //exception translators
-    ExceptionTranslationFilter exceptionTranslationFilter, owsExceptionTranslationFilter;
-
-    //logout
-    LogoutFilter logoutFilter;
-
-    //main authentication filters
-    FilterSecurityInterceptor filterSecurityInterceptor, restFilterSecurityInterceptor; 
+    //app context
+    ApplicationContext appContext;
 
     public GeoServerSecurityFilterChainProxy(GeoServerSecurityManager securityManager) {
         this.securityManager = securityManager;
         this.securityManager.addListener(this);
     }
 
-    public void setHttpSessionContextWithASCFilter(
-            SecurityContextPersistenceFilter httpSessionContextWithASCFilter) {
-        this.httpSessionContextWithASCFilter = httpSessionContextWithASCFilter;
-    }
-
-    public void setHttpSessionContextWithNoASCFilter(
-            SecurityContextPersistenceFilter httpSessionContextWithNoASCFilter) {
-        this.httpSessionContextWithNoASCFilter = httpSessionContextWithNoASCFilter;
-    }
-
-    public void setSecurityContextHolderFilter(
-            SecurityContextHolderAwareRequestFilter securityContextHolderFilter) {
-        this.securityContextHolderFilter = securityContextHolderFilter;
-    }
-
-    public void setUsernamePasswordAuthFilter(
-            GeoserverAuthenticationProcessingFilter usernamePasswordAuthFilter) {
-        this.usernamePasswordAuthFilter = usernamePasswordAuthFilter;
-    }
-
-    public void setRememberMeAuthFilter(RememberMeAuthenticationFilter rememberMeAuthFilter) {
-        this.rememberMeAuthFilter = rememberMeAuthFilter;
-    }
-
-    public void setAnonymousAuthFilter(AnonymousAuthenticationFilter anonymousAuthFilter) {
-        this.anonymousAuthFilter = anonymousAuthFilter;
-    }
-
-    public void setBasicAuthFilter(BasicAuthenticationFilter basicAuthFilter) {
-        this.basicAuthFilter = basicAuthFilter;
-    }
-
-    public void setBasicAuthNoRememberMeFilter(BasicAuthenticationFilter basicAuthNoRememberMeFilter) {
-        this.basicAuthNoRememberMeFilter = basicAuthNoRememberMeFilter;
-    }
-
-    public void setExceptionTranslationFilter(ExceptionTranslationFilter exceptionTranslationFilter) {
-        this.exceptionTranslationFilter = exceptionTranslationFilter;
-    }
-
-    public void setOwsExceptionTranslationFilter(
-            ExceptionTranslationFilter owsExceptionTranslationFilter) {
-        this.owsExceptionTranslationFilter = owsExceptionTranslationFilter;
-    }
-
-    public void setLogoutFilter(LogoutFilter logoutFilter) {
-        this.logoutFilter = logoutFilter;
-    }
-
-    public void setFilterSecurityInterceptor(FilterSecurityInterceptor filterSecurityInterceptor) {
-        this.filterSecurityInterceptor = filterSecurityInterceptor;
-    }
-
-    public void setRestFilterSecurityInterceptor(FilterSecurityInterceptor restFilterSecurityInterceptor) {
-        this.restFilterSecurityInterceptor = restFilterSecurityInterceptor;
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.appContext = applicationContext;
     }
 
     @Override
@@ -137,112 +78,49 @@ public class GeoServerSecurityFilterChainProxy extends FilterChainProxy
     };
 
     void createFilterChain() {
-        SecurityManagerConfig config = securityManager.getSecurityConfig();
+        SecurityManagerConfig config = securityManager.getSecurityConfig(); 
+        GeoServerSecurityFilterChain filterChain = config.getFilterChain();
 
-        GeoServerSecurityFilterChain filterChain = new GeoServerSecurityFilterChain();
-        filterChain.put("/web/**", createWebFilterList(config));
-        filterChain.put("/j_spring_security_check/**", createSecurityCheckFilterList(config));
-        filterChain.put("/j_spring_security_logout/**", createSecurityLogoutFilterList(config));
-        filterChain.put("/rest/**", createRestFilterList(config));
-        filterChain.put("/gwc/rest/web/**", createGwcWebFilterList(config));
-        filterChain.put("/gwc/rest/**", createGwcRestFilterList(config));
-        filterChain.put("/**", createCatchAllFilterList(config));
+        //build up the map with actual filters, by processing bean names from the filter chain
+        LinkedHashMap<String, List<Filter>> filterChainMap = new LinkedHashMap();
+        
+        for (Map.Entry<String,List<String>> e : filterChain.entrySet()) {
+            List<Filter> filters = new ArrayList<Filter>();
+            for (String filterName : e.getValue()) {
+                try {
+                    Filter filter = lookupFilter(filterName);
+                    if (filter == null) {
+                        throw new NullPointerException("No filter named " + filterName +" could " +
+                            "be found");
+                    }
 
-        //callback to security providers to hack the filter chains
-        for (GeoServerAuthenticationProvider authProvider : 
-            securityManager.getAuthenticationProviders()) {
-            authProvider.configureFilterChain(filterChain);
+                    //check for anonymous auth flag
+                    if (filter instanceof AnonymousAuthenticationFilter && !config.isAnonymousAuth()) {
+                        continue;
+                    }
+                    filters.add(filter);
+                }
+                catch(Exception ex) {
+                    LOGGER.log(Level.SEVERE, "Error loading filter: " + filterName, ex);
+                }
+            }
+            filterChainMap.put(e.getKey(), filters);
         }
 
         synchronized (this) {
-            setFilterChainMap(filterChain);
+            setFilterChainMap(filterChainMap);
         }
     }
 
-    List<Filter> createWebFilterList(SecurityManagerConfig config) {
-        //<sec:filter-chain pattern="/web/**" filters="httpSessionContextIntegrationFilterWithASCTrue,logoutFilter,authenticationProcessingFilter,securityContextHolderAwareRequestFilter,rememberMeProcessingFilter,anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor" />
-        List<Filter> list = new ArrayList<Filter>();
-        list.add(httpSessionContextWithASCFilter);
-        list.add(logoutFilter);
-        list.add(usernamePasswordAuthFilter);
-        list.add(securityContextHolderFilter);
-        list.add(rememberMeAuthFilter);
-        if (config.isAnonymousAuth()) {
-            list.add(anonymousAuthFilter);
+    /**
+     * looks up a named filter, first trying a provided named filter based on configuration, and 
+     * then looking up a named bean in the application context.  
+     */
+    Filter lookupFilter(String filterName) throws IOException {
+        Filter filter = securityManager.loadFilter(filterName);
+        if (filter == null) {
+            filter = (Filter) GeoServerExtensions.bean(filterName, appContext);
         }
-        list.add(exceptionTranslationFilter);
-        list.add(filterSecurityInterceptor);
-        return list;
-    }
-
-    List<Filter> createSecurityCheckFilterList(SecurityManagerConfig config) {
-        //<sec:filter-chain pattern="/j_spring_security_check/**" filters="consoleExceptionTranslationFilter,filterInvocationInterceptor" />
-        List<Filter> list = new ArrayList<Filter>();
-        list.add(httpSessionContextWithASCFilter);
-        list.add(logoutFilter);
-        list.add(usernamePasswordAuthFilter);
-        list.add(securityContextHolderFilter);
-        list.add(rememberMeAuthFilter);
-        if (config.isAnonymousAuth()) {
-            list.add(anonymousAuthFilter);
-        }
-        list.add(exceptionTranslationFilter);
-        list.add(filterSecurityInterceptor);
-        return list;
-    }
-
-    List<Filter> createSecurityLogoutFilterList(SecurityManagerConfig config) {
-        //<sec:filter-chain pattern="/j_spring_security_logout/**" filters="consoleExceptionTranslationFilter,filterInvocationInterceptor" />
-        return createSecurityCheckFilterList(config);
-    }
-
-    List<Filter> createRestFilterList(SecurityManagerConfig config) {
-        //<sec:filter-chain pattern="/rest/**" filters="httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilter,anonymousProcessingFilter,owsExceptionTranslationFilter,restFilterInvocationInterceptor" />
-        List<Filter> list = new ArrayList<Filter>();
-        list.add(httpSessionContextWithNoASCFilter);
-        list.add(logoutFilter);
-        list.add(usernamePasswordAuthFilter);
-        list.add(securityContextHolderFilter);
-        list.add(rememberMeAuthFilter);
-        if (config.isAnonymousAuth()) {
-            list.add(anonymousAuthFilter);
-        }
-        list.add(owsExceptionTranslationFilter);
-        list.add(restFilterSecurityInterceptor);
-        return list;
-    }
-
-    List<Filter> createGwcWebFilterList(SecurityManagerConfig config) {
-        //<sec:filter-chain pattern="/gwc/rest/web/**" filters="anonymousProcessingFilter,consoleExceptionTranslationFilter,filterInvocationInterceptor" />
-        List<Filter> list = new ArrayList<Filter>();
-        if (config.isAnonymousAuth()) {
-            list.add(anonymousAuthFilter);
-        }
-        list.add(exceptionTranslationFilter);
-        list.add(filterSecurityInterceptor);
-        return list;
-    }
-
-    List<Filter> createGwcRestFilterList(SecurityManagerConfig config) {
-        //<sec:filter-chain pattern="/gwc/rest/**" filters="httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilterWithoutRememberMeService,owsExceptionTranslationFilter,restFilterInvocationInterceptor" />
-        List<Filter> list = new ArrayList<Filter>();
-        list.add(httpSessionContextWithNoASCFilter);
-        list.add(basicAuthNoRememberMeFilter);
-        list.add(owsExceptionTranslationFilter);
-        list.add(restFilterSecurityInterceptor);
-        return list;
-    }
-
-    List<Filter> createCatchAllFilterList(SecurityManagerConfig config) {
-        //<sec:filter-chain pattern="/**" filters="httpSessionContextIntegrationFilterWithASCFalse,basicProcessingFilter,anonymousProcessingFilter,owsExceptionTranslationFilter,filterInvocationInterceptor" />
-        List<Filter> list = new ArrayList<Filter>();
-        list.add(httpSessionContextWithNoASCFilter);
-        list.add(basicAuthFilter);
-        if (config.isAnonymousAuth()) {
-            list.add(anonymousAuthFilter);
-        }
-        list.add(owsExceptionTranslationFilter);
-        list.add(filterSecurityInterceptor);
-        return list;
+        return filter;
     }
 }

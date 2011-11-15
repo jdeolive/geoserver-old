@@ -4,10 +4,12 @@
  */
 package org.geoserver.security.impl;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityService;
+import org.geoserver.security.config.SecurityNamedServiceConfig;
 
 /**
  * Common base class for user group and role services.
@@ -48,6 +50,9 @@ public abstract class AbstractGeoServerSecurityService implements GeoServerSecur
         this.securityManager = securityManager;
     }
     
+    @Override
+    public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
+    }
 
     @Override
     public boolean canCreateStore() {

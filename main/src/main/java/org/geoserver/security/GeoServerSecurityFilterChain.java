@@ -7,51 +7,39 @@ package org.geoserver.security;
 import java.util.LinkedHashMap;
 import java.util.List;
 
-import javax.servlet.Filter;
-
-import org.springframework.util.AntPathMatcher;
-
 /**
  * The security filter chain.
- * <p>
- * This class extends the basic map to allow for insertion/removal of filters into various parts
- * of the chain.
- * </p> 
+ * 
  * @author Justin Deoliveira, OpenGeo
  */
-public class GeoServerSecurityFilterChain extends LinkedHashMap<String, List<Filter>> {
+public class GeoServerSecurityFilterChain extends LinkedHashMap<String, List<String>> {
 
-    AntPathMatcher matcher = new AntPathMatcher();
+    public static final String SECURITY_CONTEXT_ASC_FILTER = "securityContextAscFilter";
+    public static final String SECURITY_CONTEXT_NO_ASC_FILTER = "securityContextNoAscFilter";
+    
+    public static final String SERVLET_API_SUPPORT_FILTER = "servletApiSupportFilter";
 
-    public List<Filter> match(String path) {
-        return match(path, true);
+    public static final String FORM_LOGIN_FILTER = "formLoginFilter";
+
+    public static final String REMEMBER_ME_FILTER = "rememberMeFilter";
+
+    public static final String ANONYMOUS_FILTER = "anonymousFilter";
+
+    public static final String BASIC_AUTH_FILTER = "basicAuthFilter";
+    public static final String BASIC_AUTH_NO_REMEMBER_ME_FILTER = "basicAuthNoRememberMeFilter";
+
+    public static final String EXCEPTION_TRANSLATION_FILTER = "exceptionTranslationFilter";
+    public static final String EXCEPTION_TRANSLATION_OWS_FILTER = "exceptionTranslationOwsFilter";
+
+    public static final String LOGOUT_FILTER = "logoutFilter";
+
+    public static final String FILTER_SECURITY_INTERCEPTOR = "filterSecurityInterceptor";
+    public static final String FILTER_SECURITY_REST_INTERCEPTOR = "filterSecurityRestInterceptor";
+
+    public GeoServerSecurityFilterChain() {
     }
-
-    public List<Filter> match(String path, boolean includeCatchAll) {
-        for (String pattern : keySet()) {
-            if (matcher.match(pattern, path)) {
-                if ("/**".equals(pattern) && !includeCatchAll) {
-                    continue;
-                }
-                return get(pattern);
-            }
-        }
-        return null;
-    }
-
-    public void insert(String path, Filter filter, Class after, Class before) {
-        insert(path, filter, after, before, true);
-    }
-
-    public void insert(String path, Filter filter, Class after, Class before, boolean includeCatchAll) {
-        List<Filter> filters = match(path, includeCatchAll);
-        if (filters == null) {
-            throw new IllegalArgumentException("No pattern match"); 
-        }
-
-        for (int i = 0; i < filters.size(); i++) {
-            Filter f = filters.get(i);
-            
-        }
+    
+    public GeoServerSecurityFilterChain(GeoServerSecurityFilterChain other) {
+        super(other);
     }
 }

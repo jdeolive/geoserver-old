@@ -4,87 +4,28 @@
  */
 package org.geoserver.security;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
 
-import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.SecurityManagerConfig;
+import org.geoserver.security.impl.AbstractGeoServerSecurityService;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
 /**
- * Extension of {@link AuthenticationProvider} that also provides access to the filter security
- * chain. 
+ * Extension of {@link AuthenticationProvider} for the geoserver security subsystem.
+ * <p>
+ * Instances of this class are provided by {@link GeoServerSecurityProvider}. Authentication 
+ * providers are configured via {@link SecurityManagerConfig#getAuthProviderNames()}.
+ * </p>
  * 
  * @author Justin Deoliveira, OpenGeo
  * 
- * TODO: this class shared much with {@link GeoServerSecurityService}, perhaps it should just 
- * implement/extend it.
  */
-public abstract class GeoServerAuthenticationProvider implements AuthenticationProvider {
+public abstract class GeoServerAuthenticationProvider extends AbstractGeoServerSecurityService 
+    implements AuthenticationProvider {
 
     public static String DEFAULT_NAME = "default";
-
-    /**
-     * name of the auth provider
-     */
-    protected String name;
-
-    /**
-     * reference back to security manager
-     */
-    protected GeoServerSecurityManager securityManager;
-
-    /**
-     * Name of the authentication provider.
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets name of the authentication provider.
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * The security manager facade.
-     */
-    public GeoServerSecurityManager getSecurityManager() {
-        return securityManager;
-    }
-
-    /**
-     * Sets the security manager facade.
-     */
-    public void setSecurityManager(GeoServerSecurityManager securityManager) {
-        this.securityManager = securityManager;
-    }
-
-    /**
-     * Initializes the authentication provider from its configuration object. 
-     */
-    public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
-    }
-
-    /**
-     * Configures the filter security chain, inserting any filters that are required by the 
-     * authentication provider. 
-     */
-    public void configureFilterChain(GeoServerSecurityFilterChain filterChain) {
-        //subclasses override, default does nothing
-    }
-
-    /**
-     * Deconfigures the filter security chain, cleaning up any filters inserted by 
-     *  {@link #configure(GeoServerSecurityFilterChain)}.
-     */
-    public void deconfigureFilterChain(GeoServerSecurityFilterChain filterChain) {
-       //subclasses override, default does nothing
-    }
 
     @Override
     public final boolean supports(Class<? extends Object> authentication) {
