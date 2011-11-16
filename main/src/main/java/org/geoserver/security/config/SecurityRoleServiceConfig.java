@@ -16,7 +16,7 @@ import org.geoserver.security.concurrent.LockingRoleService;
  * @author christian
  *
  */
-public interface SecurityRoleServiceConfig {
+public interface SecurityRoleServiceConfig extends SecurityNamedServiceConfig {
 
     public String getAdminRoleName();
     public void   setAdminRoleName(String name);
