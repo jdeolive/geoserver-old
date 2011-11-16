@@ -361,6 +361,18 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
     
     /**
+     * Loads a role {@link SecurityRoleServiceConfig} from a named configuration.
+     * <code>null</code> if not found
+     * 
+     * @param name The name of the role service configuration.
+     */
+    public SecurityRoleServiceConfig loadRoleServiceConfig(String name)
+            throws IOException {
+              return  roleServiceHelper.loadConfig(name);
+    }
+
+    
+    /**
      * Loads a password validator from a named configuration.
      * 
      * @param name The name of the password policy configuration.
@@ -380,6 +392,16 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             }
         }
         return validator;
+    }
+    
+    /**
+     * Loads a password {@link PasswordPolicyConfig} from a named configuration.
+     * <code>null</a> if not found
+     * 
+     * @param name The name of the password policy configuration.
+     */
+    public PasswordPolicyConfig loadPasswordValidatorConfig(String name) throws IOException {
+        return  passwordValidatorHelper.loadConfig(name);
     }
 
 
@@ -476,6 +498,17 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
         return ugService;
     }
+    
+    /**
+     * Loads a user {@link SecurityUserGoupServiceConfig} from a named configuration.
+     * <code>null</code> if not foun
+     * 
+     * @param name The name of the user group service configuration.
+     */
+    public SecurityUserGoupServiceConfig loadUserGroupServiceConfig(String name) throws IOException {
+        return userGroupServiceHelper.loadConfig(name);
+    }
+
 
     /**
      * Saves/persists a user group service configuration.
@@ -526,6 +559,17 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         return authProviderHelper.load(name);
     }
     
+    /**
+     * Loads an authentication provider config from a named configuration.
+     * <code>null</code> if not found
+     * 
+     * @param name The name of the authentication provider service configuration.
+     */
+    public SecurityNamedServiceConfig loadAuthenticationProviderConfig(String name) throws IOException {
+        return authProviderHelper.loadConfig(name);
+    }
+
+    
     public void saveAuthenticationProvider(SecurityNamedServiceConfig config) throws IOException {
         authProviderHelper.saveConfig(config);
     }
@@ -545,6 +589,17 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     public GeoServerSecurityFilter loadFilter(String name) throws IOException {
         return filterHelper.load(name);
     }
+    
+    /**
+     * Loads an authentication provider config from a named configuration.
+     * <code>null</a> if not found
+     * 
+     * @param name The name of the authentication provider service configuration.
+     */
+    public SecurityNamedServiceConfig loadFilterConfig(String name) throws IOException {
+        return filterHelper.loadConfig(name);
+    }
+
     
     public void saveFilter(SecurityNamedServiceConfig config) throws IOException {
         filterHelper.saveConfig(config);
@@ -916,7 +971,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /*
      * loads the global security config
      */
-    SecurityManagerConfig loadSecurityConfig() throws IOException {
+    public SecurityManagerConfig loadSecurityConfig() throws IOException {
         return (SecurityManagerConfig) loadConfigFile(getSecurityRoot(), globalPersister());
     }
 
@@ -982,7 +1037,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
          */
         protected abstract File getRoot() throws IOException;
     }
-    class UserGroupServiceHelper extends HelperBase<GeoserverUserGroupService,SecurityNamedServiceConfig> {
+    class UserGroupServiceHelper extends HelperBase<GeoserverUserGroupService,SecurityUserGoupServiceConfig> {
         public GeoserverUserGroupService load(String name) throws IOException {
             
             SecurityNamedServiceConfig config = loadConfig(name);
@@ -1043,7 +1098,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
     }
 
-    class RoleServiceHelper extends HelperBase<GeoserverRoleService,SecurityNamedServiceConfig>{
+    class RoleServiceHelper extends HelperBase<GeoserverRoleService,SecurityRoleServiceConfig>{
 
          /**
          * Loads the role service for the named config from persistence.
