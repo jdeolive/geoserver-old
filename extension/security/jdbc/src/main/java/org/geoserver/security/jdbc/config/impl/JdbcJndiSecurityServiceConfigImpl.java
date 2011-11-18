@@ -15,6 +15,8 @@ import org.geoserver.security.jdbc.config.JdbcJndiSecurityServiceConfig;
  */
 public class JdbcJndiSecurityServiceConfigImpl extends JdbcBaseSecurityServiceConfigImpl 
     implements JdbcJndiSecurityServiceConfig {
+    private static final long serialVersionUID = 1L;
+
     private String jndiName;
 
     /* (non-Javadoc)

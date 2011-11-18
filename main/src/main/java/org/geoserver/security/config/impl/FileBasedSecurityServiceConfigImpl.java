@@ -14,6 +14,7 @@ import org.geoserver.security.config.FileBasedSecurityServiceConfig;
  *
  */
 public class FileBasedSecurityServiceConfigImpl extends SecurityNamedServiceConfigImpl implements FileBasedSecurityServiceConfig {
+    private static final long serialVersionUID = 1L;
     private String fileName;
     private long checkInterval;
     public String getFileName() {

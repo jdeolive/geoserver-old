@@ -12,7 +12,7 @@ import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
  * @author Justin Deoliveira, OpenGeo
  */
 public class UsernamePasswordAuthenticationProviderConfig extends SecurityNamedServiceConfigImpl {
-
+    private static final long serialVersionUID = 1L;
     String userGroupServiceName;
 
     public String getUserGroupServiceName() {

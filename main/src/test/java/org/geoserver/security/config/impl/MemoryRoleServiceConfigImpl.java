@@ -9,7 +9,7 @@ import org.geoserver.security.config.SecurityRoleServiceConfig;
 
 public class MemoryRoleServiceConfigImpl extends SecurityNamedServiceConfigImpl
         implements SecurityRoleServiceConfig {
-    
+    private static final long serialVersionUID = 1L;
     protected String adminRoleName;
     protected boolean lockingNeeded;
     protected String toBeEncrypted;

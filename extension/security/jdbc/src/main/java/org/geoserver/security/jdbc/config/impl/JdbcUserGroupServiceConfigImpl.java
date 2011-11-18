@@ -9,9 +9,12 @@ import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 
 public class JdbcUserGroupServiceConfigImpl extends JdbcSecurityServiceConfigImpl implements SecurityUserGoupServiceConfig {
 
+    private static final long serialVersionUID = 1L;
     protected String passwordEncoderName;
     protected String passwordPolicyName;
     protected boolean lockingNeeded;
+    
+
     
     public boolean isLockingNeeded() {
         return lockingNeeded;

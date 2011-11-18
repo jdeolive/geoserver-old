@@ -9,7 +9,8 @@ import org.geoserver.security.config.SecurityRoleServiceConfig;
 
 public class JdbcRoleServiceConfigImpl extends JdbcSecurityServiceConfigImpl
         implements SecurityRoleServiceConfig {
-    
+    private static final long serialVersionUID = 1L;
+
     protected String adminRoleName;
     protected boolean lockingNeeded;
     

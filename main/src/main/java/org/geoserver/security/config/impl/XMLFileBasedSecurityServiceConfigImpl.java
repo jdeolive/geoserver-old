@@ -17,6 +17,7 @@ import org.geoserver.security.config.XMLBasedSecurityServiceConfig;
  */
 public class XMLFileBasedSecurityServiceConfigImpl extends FileBasedSecurityServiceConfigImpl 
     implements FileBasedSecurityServiceConfig,XMLBasedSecurityServiceConfig {
+    private static final long serialVersionUID = 1L;
     private boolean validating;
 
     /* (non-Javadoc)
