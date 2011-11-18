@@ -81,6 +81,12 @@
         <module>jdbc</module>
       </modules>
     </profile>
+    <profile>
+      <id>security-ldap</id>
+      <modules>
+        <module>ldap</module>
+      </modules>
+    </profile>
   </profiles>
 
 </project>

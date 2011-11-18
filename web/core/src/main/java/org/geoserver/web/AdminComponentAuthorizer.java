@@ -4,6 +4,8 @@
  */
 package org.geoserver.web;
 
+import org.geoserver.security.GeoServerSecurityManager;
+import org.geoserver.security.impl.GeoServerRole;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -18,8 +20,11 @@ public class AdminComponentAuthorizer implements ComponentAuthorizer {
         if (authentication == null)
             return false;
 
+        GeoServerSecurityManager secMgr = GeoServerApplication.get().getSecurityManager();
+        GeoServerRole adminRole = secMgr.getActiveRoleService().getAdminRole();
         for (GrantedAuthority authority : authentication.getAuthorities()) {
-            if ("ROLE_ADMINISTRATOR".equals(authority.getAuthority()))
+            if (adminRole.getAuthority().equals(authority.getAuthority()))
+            //if ("ROLE_ADMINISTRATOR".equals(authority.getAuthority()))
                 return true;
         }
         return false;

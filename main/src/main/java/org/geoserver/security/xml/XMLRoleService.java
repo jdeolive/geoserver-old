@@ -63,12 +63,14 @@ public class XMLRoleService extends AbstractRoleService {
 
         this.name=config.getName();
         validatingXMLSchema=false;
-        if (((SecurityRoleServiceConfig)config).getAdminRoleName()!=null) {
-            adminRole = createRoleObject(GeoServerRole.ADMIN_ROLE.getAuthority());
-        }
 
+        String adminRoleName = ((SecurityRoleServiceConfig)config).getAdminRoleName();
+        adminRole = createRoleObject(
+            adminRoleName != null ? adminRoleName : GeoServerRole.ADMIN_ROLE.getAuthority());
+                
         if (config instanceof XMLSecurityServiceConfig) {
             validatingXMLSchema =((XMLSecurityServiceConfig) config).isValidating();
+
             // copy schema file 
             File xsdFile = new File(getConfigRoot(), XMLConstants.FILE_RR_SCHEMA);
             if (xsdFile.exists()==false) {

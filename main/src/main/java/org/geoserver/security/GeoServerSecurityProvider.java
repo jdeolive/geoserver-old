@@ -19,6 +19,7 @@ import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.validation.SecurityConfigValidator;
+import org.springframework.security.authentication.AuthenticationProvider;
 
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 
@@ -41,7 +42,7 @@ public abstract class GeoServerSecurityProvider {
      * @param className
      * @return
      */
-    static public  GeoServerSecurityProvider getProvider (Class<?> serviceClass, String className) {
+    static public GeoServerSecurityProvider getProvider (Class<?> serviceClass, String className) {
         for (GeoServerSecurityProvider prov : 
             GeoServerExtensions.extensions(GeoServerSecurityProvider.class)) {
             
@@ -157,7 +158,7 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>.
      * </p> 
      */
-    public Class<? extends GeoServerAuthenticationProvider> getAuthenticationProviderClass() {
+    public Class<? extends AuthenticationProvider> getAuthenticationProviderClass() {
         return null;
     }
 
@@ -168,7 +169,7 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>.
      * </p> 
      */
-    public GeoServerAuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
+    public AuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
         return null;
     }
 

@@ -59,7 +59,6 @@ import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.password.RandomPasswordProvider;
 import org.geoserver.security.rememberme.GeoServerTokenBasedRememberMeServices;
 import org.geoserver.security.rememberme.RememberMeServicesConfig;
-import org.geoserver.security.validation.PasswordValidationException;
 import org.geoserver.security.validation.PasswordValidatorImpl;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidator;
@@ -71,7 +70,6 @@ import org.geoserver.security.xml.XMLUserGroupServiceConfig;
 import org.geotools.util.logging.Logging;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -133,8 +131,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     
     private boolean encryptingUrlParams;
     private String configPasswordEncrypterName;
-    
-
 
     /** configured authentication providers */
     List<GeoServerAuthenticationProvider> authProviders;
@@ -869,7 +865,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
 
         //check for the default auth provider, create if necessary
-        GeoServerAuthenticationProvider authProvider = 
+        GeoServerAuthenticationProvider authProvider = (GeoServerAuthenticationProvider) 
             loadAuthenticationProvider(GeoServerAuthenticationProvider.DEFAULT_NAME);
         if (authProvider == null) {
             UsernamePasswordAuthenticationProviderConfig upAuthConfig = 
@@ -877,8 +873,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             upAuthConfig.setName(GeoServerAuthenticationProvider.DEFAULT_NAME);
             upAuthConfig.setClassName(UsernamePasswordAuthenticationProvider.class.getName());
             upAuthConfig.setUserGroupServiceName(userGroupService.getName());
+
             saveAuthenticationProvider(upAuthConfig,true);
             authProvider = loadAuthenticationProvider(GeoServerAuthenticationProvider.DEFAULT_NAME);
+
         }
 
         //save the top level config
@@ -1434,6 +1432,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
  
     class AuthProviderHelper extends HelperBase<GeoServerAuthenticationProvider, SecurityAuthProviderConfig>{
+
         /**
          * Loads the auth provider for the named config from persistence.
          */
@@ -1446,7 +1445,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             }
 
             //look up the service for this config
-            GeoServerAuthenticationProvider authProvider = null;
+            AuthenticationProvider authProvider = null;
 
             for (GeoServerSecurityProvider p  : lookupSecurityProviders()) {
                 if (p.getAuthenticationProviderClass() == null) {
@@ -1462,11 +1461,16 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 throw new IOException("No authentication provider matching config: " + config);
             }
 
-            authProvider.setName(name);
-            authProvider.setSecurityManager(GeoServerSecurityManager.this);
-            authProvider.initializeFromConfig(config);
+            GeoServerAuthenticationProvider gsAuthProvider = 
+                authProvider instanceof GeoServerAuthenticationProvider ? 
+                    (GeoServerAuthenticationProvider) authProvider : 
+                    new DelegatingAuthenticationProvider(authProvider);
+                    
+            gsAuthProvider.setName(name);
+            gsAuthProvider.setSecurityManager(GeoServerSecurityManager.this);
+            gsAuthProvider.initializeFromConfig(config);
 
-            return authProvider;
+            return gsAuthProvider;
         }
 
         @Override

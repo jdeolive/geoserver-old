@@ -381,6 +381,16 @@
      </dependencies>
     </profile>
     <profile>
+     <id>security-ldap</id>
+     <dependencies>
+      <dependency>
+       <groupId>org.geoserver.extension.security</groupId>
+       <artifactId>security-ldap</artifactId>
+       <version>${project.version}</version>
+      </dependency>
+     </dependencies>
+    </profile>
+    <profile>
      <id>validation</id>
      <dependencies>
       <dependency>
