@@ -4,6 +4,8 @@
  */
 package org.geoserver.security.ldap;
 
+import java.security.AuthProvider;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
@@ -59,8 +61,12 @@ public class LDAPSecurityProvider extends GeoServerSecurityProvider {
         BindAuthenticator authenticator = new BindAuthenticator(ldapContext);
         authenticator.setUserDnPatterns(new String[]{ldapConfig.getUserDnPattern()});
         
-        LdapAuthoritiesPopulator authPopulator = 
+        DefaultLdapAuthoritiesPopulator authPopulator = 
             new DefaultLdapAuthoritiesPopulator(ldapContext, ldapConfig.getGroupSearchBase());
+        if (ldapConfig.getGroupSearchFilter() != null) {
+            authPopulator.setGroupSearchFilter(ldapConfig.getGroupSearchFilter());
+        }
+
         return new LdapAuthenticationProvider(authenticator, authPopulator);
     }
 }
