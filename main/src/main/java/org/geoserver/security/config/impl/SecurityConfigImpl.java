@@ -16,4 +16,5 @@ import org.geoserver.security.config.SecurityConfig;
  */
 public abstract class SecurityConfigImpl implements SecurityConfig{
 
+    private static final long serialVersionUID = 1L;
 }

@@ -14,6 +14,7 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
  *
  */
 public class SecurityNamedServiceConfigImpl extends SecurityConfigImpl implements SecurityNamedServiceConfig {
+    private static final long serialVersionUID = 1L;
     private String name;
     private String className;
 

@@ -9,6 +9,7 @@ import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 
 public class MemoryUserGroupServiceConfigImpl extends SecurityNamedServiceConfigImpl implements SecurityUserGoupServiceConfig {
 
+    private static final long serialVersionUID = 1L;
     protected String passwordEncoderName;
     protected String passwordPolicyName;
     protected boolean lockingNeeded;

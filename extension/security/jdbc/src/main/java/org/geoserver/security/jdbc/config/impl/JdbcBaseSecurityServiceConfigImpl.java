@@ -14,9 +14,10 @@ import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
  * @author christian
  *
  */
-public abstract class JdbcBaseSecurityServiceConfigImpl extends SecurityNamedServiceConfigImpl 
+public abstract class JdbcBaseSecurityServiceConfigImpl extends SecurityNamedServiceConfigImpl
     implements JdbcBaseSecurityServiceConfig {
 
+    private static final long serialVersionUID = 1L;
     private String propertyFileNameDDL;
     private String propertyFileNameDML;
 

@@ -15,6 +15,8 @@ import org.geoserver.security.jdbc.config.JdbcSecurityServiceConfig;
  */
 public class JdbcSecurityServiceConfigImpl extends JdbcBaseSecurityServiceConfigImpl 
     implements JdbcSecurityServiceConfig {
+    private static final long serialVersionUID = 1L;
+
     private String connectURL;
     private String userName;
     private String password;

@@ -14,6 +14,7 @@ import org.geoserver.security.config.PasswordPolicyConfig;
  *
  */
 public class PasswordPolicyConfigImpl extends SecurityNamedServiceConfigImpl implements PasswordPolicyConfig {
+    private static final long serialVersionUID = 1L;
     private boolean uppercaseRequired,lowercaseRequired,digitRequired;
     private int minLength,maxLength;
     
