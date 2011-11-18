@@ -12,6 +12,7 @@ public class XMLFileBasedUserGroupServiceConfigImpl extends XMLFileBasedSecurity
     protected String passwordEncoderName;
     protected String passwordPolicyName;
     protected boolean lockingNeeded;
+    private static final long serialVersionUID = 1L;
     
     public boolean isLockingNeeded() {
         return lockingNeeded;

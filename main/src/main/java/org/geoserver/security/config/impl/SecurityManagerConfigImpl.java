@@ -19,6 +19,8 @@ import org.geoserver.security.config.SecurityManagerConfig;
  */
 public class SecurityManagerConfigImpl extends SecurityConfigImpl implements SecurityManagerConfig {
     
+    private static final long serialVersionUID = 1L;
+
     private String roleServiceName;
 
     private List<String> authProviderNames = new ArrayList<String>();

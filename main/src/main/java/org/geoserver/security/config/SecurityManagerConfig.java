@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.geoserver.security.GeoServerSecurityFilterChain;
 import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
 
 
 /**
