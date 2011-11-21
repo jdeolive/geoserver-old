@@ -15,6 +15,7 @@ import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.ParamResourceModel;
 
 /**
@@ -22,11 +23,7 @@ import org.geoserver.web.wicket.ParamResourceModel;
  */
 public class EditUserPage extends AbstractUserPage {
 
-    public EditUserPage(String userGroupServiceName,GeoserverUser user) {
-        this(userGroupServiceName,user,null);
-    }
-    
-    public EditUserPage(String userGroupServiceName, GeoserverUser user,Page responsePage) {
+    public EditUserPage(String userGroupServiceName, GeoserverUser user,AbstractSecurityPage responsePage) {
         super(userGroupServiceName,new UserUIModel(user),user.getProperties(),responsePage);
         username.setEnabled(false);
     }

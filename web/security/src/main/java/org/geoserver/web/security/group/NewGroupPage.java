@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.logging.Level;
 
-import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -19,30 +18,22 @@ import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.ParamResourceModel;
 
 public class NewGroupPage extends AbstractGroupPage {
 
-    public NewGroupPage(String userGroupServiceName) {
-        this(userGroupServiceName,null);
-    }   
     
-    public NewGroupPage(String userGroupServiceName,Page responsePage) {
+    public NewGroupPage(String userGroupServiceName,AbstractSecurityPage responsePage) {
         super(userGroupServiceName,new GroupUIModel("", true),responsePage);
-        //groupnameField.add(new GroupConflictValidator());
+        
         form.add(new GroupConflictValidator());
         if (hasUserGroupStore(userGroupServiceName)==false) {
             throw new RuntimeException("Workflow error, new role not possible for read only service");
         }
         
     }
-    
-    public NewGroupPage(PageParameters params) {
-        this(params.getString(ServiceNameKey));    
-    }
-
-        
-    
+                
     /**
      * Checks the group is not a new one
      */

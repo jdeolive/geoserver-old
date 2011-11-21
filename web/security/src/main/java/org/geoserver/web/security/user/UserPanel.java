@@ -4,19 +4,23 @@
  */
 package org.geoserver.web.security.user;
 
+import java.io.IOException;
+
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
-import org.apache.wicket.markup.html.panel.Fragment;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.geoserver.web.CatalogIconFactory;
 import org.geoserver.web.GeoServerSecuredPage;
 import org.geoserver.web.security.SelectionUserRemovalLink;
+import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.web.CatalogIconFactory;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
@@ -28,18 +32,28 @@ import org.geoserver.web.wicket.SimpleAjaxLink;
  * A page listing users, allowing for removal, addition and linking to an edit page
  */
 @SuppressWarnings("serial")
-public class UserPage extends AbstractSecurityPage {
+public class UserPanel extends Panel {
 
     protected GeoServerTablePanel<GeoserverUser> users;
     protected GeoServerDialog dialog;
     protected SelectionUserRemovalLink removal,removalWithRoles;
-    protected BookmarkablePageLink<NewUserPage> add;
-    protected String userGroupServiceName;
+    protected Link<NewUserPage> add;
+    protected String serviceName;
 
+    protected GeoserverUserGroupService getService() {
+        try {
+            return GeoServerApplication.get().getSecurityManager().
+                    loadUserGroupService(serviceName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     
-    public UserPage(PageParameters params) {
-        this.userGroupServiceName=params.getString(ServiceNameKey);
-        UserListProvider provider = new UserListProvider(userGroupServiceName);
+    public UserPanel(String id, String serviceName) throws IOException{
+        super(id);
+        
+        this.serviceName=serviceName;
+        UserListProvider provider = new UserListProvider(this.serviceName);
         add(users = new GeoServerTablePanel<GeoserverUser>("table", provider, true) {
 
             @SuppressWarnings("rawtypes")
@@ -58,16 +72,7 @@ public class UserPage extends AbstractSecurityPage {
                         return new Icon(id, CatalogIconFactory.ENABLED_ICON);
                     else
                         return new Label(id, "");                    
-                } /*else if (property == UserListProvider.ROLES) {
-                    return new Label(id, property.getModel(itemModel));
-                } else if (property == UserListProvider.ADMIN) {
-                //    return new Label(id, property.getModel(itemModel));
-                    if((Boolean) property.getModel(itemModel).getObject())
-                        return new Icon(id, CatalogIconFactory.ENABLED_ICON);
-                    else
-                        return new Label(id, "");
-                }
-                 */                
+                }                
                 throw new RuntimeException("Uknown property " + property);
             }
             
@@ -84,33 +89,42 @@ public class UserPage extends AbstractSecurityPage {
         });
         users.setOutputMarkupId(true);
         add(dialog = new GeoServerDialog("dialog"));
-        setHeaderPanel(headerPanel());
-
+        headerComponents();
+        
     }
     
-    protected Component headerPanel() {
-        Fragment header = new Fragment(HEADER_PANEL, "header", this);
+    protected void headerComponents() {
+
+        
+        boolean canCreateStore=getService().canCreateStore();
 
         // the add button
-        header.add(add=new BookmarkablePageLink<NewUserPage>("addNew", NewUserPage.class));
-        add.setParameter(ServiceNameKey, userGroupServiceName);
-        add.setVisible(hasUserGroupStore(userGroupServiceName));
+        add(add=new Link("addNew") {
+            @Override
+            public void onClick() {
+                setResponsePage(new NewUserPage(serviceName, 
+                        (AbstractSecurityPage) this.getPage()));
+            }
+        });
+        
+        //<NewUserPage><NewUserPage>("addNew", NewUserPage.class));
+        //add.setParameter(AbstractSecurityPage.ServiceNameKey, serviceName);
+        add.setVisible(canCreateStore);
 
         // the removal button
-        header.add(removal = new SelectionUserRemovalLink(userGroupServiceName,"removeSelected", users, dialog,false));
+        add(removal = new SelectionUserRemovalLink(serviceName,"removeSelected", users, dialog,false));
         removal.setOutputMarkupId(true);
         removal.setEnabled(false);
-        removal.setVisible(hasUserGroupStore(userGroupServiceName));
+        removal.setVisible(canCreateStore);
         
 
-        header.add(removalWithRoles = new SelectionUserRemovalLink(userGroupServiceName,"removeSelectedWithRoles", users, dialog,true));
+        add(removalWithRoles = new SelectionUserRemovalLink(serviceName,"removeSelectedWithRoles", users, dialog,true));
         removalWithRoles.setOutputMarkupId(true);
         removalWithRoles.setEnabled(false);
-        removalWithRoles.setVisible(hasUserGroupStore(userGroupServiceName) && 
-                hasRoleStore(getSecurityManager().getActiveRoleService().getName()));
+        removalWithRoles.setVisible(canCreateStore && 
+                GeoServerApplication.get().getSecurityManager().
+                    getActiveRoleService().canCreateStore());
         
-        
-        return header;
     }
 
 //    AjaxLink addUserLink() {
@@ -129,7 +143,8 @@ public class UserPage extends AbstractSecurityPage {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                setResponsePage(new EditUserPage(userGroupServiceName,(GeoserverUser) getDefaultModelObject()));
+                setResponsePage(new EditUserPage(serviceName,(GeoserverUser) getDefaultModelObject(),
+                        (AbstractSecurityPage) getPage()));
             }
 
         };

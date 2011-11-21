@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 
-import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
@@ -18,6 +17,7 @@ import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.ParamResourceModel;
 
 
@@ -30,24 +30,12 @@ import org.geoserver.web.wicket.ParamResourceModel;
 public class NewRolePage extends AbstractRolePage {
 
     
-    public NewRolePage(String roleServiceName,Page responsePage) {
+    public NewRolePage(String roleServiceName,AbstractSecurityPage responsePage) {
         super(roleServiceName,new RoleUIModel("", "",null),new Properties(),responsePage);        
         form.add(new RoleConflictValidator());
     }
 
     
-    public NewRolePage(String roleServiceName) {
-        this (roleServiceName,null);        
-        if (hasRoleStore(this.roleServiceName)==false) {
-            throw new RuntimeException("Workflow error, new role not possible for read only service");
-        }        
-    }
-    
-    public NewRolePage(PageParameters params) {
-        this(params.getString(ServiceNameKey));    
-    }
-        
-
     class RoleConflictValidator extends AbstractFormValidator {
 
         private static final long serialVersionUID = 1L;

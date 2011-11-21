@@ -7,8 +7,6 @@ package org.geoserver.web.security.group;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.SubmitLink;
@@ -30,14 +28,8 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
     protected Form<Serializable> form;
     protected String userGroupServiceName;
 
-    protected AbstractGroupPage(String userGroupServiceName,GroupUIModel uiGroup,Page responsePage) {
+    protected AbstractGroupPage(String userGroupServiceName,GroupUIModel uiGroup,AbstractSecurityPage responsePage) {
         
-        //final CompoundPropertyModel<GroupUIModel> groupModel = new CompoundPropertyModel<GroupUIModel>(uiGroup);
-        
-        // build the form
-        //Form<CompoundPropertyModel<GroupUIModel>> form = 
-                //new Form<CompoundPropertyModel<GroupUIModel>>("groupForm");
-        //setDefaultModel(groupModel);        
         
         this.userGroupServiceName=userGroupServiceName;
         this.uiGroup=uiGroup;
@@ -75,18 +67,13 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
         
     }
 
-    SubmitLink saveLink(final Page responsePage) {
+    SubmitLink saveLink(final AbstractSecurityPage responsePage) {
         return new SubmitLink("save") {
             @Override
             public void onSubmit() {
                 onFormSubmit();
-                if (responsePage!=null) {
-                    setResponsePage(responsePage);
-                } else {
-                    PageParameters params = new PageParameters();
-                    params.put(ServiceNameKey, userGroupServiceName);
-                    setResponsePage(GroupPage.class,params);
-                }
+                responsePage.setDirty(true);
+                setResponsePage(responsePage);
             }
         };
     }

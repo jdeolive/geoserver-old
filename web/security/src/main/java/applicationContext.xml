@@ -12,43 +12,34 @@
 		<property name="order" value="200" />
 	</bean>
 
-	<!--
-	The user list page 
-	 -->
-	<bean id="userSecurityPage" class="org.geoserver.web.MenuPageInfo">
-		<property name="id" value="security.user" />
-		<property name="titleKey" value="security.user.title" />
-		<property name="descriptionKey" value="security.user.description" />
-		<property name="componentClass" value="org.geoserver.web.security.user.UserPage" />
-		<property name="icon" value="../../img/icons/silk/user.png" />
+	<bean id="globalSecurityPage" class="org.geoserver.web.MenuPageInfo">
+		<property name="id" value="security.global" />
+		<property name="titleKey" value="security.global.title" />
+		<property name="descriptionKey" value="security.global.description" />
+		<property name="componentClass" value="org.geoserver.web.security.config.GlobalTabbedPage" />
+		<property name="icon" value="../../img/icons/silk/application_key.png" />
 		<property name="category" ref="securityCategory" />
-		<property name="order" value="100" />
+		<property name="order" value="90" />
 	</bean>
 	
-	<!--
-	The group list page 
-	 -->
-	<bean id="groupSecurityPage" class="org.geoserver.web.MenuPageInfo">
-		<property name="id" value="security.group" />
-		<property name="titleKey" value="security.group.title" />
-		<property name="descriptionKey" value="security.group.description" />
-		<property name="componentClass" value="org.geoserver.web.security.group.GroupPage" />
+	<bean id="securityServicesTabbedPage" class="org.geoserver.web.MenuPageInfo">
+		<property name="id" value="security.ugservices" />
+		<property name="titleKey" value="security.ugservices.title" />
+		<property name="descriptionKey" value="security.ugservices.description" />
+		<property name="componentClass" value="org.geoserver.web.security.config.SecurityServicesTabbedPage" />
 		<property name="icon" value="../../img/icons/silk/group.png" />
 		<property name="category" ref="securityCategory" />
-		<property name="order" value="110" />
+		<property name="order" value="95" />
 	</bean>
-
-	<!--
-	The role list page 
-	 -->
-	<bean id="roleSecurityPage" class="org.geoserver.web.MenuPageInfo">
-		<property name="id" value="security.role" />
-		<property name="titleKey" value="security.role.title" />
-		<property name="descriptionKey" value="security.role.description" />
-		<property name="componentClass" value="org.geoserver.web.security.role.RolePage" />
-		<property name="icon" value="../../img/icons/silk/award_star_silver_2.png" />
+	
+	<bean id="authServicesTabbedPage" class="org.geoserver.web.MenuPageInfo">
+		<property name="id" value="security.authservices" />
+		<property name="titleKey" value="security.authservices.title" />
+		<property name="descriptionKey" value="security.authservices.description" />
+		<property name="componentClass" value="org.geoserver.web.security.config.AuthServicesTabbedPage" />
+		<property name="icon" value="../../img/icons/silk/database_key.png" />
 		<property name="category" ref="securityCategory" />
-		<property name="order" value="120" />
+		<property name="order" value="100" />
 	</bean>
 	
 

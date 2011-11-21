@@ -41,7 +41,7 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
     Form<Serializable> form;
     String roleServiceName;
 
-    protected AbstractRolePage(String roleService,RoleUIModel uiRole,Properties properties,Page responsePage ) {
+    protected AbstractRolePage(String roleService,RoleUIModel uiRole,Properties properties,AbstractSecurityPage responsePage ) {
 
         this.roleServiceName=roleService;
 
@@ -92,19 +92,13 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
                 
     }
 
-    SubmitLink saveLink(final Page responsePage) {
+    SubmitLink saveLink(final AbstractSecurityPage responsePage) {
         return new SubmitLink("save") {
             @Override
             public void onSubmit() {
                 onFormSubmit();
-                if (responsePage!=null) {
-                    setResponsePage(responsePage);
-                }
-                else {
-                    PageParameters params = new PageParameters();
-                    params.put(ServiceNameKey, roleServiceName);
-                    setResponsePage(RolePage.class,params);
-                }
+                responsePage.setDirty(true);
+                setResponsePage(responsePage);
 
             }
         };

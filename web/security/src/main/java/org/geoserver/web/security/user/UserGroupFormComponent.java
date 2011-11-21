@@ -26,6 +26,7 @@ import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.GeoServerApplication;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.group.NewGroupPage;
 
 /**
@@ -113,7 +114,8 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
             private static final long serialVersionUID = 1L;
             @Override
             public void onSubmit() {
-                setResponsePage(new NewGroupPage(userGroupServiceName,this.getPage()));
+                setResponsePage(new NewGroupPage(userGroupServiceName,
+                        (AbstractSecurityPage)this.getPage()));
             }            
           };
         add(addGroup);

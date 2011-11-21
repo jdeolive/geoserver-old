@@ -11,11 +11,13 @@ import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.IModel;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.CatalogIconFactory;
 import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.group.NewGroupPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
@@ -31,7 +33,7 @@ public class RolePage extends AbstractSecurityPage {
     protected GeoServerTablePanel<GeoserverRole> roles;
     protected GeoServerDialog dialog;
     protected SelectionRoleRemovalLink removal;
-    protected BookmarkablePageLink<NewRolePage> add;
+    protected Link<?> add;
     protected String roleServiceName;
 
     public RolePage(PageParameters params) {
@@ -73,8 +75,13 @@ public class RolePage extends AbstractSecurityPage {
         Fragment header = new Fragment(HEADER_PANEL, "header", this);
 
         // the add button
-        header.add(add=new BookmarkablePageLink<NewRolePage>("addNew", NewRolePage.class));
-        add.setParameter(ServiceNameKey, roleServiceName);
+        header.add(add = new Link("addNew") {
+            @Override
+            public void onClick() {
+                setResponsePage(new NewRolePage(roleServiceName,
+                        (AbstractSecurityPage)getPage()));
+            }            
+        });        
         add.setVisible(hasRoleStore(roleServiceName));
 
         // the removal button
