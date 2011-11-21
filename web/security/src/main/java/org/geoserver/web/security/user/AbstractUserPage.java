@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.behavior.IBehavior;
@@ -38,7 +36,6 @@ import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.PropertyEditorFormComponent;
-import org.geoserver.web.security.group.GroupPage;
 import org.geoserver.web.security.role.EditRolePage;
 import org.geoserver.web.security.role.RoleListProvider;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
@@ -59,7 +56,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     protected WebMarkupContainer calculatedrolesContainer;
     protected String userGroupServiceName;
 
-    protected AbstractUserPage(String userGroupServiceName,UserUIModel uiUser,Properties properties, Page responsePage) {
+    protected AbstractUserPage(String userGroupServiceName,UserUIModel uiUser,Properties properties, AbstractSecurityPage responsePage) {
         this.userGroupServiceName=userGroupServiceName;
         this.uiUser=uiUser;
         // build the form
@@ -171,21 +168,15 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         
     }
 
-    SubmitLink saveLink(final Page responsePage) {
+    SubmitLink saveLink(final AbstractSecurityPage responsePage) {
         return new SubmitLink("save") {
             private static final long serialVersionUID = 1L;
 
             @Override
             public void onSubmit() {
                 onFormSubmit();
-                if (responsePage!=null) {
-                    setResponsePage(responsePage);
-                } else {
-                    PageParameters params = new PageParameters();
-                    params.put(ServiceNameKey, userGroupServiceName);
-                    setResponsePage(UserPage.class,params);
-                }
-
+                responsePage.setDirty(true);
+                setResponsePage(responsePage);
             }
         };
     }
@@ -199,7 +190,8 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
             protected void onClick(AjaxRequestTarget target) {                
                 setResponsePage(new EditRolePage(
                         getSecurityManager().getActiveRoleService().getName(),
-                        (GeoserverRole) getDefaultModelObject(), this.getPage()));
+                        (GeoserverRole) getDefaultModelObject(), 
+                        (AbstractSecurityPage) this.getPage()));
             }
         };
     }

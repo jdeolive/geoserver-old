@@ -21,14 +21,28 @@ import org.geoserver.web.GeoServerSecuredPage;
  */
 public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
     
-    protected static String ServiceNameKey="serviceName"; 
+    public static String ServiceNameKey="serviceName"; 
     protected Page responsePage;
+    /**
+     * Indicates if model data has changed
+     */
+    boolean dirty = false;
+    
         
-    public Link<Page> getCancelLink(final Page returnPage) {
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    public Link<Page> getCancelLink(final AbstractSecurityPage returnPage) {
         return new Link<Page>("cancel") {
             private static final long serialVersionUID = 1L;
             @Override
             public void onClick() {
+                returnPage.setDirty(false); 
                 setResponsePage(returnPage);
             }            
         }; 

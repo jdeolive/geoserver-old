@@ -5,37 +5,52 @@
 package org.geoserver.web.security.group;
 
 
+import java.io.IOException;
+
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
-import org.apache.wicket.markup.html.panel.Fragment;
+import org.apache.wicket.markup.html.link.Link;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
+import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.CatalogIconFactory;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.Icon;
 import org.geoserver.web.wicket.SimpleAjaxLink;
-import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
 /**
  * A page listing users, allowing for removal, addition and linking to an edit page
  */
 @SuppressWarnings("serial")
-public class GroupPage extends AbstractSecurityPage {
+public class GroupPanel extends Panel {
 
     protected GeoServerTablePanel<GeoserverUserGroup> groups;
     protected GeoServerDialog dialog;
     protected SelectionGroupRemovalLink removal, removalWithRoles;
-    protected BookmarkablePageLink<NewGroupPage> add;
-    protected String userGroupServiceName;
+    protected Link<?> add;
+    protected String serviceName;
 
-    public GroupPage(PageParameters params) {
-        this.userGroupServiceName=params.getString(ServiceNameKey);
-        GroupListProvider provider = new GroupListProvider(userGroupServiceName);
+    
+    protected GeoserverUserGroupService getService() {
+        try {
+            return GeoServerApplication.get().getSecurityManager().
+                    loadUserGroupService(serviceName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public GroupPanel(String id, String serviceName) throws IOException{
+        super(id);
+        
+        this.serviceName=serviceName;
+        GroupListProvider provider = new GroupListProvider(serviceName);
         add(groups = new GeoServerTablePanel<GeoserverUserGroup>("table", provider, true) {
 
             @Override
@@ -64,49 +79,46 @@ public class GroupPage extends AbstractSecurityPage {
         });
         groups.setOutputMarkupId(true);
         add(dialog = new GeoServerDialog("dialog"));
-        setHeaderPanel(headerPanel());
+        headerComponents();
 
     }
     
-    protected Component headerPanel() {
-        Fragment header = new Fragment(HEADER_PANEL, "header", this);
+    protected void headerComponents() {
 
+        boolean canCreateStore=getService().canCreateStore();
         // the add button
-        header.add(add=new BookmarkablePageLink<NewGroupPage>("addNew", NewGroupPage.class));
-        add.setParameter(ServiceNameKey, userGroupServiceName);
-        add.setVisible(hasUserGroupStore(userGroupServiceName));
+        
+        add(add = new Link("addNew") {
+            @Override
+            public void onClick() {
+                setResponsePage(new NewGroupPage(serviceName,
+                        (AbstractSecurityPage)getPage()));
+            }            
+        });
+        add.setVisible(canCreateStore);
 
         // the removal button
-        header.add(removal = new SelectionGroupRemovalLink(userGroupServiceName,"removeSelected", groups, dialog,false));
+        add(removal = new SelectionGroupRemovalLink(serviceName,"removeSelected", groups, dialog,false));
         removal.setOutputMarkupId(true);
         removal.setEnabled(false);
-        removal.setVisibilityAllowed(hasUserGroupStore(userGroupServiceName));
+        removal.setVisibilityAllowed(canCreateStore);
 
         // the removal button
-        header.add(removalWithRoles  = new SelectionGroupRemovalLink(userGroupServiceName,"removeSelectedWithRoles", groups, dialog,true));
+        add(removalWithRoles  = new SelectionGroupRemovalLink(serviceName,"removeSelectedWithRoles", groups, dialog,true));
         removalWithRoles.setOutputMarkupId(true);
         removalWithRoles.setEnabled(false);
-        removalWithRoles.setVisibilityAllowed(hasUserGroupStore(userGroupServiceName)&& 
-                hasRoleStore(getSecurityManager().getActiveRoleService().getName()));
+        removalWithRoles.setVisibilityAllowed(canCreateStore&& 
+                GeoServerApplication.get().getSecurityManager().getActiveRoleService().canCreateStore());
         
-        return header;
     }
 
-//    AjaxLink<Object> addGroupLink() {
-//        return new AjaxLink<Object>("addGroup", new Model()) {
-//
-//            @Override
-//            public void onClick(AjaxRequestTarget target) {
-//                   setResponsePage(new NewGroupPage());
-//            }
-//        };
-//    }
 
     Component editGroupLink(String id, IModel itemModel, Property<GeoserverUserGroup> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                setResponsePage(new EditGroupPage(userGroupServiceName,(GeoserverUserGroup) getDefaultModelObject()));
+                setResponsePage(new EditGroupPage(serviceName,(GeoserverUserGroup) getDefaultModelObject(),
+                        (AbstractSecurityPage)getPage()));
             }
         };
     }

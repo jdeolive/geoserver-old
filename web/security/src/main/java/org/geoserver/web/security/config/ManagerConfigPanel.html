@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:wicket="http://wicket.apache.org/">
+<head>
+<title><wicket:message key="title"></wicket:message></title>
+</head>	
+<body>
+<wicket:panel>
+	<form wicket:id="ManagerConfigPanel">
+	<ul>
+		<li>
+	    	<fieldset><ul>
+				<li>
+		   		<label for="config.anonymousAuth"><wicket:message key="config.anonymousAuth">config.anonymousAuth</wicket:message></label>
+		   		<input type="checkbox" wicket:id="config.anonymousAuth" id="config.anonymousAuth"  />
+		   		</li>
+		   		<li>
+		   		<label for="config.encryptingUrlParams"><wicket:message key="config.encryptingUrlParams">config.encryptingUrlParams</wicket:message></label>
+		   		<input type="checkbox"  wicket:id="config.encryptingUrlParams" id="config.encryptingUrlParams" />
+		   		</li>
+		   		<li>
+			    <label for="config.roleServiceName"><wicket:message key="config.roleServiceName">config.roleServiceName</wicket:message></label>
+			    <select  wicket:id="config.roleServiceName" id="config.roleServiceName" />
+			    </li>
+			    <li>
+			    <label for="config.configPasswordEncrypterName"><wicket:message key="config.configPasswordEncrypterName">config.configPasswordEncrypterName</wicket:message></label>
+			    <select  wicket:id="config.configPasswordEncrypterName" id="config.configPasswordEncrypterName" />
+			    </li>
+	    	</ul></fieldset>
+		</li>
+		<li>
+		    <fieldset>
+    	    <legend><span><wicket:message key="config.authProviderNames">config.authProviderNames</wicket:message></span></legend>		
+			<div wicket:id="config.authProviderNames" id="config.authProviderNames"/>
+			</fieldset>
+		</li>						
+	</ul>
+	<div class="button-group selfclear">
+	    <a href="#" wicket:id="save"><wicket:message key="save">Save</wicket:message></a> 
+	    <!--  <a href="#" wicket:id="cancel"><wicket:message key="cancel">Cancel</wicket:message></a> -->
+	</div>
+	</form>
+</wicket:panel>
+</body>
+</html>

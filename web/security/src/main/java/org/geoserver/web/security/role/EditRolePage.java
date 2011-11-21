@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import org.apache.wicket.Page;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.ParamResourceModel;
 
 
@@ -22,11 +23,7 @@ import org.geoserver.web.wicket.ParamResourceModel;
  */
 public class EditRolePage extends AbstractRolePage {
 
-    public EditRolePage(String roleServiceName,GeoserverRole role) {
-        this(roleServiceName,role,null);
-    }
-    
-    public EditRolePage(String roleServiceName,GeoserverRole role,Page responsePage) {
+    public EditRolePage(String roleServiceName,GeoserverRole role,AbstractSecurityPage responsePage) {
         // parentrole name not known at this moment, parent
         // constructor will do the job 
         super(roleServiceName,new RoleUIModel(role.getAuthority(), null,role.getUserName()), 

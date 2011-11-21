@@ -96,7 +96,8 @@ public abstract class AbstractRolesFormComponent<T> extends FormComponentPanel<S
           new SubmitLink("addRole",form) {
           @Override
           public void onSubmit() {              
-              setResponsePage(new NewRolePage(roleServiceName,this.getPage()));
+              setResponsePage(new NewRolePage(roleServiceName,
+                      (AbstractSecurityPage)this.getPage()));
           }            
         }; 
         add(addRole);        

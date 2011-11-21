@@ -22,6 +22,7 @@ import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.ParamResourceModel;
 
 
@@ -30,20 +31,13 @@ import org.geoserver.web.wicket.ParamResourceModel;
  */
 public class NewUserPage extends AbstractUserPage {
 
-    public NewUserPage(String userGroupServiceName) {
-        this(userGroupServiceName,null);
-    }   
-    public NewUserPage(String userGroupServiceName,Page responsePage) {
+    public NewUserPage(String userGroupServiceName,AbstractSecurityPage responsePage) {
        super(userGroupServiceName,new UserUIModel(),new Properties(),responsePage);       
        form.add(new UserConflictValidator());
        if (hasUserGroupStore(userGroupServiceName)==false) {
            throw new RuntimeException("Workflow error, new role not possible for read only service");
        }
 
-    }
-    
-    public NewUserPage(PageParameters params) {
-        this(params.getString(ServiceNameKey));    
     }
     
     class UserConflictValidator extends AbstractFormValidator {

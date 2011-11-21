@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:wicket="http://wicket.apache.org/">
+<body>
+<wicket:panel>
+	<form wicket:id="namedConfig">
+		<ul>		
+			<li>
+	 		<label for="config.name"><wicket:message key="name">name</wicket:message></label>
+	 		<input type="text" wicket:id="config.name" /> 
+			</li>
+			<li>
+	 		<label for="config.className"><wicket:message key="className">className</wicket:message></label>
+	 		<select  wicket:id="config.className" /> 
+			</li>		
+		</ul>
+		<fieldset>
+		<wicket:child/>
+		</fieldset>
+	</form>
+</wicket:panel>
+</body>
+</html>

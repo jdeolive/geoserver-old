@@ -9,20 +9,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.apache.wicket.Page;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.ParamResourceModel;
 
 public class EditGroupPage extends AbstractGroupPage {
 
-    public EditGroupPage(String userGroupServiceName,GeoserverUserGroup group) {
-        this(userGroupServiceName,group,null);
-    }
     
-    public EditGroupPage(String userGroupServiceName,GeoserverUserGroup group,Page responsePage) {
+    public EditGroupPage(String userGroupServiceName,GeoserverUserGroup group,AbstractSecurityPage responsePage) {
         super(userGroupServiceName,new GroupUIModel(group.getGroupname(), group.isEnabled()),responsePage);
         groupnameField.setEnabled(false);
     }
