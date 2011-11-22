@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.geoserver.security.GeoServerSecurityFilterChain;
 import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.rememberme.RememberMeServicesConfig;
 
 
 /**
@@ -50,6 +51,8 @@ public interface SecurityManagerConfig  extends SecurityConfig {
      * @return The security filter chain.
      */
     public GeoServerSecurityFilterChain getFilterChain();
+
+    public RememberMeServicesConfig getRememberMeService();
 
     /**
      * Admin Console encrypts URL Parameters ?

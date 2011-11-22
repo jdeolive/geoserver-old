@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.geoserver.security.GeoServerSecurityFilterChain;
 import org.geoserver.security.config.SecurityManagerConfig;
+import org.geoserver.security.rememberme.RememberMeServicesConfig;
 
 /**
  * Implementation of {@link SecurityManagerConfig}
@@ -26,6 +27,7 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
     private Boolean anonymousAuth = Boolean.TRUE;
 
     private GeoServerSecurityFilterChain filterChain = new GeoServerSecurityFilterChain();
+    private RememberMeServicesConfig rememberMeService = new RememberMeServicesConfig();
 
     public SecurityManagerConfigImpl() {
     }
@@ -37,6 +39,7 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
         this.anonymousAuth = config.isAnonymousAuth();
         this.filterChain = config.getFilterChain() != null ? 
             new GeoServerSecurityFilterChain(config.getFilterChain()) : null;
+        this.rememberMeService = new RememberMeServicesConfig(config.getRememberMeService());
     }
 
     private String configPasswordEncrypterName;
@@ -76,10 +79,19 @@ public class SecurityManagerConfigImpl extends SecurityConfigImpl implements Sec
         this.filterChain = filterChain;
     }
 
+    public RememberMeServicesConfig getRememberMeService() {
+        return rememberMeService;
+    }
+
+    public void setRememberMeService(RememberMeServicesConfig rememberMeService) {
+        this.rememberMeService = rememberMeService;
+    }
+
     private Object readResolve() {
         authProviderNames = authProviderNames != null ? authProviderNames : new ArrayList<String>();
         anonymousAuth = anonymousAuth != null ? anonymousAuth : Boolean.TRUE;
         filterChain = filterChain != null ? filterChain : new GeoServerSecurityFilterChain();
+        rememberMeService = rememberMeService != null ? rememberMeService : new RememberMeServicesConfig();
         return this;
     }
 
