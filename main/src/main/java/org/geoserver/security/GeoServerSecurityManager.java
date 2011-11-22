@@ -11,7 +11,6 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +32,7 @@ import org.geoserver.config.GeoServerDataDirectory;
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.config.util.XStreamPersisterFactory;
 import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.FilterChainEntry.Position;
 import org.geoserver.security.concurrent.LockingRoleService;
 import org.geoserver.security.concurrent.LockingUserGroupService;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
@@ -86,8 +86,6 @@ import com.thoughtworks.xstream.converters.collections.AbstractCollectionConvert
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
-
-import static org.geoserver.security.GeoServerSecurityFilterChain.*;
 
 /**
  * Top level singleton/facade/dao for the security authentication/authorization subsystem.  
@@ -767,34 +765,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             authProvider = loadAuthenticationProvider(GeoServerAuthenticationProvider.DEFAULT_NAME);
         }
 
-        //setup the default filter chain
-        GeoServerSecurityFilterChain filterChain = new GeoServerSecurityFilterChain();
-        
-        filterChain.put("/web/**", Arrays.asList(SECURITY_CONTEXT_ASC_FILTER, LOGOUT_FILTER, 
-            FORM_LOGIN_FILTER, SERVLET_API_SUPPORT_FILTER, REMEMBER_ME_FILTER, ANONYMOUS_FILTER, 
-            EXCEPTION_TRANSLATION_FILTER, FILTER_SECURITY_INTERCEPTOR));
-
-        filterChain.put("/j_spring_security_check/**", Arrays.asList(SECURITY_CONTEXT_ASC_FILTER, 
-            LOGOUT_FILTER, FORM_LOGIN_FILTER, SERVLET_API_SUPPORT_FILTER, REMEMBER_ME_FILTER, 
-            ANONYMOUS_FILTER, EXCEPTION_TRANSLATION_FILTER, FILTER_SECURITY_INTERCEPTOR));
-        
-        filterChain.put("/j_spring_security_logout/**", Arrays.asList(SECURITY_CONTEXT_ASC_FILTER, 
-            LOGOUT_FILTER, FORM_LOGIN_FILTER, SERVLET_API_SUPPORT_FILTER, REMEMBER_ME_FILTER, 
-            ANONYMOUS_FILTER, EXCEPTION_TRANSLATION_FILTER, FILTER_SECURITY_INTERCEPTOR));
-        
-        filterChain.put("/rest/**", Arrays.asList(SECURITY_CONTEXT_NO_ASC_FILTER, BASIC_AUTH_FILTER,
-            ANONYMOUS_FILTER, EXCEPTION_TRANSLATION_OWS_FILTER, FILTER_SECURITY_REST_INTERCEPTOR));
-
-        filterChain.put("/gwc/rest/web/**", Arrays.asList(ANONYMOUS_FILTER, 
-            EXCEPTION_TRANSLATION_FILTER, FILTER_SECURITY_INTERCEPTOR));
-
-        filterChain.put("/gwc/rest/**", Arrays.asList(SECURITY_CONTEXT_NO_ASC_FILTER, 
-            BASIC_AUTH_NO_REMEMBER_ME_FILTER, EXCEPTION_TRANSLATION_OWS_FILTER, 
-            FILTER_SECURITY_REST_INTERCEPTOR));
-        
-        filterChain.put("/**", Arrays.asList(SECURITY_CONTEXT_NO_ASC_FILTER, BASIC_AUTH_FILTER, 
-            ANONYMOUS_FILTER, EXCEPTION_TRANSLATION_OWS_FILTER, FILTER_SECURITY_INTERCEPTOR));
-
         //save the top level config
         SecurityManagerConfigImpl config = new SecurityManagerConfigImpl();
         config.setRoleServiceName(roleService.getName());
@@ -802,7 +772,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         config.setEncryptingUrlParams(false);
         // start with weak encryption
         config.setConfigPasswordEncrypterName(GeoserverConfigPBEPasswordEncoder.BeanName);
-        config.setFilterChain(filterChain);
 
         saveSecurityConfig(config);
 
@@ -1406,7 +1375,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         public void marshal(Object source, HierarchicalStreamWriter writer,
                 MarshallingContext context) {
             GeoServerSecurityFilterChain filterChain = (GeoServerSecurityFilterChain) source;
-            for (Map.Entry<String, List<String>> e : filterChain.entrySet()) {
+            for (Map.Entry<String, List<FilterChainEntry>> e : filterChain.entrySet()) {
             
                 //<filterChain>
                 //  <filters path="...">
@@ -1416,9 +1385,17 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 writer.startNode("filters");
                 writer.addAttribute("path", e.getKey());
                 
-                for (String filterName : e.getValue()) {
+                for (FilterChainEntry filterEntry : e.getValue()) {
                     writer.startNode("filter");
-                    writer.setValue(filterName);
+
+                    Position pos = filterEntry.getPosition();
+                    writer.addAttribute("position", pos.name());
+                    if (pos == Position.BEFORE || pos == Position.AFTER) {
+                        writer.addAttribute("relativeTo", filterEntry.getRelativeTo());
+                    }
+
+                    writer.setValue(filterEntry.getFilterName());
+                    
                     writer.endNode();
                 }
 
@@ -1436,14 +1413,18 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 String path = reader.getAttribute("path");
 
                 //<filter
-                List<String> filterNames = new ArrayList<String>();
+                List<FilterChainEntry> filterEntries = new ArrayList<FilterChainEntry>();
                 while(reader.hasMoreChildren()) {
                     reader.moveDown();
-                    filterNames.add(reader.getValue());
+                    String name = reader.getValue();
+                    Position pos = Position.valueOf(reader.getAttribute("position"));
+                    String relativeTo = reader.getAttribute("relativeTo");
+                    
+                    filterEntries.add(new FilterChainEntry(name, pos, relativeTo));
                     reader.moveUp();
                 }
 
-                filterChain.put(path, filterNames);
+                filterChain.put(path, filterEntries);
                 reader.moveUp();
             }
             

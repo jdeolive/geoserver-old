@@ -12,7 +12,7 @@ import java.util.List;
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public class GeoServerSecurityFilterChain extends LinkedHashMap<String, List<String>> {
+public class GeoServerSecurityFilterChain extends LinkedHashMap<String, List<FilterChainEntry>> {
 
     public static final String SECURITY_CONTEXT_ASC_FILTER = "securityContextAscFilter";
     public static final String SECURITY_CONTEXT_NO_ASC_FILTER = "securityContextNoAscFilter";
