@@ -59,6 +59,8 @@ import org.geoserver.security.password.PasswordValidationException;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.password.PasswordValidatorImpl;
 import org.geoserver.security.password.RandomPasswordProvider;
+import org.geoserver.security.rememberme.GeoServerTokenBasedRememberMeServices;
+import org.geoserver.security.rememberme.RememberMeServicesConfig;
 import org.geoserver.security.xml.XMLConstants;
 import org.geoserver.security.xml.XMLRoleService;
 import org.geoserver.security.xml.XMLSecurityProvider;
@@ -272,7 +274,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         //remember me
         RememberMeAuthenticationProvider rap = new RememberMeAuthenticationProvider();
-        rap.setKey("geoserver");
+        rap.setKey(config.getRememberMeService().getKey());
         rap.afterPropertiesSet();
         allAuthProviders.add(rap);
 
@@ -771,8 +773,16 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         config.setRoleServiceName(roleService.getName());
         config.getAuthProviderNames().add(authProvider.getName());
         config.setEncryptingUrlParams(false);
+
         // start with weak encryption
         config.setConfigPasswordEncrypterName(GeoserverConfigPBEPasswordEncoder.BeanName);
+
+        // setup the default remember me service
+        RememberMeServicesConfig rememberMeConfig = new RememberMeServicesConfig();
+        rememberMeConfig.setClassName(GeoServerTokenBasedRememberMeServices.class.getName());
+        rememberMeConfig.setUserGroupService(userGroupService.getName());
+        rememberMeConfig.setKey("geoserver");
+        config.setRememberMeService(rememberMeConfig);
 
         saveSecurityConfig(config);
 

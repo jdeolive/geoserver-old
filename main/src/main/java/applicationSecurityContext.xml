@@ -290,13 +290,10 @@
     The actual remember-me cookie handler
   -->
   <bean id="rememberMeServices"
-    class="org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices">
-    <!--  TODO, temporary, use GeoserverSecurityManager as UserDetailService -->
-    <property name="userDetailsService" ref="authenticationManager" />
-    <property name="key" value="geoserver" />
+    class="org.geoserver.security.rememberme.RememberMeServicesFactoryBean">
+    <constructor-arg ref="geoServerSecurityManager"/>
   </bean>
 
-  
   <!-- global security manager -->
   <!-- 
     The bean managing authentication, basically forwards authentication requests against
