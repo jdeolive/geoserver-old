@@ -40,7 +40,7 @@ public abstract class NamedServiceConfigListProvider<T extends SecurityNamedServ
         @Override
         public Object getPropertyValue(SecurityNamedServiceConfig item) {
             return new ResourceModel("security."+item.getClassName(), 
-                    item.getClassName()).toString();
+                    item.getClassName()).getObject();
         }
 
         @Override
