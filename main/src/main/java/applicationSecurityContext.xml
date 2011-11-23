@@ -343,7 +343,8 @@
     
   <bean id="keyStoreProvider"
 		class="org.geoserver.security.password.KeyStoreProvider" />            
-  	
+
+  <bean id="xmlSecurityProvider" class="org.geoserver.security.xml.XMLSecurityProvider"/>  	
   
   <!-- The dao used to deal with layer level security -->
   <bean id="accessRulesDao" class="org.geoserver.security.impl.DataAccessRuleDAO">

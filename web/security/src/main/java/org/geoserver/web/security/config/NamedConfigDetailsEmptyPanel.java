@@ -4,23 +4,18 @@
  */
 package org.geoserver.web.security.config;
 
-import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.model.IModel;
 
 /**
  * A form component that can be used for xml configurations
  */
-public class XMLNamedConfigPanel extends FormComponentPanel<SecurityConfigModelHelper>{
+public class NamedConfigDetailsEmptyPanel extends FormComponentPanel<SecurityConfigModelHelper>{
     private static final long serialVersionUID = 1L;
-    protected CheckBox validating;
     
-    public XMLNamedConfigPanel(String id, IModel<SecurityConfigModelHelper> model) {
-        super(id,model);        
+    public NamedConfigDetailsEmptyPanel(String id, IModel<SecurityConfigModelHelper> model) {
+        super(id,model);
         setOutputMarkupId(true);
-        validating  = new CheckBox("config.validating");
-        //validating.setRequired(true);
-        add(validating);
     }
                             
 }
