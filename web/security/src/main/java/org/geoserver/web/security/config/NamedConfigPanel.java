@@ -11,11 +11,15 @@ import java.util.Set;
 
 import javax.servlet.Filter;
 
+import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextField;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.PropertyModel;
@@ -26,7 +30,10 @@ import org.apache.wicket.validation.validator.AbstractValidator;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
+import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.GeoServerApplication;
+import org.geoserver.web.data.layer.Resource;
+import org.geoserver.web.security.AbstractSecurityPage;
 
 /**
  * A form component that can be used to edit user to group assignments
@@ -34,10 +41,11 @@ import org.geoserver.web.GeoServerApplication;
 public class NamedConfigPanel extends Panel {
     private static final long serialVersionUID = 1L;
     protected TextField<String> name;
-    protected DropDownChoice<String> className;
+    protected DropDownChoice<String> implClass;
     Form<SecurityConfigModelHelper> form;
     protected Class<?> extensionPoint;
     protected Set<String> alreadyUsedNames=null;
+    protected CompoundPropertyModel<SecurityConfigModelHelper> model;
     
     /**
      * Validates service name for new services
@@ -65,12 +73,12 @@ public class NamedConfigPanel extends Panel {
     };
     
 
-    public NamedConfigPanel(String id,SecurityConfigModelHelper helper, Class<?> extensionPoint) {        
+    public NamedConfigPanel(String id,SecurityConfigModelHelper helper, Class<?> extensionPoint, AbstractSecurityPage responsePage) {        
         super(id);
 
         this.extensionPoint=extensionPoint;
 
-        CompoundPropertyModel<SecurityConfigModelHelper> model = new CompoundPropertyModel<SecurityConfigModelHelper>(helper);
+        model = new CompoundPropertyModel<SecurityConfigModelHelper>(helper);
         form = new Form<SecurityConfigModelHelper>("namedConfig",model); 
         add(form);
         
@@ -80,29 +88,61 @@ public class NamedConfigPanel extends Panel {
         name.add(new NameValidator());
         form.add(name);
         
-        
-        className = new DropDownChoice<String>("config.className",                  
+        List<String> classNames = getImplementations();
+        if (helper.isNew() && classNames.size()==1) {
+            ((SecurityNamedServiceConfig) helper.getConfig()).
+                setClassName(classNames.get(0));
+        }
+        implClass = new DropDownChoice<String>("config.className",                  
             //new PropertyModel<String>(model, "config.className"),
-            getImplementations()
-        );
-        className.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+            classNames,
+            new IChoiceRenderer<String>() {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                public Object getDisplayValue(String className) {
+                    return new ResourceModel("security."+className,
+                            className).getObject();
+                }
+
+                @Override
+                public String getIdValue(String className, int index) {
+                    return className;
+                }
+            }
+            );
+        
+        
+        implClass.add(new AjaxFormComponentUpdatingBehavior("onchange") {
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                // TODO
+                target.addComponent(new XMLNamedConfigPanel("details",model));                         
             }
         });
+
+        implClass.setEnabled(helper.isNew && classNames.size()>1);
+        
+        // TODO Hack
+        if (helper.isNew()==false) {
+            form.add(new XMLNamedConfigPanel("details", model));
+        } else {
+            form.add(new NamedConfigDetailsEmptyPanel("details", model));
+        }
                 
-        className.setEnabled(helper.isNew());
-        className.setRequired(true);
-        className.setOutputMarkupId(true);
-        form.add(className);                
+        implClass.setRequired(true);
+        implClass.setOutputMarkupId(true);
+        form.add(implClass);
+        
+        form.add(getCancelLink(responsePage));
+        form.add(saveLink(responsePage));        
+
     }
                         
     /**
      * Returns a list of implementations for 
-     * {@link #extensionPoint} and initializes {@link #providerHelper} 
+     * {@link #extensionPoint}  
      * 
      * @return
      */
@@ -148,7 +188,7 @@ public class NamedConfigPanel extends Panel {
                 
                 aClass = prov.getFilterClass();            
                 if (aClass!=null) {
-                    if (Filter.class.isAssignableFrom(prov.getFilterClass()))
+                    if (extensionPoint.isAssignableFrom(prov.getFilterClass()))
                     result.add(aClass.getName());
                     if (alreadyUsedNames==null)
                         alreadyUsedNames=manager.listFilters();
@@ -159,5 +199,30 @@ public class NamedConfigPanel extends Panel {
             throw new RuntimeException(ex);
         }
     }
+    
+    SubmitLink saveLink(final AbstractSecurityPage responsePage) {
+        return new SubmitLink("save") {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public void onSubmit() {
+                // TODO store
+                responsePage.setDirty(true);
+                setResponsePage(responsePage);
+
+            }
+        };
+    }
         
+    public Link<Page> getCancelLink(final AbstractSecurityPage returnPage) {
+        return new Link<Page>("cancel") {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public void onClick() {
+                returnPage.setDirty(false); 
+                setResponsePage(returnPage);
+            }            
+        }; 
+    }
+
 }

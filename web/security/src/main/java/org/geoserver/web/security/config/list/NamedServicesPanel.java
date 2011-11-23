@@ -5,7 +5,6 @@
 package org.geoserver.web.security.config.list;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
@@ -78,30 +77,27 @@ public abstract class NamedServicesPanel extends Panel {
         add(namedServices=getTablePanel());
         namedServices.setOutputMarkupId(true);
         add(dialog = new GeoServerDialog("dialog"));
-        add(headerPanel());
+        headerPanel();
 
     }
     
-    protected Component headerPanel() {
-        Fragment header = new Fragment("header", "header", this);
+    protected void headerPanel() {
+//        Fragment header = new Fragment("header", "header", this);
 
         // the add button
-        header.add(add=new Link<Object>("addNew") {
+        add(add=new Link<Object>("addNew") {
             @Override
             public void onClick() {
                 setResponsePage(getNewPage());
             }                        
         });        
-                
-                
-
+                                
 //        // the removal button
 //        header.add(removal = new SelectionRoleRemovalLink(roleServiceName,"removeSelected", namedServices, dialog));
 //        removal.setOutputMarkupId(true);
 //        removal.setEnabled(false);
 //        removal.setVisible(hasRoleStore(roleServiceName));
 
-        return header;
     }
 
 

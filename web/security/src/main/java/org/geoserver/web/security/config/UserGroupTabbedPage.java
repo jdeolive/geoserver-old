@@ -34,6 +34,7 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
     protected TabbedPanel tabbedPanel;
     protected SubmitLink saveLink;
     protected String serviceName;
+    protected AbstractSecurityPage responsePage;
     
 
     public UserGroupTabbedPage(AbstractSecurityPage responsePage) {
@@ -43,8 +44,7 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
 
     public UserGroupTabbedPage(final String serviceName,AbstractSecurityPage responsePage) {
         this.serviceName=serviceName;
-        add(getCancelLink(responsePage));
-        add(saveLink(responsePage));        
+        this.responsePage=responsePage;
         initializeComponents();        
     }
     
@@ -58,15 +58,20 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
             @Override
             public Panel getPanel(String panelId) {
                 try {
-                    SecurityUserGoupServiceConfig config = 
-                            GeoServerApplication.get().getSecurityManager().loadUserGroupServiceConfig(serviceName);
+                    
+                    SecurityUserGoupServiceConfig config = null;
+                    if (serviceName !=null && serviceName.isEmpty()==false)
+                            config = GeoServerApplication.get().getSecurityManager().
+                                loadUserGroupServiceConfig(serviceName);
+                    
                     SecurityConfigModelHelper helper = null;
                     if (config==null)
                         helper = new SecurityConfigModelHelper(new SecurityNamedServiceConfigImpl(),true);
                     else
                         helper = new SecurityConfigModelHelper(config,false);
-                    // TODO, switch implementation
-                    return  new XMLNamedConfigPanel(panelId,helper,GeoserverUserGroupService.class);
+                    
+                    return  new NamedConfigPanel(panelId,helper,
+                            GeoserverUserGroupService.class,responsePage);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -111,18 +116,6 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
     }
     
     
-    SubmitLink saveLink(final AbstractSecurityPage responsePage) {
-        return new SubmitLink("save") {
-            @Override
-            public void onSubmit() {
-                // TODO store
-                responsePage.setDirty(true);
-                setResponsePage(responsePage);
-
-            }
-        };
-    }
-
         
     @Override
     protected void onBeforeRender() {

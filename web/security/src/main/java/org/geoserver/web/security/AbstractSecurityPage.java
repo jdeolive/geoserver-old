@@ -21,8 +21,7 @@ import org.geoserver.web.GeoServerSecuredPage;
  */
 public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
     
-    public static String ServiceNameKey="serviceName"; 
-    protected Page responsePage;
+    public static String ServiceNameKey="serviceName";     
     /**
      * Indicates if model data has changed
      */
