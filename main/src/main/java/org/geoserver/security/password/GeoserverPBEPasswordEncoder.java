@@ -7,7 +7,6 @@ package org.geoserver.security.password;
 
 import java.io.IOException;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.spring.security3.PBEPasswordEncoder;
 import org.springframework.security.authentication.encoding.PasswordEncoder;

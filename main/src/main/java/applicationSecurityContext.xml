@@ -316,6 +316,7 @@
     <property name="prefix" value="crypt2" />
     <property name="providerName" value="BC" />
     <property name="algorithm" value="PBEWITHSHA256AND256BITAES-CBC-BC" />
+    <property name="availableWithoutStrongCryptogaphy" value="false" />
   </bean>  
  
   
@@ -330,6 +331,7 @@
     <property name="prefix" value="crypt4" />
     <property name="providerName" value="BC" />
     <property name="algorithm" value="PBEWITHSHA256AND256BITAES-CBC-BC" />
+    <property name="availableWithoutStrongCryptogaphy" value="false" />
   </bean>  
   <bean id="digestPasswordEncoder"    
     class="org.geoserver.security.password.GeoserverDigestPasswordEncoder">

@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:wicket="http://wicket.apache.org/">
+<body>
+<wicket:panel>
+	<fieldset>
+	<ul>
+		<li>
+ 		<label for="config.lockingNeeded"><wicket:message key="lockingNeeded"></wicket:message></label>
+ 		<input type="checkbox" wicket:id="config.lockingNeeded" /> 
+		</li>
+   		<li>
+	    <label for="config.passwordEncoderName"><wicket:message key="passwordEncoderName"></wicket:message></label>
+	    <select  wicket:id="config.passwordEncoderName" id="config.passwordEncoderName" />
+	    </li>
+   		<li>
+	    <label for="config.passwordPolicyName"><wicket:message key="passwordPolicyName"></wicket:message></label>
+	    <select  wicket:id="config.passwordPolicyName" id="config.passwordPolicyName" />
+	    </li>		
+	</ul>
+	</fieldset>
+	<wicket:child/>
+</wicket:panel>
+</body>
+</html>

@@ -6,7 +6,9 @@ package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.model.IModel;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -43,5 +45,8 @@ public abstract class AbstractNamedConfigDetailsPanel extends FormComponentPanel
      * @return
      */
     protected  abstract SecurityNamedServiceConfig createNewConfigObject();
-                            
+    
+    GeoServerSecurityManager getSecurityManager() {
+        return GeoServerApplication.get().getSecurityManager();
+    }
 }

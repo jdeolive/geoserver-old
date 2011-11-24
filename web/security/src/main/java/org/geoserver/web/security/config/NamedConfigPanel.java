@@ -36,7 +36,7 @@ import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.data.layer.Resource;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.details.NamedConfigDetailsEmptyPanel;
-import org.geoserver.web.security.config.details.XMLNamedConfigPanel;
+import org.geoserver.web.security.config.details.XMLUserGroupConfigDetailsPanel;
 
 /**
  * A form component that can be used to edit user to group assignments
@@ -122,7 +122,7 @@ public class NamedConfigPanel extends Panel {
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
                 Component old = form.get("details");
-                Component comp = new XMLNamedConfigPanel("details",model);
+                Component comp = new XMLUserGroupConfigDetailsPanel("details",model);
                 comp.setOutputMarkupId(true);
                 old.replaceWith(comp);                
                 //comp.setMarkupId(old.getMarkupId());
@@ -135,7 +135,7 @@ public class NamedConfigPanel extends Panel {
         
         // TODO Hack
         if (helper.isNew()==false) {
-            form.add(new XMLNamedConfigPanel("details", model));
+            form.add(new XMLUserGroupConfigDetailsPanel("details", model));
         } else {
             form.add(new NamedConfigDetailsEmptyPanel("details", model));
         }

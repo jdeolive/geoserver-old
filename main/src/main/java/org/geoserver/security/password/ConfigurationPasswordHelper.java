@@ -10,16 +10,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import org.geoserver.catalog.Catalog;
 import org.geoserver.catalog.StoreInfo;
-import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoServerSecurityProvider;
 import org.geotools.data.DataAccessFactory.Param;
 import org.geotools.data.DataStoreFactorySpi;
 import org.geotools.data.DataStoreFinder;

@@ -6,6 +6,7 @@
 
 package org.geoserver.security.password;
 
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
 
 /**
@@ -14,7 +15,7 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
  * @author christian
  *
  */
-public interface GeoserverPasswordEncoder extends PasswordEncoder {
+public interface GeoserverPasswordEncoder extends PasswordEncoder,BeanNameAware {
 
     public final static String PREFIX_DELIMTER=":";
     
@@ -23,6 +24,8 @@ public interface GeoserverPasswordEncoder extends PasswordEncoder {
      */
     public PasswordEncodingType getEncodingType();
     
+    
+    public String getBeanName();
     
     /**
      * @param encPass
@@ -58,5 +61,14 @@ public interface GeoserverPasswordEncoder extends PasswordEncoder {
      * plain:password
      */
     public String getPrefix();
+    
+    /**
+     * Is this encoder available without installing
+     * the unrestricted policy files of the java
+     * cryptographic extension 
+     * 
+     * @return
+     */
+    public boolean isAvailableWithoutStrongCryptogaphy();
 
 }
