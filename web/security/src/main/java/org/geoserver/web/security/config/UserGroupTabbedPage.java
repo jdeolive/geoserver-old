@@ -64,11 +64,11 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
                             config = GeoServerApplication.get().getSecurityManager().
                                 loadUserGroupServiceConfig(serviceName);
                     
-                    SecurityConfigModelHelper helper = null;
+                    SecurityNamedConfigModelHelper helper = null;
                     if (config==null)
-                        helper = new SecurityConfigModelHelper(new SecurityNamedServiceConfigImpl(),true);
+                        helper = new SecurityNamedConfigModelHelper(new SecurityNamedServiceConfigImpl(),true);
                     else
-                        helper = new SecurityConfigModelHelper(config,false);
+                        helper = new SecurityNamedConfigModelHelper(config,false);
                     
                     return  new NamedConfigPanel(panelId,helper,
                             GeoserverUserGroupService.class,responsePage);

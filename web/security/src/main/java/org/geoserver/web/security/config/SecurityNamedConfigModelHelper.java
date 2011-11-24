@@ -7,7 +7,7 @@
 package org.geoserver.web.security.config;
 
 
-import org.geoserver.security.config.SecurityConfig;
+import org.geoserver.security.config.SecurityNamedServiceConfig;
 
 /**
  * 
@@ -16,12 +16,11 @@ import org.geoserver.security.config.SecurityConfig;
  * @author christian
  *
  */
-public  class SecurityConfigModelHelper extends AbstractConfigModelHelper<SecurityConfig>{
+public  class SecurityNamedConfigModelHelper extends AbstractConfigModelHelper<SecurityNamedServiceConfig>{
 
     private static final long serialVersionUID = 1L;
-    
-    
-    public SecurityConfigModelHelper(SecurityConfig config, boolean isNew) {
+        
+    public SecurityNamedConfigModelHelper(SecurityNamedServiceConfig config, boolean isNew) {
         super(config,isNew);
     }
     
