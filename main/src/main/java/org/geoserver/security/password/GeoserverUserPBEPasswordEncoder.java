@@ -30,10 +30,6 @@ public  class GeoserverUserPBEPasswordEncoder extends GeoserverPBEPasswordEncode
         return keyAliasInKeyStore;
     }
 
-    @Override
-    public void setBeanName(String name) {
-        // do nothing, not needed
-    }
 
     @Override
     public void initializeFor(GeoserverUserGroupService service) throws IOException {
@@ -48,9 +44,5 @@ public  class GeoserverUserPBEPasswordEncoder extends GeoserverPBEPasswordEncode
 
     }
 
-    @Override
-    public String getNameReference() {
-        return PrototypeName;
-    }
 
 }

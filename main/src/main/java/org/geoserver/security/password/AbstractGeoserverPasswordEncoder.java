@@ -30,8 +30,22 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPassw
 
     protected PasswordEncoder delegate = null;
     protected Object lock = new Object();
-    private String prefix;
+    protected String beanName;
+    private String prefix;    
+    public String getBeanName() {
+        return beanName;
+    }
+
+
+    public void setBeanName(String beanName) {
+        this.beanName = beanName;
+    }
+
+
+    private boolean availableWithoutStrongCryptogaphy;
     
+
+
     static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
     static protected Boolean StrongCryptographyAvailable = null;
     
@@ -76,6 +90,7 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPassw
     
     
     public AbstractGeoserverPasswordEncoder() {
+        setAvailableWithoutStrongCryptogaphy(true);
         Security.addProvider(new BouncyCastleProvider());
     }
     
@@ -140,6 +155,15 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPassw
 
     public void setPrefix(String prefix) {
         this.prefix = prefix;
+    }
+
+    public boolean isAvailableWithoutStrongCryptogaphy() {
+        return availableWithoutStrongCryptogaphy;
+    }
+
+
+    public void setAvailableWithoutStrongCryptogaphy(boolean availableWithoutStrongCryptogaphy) {
+        this.availableWithoutStrongCryptogaphy = availableWithoutStrongCryptogaphy;
     }
 
 }

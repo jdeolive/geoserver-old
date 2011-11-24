@@ -21,7 +21,6 @@ import org.springframework.security.authentication.encoding.PlaintextPasswordEnc
 public class GeoserverPlainTextPasswordEncoder extends AbstractGeoserverPasswordEncoder implements GeoserverUserPasswordEncoder {
     
     public final static String BeanName="plainTextPasswordEncoder";
-    protected String beanName;
     
     public static GeoserverPlainTextPasswordEncoder get() {
           return (GeoserverPlainTextPasswordEncoder)
@@ -45,20 +44,10 @@ public class GeoserverPlainTextPasswordEncoder extends AbstractGeoserverPassword
 
 
     @Override
-    public void setBeanName(String name) {
-        beanName=name;
-    }
-
-
-    @Override
     public void initializeFor(GeoserverUserGroupService service) throws IOException {
         // do nothing
     }
 
 
-    @Override
-    public String getNameReference() {
-        return beanName;
-    }
 
 }

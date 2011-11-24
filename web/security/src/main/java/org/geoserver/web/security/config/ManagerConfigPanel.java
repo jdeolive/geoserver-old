@@ -14,16 +14,18 @@ import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.model.util.SetModel;
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
+import org.geoserver.security.password.GeoserverConfigPasswordEncoder;
 import org.geoserver.web.GeoServerApplication;
 
 
@@ -32,6 +34,8 @@ public class ManagerConfigPanel extends Panel {
     private static final long serialVersionUID = 1L;
     protected Form<SecurityConfigModelHelper> form;
     protected Palette<String> authProviders;
+    protected List<String> encoderList = new ArrayList<String>();
+    protected List<String> disabledEncoders = new ArrayList<String>();
 
     
     public ManagerConfigPanel(String id) {
@@ -73,21 +77,41 @@ public class ManagerConfigPanel extends Panel {
                 new DropDownChoice<String>("config.roleServiceName",roleServicesList);
         roleServices.setNullValid(false);
         form.add(roleServices);
+
         
-        List<String> encoderList = new ArrayList<String>();
-        encoderList.add(new ResourceModel(formWicketId+"."+GeoserverConfigPBEPasswordEncoder.BeanName).getObject());
-        encoderList.add(new ResourceModel(formWicketId+"."+GeoserverConfigPBEPasswordEncoder.StrongBeanName).getObject());
+        List<GeoserverConfigPasswordEncoder> encoders = 
+                GeoServerExtensions.extensions(GeoserverConfigPasswordEncoder.class);
+        
+        encoderList = new ArrayList<String>();
+        disabledEncoders = new ArrayList<String>();
+        for (GeoserverConfigPasswordEncoder encoder : encoders) {
+            encoderList.add(encoder.getBeanName());
+            if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false
+                   && encoder.isAvailableWithoutStrongCryptogaphy()==false) {
+                disabledEncoders.add(encoder.getBeanName());
+            }
+        }
         
         DropDownChoice<String> passwordEncrypters =  
-                new DropDownChoice<String>("config.configPasswordEncrypterName",encoderList){
+                new DropDownChoice<String>("config.configPasswordEncrypterName",encoderList,
+                        new IChoiceRenderer<String>() {
+                            private static final long serialVersionUID = 1L;
+
+                            @Override
+                            public Object getDisplayValue(String object) {
+                                return new ResourceModel("security."+object,object).getObject();
+                            }
+
+                            @Override
+                            public String getIdValue(String object, int index) {
+                                return object;
+                            }
+                        }                                                
+                        ){
                     private static final long serialVersionUID = 1L;
             @Override
             protected boolean isDisabled(String object, int index, String selected) {
-                ResourceModel strongEncrypterResource= new ResourceModel(
-                        ManagerConfigPanel.class.getSimpleName()+"."+GeoserverConfigPBEPasswordEncoder.StrongBeanName); 
-                return  
-                        strongEncrypterResource.getObject().equals(object) &&
-                        AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false;
+                return disabledEncoders.contains(object);
             }
         };                
         passwordEncrypters.setNullValid(true);

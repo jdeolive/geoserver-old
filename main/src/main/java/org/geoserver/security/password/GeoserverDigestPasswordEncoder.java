@@ -31,7 +31,6 @@ import org.jasypt.util.password.StrongPasswordEncryptor;
 public class GeoserverDigestPasswordEncoder extends AbstractGeoserverPasswordEncoder implements GeoserverUserPasswordEncoder {
 
         
-    protected String beanName;
     public final static String BeanName="digestPasswordEncoder";
 
     public static GeoserverDigestPasswordEncoder get() {
@@ -52,20 +51,12 @@ public class GeoserverDigestPasswordEncoder extends AbstractGeoserverPasswordEnc
     }
 
 
-    @Override
-    public void setBeanName(String name) {
-        beanName=name;
-    }
 
     @Override
     public void initializeFor(GeoserverUserGroupService service) throws IOException {
         return;
     }
 
-    @Override
-    public String getNameReference() {
-        return beanName;
-    }
     
     
 }

@@ -4,14 +4,24 @@
  */
 package org.geoserver.web.security.config.details;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
-import org.geoserver.security.concurrent.LockingUserGroupService;
-import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
+import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
+import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
+import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.password.PasswordEncodingType;
+import org.geoserver.security.password.PasswordValidatorImpl;
+import org.geoserver.security.xml.XMLUserGroupService;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -23,6 +33,11 @@ import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigDetailsPanel {
     private static final long serialVersionUID = 1L;
     protected CheckBox isLockingNeeded;
+    
+    List<String> encoderList;
+    List<String> disabledEncoders;
+    List<String> passwordPolicies;
+
     protected DropDownChoice<String> passwordEncoderName,passwordPolicyName;
 
     
@@ -32,43 +47,87 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
 
     @Override
     protected void initializeComponents() {
-        
-        add(isLockingNeeded=new CheckBox("config.isLockingNeeded"));
-        
-//        passwordEncoderName = new DropDownChoice<String>("config.passwordEncoderName",                  
-//                //new PropertyModel<String>(model, "config.className"),
-//                classNames,
-//                new IChoiceRenderer<String>() {
-//                    private static final long serialVersionUID = 1L;
-//
-//                    @Override
-//                    public Object getDisplayValue(String className) {
-//                        return new ResourceModel("security."+className,
-//                                className).getObject();
-//                    }
-//
-//                    @Override
-//                    public String getIdValue(String className, int index) {
-//                        return className;
-//                    }
-//                }
-//                );                
-//        return;
-//    }
 
-//    public String getPasswordEncoderName();
-//    public void   setPasswordEncoderName(String name);
-//    public String getPasswordPolicyName();
-//    public void   setPasswordPolicyName(String name);
-//    /**
-//     * Indicates if a {@link LockingUserGroupService} wrapper
-//     * is created automatically to protect concurrent access
-//     * to user/group objects.
-//     * 
-//     * @return
-//     */
-//    public boolean isLockingNeeded();
-//    public void setLockingNeeded(boolean needed);
+        SecurityUserGoupServiceConfig config = 
+                (SecurityUserGoupServiceConfig) getModelObject().getConfig();
+        
+        // for the default, locking is needed
+        if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
+            config.setLockingNeeded(true);
+        add(isLockingNeeded=new CheckBox("config.lockingNeeded"));
+        if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
+            isLockingNeeded.setEnabled(false); // 
+        
+        
+        List<GeoserverUserPasswordEncoder> encoders = 
+                GeoServerExtensions.extensions(GeoserverUserPasswordEncoder.class);
+        
+        encoderList = new ArrayList<String>();
+        disabledEncoders = new ArrayList<String>();
+        for (GeoserverUserPasswordEncoder encoder : encoders) {
+            encoderList.add(encoder.getBeanName());
+            if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false
+                   && encoder.isAvailableWithoutStrongCryptogaphy()==false) {
+                disabledEncoders.add(encoder.getBeanName());
+            }
+        }
+        
+        // set defaults for a new service
+        if (getModelObject().isNew()) {                 
+            config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+            config.setPasswordPolicyName(PasswordValidatorImpl.DEFAULT_NAME);
+        }
+        
+        passwordEncoderName =  
+                new DropDownChoice<String>("config.passwordEncoderName",encoderList,
+                        new IChoiceRenderer<String>() {
+                            private static final long serialVersionUID = 1L;
 
-                            
+                            @Override
+                            public Object getDisplayValue(String object) {
+                                return new ResourceModel("security."+object,object).getObject();
+                            }
+
+                            @Override
+                            public String getIdValue(String object, int index) {
+                                return object;
+                            }
+                        }                                                
+                        ){
+                    private static final long serialVersionUID = 1L;
+            @Override
+            protected boolean isDisabled(String object, int index, String selected) {
+                return disabledEncoders.contains(object);
+            }
+        };                
+
+        // enable/disable changing the password encoder for an existing service
+        try {
+            if (getModelObject().isNew()==false) {                
+                GeoserverUserPasswordEncoder encoder = (GeoserverUserPasswordEncoder) 
+                    GeoServerExtensions.bean(config.getPasswordEncoderName());
+                GeoserverUserGroupService service = 
+                        getSecurityManager().loadUserGroupService(config.getName());
+                // check if we have a write able service with digest encoding and
+                // if there are already digested passwords
+                boolean disabled = encoder.getEncodingType()==PasswordEncodingType.DIGEST &&                    
+                        service.canCreateStore();
+                        // TODO, to costly, need a method service.getCountUsers()            
+                    //  &&service.getUsers().size()>0;                    
+                passwordEncoderName.setEnabled(!disabled);
+            }
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        add(passwordEncoderName);
+
+        passwordPolicies = new ArrayList<String>();
+        try {
+            passwordPolicies.addAll(getSecurityManager().listPasswordValidators());
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        passwordPolicyName =new DropDownChoice<String>("config.passwordPolicyName",passwordPolicies);                
+    }
+                                                    
 }

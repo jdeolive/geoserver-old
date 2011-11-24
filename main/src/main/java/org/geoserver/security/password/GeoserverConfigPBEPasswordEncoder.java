@@ -5,7 +5,6 @@
 
 package org.geoserver.security.password;
 
-import org.geoserver.platform.GeoServerExtensions;
 
 /**
  * Password Encoder for password in configuration files
@@ -13,7 +12,8 @@ import org.geoserver.platform.GeoServerExtensions;
  * @author christian
  *
  */
-public  class GeoserverConfigPBEPasswordEncoder extends GeoserverPBEPasswordEncoder {
+public  class GeoserverConfigPBEPasswordEncoder extends GeoserverPBEPasswordEncoder  
+    implements GeoserverConfigPasswordEncoder {
 
     public final static String BeanName = "configPasswordEncoder";
     public final static String StrongBeanName = "strongConfigPasswordEncoder";  
