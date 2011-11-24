@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.servlet.Filter;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
@@ -34,6 +35,8 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.data.layer.Resource;
 import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.config.details.NamedConfigDetailsEmptyPanel;
+import org.geoserver.web.security.config.details.XMLNamedConfigPanel;
 
 /**
  * A form component that can be used to edit user to group assignments
@@ -42,10 +45,10 @@ public class NamedConfigPanel extends Panel {
     private static final long serialVersionUID = 1L;
     protected TextField<String> name;
     protected DropDownChoice<String> implClass;
-    Form<SecurityConfigModelHelper> form;
+    Form<SecurityNamedConfigModelHelper> form;
     protected Class<?> extensionPoint;
     protected Set<String> alreadyUsedNames=null;
-    protected CompoundPropertyModel<SecurityConfigModelHelper> model;
+    protected CompoundPropertyModel<SecurityNamedConfigModelHelper> model;
     
     /**
      * Validates service name for new services
@@ -73,13 +76,13 @@ public class NamedConfigPanel extends Panel {
     };
     
 
-    public NamedConfigPanel(String id,SecurityConfigModelHelper helper, Class<?> extensionPoint, AbstractSecurityPage responsePage) {        
+    public NamedConfigPanel(String id,SecurityNamedConfigModelHelper helper, Class<?> extensionPoint, AbstractSecurityPage responsePage) {        
         super(id);
 
         this.extensionPoint=extensionPoint;
 
-        model = new CompoundPropertyModel<SecurityConfigModelHelper>(helper);
-        form = new Form<SecurityConfigModelHelper>("namedConfig",model); 
+        model = new CompoundPropertyModel<SecurityNamedConfigModelHelper>(helper);
+        form = new Form<SecurityNamedConfigModelHelper>("namedConfig",model); 
         add(form);
         
         name = new TextField<String>("config.name");        
@@ -118,7 +121,13 @@ public class NamedConfigPanel extends Panel {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                target.addComponent(new XMLNamedConfigPanel("details",model));                         
+                Component old = form.get("details");
+                Component comp = new XMLNamedConfigPanel("details",model);
+                comp.setOutputMarkupId(true);
+                old.replaceWith(comp);                
+                //comp.setMarkupId(old.getMarkupId());
+                //form.addOrReplace(comp);
+                target.addComponent(comp);                         
             }
         });
 
@@ -130,6 +139,7 @@ public class NamedConfigPanel extends Panel {
         } else {
             form.add(new NamedConfigDetailsEmptyPanel("details", model));
         }
+        form.get("details").setOutputMarkupId(true);
                 
         implClass.setRequired(true);
         implClass.setOutputMarkupId(true);
