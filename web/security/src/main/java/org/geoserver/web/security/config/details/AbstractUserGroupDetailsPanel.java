@@ -127,7 +127,8 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
-        passwordPolicyName =new DropDownChoice<String>("config.passwordPolicyName",passwordPolicies);                
+        passwordPolicyName =new DropDownChoice<String>("config.passwordPolicyName",passwordPolicies);
+        add(passwordPolicyName);
     }
                                                     
 }

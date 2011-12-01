@@ -26,6 +26,7 @@ public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPane
 
     @Override
     protected void initializeComponents() {
+        super.initializeComponents();
         fileName = new RequiredTextField<String>("config.fileName");
         add(fileName);
 
