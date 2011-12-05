@@ -6,7 +6,7 @@ package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.RequiredTextField;
-import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
@@ -20,7 +20,7 @@ public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPane
     protected RequiredTextField<String> fileName;
     protected RequiredTextField<Integer> checkInterval;
     
-    public XMLUserGroupConfigDetailsPanel(String id, IModel<SecurityNamedConfigModelHelper> model) {
+    public XMLUserGroupConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
     }
 

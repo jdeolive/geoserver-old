@@ -5,7 +5,7 @@
 package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.markup.html.form.FormComponentPanel;
-import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.GeoServerApplication;
@@ -19,16 +19,19 @@ import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
  */
 public abstract class AbstractNamedConfigDetailsPanel extends FormComponentPanel<SecurityNamedConfigModelHelper>{
     private static final long serialVersionUID = 1L;
+    CompoundPropertyModel<SecurityNamedConfigModelHelper> model;
     
-    public AbstractNamedConfigDetailsPanel(String id, IModel<SecurityNamedConfigModelHelper> model) {
-        super(id,model);
+    public AbstractNamedConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
+        super(id);
+        this.model=model;
         SecurityNamedConfigModelHelper helper = model.getObject();
         if (helper.isNew()) {
             SecurityNamedServiceConfig newConfig = createNewConfigObject(); 
             SecurityNamedServiceConfig old =  helper.getConfig();
             newConfig.setName(old.getName());
             newConfig.setClassName(old.getClassName());
-            model.setObject(new SecurityNamedConfigModelHelper(newConfig, true));
+            model.getObject().setNewConfig(newConfig);
+            //model.setObject(new SecurityNamedConfigModelHelper(newConfig, true));
         }
 
         initializeComponents();
@@ -48,5 +51,9 @@ public abstract class AbstractNamedConfigDetailsPanel extends FormComponentPanel
     
     GeoServerSecurityManager getSecurityManager() {
         return GeoServerApplication.get().getSecurityManager();
+    }
+    
+    public void updateModel() {
+        // do nothing
     }
 }

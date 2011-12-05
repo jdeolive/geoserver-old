@@ -8,10 +8,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
-import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoserverUserGroupService;
@@ -32,16 +33,17 @@ import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
  */
 public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigDetailsPanel {
     private static final long serialVersionUID = 1L;
-    protected CheckBox isLockingNeeded;
     
+        
     List<String> encoderList;
     List<String> disabledEncoders;
     List<String> passwordPolicies;
 
+    protected CheckBox isLockingNeeded;
     protected DropDownChoice<String> passwordEncoderName,passwordPolicyName;
 
     
-    public AbstractUserGroupDetailsPanel(String id, IModel<SecurityNamedConfigModelHelper> model) {
+    public AbstractUserGroupDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
     }
 
@@ -49,7 +51,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
     protected void initializeComponents() {
 
         SecurityUserGoupServiceConfig config = 
-                (SecurityUserGoupServiceConfig) getModelObject().getConfig();
+                (SecurityUserGoupServiceConfig) model.getObject().getConfig();
         
         // for the default, locking is needed
         if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
@@ -73,7 +75,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         }
         
         // set defaults for a new service
-        if (getModelObject().isNew()) {                 
+        if (model.getObject().isNew()) {                 
             config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
             config.setPasswordPolicyName(PasswordValidatorImpl.DEFAULT_NAME);
         }
@@ -103,7 +105,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
 
         // enable/disable changing the password encoder for an existing service
         try {
-            if (getModelObject().isNew()==false) {                
+            if (model.getObject().isNew()==false) {                
                 GeoserverUserPasswordEncoder encoder = (GeoserverUserPasswordEncoder) 
                     GeoServerExtensions.bean(config.getPasswordEncoderName());
                 GeoserverUserGroupService service = 
@@ -129,6 +131,13 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         }
         passwordPolicyName =new DropDownChoice<String>("config.passwordPolicyName",passwordPolicies);
         add(passwordPolicyName);
+    }     
+    
+    @Override
+    public void updateModel() {
+        super.updateModel();
+        isLockingNeeded.updateModel();
+        passwordEncoderName.updateModel();
+        passwordPolicyName.updateModel();        
     }
-                                                    
 }
