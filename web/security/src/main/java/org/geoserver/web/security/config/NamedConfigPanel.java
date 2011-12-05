@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import javax.servlet.Filter;
-
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -33,19 +31,22 @@ import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.GeoServerApplication;
-import org.geoserver.web.data.layer.Resource;
 import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.config.details.AbstractNamedConfigDetailsPanel;
 import org.geoserver.web.security.config.details.NamedConfigDetailsEmptyPanel;
-import org.geoserver.web.security.config.details.XMLUserGroupConfigDetailsPanel;
+import org.geoserver.web.security.config.details.NamedConfigDetailsPanelProvider;
+import org.geoserver.web.security.config.details.MemoryUserGroupConfigDetailsPanel;
 
 /**
  * A form component that can be used to edit user to group assignments
  */
 public class NamedConfigPanel extends Panel {
+    
+    public static final String DETAILS_WICKET_ID = "details";
     private static final long serialVersionUID = 1L;
     protected TextField<String> name;
     protected DropDownChoice<String> implClass;
-    Form<SecurityNamedConfigModelHelper> form;
+    protected Form<SecurityNamedConfigModelHelper> form;
     protected Class<?> extensionPoint;
     protected Set<String> alreadyUsedNames=null;
     protected CompoundPropertyModel<SecurityNamedConfigModelHelper> model;
@@ -83,8 +84,7 @@ public class NamedConfigPanel extends Panel {
 
         model = new CompoundPropertyModel<SecurityNamedConfigModelHelper>(helper);
         form = new Form<SecurityNamedConfigModelHelper>("namedConfig",model); 
-        add(form);
-        
+        add(form);        
         name = new TextField<String>("config.name");        
         name.setEnabled(helper.isNew());
         name.setRequired(true);    
@@ -97,7 +97,7 @@ public class NamedConfigPanel extends Panel {
                 setClassName(classNames.get(0));
         }
         implClass = new DropDownChoice<String>("config.className",                  
-            //new PropertyModel<String>(model, "config.className"),
+            //new PropertyModel<String>(model.getObject(), "config.className"),                
             classNames,
             new IChoiceRenderer<String>() {
                 private static final long serialVersionUID = 1L;
@@ -112,8 +112,17 @@ public class NamedConfigPanel extends Panel {
                 public String getIdValue(String className, int index) {
                     return className;
                 }
-            }
-            );
+                
+            }); 
+            /*{
+                private static final long serialVersionUID = 9004791493341302097L;
+                @Override
+                public void updateModel() {
+                    NamedConfigPanel.this.model.getObject().
+                        getConfig().setClassName(getConvertedInput());
+                }
+            };*/
+            
         
         
         implClass.add(new AjaxFormComponentUpdatingBehavior("onchange") {
@@ -121,8 +130,10 @@ public class NamedConfigPanel extends Panel {
 
             @Override
             protected void onUpdate(AjaxRequestTarget target) {
-                Component old = form.get("details");
-                Component comp = new XMLUserGroupConfigDetailsPanel("details",model);
+                Component old = form.get(DETAILS_WICKET_ID);
+                Component comp = getConfigDetailsPanel(
+//                        implClass.getModel().getObject());
+                        NamedConfigPanel.this.model.getObject().getConfig().getClassName());
                 comp.setOutputMarkupId(true);
                 old.replaceWith(comp);                
                 //comp.setMarkupId(old.getMarkupId());
@@ -133,13 +144,13 @@ public class NamedConfigPanel extends Panel {
 
         implClass.setEnabled(helper.isNew && classNames.size()>1);
         
-        // TODO Hack
-        if (helper.isNew()==false) {
-            form.add(new XMLUserGroupConfigDetailsPanel("details", model));
+        if (helper.isNew()) {
+            form.add(new NamedConfigDetailsEmptyPanel(DETAILS_WICKET_ID, model));
+            
         } else {
-            form.add(new NamedConfigDetailsEmptyPanel("details", model));
-        }
-        form.get("details").setOutputMarkupId(true);
+            form.add(getConfigDetailsPanel(helper.getConfig().getClassName()));
+        }        
+        form.get(DETAILS_WICKET_ID).setOutputMarkupId(true);
                 
         implClass.setRequired(true);
         implClass.setOutputMarkupId(true);
@@ -235,4 +246,16 @@ public class NamedConfigPanel extends Panel {
         }; 
     }
 
+    AbstractNamedConfigDetailsPanel getConfigDetailsPanel(String className) {
+        AbstractNamedConfigDetailsPanel panel = null;
+        List<NamedConfigDetailsPanelProvider> providers =
+                GeoServerExtensions.extensions(NamedConfigDetailsPanelProvider.class);
+        for (NamedConfigDetailsPanelProvider provider : providers) {
+            panel=provider.getDetailsPanel(className, DETAILS_WICKET_ID, model);
+            if (panel!=null)
+                return panel;
+        }
+        throw new RuntimeException("No details panel for "+className);
+    }
+        
 }

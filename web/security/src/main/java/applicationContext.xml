@@ -11,6 +11,10 @@
 		<property name="nameKey" value="category.security" />
 		<property name="order" value="200" />
 	</bean>
+	
+	<bean id="defaultDetailsPanelProvider" class="org.geoserver.web.security.config.details.NamedConfigDetailsPanelProviderImpl">
+	</bean>
+	
 
 	<bean id="globalSecurityPage" class="org.geoserver.web.MenuPageInfo">
 		<property name="id" value="security.global" />

@@ -43,6 +43,11 @@ public abstract  class AbstractConfigModelHelper<T extends SecurityConfig> imple
         }        
     }
     
+    public void setNewConfig(T config) {
+        serializedInitialConfig=serializeConfg(this.config);
+        this.config=config;
+    }
+    
     public boolean isNew() {
         return isNew;
     }

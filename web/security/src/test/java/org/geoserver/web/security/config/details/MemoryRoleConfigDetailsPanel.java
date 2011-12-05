@@ -6,30 +6,30 @@ package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
+import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
- * A form component without any details
- * 
- * @author christian
- *
+ * A form component that can be used for in memory configurations
  */
-public class NamedConfigDetailsEmptyPanel extends AbstractNamedConfigDetailsPanel {
+public class MemoryRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     private static final long serialVersionUID = 1L;
     
-    public NamedConfigDetailsEmptyPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
+    public MemoryRoleConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
     }
 
     @Override
     protected void initializeComponents() {
-        return;
-    }
-
+        super.initializeComponents();
+        addOrReplace(new EncryptedFieldFormComponent());
+        
+    };
+        
+    
     @Override
     protected SecurityNamedServiceConfig createNewConfigObject() {
-        return new SecurityNamedServiceConfigImpl();
+        return new MemoryRoleServiceConfigImpl();
     }
                             
 }
