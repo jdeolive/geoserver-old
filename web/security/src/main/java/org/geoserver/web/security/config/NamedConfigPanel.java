@@ -21,7 +21,6 @@ import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
-import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.ValidationError;
@@ -35,7 +34,6 @@ import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.details.AbstractNamedConfigDetailsPanel;
 import org.geoserver.web.security.config.details.NamedConfigDetailsEmptyPanel;
 import org.geoserver.web.security.config.details.NamedConfigDetailsPanelProvider;
-import org.geoserver.web.security.config.details.MemoryUserGroupConfigDetailsPanel;
 
 /**
  * A form component that can be used to edit user to group assignments
@@ -227,10 +225,11 @@ public class NamedConfigPanel extends Panel {
 
             @Override
             public void onSubmit() {
-                // TODO store
-                responsePage.setDirty(true);
                 setResponsePage(responsePage);
-
+                if (model.getObject().hasChanges()) {
+                    responsePage.setDirty(true);
+                    // TODO store                                                
+                }
             }
         };
     }

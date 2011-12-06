@@ -19,11 +19,11 @@ import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
  */
 public abstract class AbstractNamedConfigDetailsPanel extends FormComponentPanel<SecurityNamedConfigModelHelper>{
     private static final long serialVersionUID = 1L;
-    CompoundPropertyModel<SecurityNamedConfigModelHelper> model;
+    protected SecurityNamedConfigModelHelper configHelper;
     
     public AbstractNamedConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id);
-        this.model=model;
+        configHelper=model.getObject();
         SecurityNamedConfigModelHelper helper = model.getObject();
         if (helper.isNew()) {
             SecurityNamedServiceConfig newConfig = createNewConfigObject(); 

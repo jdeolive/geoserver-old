@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
@@ -51,7 +50,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
     protected void initializeComponents() {
 
         SecurityUserGoupServiceConfig config = 
-                (SecurityUserGoupServiceConfig) model.getObject().getConfig();
+                (SecurityUserGoupServiceConfig) configHelper.getConfig();
         
         // for the default, locking is needed
         if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
@@ -75,7 +74,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         }
         
         // set defaults for a new service
-        if (model.getObject().isNew()) {                 
+        if (configHelper.isNew()) {                 
             config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
             config.setPasswordPolicyName(PasswordValidatorImpl.DEFAULT_NAME);
         }
@@ -105,7 +104,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
 
         // enable/disable changing the password encoder for an existing service
         try {
-            if (model.getObject().isNew()==false) {                
+            if (configHelper.isNew()==false) {                
                 GeoserverUserPasswordEncoder encoder = (GeoserverUserPasswordEncoder) 
                     GeoServerExtensions.bean(config.getPasswordEncoderName());
                 GeoserverUserGroupService service = 

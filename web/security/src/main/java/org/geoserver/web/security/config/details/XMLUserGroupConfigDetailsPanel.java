@@ -4,8 +4,6 @@
  */
 package org.geoserver.web.security.config.details;
 
-import org.apache.wicket.markup.html.form.CheckBox;
-import org.apache.wicket.markup.html.form.RequiredTextField;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
@@ -16,9 +14,7 @@ import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
  */
 public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPanel{
     private static final long serialVersionUID = 1L;
-    protected CheckBox validating;
-    protected RequiredTextField<String> fileName;
-    protected RequiredTextField<Integer> checkInterval;
+    XMLFileFormComponent comp;
     
     public XMLUserGroupConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
@@ -27,15 +23,8 @@ public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPane
     @Override
     protected void initializeComponents() {
         super.initializeComponents();
-        fileName = new RequiredTextField<String>("config.fileName");
-        add(fileName);
-
-        checkInterval = new RequiredTextField<Integer>("config.checkInterval", Integer.class);
-        add(checkInterval);
-        
-        validating  = new CheckBox("config.validating");
-        add(validating);
-        
+        comp = new XMLFileFormComponent();
+        addOrReplace(comp);        
     };
         
     
