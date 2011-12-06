@@ -40,7 +40,7 @@ public abstract class AbstractRoleDetailsPanel extends AbstractNamedConfigDetail
     protected void initializeComponents() {
 
         SecurityRoleServiceConfig config = 
-                (SecurityRoleServiceConfig) model.getObject().getConfig();
+                (SecurityRoleServiceConfig) configHelper.getConfig();
         
         // for the default service, locking is needed
         if (XMLRoleService.DEFAULT_NAME.equals(config.getName()))
@@ -52,7 +52,7 @@ public abstract class AbstractRoleDetailsPanel extends AbstractNamedConfigDetail
         
         rolesList = new ArrayList<String>();
         
-        if (model.getObject().isNew()==false) { 
+        if (configHelper.isNew()==false) { 
             try {
                 GeoserverRoleService service = getSecurityManager().loadRoleService(config.getName());
                 for (GeoserverRole role : service.getRoles()) {
