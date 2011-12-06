@@ -45,7 +45,7 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
         form.submit("save");
         
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(RolePage.class);
+        tester.assertRenderedPage(RolePanel.class);
         
         GeoserverRole role = gaService.getRoleByName("ROLE_TEST");
         assertNotNull(role);

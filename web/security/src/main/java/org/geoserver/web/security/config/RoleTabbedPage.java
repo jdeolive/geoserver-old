@@ -6,9 +6,6 @@
 package org.geoserver.web.security.config;
 
     
-
-
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,28 +16,27 @@ import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
-import org.geoserver.web.security.group.GroupPanel;
-import org.geoserver.web.security.user.UserPanel;
+import org.geoserver.web.security.role.RolePanel;
 
 
-public class UserGroupTabbedPage extends AbstractSecurityPage {
+public class RoleTabbedPage extends AbstractSecurityPage {
     
     protected TabbedPanel tabbedPanel;
     protected String serviceName;
     protected AbstractSecurityPage responsePage;
     
 
-    public UserGroupTabbedPage(AbstractSecurityPage responsePage) {
+    public RoleTabbedPage(AbstractSecurityPage responsePage) {
         this(null,responsePage);
     }
     
 
-    public UserGroupTabbedPage(final String serviceName,AbstractSecurityPage responsePage) {
+    public RoleTabbedPage(final String serviceName,AbstractSecurityPage responsePage) {
         this.serviceName=serviceName;
         this.responsePage=responsePage;
         initializeComponents();        
@@ -57,10 +53,10 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
             public Panel getPanel(String panelId) {
                 try {
                     
-                    SecurityUserGoupServiceConfig config = null;
+                    SecurityRoleServiceConfig config = null;
                     if (serviceName !=null && serviceName.isEmpty()==false)
                             config = GeoServerApplication.get().getSecurityManager().
-                                loadUserGroupServiceConfig(serviceName);
+                                loadRoleServiceConfig(serviceName);
                     
                     SecurityNamedConfigModelHelper helper = null;
                     if (config==null)
@@ -69,7 +65,7 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
                         helper = new SecurityNamedConfigModelHelper(config,false);
                     
                     return  new NamedConfigPanel(panelId,helper,
-                            GeoserverUserGroupService.class,responsePage);
+                            GeoserverRoleService.class,responsePage);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -77,31 +73,14 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
         }); 
 
         
-        tabs.add(new AbstractTab(new ResourceModel("users")) {            
+        tabs.add(new AbstractTab(new ResourceModel("roles")) {            
             private static final long serialVersionUID = 1L;
-
             @Override
             public Panel getPanel(String panelId) {
-                try {
-                    return  new UserPanel(panelId,serviceName);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                    return  new RolePanel(panelId,serviceName);
             }
         }); 
 
-        tabs.add(new AbstractTab(new ResourceModel("groups")) {            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Panel getPanel(String panelId) {
-                try {
-                    return new GroupPanel(panelId,serviceName);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }); 
 
         Integer selectedTab = null;
         if (tabbedPanel!=null)

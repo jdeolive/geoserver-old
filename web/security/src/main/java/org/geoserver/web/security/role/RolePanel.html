@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:wicket="http://wicket.apache.org/">
+<body>
+<wicket:panel>
+
+	<table>
+        <tr><td><a class="add-link" href="#" wicket:id="addNew"><wicket:message key="addNew" /></a></td></tr>
+        <tr><td><a class="remove-link" href="#" wicket:id="removeSelected"><wicket:message key="removeSelected" /></a></td></tr>
+    </table>          	
+ 	<br />
+    
+	<div wicket:id="table"></div>
+	
+	<!-- the cascade delete confirmation dialog -->
+  	<div wicket:id="dialog"></div>
+</wicket:panel>
+</body>
+</html>
