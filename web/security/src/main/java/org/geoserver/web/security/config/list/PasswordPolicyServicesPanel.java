@@ -6,43 +6,36 @@
 package org.geoserver.web.security.config.list;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
+import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
-import org.geoserver.web.security.config.UserGroupTabbedPage;
+import org.geoserver.web.security.config.PasswordPolicyPage;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public class UserGroupServicesPanel extends NamedServicesPanel {
+public class PasswordPolicyServicesPanel extends NamedServicesPanel {
 
-    public UserGroupServicesPanel(String id) {
+    public PasswordPolicyServicesPanel(String id) {
         super(id);
         
     }
 
     private static final long serialVersionUID = 1L;
 
-    class UserGroupServiceTablePanel extends NamedServicesTablePanel<SecurityUserGoupServiceConfig> {
+    class PasswordPolicyServiceTablePanel extends NamedServicesTablePanel<PasswordPolicyConfig> {
         private static final long serialVersionUID = 1L;
 
-        public UserGroupServiceTablePanel(String id,
-                GeoServerDataProvider<SecurityUserGoupServiceConfig> dataProvider,
+        public PasswordPolicyServiceTablePanel(String id,
+                GeoServerDataProvider<PasswordPolicyConfig> dataProvider,
                 boolean selectable) {
             super(id, dataProvider, selectable);            
         }
         @Override
         protected Component getComponentForProperty(String id, IModel itemModel,
-                Property<SecurityUserGoupServiceConfig> property) {
+                Property<PasswordPolicyConfig> property) {
             Component comp = super.getComponentForProperty(id, itemModel, property);
             if (comp!=null) return comp;
-            if (property == UserGroupServiceListProvider.PASSWORDENCODERNAME) {
-                return new Label(id,property.getModel(itemModel).getObject().toString());
-            }
-            if (property == UserGroupServiceListProvider.PASSWORDPOLICYNAME) {
-                return new Label(id,property.getModel(itemModel).getObject().toString());
-            }
             throw new RuntimeException("Unknow propterty: "+property.getName());
         }
 
@@ -51,18 +44,17 @@ public class UserGroupServicesPanel extends NamedServicesPanel {
     
     @Override
     protected  AbstractSecurityPage getEditPage(String serviceName) {
-        return new UserGroupTabbedPage(serviceName,(AbstractSecurityPage) getPage());
+        return new PasswordPolicyPage(serviceName,(AbstractSecurityPage) getPage());
     }
 
     @Override
     protected NamedServicesTablePanel<? extends SecurityNamedServiceConfig> getTablePanel() {
-        UserGroupServiceListProvider prov = new UserGroupServiceListProvider();
-        return new  UserGroupServiceTablePanel("table",prov,true);
+        PasswordPolicyListProvider prov = new PasswordPolicyListProvider();
+        return new  PasswordPolicyServiceTablePanel("table",prov,true);
     }
 
     @Override
     protected AbstractSecurityPage getNewPage() {
-        return new UserGroupTabbedPage((AbstractSecurityPage) getPage());
-    }
-    
+        return new PasswordPolicyPage((AbstractSecurityPage) getPage());
+    }    
 }

@@ -7,17 +7,18 @@ package org.geoserver.web.security.role;
 import java.io.IOException;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Fragment;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.CatalogIconFactory;
+import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
-import org.geoserver.web.security.group.NewGroupPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
@@ -28,7 +29,7 @@ import org.geoserver.web.wicket.SimpleAjaxLink;
  * A page listing roles, allowing for removal, addition and linking to an edit page
  */
 @SuppressWarnings("serial")
-public class RolePage extends AbstractSecurityPage {
+public class RolePanel extends Panel {
 
     protected GeoServerTablePanel<GeoserverRole> roles;
     protected GeoServerDialog dialog;
@@ -36,8 +37,9 @@ public class RolePage extends AbstractSecurityPage {
     protected Link<?> add;
     protected String roleServiceName;
 
-    public RolePage(PageParameters params) {
-        this.roleServiceName=params.getString(ServiceNameKey);
+    public RolePanel(String id, String serviceName) {
+        super(id);
+        this.roleServiceName=serviceName;
                 
         RoleListProvider provider = new RoleListProvider(this.roleServiceName);
         add(roles = new GeoServerTablePanel<GeoserverRole>("table", provider, true) {
@@ -67,31 +69,42 @@ public class RolePage extends AbstractSecurityPage {
         });
         roles.setOutputMarkupId(true);
         add(dialog = new GeoServerDialog("dialog"));
-        setHeaderPanel(headerPanel());
+        headerComponents();
 
     }
-    
-    protected Component headerPanel() {
-        Fragment header = new Fragment(HEADER_PANEL, "header", this);
 
+    protected void headerComponents() {
+
+        
+        boolean canCreateStore=getService().canCreateStore();
+      
         // the add button
-        header.add(add = new Link("addNew") {
+        add(add = new Link("addNew") {
             @Override
             public void onClick() {
                 setResponsePage(new NewRolePage(roleServiceName,
                         (AbstractSecurityPage)getPage()));
             }            
         });        
-        add.setVisible(hasRoleStore(roleServiceName));
+        add.setVisible(canCreateStore);
 
         // the removal button
-        header.add(removal = new SelectionRoleRemovalLink(roleServiceName,"removeSelected", roles, dialog));
+        add(removal = new SelectionRoleRemovalLink(roleServiceName,"removeSelected", roles, dialog));
         removal.setOutputMarkupId(true);
         removal.setEnabled(false);
-        removal.setVisible(hasRoleStore(roleServiceName));
-
-        return header;
+        removal.setVisible(canCreateStore);
+        
     }
+    
+    protected GeoserverRoleService getService() {
+        try {
+            return GeoServerApplication.get().getSecurityManager().
+                    loadRoleService(roleServiceName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
 
 //    AjaxLink addRoleLink() {
 //        return new AjaxLink("addRole", new Model()) {
@@ -110,7 +123,8 @@ public class RolePage extends AbstractSecurityPage {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                setResponsePage(new EditRolePage(roleServiceName, (GeoserverRole) getDefaultModelObject(),RolePage.this));
+                setResponsePage(new EditRolePage(roleServiceName, 
+                        (GeoserverRole) getDefaultModelObject(),(AbstractSecurityPage) getPage()));
             }
 
         };
@@ -125,11 +139,13 @@ public class RolePage extends AbstractSecurityPage {
                 GeoserverRole role = (GeoserverRole) getDefaultModelObject();
                 GeoserverRole parentRole;
                 try {
-                    parentRole = getSecurityManager().loadRoleService(roleServiceName).getParentRole(role);
+                    parentRole = GeoServerApplication.get().getSecurityManager()
+                            .loadRoleService(roleServiceName).getParentRole(role);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                setResponsePage(new EditRolePage(roleServiceName, parentRole,RolePage.this));
+                setResponsePage(new EditRolePage(roleServiceName, parentRole,
+                        (AbstractSecurityPage) getPage()));
             }
 
         };

@@ -21,7 +21,7 @@
 		<property name="titleKey" value="security.global.title" />
 		<property name="descriptionKey" value="security.global.description" />
 		<property name="componentClass" value="org.geoserver.web.security.config.GlobalTabbedPage" />
-		<property name="icon" value="../../img/icons/silk/application_key.png" />
+		<property name="icon" value="../../img/icons/silk/server.png" />
 		<property name="category" ref="securityCategory" />
 		<property name="order" value="90" />
 	</bean>
@@ -32,21 +32,11 @@
 		<property name="descriptionKey" value="security.ugservices.description" />
 		<property name="componentClass" value="org.geoserver.web.security.config.SecurityServicesTabbedPage" />
 		<property name="icon" value="../../img/icons/silk/group.png" />
-		<property name="category" ref="securityCategory" />
+		<property name="category" ref="securityCategory"/>
 		<property name="order" value="95" />
 	</bean>
 	
-	<bean id="authServicesTabbedPage" class="org.geoserver.web.MenuPageInfo">
-		<property name="id" value="security.authservices" />
-		<property name="titleKey" value="security.authservices.title" />
-		<property name="descriptionKey" value="security.authservices.description" />
-		<property name="componentClass" value="org.geoserver.web.security.config.AuthServicesTabbedPage" />
-		<property name="icon" value="../../img/icons/silk/database_key.png" />
-		<property name="category" ref="securityCategory" />
-		<property name="order" value="100" />
-	</bean>
 	
-
 	<!--
 	The data list page 
 	 -->

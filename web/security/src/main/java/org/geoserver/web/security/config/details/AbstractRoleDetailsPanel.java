@@ -18,7 +18,7 @@ import org.geoserver.security.xml.XMLRoleService;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
- * A form component without any details
+ * A form component for role services
  * 
  * @author christian
  *

@@ -21,7 +21,7 @@ public class RoleListPageTest extends AbstractListPageTest<GeoserverRole> {
     protected Page listPage(PageParameters params) {
         if (params==null)
             params = getParamsForService(getRoleServiceName()); 
-       return new  RolePage(params);
+       return new  RolePanel(params);
     }
     protected Page newPage(Object...params) {
         if (params.length==0)

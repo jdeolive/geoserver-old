@@ -6,6 +6,7 @@ package org.geoserver.web.security.config;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -173,7 +174,7 @@ public class NamedConfigPanel extends Panel {
         GeoServerSecurityManager manager = GeoServerApplication.get().getSecurityManager();
         
         try {
-            List<String> result=new ArrayList<String>();
+            Set<String> result=new HashSet<String>();
             for (GeoServerSecurityProvider prov : list) {            
                 Class<?> aClass = prov.getAuthenticationProviderClass();            
                 if (aClass!=null) {
@@ -213,7 +214,9 @@ public class NamedConfigPanel extends Panel {
                         alreadyUsedNames=manager.listFilters();
                 }                                                
             }
-            return result;
+            List<String> resList = new ArrayList<String>();
+            resList.addAll(result);
+            return resList;
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

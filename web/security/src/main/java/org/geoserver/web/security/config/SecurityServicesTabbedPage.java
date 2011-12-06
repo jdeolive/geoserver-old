@@ -19,6 +19,8 @@ import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.config.list.PasswordPolicyServicesPanel;
+import org.geoserver.web.security.config.list.RoleServicesPanel;
 import org.geoserver.web.security.config.list.UserGroupServicesPanel;
 
 
@@ -41,24 +43,23 @@ public class SecurityServicesTabbedPage extends AbstractSecurityPage {
                 return new UserGroupServicesPanel(panelId);
             }
         });
-        /*
         tabs.add(new AbstractTab(new ResourceModel("roles")) {
             private static final long serialVersionUID = 1L;
 
             @Override
             public Panel getPanel(String panelId) {
-                return new UserGroupServicesPanel(panelId);
+                return new RoleServicesPanel(panelId);
             }
-        }); 
+        });
+        
         tabs.add(new AbstractTab(new ResourceModel("policies")) {
             private static final long serialVersionUID = 1L;
 
             @Override
             public Panel getPanel(String panelId) {
-                return new UserGroupServicesPanel(panelId);
+                return new PasswordPolicyServicesPanel(panelId);
             }
         }); 
-        */
         
 
         Integer selectedTab = null;

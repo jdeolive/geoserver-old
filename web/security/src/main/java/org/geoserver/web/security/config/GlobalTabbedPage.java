@@ -19,6 +19,7 @@ import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.config.list.AuthenticationServicesPanel;
 
 
 public class GlobalTabbedPage extends AbstractSecurityPage {
@@ -48,7 +49,17 @@ public class GlobalTabbedPage extends AbstractSecurityPage {
             public Panel getPanel(String panelId) {
                 return new RememberMeConfigPanel(panelId);
             }
+        });
+        
+        tabs.add(new AbstractTab(new ResourceModel("authProviders")) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Panel getPanel(String panelId) {
+                return new AuthenticationServicesPanel(panelId);
+            }
         }); 
+
 
         Integer selectedTab = null;
         if (tabbedPanel!=null)

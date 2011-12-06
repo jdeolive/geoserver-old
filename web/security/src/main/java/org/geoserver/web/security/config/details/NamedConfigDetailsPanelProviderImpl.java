@@ -6,6 +6,9 @@
 package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.geoserver.security.UsernamePasswordAuthenticationProvider;
+import org.geoserver.security.password.PasswordValidatorImpl;
+import org.geoserver.security.xml.XMLRoleService;
 import org.geoserver.security.xml.XMLUserGroupService;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
@@ -24,7 +27,14 @@ public class NamedConfigDetailsPanelProviderImpl implements NamedConfigDetailsPa
         
         if (XMLUserGroupService.class.getName().equals(className))
             return new XMLUserGroupConfigDetailsPanel(id,model);
+        if (XMLRoleService.class.getName().equals(className))
+            return new XMLRoleConfigDetailsPanel(id, model);
+     
+        if (PasswordValidatorImpl.class.getName().equals(className))
+            return new PasswordPolicyDetailsPanel(id,model);
         
+        if (UsernamePasswordAuthenticationProvider.class.getName().equals(className))
+            return new UsernamePasswordDetailsPanel(id,model);                                
         return null;
     }
 
