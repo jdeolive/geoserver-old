@@ -9,9 +9,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 
@@ -145,9 +148,14 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
     protected List<GeoserverUser> getItems() {
         SortedSet<GeoserverUser> users=null;
         try {
-            users = getApplication().getSecurityManager().loadUserGroupService(userGroupServiceName).getUsers();
+            GeoserverUserGroupService service = 
+                    getApplication().getSecurityManager().loadUserGroupService(userGroupServiceName);
+            if (service==null)
+                users=new TreeSet<GeoserverUser>();
+            else
+                users=service.getUsers();
+
         } catch (IOException e) {
-            // TODO, is this correct ?
             throw new RuntimeException(e); 
         }
         List<GeoserverUser> userList = new ArrayList<GeoserverUser>();

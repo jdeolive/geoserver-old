@@ -8,7 +8,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
+import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDataProvider;
@@ -34,10 +37,13 @@ public class GroupListProvider extends GeoServerDataProvider<GeoserverUserGroup>
     protected List<GeoserverUserGroup> getItems() {
         SortedSet<GeoserverUserGroup> groups=null;
         try {
-            groups = GeoServerApplication.get().getSecurityManager().
-                    loadUserGroupService(userGroupServiceName).getUserGroups();
+            GeoserverUserGroupService service = 
+                    getApplication().getSecurityManager().loadUserGroupService(userGroupServiceName);
+            if (service==null)
+                groups=new TreeSet<GeoserverUserGroup>();
+            else
+                groups=service.getUserGroups();
         } catch (IOException e) {
-            // TODO, is this correct ?
             throw new RuntimeException(e); 
         }
         List<GeoserverUserGroup> groupList = new ArrayList<GeoserverUserGroup>();

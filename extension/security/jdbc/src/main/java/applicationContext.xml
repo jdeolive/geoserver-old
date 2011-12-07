@@ -4,4 +4,8 @@
 
   <!-- jdbc backend provider -->
   <bean id="jdbcSecurityProvider" class="org.geoserver.security.jdbc.JDBCSecurityProvider"/>
+  
+  <bean id="jdbcDetailsPanelProvider" 
+  	class="org.geoserver.web.security.config.details.JDBCNamedConfigDetailsPanelProvider"/>
+  
 </beans>

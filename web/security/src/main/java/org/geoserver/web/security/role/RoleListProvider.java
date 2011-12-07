@@ -6,12 +6,15 @@ package org.geoserver.web.security.role;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.GeoServerApplication;
@@ -120,10 +123,14 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverRole> {
     protected List<GeoserverRole> getItems() {
         SortedSet<GeoserverRole> roles=null;
         try {
-            roles = GeoServerApplication.get().getSecurityManager().
-                    loadRoleService(roleServiceName).getRoles();
+            GeoserverRoleService service = 
+                    GeoServerApplication.get().getSecurityManager().
+                    loadRoleService(roleServiceName);
+            if (service==null)
+                roles=new TreeSet<GeoserverRole>();
+            else
+                roles=service.getRoles();
         } catch (IOException e) {
-            // TODO, is this correct ?
             throw new RuntimeException(e); 
         }
         List<GeoserverRole> roleList = new ArrayList<GeoserverRole>();
