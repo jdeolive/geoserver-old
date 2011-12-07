@@ -165,13 +165,18 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
         this.dataDir = dataDir;
 
-        //migrate from old security config
-        migrateIfNecessary();
     }
 
     @Override
     public void setApplicationContext(ApplicationContext appContext) throws BeansException {
         this.appContext = appContext;
+
+        //migrate from old security config
+        try {
+            migrateIfNecessary();
+        } catch (Exception e1) {
+            throw new RuntimeException(e1);
+        }
 
         //read config and initialize... we do this now since we can be ensured that the spring
         // context has been property initialized, and we can successfully look up security plugins
@@ -901,8 +906,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             GeoServerExtensions.extensions(GeoServerSecurityProvider.class, appContext));
 
         //add the defaults
-        list.add(new XMLSecurityProvider());
-        list.add(new UsernamePasswordAuthenticationProvider.SecurityProvider());
+        // list.add(new XMLSecurityProvider());
+        // list.add(new UsernamePasswordAuthenticationProvider.SecurityProvider());
         return list;
     }
 

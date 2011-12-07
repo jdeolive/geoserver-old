@@ -98,7 +98,6 @@ public abstract class GeoServerSecurityProvider {
      * Configures the xstream instance used to serialize/deserialize provider configuration. 
      */
     public void configure(XStreamPersister xp) {
-        xp.getXStream().alias("passwordpolicy", PasswordPolicyConfigImpl.class);
         
         // register converter for fields to be encrypted
         for (Entry<Class<?>, Set<String>> entry: getFieldsForEncryption().entrySet()) {
@@ -204,23 +203,24 @@ public abstract class GeoServerSecurityProvider {
      * Returns the specific class of the password validator created by 
      * {@link #createPasswordValidator(PasswordPolicyConfig))}.
      * <p>
-     * If the extension does not provide a user group service this method should simply return
+     * If the extension does not provide a validator this method should simply return
      * <code>null</code>. 
      * </p> 
      */
     public  Class<? extends PasswordValidator> getPasswordValidatorClass() {
-        return PasswordValidatorImpl.class;
+        return null;
     }
 
     
     /**
-     * Create the standard password validator
+     * Create the standard password validator or
+     * return <code>null</code>
      * 
      * @param config
      * @return
      */
     public PasswordValidator createPasswordValidator(PasswordPolicyConfig config) {
-        return new PasswordValidatorImpl();
+        return null;
     }
     
     /**
