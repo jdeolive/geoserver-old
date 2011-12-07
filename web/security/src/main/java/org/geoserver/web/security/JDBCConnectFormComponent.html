@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:wicket="http://wicket.apache.org/">
+<body>
+<wicket:panel>
+	<ul>
+		<li>
+			<label for="type"><wicket:message key="type"></wicket:message></label>
+			 <span wicket:id="type">
+    			<input wicket:id="driver" type="radio">
+    				<wicket:message key="driver"></wicket:message>
+    			</input>
+    			<input wicket:id="jndi" type="radio">
+    				<wicket:message key="jndi"></wicket:message>
+    			</input>
+		    </span>  				
+		</li>	
+		<li>
+			<label wicket:id="jndiNameLabel" for="jndiName"><wicket:message key="jndiName"></wicket:message></label>  
+			<input wicket:id="jndiName" type="text" />	
+		</li>
+		<li>
+			<label for="driverName"><wicket:message key="driverName"></wicket:message></label>  
+			<input wicket:id="driverName" type="text" />	
+		</li>
+		<li>
+			<label for="connectURL"><wicket:message key="connectURL"></wicket:message></label>  
+			<input wicket:id="connectURL" type="text" />	
+		</li>		
+		<li>
+			<label for="username"><wicket:message key="username"></wicket:message></label>  
+			<input wicket:id="username" type="text" />	
+		</li>		
+		<li>
+			<label for="password"><wicket:message key="password"></wicket:message></label>  
+			<input wicket:id="password" type="password" />	
+		</li>
+		<li>
+			<a href="#" wicket:id="testConnection"><wicket:message
+				key="testConnection"></wicket:message></a>
+				
+<!-- 			<input wicket:id="testConnection" type="submit" key>
+				<wicket:message key="testConnection"></wicket:message>
+			</input>	 -->
+			
+		</li>				
+	</ul>
+</wicket:panel>
+</body>
+</html>
