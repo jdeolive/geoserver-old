@@ -63,17 +63,17 @@ public class UsernamePasswordAuthenticationProvider extends GeoServerAuthenticat
         return authProvider.authenticate(authentication);
     }
 
-    static class SecurityProvider extends GeoServerSecurityProvider {
-        
-        @Override
-        public Class<? extends GeoServerAuthenticationProvider> getAuthenticationProviderClass() {
-            return UsernamePasswordAuthenticationProvider.class;
-        }
-
-        @Override
-        public GeoServerAuthenticationProvider createAuthenticationProvider(
-                SecurityNamedServiceConfig config) {
-            return new UsernamePasswordAuthenticationProvider();
-        }
-    }
+//    static class SecurityProvider extends GeoServerSecurityProvider {
+//        
+//        @Override
+//        public Class<? extends GeoServerAuthenticationProvider> getAuthenticationProviderClass() {
+//            return UsernamePasswordAuthenticationProvider.class;
+//        }
+//
+//        @Override
+//        public GeoServerAuthenticationProvider createAuthenticationProvider(
+//                SecurityNamedServiceConfig config) {
+//            return new UsernamePasswordAuthenticationProvider();
+//        }
+//    }
 }
