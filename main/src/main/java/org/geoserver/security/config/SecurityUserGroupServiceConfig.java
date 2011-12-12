@@ -15,7 +15,7 @@ import org.geoserver.security.concurrent.LockingUserGroupService;
  * @author christian
  *
  */
-public interface SecurityUserGoupServiceConfig extends SecurityNamedServiceConfig {
+public interface SecurityUserGroupServiceConfig extends SecurityNamedServiceConfig {
 
     public String getPasswordEncoderName();
     public void   setPasswordEncoderName(String name);

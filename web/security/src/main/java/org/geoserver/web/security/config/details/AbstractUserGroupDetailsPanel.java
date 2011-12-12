@@ -15,7 +15,7 @@ import org.apache.wicket.model.ResourceModel;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
 import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
@@ -55,15 +55,15 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         if (provider==null)
             throw new RuntimeException("Never should reach this point");
 
-        ((SecurityUserGoupServiceConfig) configHelper.getConfig()).setLockingNeeded(
+        ((SecurityUserGroupServiceConfig) configHelper.getConfig()).setLockingNeeded(
                 provider.userGroupServiceNeedsLockProtection());        
     }
 
     @Override
     protected void initializeComponents() {
 
-        SecurityUserGoupServiceConfig config = 
-                (SecurityUserGoupServiceConfig) configHelper.getConfig();
+        SecurityUserGroupServiceConfig config = 
+                (SecurityUserGroupServiceConfig) configHelper.getConfig();
         
 //        if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
 //            config.setLockingNeeded(true);

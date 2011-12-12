@@ -5,9 +5,9 @@
 
 package org.geoserver.security.config.impl;
 
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 
-public class MemoryUserGroupServiceConfigImpl extends SecurityNamedServiceConfigImpl implements SecurityUserGoupServiceConfig {
+public class MemoryUserGroupServiceConfigImpl extends SecurityNamedServiceConfigImpl implements SecurityUserGroupServiceConfig {
 
     private static final long serialVersionUID = 1L;
     protected String passwordEncoderName;

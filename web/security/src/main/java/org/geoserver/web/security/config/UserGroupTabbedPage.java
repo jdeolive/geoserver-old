@@ -20,7 +20,7 @@ import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -57,7 +57,7 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
             public Panel getPanel(String panelId) {
                 try {
                     
-                    SecurityUserGoupServiceConfig config = null;
+                    SecurityUserGroupServiceConfig config = null;
                     if (serviceName !=null && serviceName.isEmpty()==false)
                             config = GeoServerApplication.get().getSecurityManager().
                                 loadUserGroupServiceConfig(serviceName);

@@ -24,7 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.config.XMLBasedSecurityServiceConfig;
 import org.geoserver.security.impl.AbstractUserGroupService;
 import org.geoserver.security.impl.GeoserverUser;
@@ -67,8 +67,8 @@ public class XMLUserGroupService extends AbstractUserGroupService {
 
         this.name=config.getName();
         validatingXMLSchema=false;
-        passwordEncoderName=((SecurityUserGoupServiceConfig)config).getPasswordEncoderName();
-        passwordValidatorName=((SecurityUserGoupServiceConfig)config).getPasswordPolicyName();
+        passwordEncoderName=((SecurityUserGroupServiceConfig)config).getPasswordEncoderName();
+        passwordValidatorName=((SecurityUserGroupServiceConfig)config).getPasswordPolicyName();
 
         if (config instanceof XMLBasedSecurityServiceConfig) {
             validatingXMLSchema =((XMLBasedSecurityServiceConfig) config).isValidating();
