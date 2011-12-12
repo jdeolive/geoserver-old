@@ -9,7 +9,7 @@ import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.UserGroupTabbedPage;
 import org.geoserver.web.wicket.GeoServerDataProvider;
@@ -24,17 +24,17 @@ public class UserGroupServicesPanel extends NamedServicesPanel {
 
     private static final long serialVersionUID = 1L;
 
-    class UserGroupServiceTablePanel extends NamedServicesTablePanel<SecurityUserGoupServiceConfig> {
+    class UserGroupServiceTablePanel extends NamedServicesTablePanel<SecurityUserGroupServiceConfig> {
         private static final long serialVersionUID = 1L;
 
         public UserGroupServiceTablePanel(String id,
-                GeoServerDataProvider<SecurityUserGoupServiceConfig> dataProvider,
+                GeoServerDataProvider<SecurityUserGroupServiceConfig> dataProvider,
                 boolean selectable) {
             super(id, dataProvider, selectable);            
         }
         @Override
         protected Component getComponentForProperty(String id, IModel itemModel,
-                Property<SecurityUserGoupServiceConfig> property) {
+                Property<SecurityUserGroupServiceConfig> property) {
             Component comp = super.getComponentForProperty(id, itemModel, property);
             if (comp!=null) return comp;
             if (property == UserGroupServiceListProvider.PASSWORDENCODERNAME) {

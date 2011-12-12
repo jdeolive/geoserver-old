@@ -39,7 +39,7 @@ import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -288,7 +288,7 @@ public class NamedConfigPanel extends Panel {
             manager.saveAuthenticationProvider((SecurityAuthProviderConfig) model.getObject().getConfig());
         }
         if (GeoserverUserGroupService.class.isAssignableFrom(extensionPoint)) {
-            manager.saveUserGroupService((SecurityUserGoupServiceConfig)model.getObject().getConfig());
+            manager.saveUserGroupService((SecurityUserGroupServiceConfig)model.getObject().getConfig());
         }
         if (GeoserverRoleService.class.isAssignableFrom(extensionPoint)) {
             manager.saveRoleService((SecurityRoleServiceConfig) model.getObject().getConfig());

@@ -42,7 +42,7 @@ import org.geoserver.security.config.SecurityConfig;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
 import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
@@ -508,12 +508,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
     
     /**
-     * Loads a user {@link SecurityUserGoupServiceConfig} from a named configuration.
+     * Loads a user {@link SecurityUserGroupServiceConfig} from a named configuration.
      * <code>null</code> if not foun
      * 
      * @param name The name of the user group service configuration.
      */
-    public SecurityUserGoupServiceConfig loadUserGroupServiceConfig(String name) throws IOException {
+    public SecurityUserGroupServiceConfig loadUserGroupServiceConfig(String name) throws IOException {
         return userGroupServiceHelper.loadConfig(name);
     }
 
@@ -521,7 +521,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Saves/persists a user group service configuration.
      */
-    public void saveUserGroupService(SecurityUserGoupServiceConfig config) throws IOException {
+    public void saveUserGroupService(SecurityUserGroupServiceConfig config) throws IOException {
         userGroupServiceHelper.saveConfig(config);
     }
 
@@ -1033,7 +1033,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
          */
         protected abstract File getRoot() throws IOException;
     }
-    class UserGroupServiceHelper extends HelperBase<GeoserverUserGroupService,SecurityUserGoupServiceConfig> {
+    class UserGroupServiceHelper extends HelperBase<GeoserverUserGroupService,SecurityUserGroupServiceConfig> {
         public GeoserverUserGroupService load(String name) throws IOException {
             
             SecurityNamedServiceConfig config = loadConfig(name);
@@ -1060,8 +1060,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             }
 
             service.setSecurityManager(GeoServerSecurityManager.this);
-            if (config instanceof SecurityUserGoupServiceConfig){
-                if (((SecurityUserGoupServiceConfig) config).isLockingNeeded())
+            if (config instanceof SecurityUserGroupServiceConfig){
+                if (((SecurityUserGroupServiceConfig) config).isLockingNeeded())
                         service = new LockingUserGroupService(service);
             }
             service.setName(name);

@@ -15,11 +15,9 @@ import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
 import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
 import org.geoserver.security.password.GeoserverPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
-import org.geoserver.security.password.PasswordValidatorImpl;
 
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 
@@ -32,6 +30,44 @@ import com.thoughtworks.xstream.converters.SingleValueConverter;
  * @author Justin Deoliveira, OpenGeo
  */
 public abstract class GeoServerSecurityProvider {
+    
+    /**
+     * Find the provider for a service type 
+     * and a concrete class name.
+     * May return <code>null</code>
+     * 
+     * @param serviceClass
+     * @param className
+     * @return
+     */
+    static public  GeoServerSecurityProvider getProvider (Class<?> serviceClass, String className) {
+        for (GeoServerSecurityProvider prov : 
+            GeoServerExtensions.extensions(GeoServerSecurityProvider.class)) {
+            
+            if (GeoServerAuthenticationProvider.class==serviceClass) {
+                if (prov.getAuthenticationProviderClass().getName().equals(className))
+                    return prov;
+            }
+            if (GeoserverUserGroupService.class==serviceClass) {
+                if (prov.getUserGroupServiceClass().getName().equals(className))
+                    return prov;
+            }
+            if (GeoserverRoleService.class==serviceClass) {
+                if (prov.getRoleServiceClass().getName().equals(className))
+                    return prov;
+
+            }
+            if (PasswordValidator.class==serviceClass) {
+                if (prov.getPasswordValidatorClass().getName().equals(className))
+                    return prov;
+            }
+            if (GeoServerSecurityFilter.class==serviceClass) {
+                if (prov.getFilterClass().getName().equals(className))
+                    return prov;
+            }                        
+        }
+        return null;
+    }
     
     /**
      * An implementation of {@link SingleValueConverter} for enryption and

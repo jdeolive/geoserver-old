@@ -14,7 +14,7 @@ import java.util.TreeMap;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
@@ -90,7 +90,7 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         this.name=config.getName();
-        SecurityUserGoupServiceConfig ugConfig =(SecurityUserGoupServiceConfig) config;        
+        SecurityUserGroupServiceConfig ugConfig =(SecurityUserGroupServiceConfig) config;        
         passwordEncoderName=ugConfig.getPasswordEncoderName();
         GeoserverUserPasswordEncoder enc = (GeoserverUserPasswordEncoder) 
                 GeoServerExtensions.bean(passwordEncoderName);

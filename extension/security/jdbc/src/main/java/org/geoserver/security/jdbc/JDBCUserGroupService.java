@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.impl.GeoserverUser;
@@ -85,8 +85,8 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         
         this.name=config.getName();
-        passwordEncoderName=((SecurityUserGoupServiceConfig)config).getPasswordEncoderName();
-        passwordValidatorName=((SecurityUserGoupServiceConfig)config).getPasswordPolicyName();
+        passwordEncoderName=((SecurityUserGroupServiceConfig)config).getPasswordEncoderName();
+        passwordValidatorName=((SecurityUserGroupServiceConfig)config).getPasswordPolicyName();
         initializeDSFromConfig(config);
 
         if (config instanceof JdbcBaseSecurityServiceConfig) {

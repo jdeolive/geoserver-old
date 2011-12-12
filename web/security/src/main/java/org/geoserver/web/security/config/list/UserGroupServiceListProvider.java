@@ -9,32 +9,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 
 /**
- * Page list provider for {@link SecurityUserGoupServiceConfig} objects
+ * Page list provider for {@link SecurityUserGroupServiceConfig} objects
  * 
  * @author christian
  *
  */
-public class UserGroupServiceListProvider extends NamedServiceConfigListProvider<SecurityUserGoupServiceConfig> {
+public class UserGroupServiceListProvider extends NamedServiceConfigListProvider<SecurityUserGroupServiceConfig> {
 
     private static final long serialVersionUID = 1L;
-    public static final Property<SecurityUserGoupServiceConfig> PASSWORDENCODERNAME = 
-            new BeanProperty<SecurityUserGoupServiceConfig>("passwordEncoderName", "passwordEncoderName");
-    public static final Property<SecurityUserGoupServiceConfig> PASSWORDPOLICYNAME = 
-            new BeanProperty<SecurityUserGoupServiceConfig>("passwordPolicyName", "passwordPolicyName");
+    public static final Property<SecurityUserGroupServiceConfig> PASSWORDENCODERNAME = 
+            new BeanProperty<SecurityUserGroupServiceConfig>("passwordEncoderName", "passwordEncoderName");
+    public static final Property<SecurityUserGroupServiceConfig> PASSWORDPOLICYNAME = 
+            new BeanProperty<SecurityUserGroupServiceConfig>("passwordPolicyName", "passwordPolicyName");
 
     
     @Override
-    protected List<SecurityUserGoupServiceConfig> getItems() {
+    protected List<SecurityUserGroupServiceConfig> getItems() {
         
-        List <SecurityUserGoupServiceConfig> result = new
-                ArrayList<SecurityUserGoupServiceConfig>();
+        List <SecurityUserGroupServiceConfig> result = new
+                ArrayList<SecurityUserGroupServiceConfig>();
         try {
             for (String name : getSecurityManager().listUserGroupServices()) {
-                result.add((SecurityUserGoupServiceConfig)
+                result.add((SecurityUserGroupServiceConfig)
                         getSecurityManager().loadUserGroupServiceConfig(name));
             }
         } catch (IOException ex) {
@@ -44,8 +44,8 @@ public class UserGroupServiceListProvider extends NamedServiceConfigListProvider
     }
 
     @Override
-    protected List<Property<SecurityUserGoupServiceConfig>> getProperties() {
-        List<Property<SecurityUserGoupServiceConfig>> result = new ArrayList<GeoServerDataProvider.Property<SecurityUserGoupServiceConfig>>();
+    protected List<Property<SecurityUserGroupServiceConfig>> getProperties() {
+        List<Property<SecurityUserGroupServiceConfig>> result = new ArrayList<GeoServerDataProvider.Property<SecurityUserGroupServiceConfig>>();
         result = super.getProperties();
         result.add(PASSWORDENCODERNAME);
         result.add(PASSWORDPOLICYNAME);

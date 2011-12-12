@@ -5,9 +5,9 @@
 
 package org.geoserver.security.config.impl;
 
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 
-public class XMLFileBasedUserGroupServiceConfigImpl extends XMLFileBasedSecurityServiceConfigImpl implements SecurityUserGoupServiceConfig {
+public class XMLFileBasedUserGroupServiceConfigImpl extends XMLFileBasedSecurityServiceConfigImpl implements SecurityUserGroupServiceConfig {
 
     protected String passwordEncoderName;
     protected String passwordPolicyName;
