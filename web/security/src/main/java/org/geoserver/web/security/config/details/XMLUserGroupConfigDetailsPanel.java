@@ -7,6 +7,7 @@ package org.geoserver.web.security.config.details;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
+import org.geoserver.security.xml.XMLConstants;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -30,7 +31,14 @@ public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPane
     
     @Override
     protected SecurityNamedServiceConfig createNewConfigObject() {
-        return new XMLFileBasedUserGroupServiceConfigImpl();
+        XMLFileBasedUserGroupServiceConfigImpl config = new XMLFileBasedUserGroupServiceConfigImpl();
+        config.setFileName(XMLConstants.FILE_UR);
+        return config;
+    }
+    @Override
+    public void updateModel() {
+        super.updateModel();
+        comp.updateModel();
     }
                             
 }

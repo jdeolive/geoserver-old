@@ -32,7 +32,7 @@ public class PasswordPolicyListProvider extends NamedServiceConfigListProvider<P
         try {
             for (String name : getSecurityManager().listPasswordValidators()) {
                 result.add((PasswordPolicyConfig)
-                        getSecurityManager().loadPasswordValidatorConfig(name));
+                        getSecurityManager().loadPasswordPolicyConfig(name));
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);

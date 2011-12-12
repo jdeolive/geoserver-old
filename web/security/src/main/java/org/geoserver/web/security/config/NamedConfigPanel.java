@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.Page;
@@ -27,20 +29,32 @@ import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.ValidationError;
 import org.apache.wicket.validation.validator.AbstractValidator;
 import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoServerAuthenticationProvider;
+import org.geoserver.security.GeoServerSecurityFilter;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
+import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.config.PasswordPolicyConfig;
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.SecurityRoleServiceConfig;
+import org.geoserver.security.config.SecurityUserGoupServiceConfig;
+import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.details.AbstractNamedConfigDetailsPanel;
 import org.geoserver.web.security.config.details.NamedConfigDetailsEmptyPanel;
 import org.geoserver.web.security.config.details.NamedConfigDetailsPanelProvider;
+import org.geoserver.web.wicket.ParamResourceModel;
+import org.geotools.util.logging.Logging;
 
 /**
  * A form component that can be used to edit user to group assignments
  */
 public class NamedConfigPanel extends Panel {
     
+    static Logger LOGGER = Logging.getLogger("org.geoserver.security");
     public static final String DETAILS_WICKET_ID = "details";
     private static final long serialVersionUID = 1L;
     protected TextField<String> name;
@@ -91,9 +105,8 @@ public class NamedConfigPanel extends Panel {
         form.add(name);
         
         List<String> classNames = getImplementations();
-        if (helper.isNew() && classNames.size()==1) {
-            ((SecurityNamedServiceConfig) helper.getConfig()).
-                setClassName(classNames.get(0));
+        if (helper.isNew() && classNames.size()>=1) {
+            helper.getConfig().setClassName(classNames.get(0));                
         }
         implClass = new DropDownChoice<String>("config.className",                  
             //new PropertyModel<String>(model.getObject(), "config.className"),                
@@ -143,16 +156,17 @@ public class NamedConfigPanel extends Panel {
 
         implClass.setEnabled(helper.isNew && classNames.size()>1);
         
-        if (helper.isNew()) {
-            form.add(new NamedConfigDetailsEmptyPanel(DETAILS_WICKET_ID, model));
-            
+        if (helper.getConfig().getClassName() == null ||
+            helper.getConfig().getClassName().length()==0) {    
+            form.add(new NamedConfigDetailsEmptyPanel(DETAILS_WICKET_ID, model));            
         } else {
             form.add(getConfigDetailsPanel(helper.getConfig().getClassName()));
         }        
         form.get(DETAILS_WICKET_ID).setOutputMarkupId(true);
                 
-        implClass.setRequired(true);
+        implClass.setRequired(true);        
         implClass.setOutputMarkupId(true);
+        implClass.setNullValid(false);
         form.add(implClass);
         
         form.add(getCancelLink(responsePage));
@@ -231,7 +245,13 @@ public class NamedConfigPanel extends Panel {
                 setResponsePage(responsePage);
                 if (model.getObject().hasChanges()) {
                     responsePage.setDirty(true);
-                    // TODO store                                                
+                    try {
+                        saveConfiguration();
+                    } catch (IOException e) {
+                        form.error(e.getMessage());
+                        LOGGER.log(Level.SEVERE,e.getMessage(),e);
+                        //error(new ParamResourceModel("saveError", getPage(), e.getMessage()));
+                    }                                                
                 }
             }
         };
@@ -259,5 +279,27 @@ public class NamedConfigPanel extends Panel {
         }
         throw new RuntimeException("No details panel for "+className);
     }
+
+    protected void saveConfiguration() throws IOException {
         
+        GeoServerSecurityManager manager = GeoServerApplication.get().getSecurityManager();
+        
+        if (GeoServerAuthenticationProvider.class.isAssignableFrom(extensionPoint)) {
+            manager.saveAuthenticationProvider((SecurityAuthProviderConfig) model.getObject().getConfig());
+        }
+        if (GeoserverUserGroupService.class.isAssignableFrom(extensionPoint)) {
+            manager.saveUserGroupService((SecurityUserGoupServiceConfig)model.getObject().getConfig());
+        }
+        if (GeoserverRoleService.class.isAssignableFrom(extensionPoint)) {
+            manager.saveRoleService((SecurityRoleServiceConfig) model.getObject().getConfig());
+        }
+        if (PasswordValidator.class.isAssignableFrom(extensionPoint)) {
+            manager.savePasswordPolicy((PasswordPolicyConfig) model.getObject().getConfig());
+        }
+        if (GeoServerSecurityFilter.class.isAssignableFrom(extensionPoint)) {
+            manager.saveFilter(model.getObject().getConfig());
+        }
+    }
+
+    
 }

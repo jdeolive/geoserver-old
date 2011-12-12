@@ -72,14 +72,16 @@ public class RoleTabbedPage extends AbstractSecurityPage {
             }
         }); 
 
-        
-        tabs.add(new AbstractTab(new ResourceModel("roles")) {            
-            private static final long serialVersionUID = 1L;
-            @Override
-            public Panel getPanel(String panelId) {
-                    return  new RolePanel(panelId,serviceName);
-            }
-        }); 
+
+        if (serviceName!=null) {
+            tabs.add(new AbstractTab(new ResourceModel("roles")) {            
+                private static final long serialVersionUID = 1L;
+                @Override
+                public Panel getPanel(String panelId) {
+                        return  new RolePanel(panelId,serviceName);
+                }
+            });
+        }
 
 
         Integer selectedTab = null;

@@ -123,9 +123,11 @@ public class RoleListProvider extends GeoServerDataProvider<GeoserverRole> {
     protected List<GeoserverRole> getItems() {
         SortedSet<GeoserverRole> roles=null;
         try {
-            GeoserverRoleService service = 
-                    GeoServerApplication.get().getSecurityManager().
+            GeoserverRoleService service = null;
+            if (roleServiceName!=null)
+                    service = GeoServerApplication.get().getSecurityManager().
                     loadRoleService(roleServiceName);
+            
             if (service==null)
                 roles=new TreeSet<GeoserverRole>();
             else

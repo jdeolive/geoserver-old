@@ -18,14 +18,15 @@ import org.apache.wicket.markup.html.form.RequiredTextField;
 public class XMLFileFormComponent extends FormComponent<Serializable>{
     private static final long serialVersionUID = 1L;
     protected CheckBox validating;
-    protected RequiredTextField<String> fileName;
+    //protected RequiredTextField<String> fileName;
     protected RequiredTextField<Integer> checkInterval;
     
     public XMLFileFormComponent() {
         super("xmlFileFormComponent");
 
-        fileName = new RequiredTextField<String>("config.fileName");
-        add(fileName);
+//      filename is constant        
+//        fileName = new RequiredTextField<String>("config.fileName");
+//        add(fileName);
 
         checkInterval = new RequiredTextField<Integer>("config.checkInterval", Integer.class);
         add(checkInterval);
@@ -39,7 +40,7 @@ public class XMLFileFormComponent extends FormComponent<Serializable>{
     @Override
     public void updateModel() {
         validating.updateModel();
-        fileName.updateModel();
+        //fileName.updateModel();
         checkInterval.updateModel();
     }
     

@@ -10,9 +10,10 @@ import java.util.List;
 
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.model.CompoundPropertyModel;
-import org.geoserver.security.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
+import org.geoserver.web.wicket.SimpleChoiceRenderer;
 
 /**
  * A form component for role services
@@ -49,7 +50,7 @@ public  class UsernamePasswordDetailsPanel extends AbstractNamedConfigDetailsPan
         }
                         
         userGroupService =  
-                new DropDownChoice<String>("config.userGroupServiceName",ugList);
+                new DropDownChoice<String>("config.userGroupServiceName",ugList, new SimpleChoiceRenderer());
         userGroupService.setNullValid(false);
         userGroupService.setEnabled(ugList.size()>0);
         add(userGroupService);
@@ -59,5 +60,10 @@ public  class UsernamePasswordDetailsPanel extends AbstractNamedConfigDetailsPan
     @Override
     protected   SecurityNamedServiceConfig createNewConfigObject() {
         return new UsernamePasswordAuthenticationProviderConfig();
+    }
+    
+    @Override
+    public void updateModel() {
+        userGroupService.updateModel();
     }
 }

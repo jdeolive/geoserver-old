@@ -233,4 +233,25 @@ public abstract class GeoServerSecurityProvider {
     public Map<Class<?>, Set<String>> getFieldsForEncryption() {
         return Collections.emptyMap();        
     }
+    
+    /**
+     * Return true if the {@link GeoserverRoleService} implementation
+     * is not thread safe.
+     * 
+     * @return 
+     */
+    public boolean roleServiceNeedsLockProtection() {
+        return false;
+    }
+    
+    /**
+     * Return true if the {@link GeoserverUserGroupService} implementation
+     * is not thread safe.
+     * 
+     * @return 
+     */
+    public boolean userGroupServiceNeedsLockProtection() {
+        return false;
+    }
+    
 }

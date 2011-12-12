@@ -7,8 +7,10 @@ package org.geoserver.web.security.config;
    
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
+import org.apache.batik.bridge.UpdateManager;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
@@ -36,7 +38,8 @@ public class ManagerConfigPanel extends Panel {
     protected Palette<String> authProviders;
     protected List<String> encoderList = new ArrayList<String>();
     protected List<String> disabledEncoders = new ArrayList<String>();
-
+    protected CheckBox anonymousAuth,encryptingUrlParams;
+    DropDownChoice<String> roleServices,passwordEncrypters;
     
     public ManagerConfigPanel(String id) {
         super(id);
@@ -65,16 +68,32 @@ public class ManagerConfigPanel extends Panel {
         else 
             info(new ResourceModel("security.strongEncryption").getObject());
         
-        String formWicketId= this.getClass().getSimpleName();
+        String formWicketId= this.getClass().getSimpleName()+"Form";
         form = new Form<SecurityConfigModelHelper>(formWicketId,model);
         add(form);                
         
-        form.add(new CheckBox("config.anonymousAuth"));
-        form.add(new CheckBox("config.encryptingUrlParams"));
+        form.add(anonymousAuth=new CheckBox("config.anonymousAuth"));
+        form.add(encryptingUrlParams=new CheckBox("config.encryptingUrlParams"));
         
+        IChoiceRenderer<String> identityRender = new IChoiceRenderer<String>() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Object getDisplayValue(String object) {
+                return object;
+            }
+
+            @Override
+            public String getIdValue(String object, int index) {
+                return object;
+            }
+        };
+ 
         
-        DropDownChoice<String> roleServices = 
-                new DropDownChoice<String>("config.roleServiceName",roleServicesList);
+        roleServices = 
+                new DropDownChoice<String>("config.roleServiceName",roleServicesList,identityRender); 
+
         roleServices.setNullValid(false);
         form.add(roleServices);
 
@@ -92,7 +111,7 @@ public class ManagerConfigPanel extends Panel {
             }
         }
         
-        DropDownChoice<String> passwordEncrypters =  
+        passwordEncrypters =  
                 new DropDownChoice<String>("config.configPasswordEncrypterName",encoderList,
                         new IChoiceRenderer<String>() {
                             private static final long serialVersionUID = 1L;
@@ -120,7 +139,7 @@ public class ManagerConfigPanel extends Panel {
         
         authProviders=new Palette<String>("config.authProviderNames",
                 new ListModel<String>(config.getAuthProviderNames()),
-                allProviders, new ChoiceRenderer<String>(), 10, true);
+                allProviders, identityRender, 10, true);
         form.add(authProviders);
         form.add(saveLink());
     }
@@ -133,6 +152,14 @@ public class ManagerConfigPanel extends Panel {
             @Override
             public void onSubmit() {
                 SecurityConfigModelHelper helper =ManagerConfigPanel.this.form.getModelObject();
+                // Workaround, Palette seems not to work with CompoundPropertyModel
+                Iterator<String> it = authProviders.getSelectedChoices();
+                SecurityManagerConfig config = (SecurityManagerConfig) helper.getConfig(); 
+                config.getAuthProviderNames().clear();
+                while (it.hasNext()) {
+                    config.getAuthProviderNames().add(it.next());
+                }
+                // end workaround
                 if (helper.hasChanges()) {
                     try {
                         getSecurityManager().saveSecurityConfig(
@@ -149,4 +176,6 @@ public class ManagerConfigPanel extends Panel {
     GeoServerSecurityManager getSecurityManager() {
         return GeoServerApplication.get().getSecurityManager();
     }
+    
+    
 }

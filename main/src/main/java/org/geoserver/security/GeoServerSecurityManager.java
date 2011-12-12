@@ -37,6 +37,7 @@ import org.geoserver.security.concurrent.LockingRoleService;
 import org.geoserver.security.concurrent.LockingUserGroupService;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.PasswordPolicyConfig;
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityConfig;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
@@ -44,6 +45,7 @@ import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
 import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
+import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.file.RoleFileWatcher;
@@ -406,7 +408,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * 
      * @param name The name of the password policy configuration.
      */
-    public PasswordPolicyConfig loadPasswordValidatorConfig(String name) throws IOException {
+    public PasswordPolicyConfig loadPasswordPolicyConfig(String name) throws IOException {
         return  passwordValidatorHelper.loadConfig(name);
     }
 
@@ -414,7 +416,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Saves/persists a role service configuration.
      */
-    public void saveRoleService(SecurityNamedServiceConfig config) throws IOException {
+    public void saveRoleService(SecurityRoleServiceConfig config) throws IOException {
         roleServiceHelper.saveConfig(config);
     }
     
@@ -519,7 +521,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Saves/persists a user group service configuration.
      */
-    public void saveUserGroupService(SecurityNamedServiceConfig config) throws IOException {
+    public void saveUserGroupService(SecurityUserGoupServiceConfig config) throws IOException {
         userGroupServiceHelper.saveConfig(config);
     }
 
@@ -571,12 +573,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * 
      * @param name The name of the authentication provider service configuration.
      */
-    public SecurityNamedServiceConfig loadAuthenticationProviderConfig(String name) throws IOException {
+    public SecurityAuthProviderConfig loadAuthenticationProviderConfig(String name) throws IOException {
         return authProviderHelper.loadConfig(name);
     }
 
     
-    public void saveAuthenticationProvider(SecurityNamedServiceConfig config) throws IOException {
+    public void saveAuthenticationProvider(SecurityAuthProviderConfig config) throws IOException {
         authProviderHelper.saveConfig(config);
     }
 
@@ -1298,7 +1300,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
     }
  
-    class AuthProviderHelper extends HelperBase<GeoServerAuthenticationProvider, SecurityNamedServiceConfig>{
+    class AuthProviderHelper extends HelperBase<GeoServerAuthenticationProvider, SecurityAuthProviderConfig>{
         /**
          * Loads the auth provider for the named config from persistence.
          */
