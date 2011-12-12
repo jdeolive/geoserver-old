@@ -14,6 +14,7 @@ import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
  */
 public class MemoryRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     private static final long serialVersionUID = 1L;
+    EncryptedFieldFormComponent enc;
     
     public MemoryRoleConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
@@ -22,7 +23,7 @@ public class MemoryRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     @Override
     protected void initializeComponents() {
         super.initializeComponents();
-        addOrReplace(new EncryptedFieldFormComponent());
+        addOrReplace(enc=new EncryptedFieldFormComponent());
         
     };
         
@@ -31,5 +32,10 @@ public class MemoryRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     protected SecurityNamedServiceConfig createNewConfigObject() {
         return new MemoryRoleServiceConfigImpl();
     }
-                            
+ 
+    @Override
+    public void updateModel() {
+        super.updateModel();
+        enc.updateModel();
+    }
 }

@@ -34,5 +34,10 @@ public class JDBCRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     protected SecurityNamedServiceConfig createNewConfigObject() {
         return new JdbcRoleServiceConfigImpl();
     }
-                            
+          
+    @Override
+    public void updateModel() {
+        super.updateModel();
+        comp.updateModel();
+    }
 }

@@ -148,8 +148,11 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
     protected List<GeoserverUser> getItems() {
         SortedSet<GeoserverUser> users=null;
         try {
-            GeoserverUserGroupService service = 
+            GeoserverUserGroupService service = null;
+            if (userGroupServiceName !=null)
+                service = 
                     getApplication().getSecurityManager().loadUserGroupService(userGroupServiceName);
+            
             if (service==null)
                 users=new TreeSet<GeoserverUser>();
             else

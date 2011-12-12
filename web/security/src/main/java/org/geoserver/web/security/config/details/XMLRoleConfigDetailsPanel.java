@@ -7,6 +7,7 @@ package org.geoserver.web.security.config.details;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
+import org.geoserver.security.xml.XMLConstants;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -30,7 +31,15 @@ public class XMLRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     
     @Override
     protected SecurityNamedServiceConfig createNewConfigObject() {
-        return new XMLFileBasedRoleServiceConfigImpl();
+        XMLFileBasedRoleServiceConfigImpl  config= new XMLFileBasedRoleServiceConfigImpl();
+        config.setFileName(XMLConstants.FILE_RR);
+        return config;        
+    }
+    
+    @Override
+    public void updateModel() {
+        super.updateModel();
+        comp.updateModel();
     }
                             
 }

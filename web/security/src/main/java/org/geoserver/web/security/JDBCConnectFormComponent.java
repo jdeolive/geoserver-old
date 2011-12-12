@@ -36,6 +36,8 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.geotools.util.logging.Logging;
 
+import com.ibm.db2.jcc.am.be;
+
 /**
  * Reusable form component for jdbc connect
  * configurations
@@ -135,6 +137,7 @@ public class JDBCConnectFormComponent extends
     PasswordTextField passwordComponent;
     TextField<String> driverNameComponent;
     TextField<String> connectURLComponent;
+        
     AjaxSubmitLink testComponent;
 
         
@@ -185,6 +188,8 @@ public class JDBCConnectFormComponent extends
     
     protected void initializeComponents() {
         
+        
+        
         typeComponent = new RadioGroup<String>("type");
         typeComponent.add(new Radio<String>(JDBCConnectConfig.TYPEDRIVER,
                 new PropertyModel<String>(getModelObject(), "type")));
@@ -207,8 +212,9 @@ public class JDBCConnectFormComponent extends
 //                return object;
 //            }
 //        });
-        
-        typeComponent.add(new AjaxFormComponentUpdatingBehavior("onchange") {
+    
+        AjaxFormComponentUpdatingBehavior behavior = new AjaxFormComponentUpdatingBehavior("onchange") { 
+                      
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -226,9 +232,10 @@ public class JDBCConnectFormComponent extends
                 target.addComponent(driverNameComponent);
                 target.addComponent(connectURLComponent);
             }
-        });
-        
+            };
+                        
         typeComponent.setVisible(mode==Mode.DYNAMIC);
+        typeComponent.add(behavior);
         add(typeComponent);
         
         boolean isJndi = JDBCConnectConfig.TYPEJNDI.equals(getModelObject().getType());

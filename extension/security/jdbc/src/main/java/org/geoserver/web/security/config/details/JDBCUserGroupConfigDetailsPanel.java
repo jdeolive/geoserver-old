@@ -34,5 +34,10 @@ public class JDBCUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPan
     protected SecurityNamedServiceConfig createNewConfigObject() {
         return new JdbcUserGroupServiceConfigImpl();
     }
-                            
+ 
+    @Override
+    public void updateModel() {
+        super.updateModel();
+        comp.updateModel();
+    }
 }

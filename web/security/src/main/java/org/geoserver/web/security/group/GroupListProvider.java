@@ -37,8 +37,10 @@ public class GroupListProvider extends GeoServerDataProvider<GeoserverUserGroup>
     protected List<GeoserverUserGroup> getItems() {
         SortedSet<GeoserverUserGroup> groups=null;
         try {
-            GeoserverUserGroupService service = 
+            GeoserverUserGroupService service = null;
+            if (userGroupServiceName!=null) service = 
                     getApplication().getSecurityManager().loadUserGroupService(userGroupServiceName);
+            
             if (service==null)
                 groups=new TreeSet<GeoserverUserGroup>();
             else

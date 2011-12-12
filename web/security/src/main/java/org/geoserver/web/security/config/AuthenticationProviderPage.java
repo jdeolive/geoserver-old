@@ -9,6 +9,7 @@ package org.geoserver.web.security.config;
 import java.io.IOException;
 
 import org.geoserver.security.GeoServerAuthenticationProvider;
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.web.GeoServerApplication;
@@ -33,7 +34,7 @@ public class AuthenticationProviderPage extends AbstractSecurityPage {
     }
     
     protected void initializeComponents() {
-        SecurityNamedServiceConfig config = null;
+        SecurityAuthProviderConfig config = null;
         
         if (providerName !=null && providerName.isEmpty()==false)
             try {

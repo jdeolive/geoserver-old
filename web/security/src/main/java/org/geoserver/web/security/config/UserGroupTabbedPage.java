@@ -77,31 +77,33 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
         }); 
 
         
-        tabs.add(new AbstractTab(new ResourceModel("users")) {            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Panel getPanel(String panelId) {
-                try {
-                    return  new UserPanel(panelId,serviceName);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+        if (serviceName!=null) {
+            tabs.add(new AbstractTab(new ResourceModel("users")) {            
+                private static final long serialVersionUID = 1L;
+    
+                @Override
+                public Panel getPanel(String panelId) {
+                    try {
+                        return  new UserPanel(panelId,serviceName);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-            }
-        }); 
-
-        tabs.add(new AbstractTab(new ResourceModel("groups")) {            
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public Panel getPanel(String panelId) {
-                try {
-                    return new GroupPanel(panelId,serviceName);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+            }); 
+    
+            tabs.add(new AbstractTab(new ResourceModel("groups")) {            
+                private static final long serialVersionUID = 1L;
+    
+                @Override
+                public Panel getPanel(String panelId) {
+                    try {
+                        return new GroupPanel(panelId,serviceName);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-            }
-        }); 
+            });
+        }
 
         Integer selectedTab = null;
         if (tabbedPanel!=null)

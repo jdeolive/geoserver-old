@@ -38,7 +38,7 @@ public class PasswordPolicyPage extends AbstractSecurityPage {
         if (policyName !=null && policyName.isEmpty()==false)
             try {
                 config = GeoServerApplication.get().getSecurityManager().
-                    loadPasswordValidatorConfig(policyName);
+                    loadPasswordPolicyConfig(policyName);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

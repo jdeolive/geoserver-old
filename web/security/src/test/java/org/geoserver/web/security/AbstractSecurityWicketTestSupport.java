@@ -24,8 +24,10 @@ import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.UsernamePasswordAuthenticationProvider;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
+import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.impl.AbstractRoleServiceTest;
 import org.geoserver.security.impl.AbstractUserGroupServiceTest;
 import org.geoserver.security.impl.DataAccessRule;
@@ -269,5 +271,14 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
           PageParameters result = new PageParameters();
           result.put(AbstractSecurityPage.ServiceNameKey, serviceName);
           return result;
+      }
+      
+      protected void createUserPasswordAuthProvider(String name, String ugName) throws IOException{
+          UsernamePasswordAuthenticationProviderConfig config = new 
+                  UsernamePasswordAuthenticationProviderConfig();
+          config.setName(name);
+          config.setClassName(UsernamePasswordAuthenticationProvider.class.getName());
+          config.setUserGroupServiceName(ugName);
+          getSecurityManager().saveAuthenticationProvider(config);
       }
 }

@@ -210,8 +210,12 @@ public class GeoServerDataDirectory {
     }
 
     File securityDir(boolean create, String... location) throws IOException {
-        return create ? resourceLoader.findOrCreateDirectory(securityRoot(create), location) 
-            : resourceLoader.find( securityRoot(create), location );
+// TODO, mcr ???        
+//        return create ? resourceLoader.findOrCreateDirectory(securityRoot(create), location) 
+//            : resourceLoader.find( securityRoot(create), location );
+      return create ? resourceLoader.findOrCreateDirectory(new File("security"), location) 
+              : resourceLoader.find( securityRoot(create), location );
+        
     }
 
     /**

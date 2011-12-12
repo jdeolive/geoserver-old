@@ -10,10 +10,10 @@ import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
-import org.geoserver.security.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
+import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.password.PasswordValidator;
@@ -101,6 +101,16 @@ public class XMLSecurityProvider extends GeoServerSecurityProvider {
      */
     public Class<? extends GeoServerAuthenticationProvider> getAuthenticationProviderClass() {
         return UsernamePasswordAuthenticationProvider.class;
+    }
+
+    @Override
+    public boolean roleServiceNeedsLockProtection() {
+        return true;
+    }
+    
+    @Override
+    public boolean userGroupServiceNeedsLockProtection() {
+        return true;
     }
 
 }

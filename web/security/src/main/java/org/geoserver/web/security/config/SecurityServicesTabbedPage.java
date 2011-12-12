@@ -65,7 +65,7 @@ public class SecurityServicesTabbedPage extends AbstractSecurityPage {
         Integer selectedTab = null;
         if (tabbedPanel!=null)
             selectedTab = tabbedPanel.getSelectedTab();        
-        addOrReplace(tabbedPanel=new AjaxTabbedPanel(this.getClass().getSimpleName(), tabs));
+        addOrReplace(tabbedPanel=new AjaxTabbedPanel(TabbedPanelId, tabs));
         if (selectedTab!=null) {
             tabbedPanel.setSelectedTab(selectedTab);
         }     

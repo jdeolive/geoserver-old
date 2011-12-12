@@ -8,12 +8,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
@@ -21,7 +21,6 @@ import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
 import org.geoserver.security.password.PasswordEncodingType;
 import org.geoserver.security.password.PasswordValidatorImpl;
-import org.geoserver.security.xml.XMLUserGroupService;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -38,12 +37,26 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
     List<String> disabledEncoders;
     List<String> passwordPolicies;
 
-    protected CheckBox isLockingNeeded;
+    //protected CheckBox isLockingNeeded;
     protected DropDownChoice<String> passwordEncoderName,passwordPolicyName;
 
     
     public AbstractUserGroupDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
+        
+        GeoServerSecurityProvider provider = null;
+        for (GeoServerSecurityProvider prov :  
+                GeoServerExtensions.extensions(GeoServerSecurityProvider.class)) {
+            if (prov.getUserGroupServiceClass().getName().equals(configHelper.getConfig().getClassName())) {
+                provider = prov;
+                break;
+            }            
+        }
+        if (provider==null)
+            throw new RuntimeException("Never should reach this point");
+
+        ((SecurityUserGoupServiceConfig) configHelper.getConfig()).setLockingNeeded(
+                provider.userGroupServiceNeedsLockProtection());        
     }
 
     @Override
@@ -52,12 +65,11 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         SecurityUserGoupServiceConfig config = 
                 (SecurityUserGoupServiceConfig) configHelper.getConfig();
         
-        // for the default, locking is needed
-        if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
-            config.setLockingNeeded(true);
-        add(isLockingNeeded=new CheckBox("config.lockingNeeded"));
-        if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
-            isLockingNeeded.setEnabled(false); // 
+//        if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
+//            config.setLockingNeeded(true);
+//        add(isLockingNeeded=new CheckBox("config.lockingNeeded"));
+//        if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
+//            isLockingNeeded.setEnabled(false); // 
         
         
         List<GeoserverUserPasswordEncoder> encoders = 
@@ -135,7 +147,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
     @Override
     public void updateModel() {
         super.updateModel();
-        isLockingNeeded.updateModel();
+        //isLockingNeeded.updateModel();
         passwordEncoderName.updateModel();
         passwordPolicyName.updateModel();        
     }

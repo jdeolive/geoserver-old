@@ -7,6 +7,7 @@ package org.geoserver.web.security.config.list;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.model.IModel;
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.AuthenticationProviderPage;
@@ -22,17 +23,17 @@ public class AuthenticationServicesPanel extends NamedServicesPanel {
 
     private static final long serialVersionUID = 1L;
 
-    class AuthenticationServiceTablePanel extends NamedServicesTablePanel<SecurityNamedServiceConfig> {
+    class AuthenticationServiceTablePanel extends NamedServicesTablePanel<SecurityAuthProviderConfig> {
         private static final long serialVersionUID = 1L;
 
         public AuthenticationServiceTablePanel(String id,
-                GeoServerDataProvider<SecurityNamedServiceConfig> dataProvider,
+                GeoServerDataProvider<SecurityAuthProviderConfig> dataProvider,
                 boolean selectable) {
             super(id, dataProvider, selectable);            
         }
         @Override
         protected Component getComponentForProperty(String id, IModel itemModel,
-                Property<SecurityNamedServiceConfig> property) {
+                Property<SecurityAuthProviderConfig> property) {
             Component comp = super.getComponentForProperty(id, itemModel, property);
             if (comp!=null) return comp;
             throw new RuntimeException("Unknow propterty: "+property.getName());

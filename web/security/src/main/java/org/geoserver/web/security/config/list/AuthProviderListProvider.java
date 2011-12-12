@@ -9,8 +9,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.web.wicket.GeoServerDataProvider;
+import org.geoserver.web.wicket.GeoServerDataProvider.BeanProperty;
+import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
 /**
  * Page list provider for {@link SecurityNamedServiceConfig} objects
@@ -18,19 +22,21 @@ import org.geoserver.web.wicket.GeoServerDataProvider;
  * @author christian
  *
  */
-public class AuthProviderListProvider extends NamedServiceConfigListProvider<SecurityNamedServiceConfig> {
+public class AuthProviderListProvider extends NamedServiceConfigListProvider<SecurityAuthProviderConfig> {
 
     private static final long serialVersionUID = 1L;
+    public static final Property<SecurityAuthProviderConfig> USERGROUPSERVICENAME = 
+            new BeanProperty<SecurityAuthProviderConfig>("userGroupServiceName", "userGroupServiceName");
 
     
     @Override
-    protected List<SecurityNamedServiceConfig> getItems() {
+    protected List<SecurityAuthProviderConfig> getItems() {
         
-        List <SecurityNamedServiceConfig> result = new
-                ArrayList<SecurityNamedServiceConfig>();
+        List <SecurityAuthProviderConfig> result = new
+                ArrayList<SecurityAuthProviderConfig>();
         try {
             for (String name : getSecurityManager().listAuthenticationProviders()) {
-                result.add((SecurityNamedServiceConfig)
+                result.add(
                         getSecurityManager().loadAuthenticationProviderConfig(name));
             }
         } catch (IOException ex) {
@@ -40,9 +46,10 @@ public class AuthProviderListProvider extends NamedServiceConfigListProvider<Sec
     }
 
     @Override
-    protected List<Property<SecurityNamedServiceConfig>> getProperties() {
-        List<Property<SecurityNamedServiceConfig>> result = new ArrayList<GeoServerDataProvider.Property<SecurityNamedServiceConfig>>();
+    protected List<Property<SecurityAuthProviderConfig>> getProperties() {
+        List<Property<SecurityAuthProviderConfig>> result = new ArrayList<GeoServerDataProvider.Property<SecurityAuthProviderConfig>>();
         result = super.getProperties();
+        result.add(USERGROUPSERVICENAME);        
         return result;
     }
 
