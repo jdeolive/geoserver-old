@@ -16,6 +16,8 @@ import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
+import org.geoserver.security.config.validation.SecurityConfigValidator;
+import org.geoserver.security.impl.MemorySecurityConfigValidator;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.password.PasswordValidatorImpl;
 
@@ -112,5 +114,10 @@ public class XMLSecurityProvider extends GeoServerSecurityProvider {
     public boolean userGroupServiceNeedsLockProtection() {
         return true;
     }
+
+    @Override
+    public SecurityConfigValidator getConfigurationValidator() {
+        return new XMLSecurityConfigValidator(); 
+     }
 
 }

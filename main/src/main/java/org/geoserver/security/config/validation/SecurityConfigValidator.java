@@ -23,6 +23,8 @@ import static org.geoserver.security.config.validation.SecurityConfigValidationE
 import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_40;
 import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_41;
 import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_42;
+import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_50;
+
 
 import java.io.IOException;
 import java.util.SortedSet;
@@ -40,6 +42,7 @@ import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
+import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.password.GeoserverConfigPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
@@ -50,7 +53,7 @@ public class SecurityConfigValidator {
     GeoServerSecurityManager manager;
     GeoServerSecurityProvider provider;
     
-    protected SecurityConfigValidator() {
+    public SecurityConfigValidator() {
         manager=GeoServerExtensions.bean(GeoServerSecurityManager.class);
     }
     
@@ -277,6 +280,9 @@ public class SecurityConfigValidator {
     }
     
     public void validate(SecurityRoleServiceConfig config) throws SecurityConfigException {
+        if (GeoserverRole.ADMIN_ROLE.getAuthority().equals(config.getAdminRoleName())==false) {
+            throw createSecurityException(SEC_ERR_50, GeoserverRole.ADMIN_ROLE.getAuthority());
+        }
     }
 
     public void validate(SecurityUserGroupServiceConfig config) throws SecurityConfigException {
@@ -325,7 +331,16 @@ public class SecurityConfigValidator {
      * @return
      */
     protected SecurityConfigException createSecurityException (String errorid, Object ...args) {
-        String message = SecurityConfigValidationErrors.formatErrorMsg(errorid, args);
+        String message = getSecurityErrors().formatErrorMsg(errorid, args);
         return new SecurityConfigException(errorid, message,args);
+    }
+    
+    /**
+     * Sublasses should override for additional messages 
+     * 
+     * @return
+     */
+    protected SecurityConfigValidationErrors getSecurityErrors() {
+        return new SecurityConfigValidationErrors();
     }
 }

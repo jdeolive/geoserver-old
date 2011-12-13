@@ -13,6 +13,7 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
+import org.geoserver.security.config.validation.SecurityConfigValidator;
 
 /* Copyright (c) 2001 - 2011 TOPP - www.openplans.org. All rights reserved.
  * This code is licensed under the GPL 2.0 license, availible at the root
@@ -67,5 +68,9 @@ public class MemorySecurityProvider extends GeoServerSecurityProvider {
         return new MemoryRoleService();
     }
 
+    @Override
+    public SecurityConfigValidator getConfigurationValidator() {
+        return new MemorySecurityConfigValidator(); 
+     }
 
 }

@@ -35,10 +35,11 @@ public class SecurityConfigValidationErrors  {
     public final static String SEC_ERR_40 = "SEC_ERR_40";
     public final static String SEC_ERR_41 = "SEC_ERR_41";
     public final static String SEC_ERR_42 = "SEC_ERR_42";
+    public final static String SEC_ERR_50 = "SEC_ERR_50";
     
     
         
-    public static String formatErrorMsg(String id,Object ... args) {
+    public  String formatErrorMsg(String id,Object ... args) {
     
     if (SEC_ERR_01==id)
         return MessageFormat.format("Bean {0} is not a valid configuration password encrypter",args);
@@ -76,7 +77,8 @@ public class SecurityConfigValidationErrors  {
         return MessageFormat.format("Maximum length of password must be greater or equal to the minimum length",args);
     if (SEC_ERR_42==id)
         return MessageFormat.format("Policy for the master password cannot be deleted",args);
-
+    if (SEC_ERR_50==id)
+        return MessageFormat.format("The aministrator role has to be: {0}",args);
             
     return "Unknown error id "+id;
     }
