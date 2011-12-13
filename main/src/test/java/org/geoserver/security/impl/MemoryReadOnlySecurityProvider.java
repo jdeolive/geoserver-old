@@ -14,6 +14,7 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
+import org.geoserver.security.config.validation.SecurityConfigValidator;
 import org.springframework.security.authentication.AuthenticationProvider;
 
 /* Copyright (c) 2001 - 2011 TOPP - www.openplans.org. All rights reserved.
@@ -63,5 +64,10 @@ public class MemoryReadOnlySecurityProvider extends GeoServerSecurityProvider {
             throws IOException {
         return new ReadOnlyRoleService();
     }
+    
+    @Override
+    public SecurityConfigValidator getConfigurationValidator() {
+        return new MemorySecurityConfigValidator(); 
+     }
 
 }
