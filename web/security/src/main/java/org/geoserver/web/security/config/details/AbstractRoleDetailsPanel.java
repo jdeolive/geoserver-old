@@ -8,15 +8,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.model.CompoundPropertyModel;
-import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.xml.XMLRoleService;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -28,30 +24,13 @@ import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 public abstract class AbstractRoleDetailsPanel extends AbstractNamedConfigDetailsPanel {
     private static final long serialVersionUID = 1L;
     
-    //protected CheckBox isLockingNeeded;    
     List<String> rolesList;
 
     protected DropDownChoice<String> adminRoleName;
 
     
     public AbstractRoleDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
-        super(id,model);
-        
-        GeoServerSecurityProvider provider = null;
-        for (GeoServerSecurityProvider prov :  
-                GeoServerExtensions.extensions(GeoServerSecurityProvider.class)) {
-            if (prov.getRoleServiceClass().getName().equals(configHelper.getConfig().getClassName())) {
-                provider = prov;
-                break;
-            }            
-        }
-        if (provider==null)
-            throw new RuntimeException("Never should reach this point");
-
-        ((SecurityRoleServiceConfig) configHelper.getConfig()).setLockingNeeded(
-                provider.roleServiceNeedsLockProtection());
-        
-
+        super(id,model);                
     }
 
     @Override
@@ -60,12 +39,6 @@ public abstract class AbstractRoleDetailsPanel extends AbstractNamedConfigDetail
         SecurityRoleServiceConfig config = 
                 (SecurityRoleServiceConfig) configHelper.getConfig();
         
-        // for the default service, locking is needed
-//        if (XMLRoleService.DEFAULT_NAME.equals(config.getName()))
-//            config.setLockingNeeded(true);
-//        add(isLockingNeeded=new CheckBox("config.lockingNeeded"));
-//        if (XMLRoleService.DEFAULT_NAME.equals(config.getName()))
-//            isLockingNeeded.setEnabled(false); // 
         
         
         rolesList = new ArrayList<String>();

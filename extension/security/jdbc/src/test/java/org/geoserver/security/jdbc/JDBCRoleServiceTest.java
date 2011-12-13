@@ -44,7 +44,7 @@ public abstract class JDBCRoleServiceTest extends AbstractRoleServiceTest {
 
     
     
-    public GeoserverRoleService createRoleService(String serviceName) throws IOException {    
+    public GeoserverRoleService createRoleService(String serviceName) throws Exception {    
         return JDBCTestSupport.createRoleService(getFixtureId(),
             (LiveDbmsDataSecurity)getTestData(), getSecurityManager());        
     }

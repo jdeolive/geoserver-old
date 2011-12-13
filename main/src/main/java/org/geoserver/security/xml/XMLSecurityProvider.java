@@ -1,8 +1,6 @@
 package org.geoserver.security.xml;
 
 import java.io.IOException;
-import java.util.Set;
-import java.util.Map.Entry;
 
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.security.GeoServerAuthenticationProvider;
@@ -17,7 +15,6 @@ import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProvider
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.config.validation.SecurityConfigValidator;
-import org.geoserver.security.impl.MemorySecurityConfigValidator;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.password.PasswordValidatorImpl;
 

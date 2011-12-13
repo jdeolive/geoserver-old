@@ -27,7 +27,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
         super.validate(config);
         XMLFileBasedRoleServiceConfigImpl xmlConfig = (XMLFileBasedRoleServiceConfigImpl) config;
         validateCheckIntervall(xmlConfig.getCheckInterval());
-        validateFileName(XMLConstants.FILE_RR, xmlConfig.getFileName());
+        //validateFileName(XMLConstants.FILE_RR, xmlConfig.getFileName());
     }
     
     @Override
@@ -36,7 +36,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
         super.validate(config);
         XMLFileBasedUserGroupServiceConfigImpl xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) config;
         validateCheckIntervall(xmlConfig.getCheckInterval());
-        validateFileName(XMLConstants.FILE_UR, xmlConfig.getFileName());
+        //validateFileName(XMLConstants.FILE_UR, xmlConfig.getFileName());
     }
     
     protected void validateCheckIntervall(long msecs) throws SecurityConfigException {

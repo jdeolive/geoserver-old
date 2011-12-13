@@ -11,7 +11,6 @@ public class MemoryRoleServiceConfigImpl extends SecurityNamedServiceConfigImpl
         implements SecurityRoleServiceConfig {
     private static final long serialVersionUID = 1L;
     protected String adminRoleName;
-    protected boolean lockingNeeded;
     protected String toBeEncrypted;
     
     public String getToBeEncrypted() {
@@ -20,14 +19,6 @@ public class MemoryRoleServiceConfigImpl extends SecurityNamedServiceConfigImpl
 
     public void setToBeEncrypted(String toBeEncrypted) {
         this.toBeEncrypted = toBeEncrypted;
-    }
-
-    public boolean isLockingNeeded() {
-        return lockingNeeded;
-    }
-
-    public void setLockingNeeded(boolean lockingNeeded) {
-        this.lockingNeeded = lockingNeeded;
     }
 
     @Override

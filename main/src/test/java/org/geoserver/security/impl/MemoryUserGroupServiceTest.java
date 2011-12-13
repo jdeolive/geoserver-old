@@ -23,7 +23,6 @@ public class MemoryUserGroupServiceTest extends AbstractUserGroupServiceTest {
     public GeoserverUserGroupService createUserGroupService(String name) throws IOException {
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName(name);        
-        config.setLockingNeeded(false);
         config.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         GeoserverUserGroupService service = new MemoryUserGroupService();

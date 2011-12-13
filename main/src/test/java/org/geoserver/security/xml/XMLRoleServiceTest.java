@@ -27,7 +27,7 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
     
     @Override
-    public GeoserverRoleService createRoleService(String serviceName) throws IOException {
+    public GeoserverRoleService createRoleService(String serviceName) throws Exception {
         return createRoleService(serviceName,XMLConstants.FILE_RR);
     }
     
@@ -39,17 +39,16 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
         }
     }
     
-    protected GeoserverRoleService createRoleService(String serviceName, String xmlFileName) throws IOException {
+    protected GeoserverRoleService createRoleService(String serviceName, String xmlFileName) throws Exception {
          
         XMLFileBasedRoleServiceConfigImpl gaConfig = new XMLFileBasedRoleServiceConfigImpl();                 
         gaConfig.setName(serviceName);
         gaConfig.setClassName(XMLRoleService.class.getName());
-        gaConfig.setCheckInterval(10);  // extreme short for testing 
+        gaConfig.setCheckInterval(1000);   
         gaConfig.setFileName(xmlFileName);
-        gaConfig.setLockingNeeded(true);
         gaConfig.setValidating(true);
         gaConfig.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
-        getSecurityManager().saveRoleService(gaConfig);
+        getSecurityManager().saveRoleService(gaConfig,isNewRoleService(serviceName));
         return getSecurityManager().loadRoleService(serviceName);
     }
 
@@ -73,7 +72,7 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
             
             
             
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Assert.fail(ex.getMessage());
         }                
     }
@@ -92,12 +91,12 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
             assertTrue(service.getRolesForUser(GeoserverUser.AdminName).contains(admin_role));
             
             
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Assert.fail(ex.getMessage());
         }                
     }
     
-    public void testLocking() throws IOException {
+    public void testLocking() throws Exception {
         File xmlFile = File.createTempFile("roles", ".xml");
         FileUtils.copyURLToFile(getClass().getResource("rolesTemplate.xml"),xmlFile);
         GeoserverRoleService service1 =  

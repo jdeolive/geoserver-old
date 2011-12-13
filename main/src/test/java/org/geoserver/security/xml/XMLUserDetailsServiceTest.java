@@ -20,15 +20,12 @@ import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
 import org.geoserver.security.password.GeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
-import org.geoserver.security.password.KeyStoreProvider;
 import org.geoserver.security.password.PasswordValidator;
-import org.geoserver.security.password.RandomPasswordProvider;
 
 public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 
     @Override
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {
+    public GeoserverUserGroupService createUserGroupService(String serviceName) throws Exception {
 //        KeyStoreProvider.get().setUserGroupKey(serviceName,
 //                RandomPasswordProvider.get().getRandomPassword(32));
 
@@ -36,31 +33,29 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         XMLFileBasedUserGroupServiceConfigImpl ugConfig = new XMLFileBasedUserGroupServiceConfigImpl();                 
         ugConfig.setName(serviceName);
         ugConfig.setClassName(XMLUserGroupService.class.getName());
-        ugConfig.setCheckInterval(10); 
+        ugConfig.setCheckInterval(1000); 
         ugConfig.setFileName(XMLConstants.FILE_UR);        
-        ugConfig.setLockingNeeded(true);
         ugConfig.setValidating(true);
 //        ugConfig.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
         ugConfig.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
         ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        getSecurityManager().saveUserGroupService(ugConfig);
+        getSecurityManager().saveUserGroupService(ugConfig,true);
 
         GeoserverUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
         service.initializeFromConfig(ugConfig);
         return service;                
     }
 
-    public GeoserverRoleService createRoleService(String serviceName) throws IOException {
+    public GeoserverRoleService createRoleService(String serviceName) throws Exception {
         
         XMLFileBasedRoleServiceConfigImpl gaConfig = new XMLFileBasedRoleServiceConfigImpl();                 
         gaConfig.setName(serviceName);
         gaConfig.setClassName(XMLRoleService.class.getName());
-        gaConfig.setCheckInterval(10); 
+        gaConfig.setCheckInterval(1000); 
         gaConfig.setFileName(XMLConstants.FILE_RR);
-        gaConfig.setLockingNeeded(true);
         gaConfig.setValidating(true);
         gaConfig.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
-        getSecurityManager().saveRoleService(gaConfig);
+        getSecurityManager().saveRoleService(gaConfig,isNewRoleService(serviceName));
 
         GeoserverRoleService service = 
             getSecurityManager().loadRoleService(serviceName);

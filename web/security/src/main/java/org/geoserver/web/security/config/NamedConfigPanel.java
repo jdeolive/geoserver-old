@@ -25,9 +25,6 @@ import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.validation.IValidatable;
-import org.apache.wicket.validation.ValidationError;
-import org.apache.wicket.validation.validator.AbstractValidator;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityFilter;
@@ -37,9 +34,9 @@ import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
-import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
+import org.geoserver.security.config.validation.SecurityConfigException;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -61,33 +58,8 @@ public class NamedConfigPanel extends Panel {
     protected DropDownChoice<String> implClass;
     protected Form<SecurityNamedConfigModelHelper> form;
     protected Class<?> extensionPoint;
-    protected Set<String> alreadyUsedNames=null;
     protected CompoundPropertyModel<SecurityNamedConfigModelHelper> model;
     
-    /**
-     * Validates service name for new services
-     * 
-     * @author christian
-     *
-     */           
-    class NameValidator extends AbstractValidator<String> {
-
-        private static final long serialVersionUID = 1L;
-                
-
-        @Override
-        protected void onValidate(IValidatable<String> validatable) {
-            //name.updateModel();
-            String newName = validatable.getValue();
-            if (alreadyUsedNames.contains(newName)) {
-                ValidationError error = new ValidationError();
-                error.setMessage(new ResourceModel(NamedConfigPanel.class.getSimpleName()+".nameConflict").getObject());
-                error.setVariable("service", (Object) newName);
-                validatable.error(error);
-            }
-        }
-        
-    };
     
 
     public NamedConfigPanel(String id,SecurityNamedConfigModelHelper helper, Class<?> extensionPoint, AbstractSecurityPage responsePage) {        
@@ -101,7 +73,6 @@ public class NamedConfigPanel extends Panel {
         name = new TextField<String>("config.name");        
         name.setEnabled(helper.isNew());
         name.setRequired(true);    
-        name.add(new NameValidator());
         form.add(name);
         
         List<String> classNames = getImplementations();
@@ -184,56 +155,40 @@ public class NamedConfigPanel extends Panel {
         
         List<GeoServerSecurityProvider> list = new ArrayList<GeoServerSecurityProvider>( 
                 GeoServerExtensions.extensions(GeoServerSecurityProvider.class));
-        
-        GeoServerSecurityManager manager = GeoServerApplication.get().getSecurityManager();
-        
-        try {
-            Set<String> result=new HashSet<String>();
-            for (GeoServerSecurityProvider prov : list) {            
-                Class<?> aClass = prov.getAuthenticationProviderClass();            
-                if (aClass!=null) {
-                    if (extensionPoint.isAssignableFrom(prov.getAuthenticationProviderClass()))
-                    result.add(aClass.getName());
-                    if (alreadyUsedNames==null)
-                        alreadyUsedNames=manager.listAuthenticationProviders();
-                }
-                aClass = prov.getPasswordValidatorClass();            
-                if (aClass!=null) {
-                    if (extensionPoint.isAssignableFrom(prov.getPasswordValidatorClass()))
-                    result.add(aClass.getName());
-                    if (alreadyUsedNames==null)
-                        alreadyUsedNames=manager.listPasswordValidators();
-                }
-                aClass = prov.getRoleServiceClass();            
-                if (aClass!=null) {
-                    if (extensionPoint.isAssignableFrom(prov.getRoleServiceClass()))
-                    result.add(aClass.getName());
-                    if (alreadyUsedNames==null)
-                        alreadyUsedNames=manager.listRoleServices();
-                }
                 
-                aClass = prov.getUserGroupServiceClass();            
-                if (aClass!=null) {
-                    if (extensionPoint.isAssignableFrom(prov.getUserGroupServiceClass()))
-                    result.add(aClass.getName());
-                    if (alreadyUsedNames==null)
-                        alreadyUsedNames=manager.listUserGroupServices();
-                }
-                
-                aClass = prov.getFilterClass();            
-                if (aClass!=null) {
-                    if (extensionPoint.isAssignableFrom(prov.getFilterClass()))
-                    result.add(aClass.getName());
-                    if (alreadyUsedNames==null)
-                        alreadyUsedNames=manager.listFilters();
-                }                                                
+        Set<String> result=new HashSet<String>();
+        for (GeoServerSecurityProvider prov : list) {            
+            Class<?> aClass = prov.getAuthenticationProviderClass();            
+            if (aClass!=null) {
+                if (extensionPoint.isAssignableFrom(prov.getAuthenticationProviderClass()))
+                result.add(aClass.getName());
             }
-            List<String> resList = new ArrayList<String>();
-            resList.addAll(result);
-            return resList;
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+            aClass = prov.getPasswordValidatorClass();            
+            if (aClass!=null) {
+                if (extensionPoint.isAssignableFrom(prov.getPasswordValidatorClass()))
+                result.add(aClass.getName());
+            }
+            aClass = prov.getRoleServiceClass();            
+            if (aClass!=null) {
+                if (extensionPoint.isAssignableFrom(prov.getRoleServiceClass()))
+                result.add(aClass.getName());
+            }
+            
+            aClass = prov.getUserGroupServiceClass();            
+            if (aClass!=null) {
+                if (extensionPoint.isAssignableFrom(prov.getUserGroupServiceClass()))
+                result.add(aClass.getName());
+            }
+            
+            aClass = prov.getFilterClass();            
+            if (aClass!=null) {
+                if (extensionPoint.isAssignableFrom(prov.getFilterClass()))
+                result.add(aClass.getName());
+            }                                                
         }
+        List<String> resList = new ArrayList<String>();
+        resList.addAll(result);
+        return resList;
     }
     
     SubmitLink saveLink(final AbstractSecurityPage responsePage) {
@@ -241,16 +196,18 @@ public class NamedConfigPanel extends Panel {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public void onSubmit() {
-                setResponsePage(responsePage);
+            public void onSubmit() {                
                 if (model.getObject().hasChanges()) {
                     responsePage.setDirty(true);
                     try {
                         saveConfiguration();
+                        setResponsePage(responsePage);
+                    } catch (SecurityConfigException se) {    
+                      error(new ParamResourceModel("security."+se.getErrorId()
+                              , null, se.getArgs()));
                     } catch (IOException e) {
                         form.error(e.getMessage());
-                        LOGGER.log(Level.SEVERE,e.getMessage(),e);
-                        //error(new ParamResourceModel("saveError", getPage(), e.getMessage()));
+                        LOGGER.log(Level.SEVERE,e.getMessage(),e);                        
                     }                                                
                 }
             }
@@ -280,24 +237,25 @@ public class NamedConfigPanel extends Panel {
         throw new RuntimeException("No details panel for "+className);
     }
 
-    protected void saveConfiguration() throws IOException {
+    protected void saveConfiguration() throws IOException,SecurityConfigException {
         
         GeoServerSecurityManager manager = GeoServerApplication.get().getSecurityManager();
+        SecurityNamedConfigModelHelper helper = model.getObject();
         
         if (GeoServerAuthenticationProvider.class.isAssignableFrom(extensionPoint)) {
-            manager.saveAuthenticationProvider((SecurityAuthProviderConfig) model.getObject().getConfig());
+            manager.saveAuthenticationProvider((SecurityAuthProviderConfig) helper.getConfig(),helper.isNew());
         }
         if (GeoserverUserGroupService.class.isAssignableFrom(extensionPoint)) {
-            manager.saveUserGroupService((SecurityUserGroupServiceConfig)model.getObject().getConfig());
+            manager.saveUserGroupService((SecurityUserGroupServiceConfig)helper.getConfig(),helper.isNew());
         }
         if (GeoserverRoleService.class.isAssignableFrom(extensionPoint)) {
-            manager.saveRoleService((SecurityRoleServiceConfig) model.getObject().getConfig());
+            manager.saveRoleService((SecurityRoleServiceConfig) helper.getConfig(),helper.isNew());
         }
         if (PasswordValidator.class.isAssignableFrom(extensionPoint)) {
-            manager.savePasswordPolicy((PasswordPolicyConfig) model.getObject().getConfig());
+            manager.savePasswordPolicy((PasswordPolicyConfig) helper.getConfig(),helper.isNew());
         }
         if (GeoServerSecurityFilter.class.isAssignableFrom(extensionPoint)) {
-            manager.saveFilter(model.getObject().getConfig());
+            manager.saveFilter(helper.getConfig(),helper.isNew());
         }
     }
 

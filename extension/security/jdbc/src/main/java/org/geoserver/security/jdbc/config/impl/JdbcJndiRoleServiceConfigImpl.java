@@ -12,15 +12,7 @@ public class JdbcJndiRoleServiceConfigImpl extends JdbcJndiSecurityServiceConfig
     private static final long serialVersionUID = 1L;
 
     protected String adminRoleName;
-    protected boolean lockingNeeded;
     
-    public boolean isLockingNeeded() {
-        return lockingNeeded;
-    }
-
-    public void setLockingNeeded(boolean lockingNeeded) {
-        this.lockingNeeded = lockingNeeded;
-    }
 
     @Override
     public String getAdminRoleName() {

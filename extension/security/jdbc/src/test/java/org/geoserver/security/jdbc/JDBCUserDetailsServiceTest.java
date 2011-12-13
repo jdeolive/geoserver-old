@@ -22,14 +22,14 @@ public abstract class JDBCUserDetailsServiceTest extends AbstractUserDetailsServ
     protected abstract String getFixtureId();
         
     @Override
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {
+    public GeoserverUserGroupService createUserGroupService(String serviceName) throws Exception {
         
         return JDBCTestSupport.createUserGroupService(getFixtureId(), 
             (LiveDbmsDataSecurity)getTestData(), getSecurityManager());
     }
 
     @Override
-    public GeoserverRoleService createRoleService(String serviceName) throws IOException {    
+    public GeoserverRoleService createRoleService(String serviceName) throws Exception {    
         return JDBCTestSupport.createRoleService(getFixtureId(),
             (LiveDbmsDataSecurity)getTestData(), getSecurityManager());
     }
@@ -108,7 +108,7 @@ public abstract class JDBCUserDetailsServiceTest extends AbstractUserDetailsServ
                     getSecurityManager().loadUserGroupService(getFixtureId()).getName());
             assertTrue(roleService.canCreateStore());
             assertTrue(usergroupService.canCreateStore());
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Assert.fail(ex.getMessage());
         }
     }
