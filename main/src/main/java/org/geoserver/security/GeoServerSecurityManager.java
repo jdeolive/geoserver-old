@@ -48,6 +48,8 @@ import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
+import org.geoserver.security.config.validation.SecurityConfigException;
+import org.geoserver.security.config.validation.SecurityConfigValidator;
 import org.geoserver.security.file.RoleFileWatcher;
 import org.geoserver.security.file.UserGroupFileWatcher;
 import org.geoserver.security.impl.GeoserverRole;
@@ -65,7 +67,6 @@ import org.geoserver.security.rememberme.GeoServerTokenBasedRememberMeServices;
 import org.geoserver.security.rememberme.RememberMeServicesConfig;
 import org.geoserver.security.xml.XMLConstants;
 import org.geoserver.security.xml.XMLRoleService;
-import org.geoserver.security.xml.XMLSecurityProvider;
 import org.geoserver.security.xml.XMLUserGroupService;
 import org.geotools.util.logging.Logging;
 import org.springframework.beans.BeansException;
@@ -144,7 +145,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     ConcurrentHashMap<String, GeoserverRoleService> roleServices = 
         new ConcurrentHashMap<String, GeoserverRoleService>();
     
-    /** cached role services */
+    /** cached password validators services */
     ConcurrentHashMap<String, PasswordValidator> passwordValidators = 
         new ConcurrentHashMap<String, PasswordValidator>();
 
@@ -416,14 +417,36 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Saves/persists a role service configuration.
      */
-    public void saveRoleService(SecurityRoleServiceConfig config) throws IOException {
+    public void saveRoleService(SecurityRoleServiceConfig config, boolean isNew) 
+            throws IOException,SecurityConfigException {
+        SecurityConfigValidator validator = 
+                SecurityConfigValidator.getConfigurationValiator(
+                        GeoserverRoleService.class,
+                        config.getClassName());
+
+        if (isNew)
+            validator.validateAddRoleService(config);
+        else
+            validator.validateModifiedRoleService(config);
+
         roleServiceHelper.saveConfig(config);
     }
     
     /**
      * Saves/persists a password policy configuration.
      */
-    public void savePasswordPolicy(PasswordPolicyConfig config) throws IOException {
+    public void savePasswordPolicy(PasswordPolicyConfig config, boolean isNew) 
+            throws IOException,SecurityConfigException {
+        SecurityConfigValidator validator = 
+                SecurityConfigValidator.getConfigurationValiator(
+                        PasswordValidator.class,
+                        config.getClassName());
+
+        if (isNew)
+            validator.validateAddPasswordPolicy(config);
+        else
+            validator.validateAddPasswordPolicy(config);
+        
         passwordValidatorHelper.saveConfig(config);
     }
 
@@ -433,16 +456,17 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * 
      * @param name The name of the role service configuration.
      */
-    public void removeRoleService(String name) throws IOException {
-        //remove the service
-        if (getActiveRoleService() != null && getActiveRoleService().getName().equals(name)) {
-            throw new IllegalArgumentException("Can't delete active authority service: " + name);
-        }
+    public void removeRoleService(String name) throws IOException,SecurityConfigException {
 
-        //remove the cached service
-        roleServices.remove(name);
+        SecurityRoleServiceConfig config = loadRoleServiceConfig(name);
+        SecurityConfigValidator validator = 
+                SecurityConfigValidator.getConfigurationValiator(
+                        GeoserverRoleService.class,
+                        config.getClassName());
+
+        validator.validateRemoveRoleService(config);
         
-        //remove the config dir
+        roleServices.remove(name);
         roleServiceHelper.removeConfig(name);
     }
     
@@ -451,22 +475,15 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * 
      * @param name The name of the password validator configuration.
      */
-    public void removePasswordValidator(String name) throws IOException {
-        
-        if (PasswordValidator.DEFAULT_NAME.equals(name) || 
-                PasswordValidator.MASTERPASSWORD_NAME.equals(name))
-            throw new IllegalArgumentException("Can't delete password policy: " + name);
-        
-        for (String ugName : listFiles(getUserGroupRoot())) {
-            GeoserverUserGroupService service = loadUserGroupService(ugName);
-            if (name.equals(service.getPasswordValidatorName())) {
-                throw new IllegalArgumentException("Can't delete password policy: " + name+
-                        " still used in UserGroupService: "+service.getName());
-            }
-        }
-        
+    public void removePasswordValidator(String name) throws IOException,SecurityConfigException {
+        PasswordPolicyConfig config = loadPasswordPolicyConfig(name);
+        SecurityConfigValidator validator = 
+                SecurityConfigValidator.getConfigurationValiator(
+                        PasswordValidator.class,
+                        config.getClassName());
+
+        validator.validateRemovePasswordPolicy(config);
         passwordValidators.remove(name);        
-        //remove the config dir
         passwordValidatorHelper.removeConfig(name);
     }
 
@@ -521,7 +538,17 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Saves/persists a user group service configuration.
      */
-    public void saveUserGroupService(SecurityUserGroupServiceConfig config) throws IOException {
+    public void saveUserGroupService(SecurityUserGroupServiceConfig config, boolean isNew) 
+            throws IOException,SecurityConfigException {
+        SecurityConfigValidator validator = 
+                SecurityConfigValidator.getConfigurationValiator(
+                        GeoserverUserGroupService.class,
+                        config.getClassName());
+        if (isNew)
+            validator.validateAddUserGroupService(config);
+        else
+            validator.validateModifiedUserGroupService(config);
+
         userGroupServiceHelper.saveConfig(config);
     }
 
@@ -530,24 +557,16 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * 
      * @param name The name of the user group service configuration.
      */
-    public void removeUserGroupService(String name) throws IOException {
-        //remove the service
-        
-        
-        
-         
-        // First, I we have only one usergroupservice, we cannot delete it.
-        if (userGroupServices.size()==1)
-            throw new IllegalArgumentException("Can't delete last user group service: " + name);
-        
-        // TODO: this check is more complicated.
-        // Second, if deletion would also delete the last user with ROLE_ADMINSTRATOR,
-        // we have to refuse deletion. To be implemented
-        
-        //remove the cached service
+    public void removeUserGroupService(String name) throws IOException,SecurityConfigException {
+        SecurityUserGroupServiceConfig config = loadUserGroupServiceConfig(name);
+        SecurityConfigValidator validator = 
+                SecurityConfigValidator.getConfigurationValiator(
+                        GeoserverUserGroupService.class,
+                        config.getClassName());
+
+        validator.validateRemoveUserGroupService(config);
+                 
         userGroupServices.remove(name);
-        
-        //remove the config dir
         userGroupServiceHelper.removeConfig(name);
     }
 
@@ -578,7 +597,15 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     
-    public void saveAuthenticationProvider(SecurityAuthProviderConfig config) throws IOException {
+    public void saveAuthenticationProvider(SecurityAuthProviderConfig config, boolean isNew) 
+            throws IOException,SecurityConfigException {
+        SecurityConfigValidator validator = 
+                SecurityConfigValidator.getConfigurationValiator(GeoServerAuthenticationProvider.class,
+                        config.getClassName());
+        if (isNew)
+            validator.validateAddAuthProvider(config);
+        else
+            validator.validateModifiedAuthProvider(config);
         authProviderHelper.saveConfig(config);
     }
 
@@ -609,20 +636,45 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     
-    public void saveFilter(SecurityNamedServiceConfig config) throws IOException {
+    public void saveFilter(SecurityNamedServiceConfig config, boolean isNew) 
+            throws IOException,SecurityConfigException {
+//        SecurityConfigValidator validator = 
+//                SecurityConfigValidator.getConfigurationValiator(
+//                        GeoserverAuthenticationProcessingFilter.class,
+//                        config.getClassName());
+//        if (isNew)
+//            validator.validateAddFilter(config);
+//        else
+//            validator.validateModifiedFilter(config);
+
         filterHelper.saveConfig(config);
     }
     
-//    /**
-//     * Removes an authentication provider configuration.
-//     * 
-//     * @param name The name of the authentication provider configuration.
-//     */
-//    public void removeAuthenticationProvider(String name) throws IOException {
-//        //TODO:remove from cached list
-//        
-//        authProviderHelper.removeConfig(name);
-//    }
+    /**
+     * Removes an authentication provider configuration.
+     * 
+     * @param name The name of the authentication provider configuration.
+     */
+    public void removeAuthenticationProvider(String name) throws IOException,SecurityConfigException {
+        SecurityAuthProviderConfig config = loadAuthenticationProviderConfig(name);
+        SecurityConfigValidator validator = 
+                SecurityConfigValidator.getConfigurationValiator(GeoServerAuthenticationProvider.class,
+                        config.getClassName());
+        validator.validateRemoveAuthProvider(config);        
+        authProviderHelper.removeConfig(name);
+    }
+    
+
+    public void removeAuthenticationFilter(String name) throws IOException,SecurityConfigException {
+//        SecurityNamedServiceConfig config = loadFilterConfig(name);
+//        SecurityConfigValidator validator = 
+//                SecurityConfigValidator.getConfigurationValiator(
+//                        GeoserverAuthenticationProcessingFilter.class,
+//                        config.getClassName());
+//        validator.validateRemoveFilter(config);        
+        filterHelper.removeConfig(name);
+    }
+
 
     /**
      * Returns the current security configuration.
@@ -641,7 +693,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * TODO: use read/write lock rather than full synchronied
      */
     public synchronized void saveSecurityConfig(SecurityManagerConfig config) throws Exception {
-        //save the current config to fall back to
+        
+        SecurityConfigValidator validator = new SecurityConfigValidator();
+        validator.validateManagerConfig(config);
+        //save the current config to fall back to                
         SecurityManagerConfig oldConfig = new SecurityManagerConfigImpl(this.securityConfig);
 
         try {
@@ -651,7 +706,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             //save out new configuration
             xStreamPersist(new File(getSecurityRoot(), CONFIG_FILE_NAME), config, globalPersister());
         }
-        catch(Exception e) {
+        catch(IOException e) {
             //exception, revert back to known working config
             LOGGER.log(Level.SEVERE, "Error saving security config, reverting back to previous", e);
             init(oldConfig);
@@ -707,18 +762,41 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 XMLUserGroupService.DEFAULT_NAME, RandomPasswordProvider.get().getRandomPassword(32));
         KeyStoreProvider.get().storeKeyStore();
         
+        PasswordValidator validator = 
+                loadPasswordValidator(PasswordValidator.DEFAULT_NAME);
+        if (validator==null) {
+            // Policy allows any password except null, this is the default
+            // at before migration
+            PasswordPolicyConfig pwpconfig = new PasswordPolicyConfigImpl();
+            pwpconfig.setName(PasswordValidator.DEFAULT_NAME);
+            pwpconfig.setClassName(PasswordValidatorImpl.class.getName());
+            pwpconfig.setMinLength(0);
+            savePasswordPolicy(pwpconfig,true);
+            validator = loadPasswordValidator(PasswordValidator.DEFAULT_NAME);    
+        }
+
+        validator = loadPasswordValidator(PasswordValidator.MASTERPASSWORD_NAME); 
+        if (validator==null) {
+            // Policy requires a minimum of 8 chars for the master password            
+            PasswordPolicyConfig pwpconfig = new PasswordPolicyConfigImpl();
+            pwpconfig.setName(PasswordValidator.MASTERPASSWORD_NAME);
+            pwpconfig.setClassName(PasswordValidatorImpl.class.getName());
+            pwpconfig.setMinLength(8);
+            savePasswordPolicy(pwpconfig,true);
+            validator = loadPasswordValidator(PasswordValidator.MASTERPASSWORD_NAME);    
+        }
+                
         if (userGroupService == null) {
             XMLFileBasedUserGroupServiceConfigImpl ugConfig = new XMLFileBasedUserGroupServiceConfigImpl();            
             ugConfig.setName(XMLUserGroupService.DEFAULT_NAME);
             ugConfig.setClassName(XMLUserGroupService.class.getName());
             ugConfig.setCheckInterval(checkInterval); 
             ugConfig.setFileName(XMLConstants.FILE_UR);            
-            ugConfig.setLockingNeeded(true);
             ugConfig.setValidating(true);
             // start with weak encryption, plain passwords can be restored
             ugConfig.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
             ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-            saveUserGroupService(ugConfig);
+            saveUserGroupService(ugConfig, true);
             userGroupService = loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
         }
 
@@ -732,35 +810,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             gaConfig.setClassName(XMLRoleService.class.getName());
             gaConfig.setCheckInterval(checkInterval); 
             gaConfig.setFileName(XMLConstants.FILE_RR);
-            gaConfig.setLockingNeeded(true);
             gaConfig.setValidating(true);
             gaConfig.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
-            saveRoleService(gaConfig);
+            saveRoleService(gaConfig,true);
             roleService = loadRoleService(XMLRoleService.DEFAULT_NAME);
         }
         
-        PasswordValidator validator = 
-                loadPasswordValidator(PasswordValidator.DEFAULT_NAME);
-        if (validator==null) {
-            // Policy allows any password except null, this is the default
-            // at before migration
-            PasswordPolicyConfig pwpconfig = new PasswordPolicyConfigImpl();
-            pwpconfig.setName(PasswordValidator.DEFAULT_NAME);
-            pwpconfig.setClassName(PasswordValidatorImpl.class.getName());
-            savePasswordPolicy(pwpconfig);
-            validator = loadPasswordValidator(PasswordValidator.DEFAULT_NAME);    
-        }
-
-        validator = loadPasswordValidator(PasswordValidator.MASTERPASSWORD_NAME); 
-        if (validator==null) {
-            // Policy requires a minimum of 8 chars for the master password            
-            PasswordPolicyConfig pwpconfig = new PasswordPolicyConfigImpl();
-            pwpconfig.setName(PasswordValidator.MASTERPASSWORD_NAME);
-            pwpconfig.setClassName(PasswordValidatorImpl.class.getName());
-            pwpconfig.setMinLength(8);
-            savePasswordPolicy(pwpconfig);
-            validator = loadPasswordValidator(PasswordValidator.MASTERPASSWORD_NAME);    
-        }
 
         //check for the default auth provider, create if necessary
         GeoServerAuthenticationProvider authProvider = 
@@ -771,7 +826,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             upAuthConfig.setName(GeoServerAuthenticationProvider.DEFAULT_NAME);
             upAuthConfig.setClassName(UsernamePasswordAuthenticationProvider.class.getName());
             upAuthConfig.setUserGroupServiceName(userGroupService.getName());
-            saveAuthenticationProvider(upAuthConfig);
+            saveAuthenticationProvider(upAuthConfig,true);
             authProvider = loadAuthenticationProvider(GeoServerAuthenticationProvider.DEFAULT_NAME);
         }
 
@@ -1061,7 +1116,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
             service.setSecurityManager(GeoServerSecurityManager.this);
             if (config instanceof SecurityUserGroupServiceConfig){
-                if (((SecurityUserGroupServiceConfig) config).isLockingNeeded())
+                boolean needsLockProtection =
+                        GeoServerSecurityProvider.getProvider(GeoserverUserGroupService.class, 
+                        config.getClassName()).roleServiceNeedsLockProtection();
+                if (needsLockProtection)
                         service = new LockingUserGroupService(service);
             }
             service.setName(name);
@@ -1126,7 +1184,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             service.setSecurityManager(GeoServerSecurityManager.this);
 
             if (config instanceof SecurityRoleServiceConfig){
-                if (((SecurityRoleServiceConfig) config).isLockingNeeded())
+                boolean needsLockProtection =
+                        GeoServerSecurityProvider.getProvider(GeoserverRoleService.class, 
+                        config.getClassName()).roleServiceNeedsLockProtection();
+                if (needsLockProtection)
                         service = new LockingRoleService(service);
             }            
             service.setName(name);

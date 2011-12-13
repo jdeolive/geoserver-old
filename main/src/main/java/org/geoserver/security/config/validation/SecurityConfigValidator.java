@@ -9,6 +9,8 @@ import static org.geoserver.security.config.validation.SecurityConfigValidationE
 import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_02;
 import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_03;
 import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_04;
+import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_05;
+import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_06;
 import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_20;
 import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_21;
 import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_22;
@@ -43,6 +45,7 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
 import org.geoserver.security.password.GeoserverConfigPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
@@ -51,7 +54,19 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 public class SecurityConfigValidator {
 
     GeoServerSecurityManager manager;
-    GeoServerSecurityProvider provider;
+
+    
+    /**
+     * Get the proper {@link SecurityConfigValidator} object
+     * 
+     * @param serviceClass
+     * @param className
+     * @return
+     */
+    static public SecurityConfigValidator getConfigurationValiator(Class <?> serviceClass, String className) {
+        GeoServerSecurityProvider prov = GeoServerSecurityProvider.getProvider(serviceClass, className);
+        return prov.getConfigurationValidator();
+    }
     
     public SecurityConfigValidator() {
         manager=GeoServerExtensions.bean(GeoServerSecurityManager.class);
@@ -65,7 +80,8 @@ public class SecurityConfigValidator {
      */
     public void validateManagerConfig(SecurityManagerConfig config) throws SecurityConfigException{
         
-        String encrypterName =config.getConfigPasswordEncrypterName(); 
+        String encrypterName =config.getConfigPasswordEncrypterName();
+        GeoserverConfigPasswordEncoder encoder = null;
         if (encrypterName!=null && 
                 encrypterName.length()>0) {
             Object o=null;
@@ -74,8 +90,15 @@ public class SecurityConfigValidator {
             } catch (NoSuchBeanDefinitionException ex) {
                 throw createSecurityException(SEC_ERR_01, encrypterName);
             }
-            if (o instanceof GeoserverConfigPasswordEncoder == false)
-                throw createSecurityException(SEC_ERR_01, encrypterName);                                        
+            if (o instanceof GeoserverConfigPasswordEncoder == false) {
+                throw createSecurityException(SEC_ERR_01, encrypterName);
+            }
+            encoder = (GeoserverConfigPasswordEncoder) o;
+        }
+        
+        if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false) {
+            if (encoder!=null && encoder.isAvailableWithoutStrongCryptogaphy()==false)                
+                throw createSecurityException(SEC_ERR_05);
         }
         
         String roleServiceName = config.getRoleServiceName();
@@ -173,7 +196,7 @@ public class SecurityConfigValidator {
         validate(config);
     }
 
-    public void validateAddPasswordPolicyService(PasswordPolicyConfig config) throws SecurityConfigException{
+    public void validateAddPasswordPolicy(PasswordPolicyConfig config) throws SecurityConfigException{
         validateAddNamedService(PasswordValidator.class, config);
         validate(config);
     }
@@ -198,7 +221,7 @@ public class SecurityConfigValidator {
         validate(config);
     }
 
-    public void validateModifiedPasswordPolicyService(PasswordPolicyConfig config) throws SecurityConfigException{
+    public void validateModifiedPasswordPolicy(PasswordPolicyConfig config) throws SecurityConfigException{
         validateModifiedNamedService(PasswordValidator.class, config);
         validate(config);
     }
@@ -238,7 +261,7 @@ public class SecurityConfigValidator {
                 }
     }
 
-    public void validateRemovePasswordPolicyService(PasswordPolicyConfig config) throws SecurityConfigException{
+    public void validateRemovePasswordPolicy(PasswordPolicyConfig config) throws SecurityConfigException{
         validateRemoveNamedService(PasswordValidator.class, config);
         
         if (PasswordValidator.MASTERPASSWORD_NAME.equals(config.getName()))
@@ -287,6 +310,7 @@ public class SecurityConfigValidator {
 
     public void validate(SecurityUserGroupServiceConfig config) throws SecurityConfigException {
         String encoderName =config.getPasswordEncoderName();
+        GeoserverUserPasswordEncoder encoder = null;
         if (encoderName!=null && 
                 encoderName.length()>0) {
             Object o=null;
@@ -296,9 +320,15 @@ public class SecurityConfigValidator {
                 throw createSecurityException(SEC_ERR_04, encoderName);
             }
             if (o instanceof GeoserverUserPasswordEncoder == false)
-                throw createSecurityException(SEC_ERR_04, encoderName);                                        
+                throw createSecurityException(SEC_ERR_04, encoderName);
+            encoder = (GeoserverUserPasswordEncoder) o;
         } else {
             throw createSecurityException(SEC_ERR_32, config.getName());
+        }
+        
+        if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false) {
+            if (encoder!=null && encoder.isAvailableWithoutStrongCryptogaphy()==false)
+                throw createSecurityException(SEC_ERR_06);
         }
         
         String policyName= config.getPasswordPolicyName();
@@ -312,9 +342,9 @@ public class SecurityConfigValidator {
     }
     
     public void validate(PasswordPolicyConfig config) throws SecurityConfigException {
-        if (config.getMinLength() < 1)
+        if (config.getMinLength() < 0)
             throw createSecurityException(SEC_ERR_40);
-        if (config.getMinLength() !=- 1) {
+        if (config.getMaxLength() !=- 1) {
             if (config.getMinLength()>config.getMaxLength())
                 throw createSecurityException(SEC_ERR_41);
         }

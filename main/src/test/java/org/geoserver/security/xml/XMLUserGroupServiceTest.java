@@ -30,7 +30,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
 
     @Override
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {
+    public GeoserverUserGroupService createUserGroupService(String serviceName) throws Exception {
         return createUserGroupService(serviceName,XMLConstants.FILE_UR); 
     }
     
@@ -43,17 +43,16 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     }
 
     
-    protected GeoserverUserGroupService createUserGroupService(String serviceName,String xmlFileName) throws IOException {
+    protected GeoserverUserGroupService createUserGroupService(String serviceName,String xmlFileName) throws Exception {
         XMLFileBasedUserGroupServiceConfigImpl ugConfig = new XMLFileBasedUserGroupServiceConfigImpl();                 
         ugConfig.setName(serviceName);
         ugConfig.setClassName(XMLUserGroupService.class.getName());
-        ugConfig.setCheckInterval(10); 
+        ugConfig.setCheckInterval(1000); 
         ugConfig.setFileName(xmlFileName);        
-        ugConfig.setLockingNeeded(true);
         ugConfig.setValidating(true);
         ugConfig.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
         ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        getSecurityManager().saveUserGroupService(ugConfig);
+        getSecurityManager().saveUserGroupService(ugConfig,isNewUGService(serviceName));
         
         GeoserverUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
         service.initializeFromConfig(ugConfig); // create files
@@ -80,7 +79,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
             
             checkValuesInserted(store2);
             
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Assert.fail(ex.getMessage());
         }
 

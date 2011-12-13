@@ -13,7 +13,6 @@ import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
@@ -37,26 +36,12 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
     List<String> disabledEncoders;
     List<String> passwordPolicies;
 
-    //protected CheckBox isLockingNeeded;
     protected DropDownChoice<String> passwordEncoderName,passwordPolicyName;
 
     
     public AbstractUserGroupDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
         
-        GeoServerSecurityProvider provider = null;
-        for (GeoServerSecurityProvider prov :  
-                GeoServerExtensions.extensions(GeoServerSecurityProvider.class)) {
-            if (prov.getUserGroupServiceClass().getName().equals(configHelper.getConfig().getClassName())) {
-                provider = prov;
-                break;
-            }            
-        }
-        if (provider==null)
-            throw new RuntimeException("Never should reach this point");
-
-        ((SecurityUserGroupServiceConfig) configHelper.getConfig()).setLockingNeeded(
-                provider.userGroupServiceNeedsLockProtection());        
     }
 
     @Override
@@ -64,12 +49,6 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
 
         SecurityUserGroupServiceConfig config = 
                 (SecurityUserGroupServiceConfig) configHelper.getConfig();
-        
-//        if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
-//            config.setLockingNeeded(true);
-//        add(isLockingNeeded=new CheckBox("config.lockingNeeded"));
-//        if (XMLUserGroupService.DEFAULT_NAME.equals(config.getName()))
-//            isLockingNeeded.setEnabled(false); // 
         
         
         List<GeoserverUserPasswordEncoder> encoders = 

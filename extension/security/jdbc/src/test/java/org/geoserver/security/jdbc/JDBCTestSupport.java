@@ -67,7 +67,7 @@ public class JDBCTestSupport {
     }
     
     protected static GeoserverUserGroupService createH2UserGroupService(String serviceName, 
-        GeoServerSecurityManager securityManager) throws IOException {
+        GeoServerSecurityManager securityManager) throws Exception {
         
         JdbcUserGroupServiceConfigImpl config = new JdbcUserGroupServiceConfigImpl();           
         config.setName(serviceName);
@@ -76,19 +76,19 @@ public class JDBCTestSupport {
         config.setUserName("sa");
         config.setPassword("");                            
         config.setClassName(JDBCUserGroupService.class.getName());
-        config.setLockingNeeded(false);
         config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
         config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
 
-        securityManager.saveUserGroupService(config);
+        securityManager.saveUserGroupService(config,
+                !(securityManager.listUserGroupServices().contains(serviceName)));
 
         return securityManager.loadUserGroupService(serviceName);
     }
 
     protected static GeoserverRoleService createH2RoleService(
-        String serviceName, GeoServerSecurityManager securityManager) throws IOException {
+        String serviceName, GeoServerSecurityManager securityManager) throws Exception {
         
         JdbcRoleServiceConfigImpl config = new JdbcRoleServiceConfigImpl();
         
@@ -98,17 +98,17 @@ public class JDBCTestSupport {
         config.setUserName("sa");
         config.setPassword("");                    
         config.setClassName(JDBCRoleService.class.getName());
-        config.setLockingNeeded(false);
         config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
         config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
-        securityManager.saveRoleService(config);
+        securityManager.saveRoleService(config,
+                !(securityManager.listRoleServices().contains(serviceName)));
         return securityManager.loadRoleService(serviceName);
     }
 
     static  protected GeoserverRoleService createRoleService(
         String fixtureId, LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) 
-            throws IOException {
+            throws Exception {
     
         JdbcRoleServiceConfigImpl config = new
         JdbcRoleServiceConfigImpl();
@@ -122,7 +122,6 @@ public class JDBCTestSupport {
         config.setPassword(props.getProperty("password"));            
         config.setClassName(JDBCRoleService.class.getName());
         config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());        
-        config.setLockingNeeded(false);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("rolesddl.mysql.xml");            
         } else {
@@ -130,12 +129,13 @@ public class JDBCTestSupport {
         }
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
 
-        securityManager.saveRoleService(config);
+        securityManager.saveRoleService(config,
+                !(securityManager.listRoleServices().contains(fixtureId)));
         return securityManager.loadRoleService(fixtureId);
     }
     
     static protected GeoserverUserGroupService createUserGroupService(String fixtureId,
-        LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) throws IOException {
+        LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) throws Exception {
         
         JdbcUserGroupServiceConfigImpl config = new
         JdbcUserGroupServiceConfigImpl();
@@ -150,14 +150,14 @@ public class JDBCTestSupport {
         config.setClassName(JDBCUserGroupService.class.getName());
         config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        config.setLockingNeeded(false);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("usersddl.mysql.xml");            
         } else {
             config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         }
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
-        securityManager.saveUserGroupService(config);
+        securityManager.saveUserGroupService(config,
+                !(securityManager.listUserGroupServices().contains(fixtureId)));
         return securityManager.loadUserGroupService(fixtureId);
     }
 

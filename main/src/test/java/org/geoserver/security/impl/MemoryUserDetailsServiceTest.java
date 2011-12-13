@@ -5,11 +5,9 @@
 
 package org.geoserver.security.impl;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -48,12 +46,12 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
     static final String plainTextUserGroup = "plainuserGroup";
 
     @Override
-    public GeoserverRoleService createRoleService(String name) throws IOException {
+    public GeoserverRoleService createRoleService(String name) throws Exception {
         MemoryRoleServiceConfigImpl config = getRoleConfig(name);
         GeoserverRoleService service = new MemoryRoleService();
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
         service.initializeFromConfig(config);
-        getSecurityManager().saveRoleService(config);
+        getSecurityManager().saveRoleService(config,isNewRoleService(name));
         return service;
 
         
@@ -64,23 +62,22 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
         config.setName(name);
         config.setClassName(MemoryRoleService.class.getName());
         config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
-        config.setLockingNeeded(false);        
         config.setToBeEncrypted(plainTextRole);
         return config;
         
     }
     @Override
-    public GeoserverUserGroupService createUserGroupService(String name) throws IOException {
+    public GeoserverUserGroupService createUserGroupService(String name) throws Exception {
         return createUserGroupService(name, GeoserverUserPBEPasswordEncoder.PrototypeName);
 
     }
     
-    public GeoserverUserGroupService createUserGroupService(String name,String passwordEncoderName) throws IOException {
+    public GeoserverUserGroupService createUserGroupService(String name,String passwordEncoderName) throws Exception {
         MemoryUserGroupServiceConfigImpl config =  getUserGroupConfg(name, passwordEncoderName);         
         GeoserverUserGroupService service = new MemoryUserGroupService();
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
         service.initializeFromConfig(config);
-        getSecurityManager().saveUserGroupService(config);
+        getSecurityManager().saveUserGroupService(config,isNewUGService(name));
         return service;
 
     }
@@ -89,7 +86,6 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName(name);
         config.setClassName(MemoryUserGroupService.class.getName());
-        config.setLockingNeeded(false);
         config.setPasswordEncoderName(passwordEncoderName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         config.setToBeEncrypted(plainTextUserGroup);
@@ -97,7 +93,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
     }
 
 
-    public void testDecodingUserDetailsService() throws IOException {
+    public void testDecodingUserDetailsService() throws Exception {
         GeoserverUserGroupService service = createUserGroupService("test");        
         assertTrue(DecodingUserDetailsService.canBeUsedFor(service));
         DecodingUserDetailsService decService = DecodingUserDetailsService.newInstance(service);
@@ -146,7 +142,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
             }
             assertTrue("copy from digest to crypt must fail",fail);
             
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Assert.fail(ex.getMessage());
         }
 
@@ -180,8 +176,8 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
         MemoryUserGroupServiceConfigImpl ugConfig = getUserGroupConfg(serviceName,
                 GeoserverPlainTextPasswordEncoder.BeanName);
         
-        getSecurityManager().saveRoleService(roleConfig);        
-        getSecurityManager().saveUserGroupService(ugConfig);
+        getSecurityManager().saveRoleService(roleConfig,true);        
+        getSecurityManager().saveUserGroupService(ugConfig,true);
         
         File roleDir= new File(getSecurityManager().getRoleRoot(),serviceName);
         File ugDir= new File(getSecurityManager().getUserGroupRoot(),serviceName);
@@ -237,8 +233,8 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
         MemoryUserGroupServiceConfigImpl ugConfig = getUserGroupConfg(serviceName,
                 GeoserverPlainTextPasswordEncoder.BeanName);
         
-        getSecurityManager().saveRoleService(roleConfig);        
-        getSecurityManager().saveUserGroupService(ugConfig);
+        getSecurityManager().saveRoleService(roleConfig,true);        
+        getSecurityManager().saveUserGroupService(ugConfig,true);
         
         File roleDir= new File(getSecurityManager().getRoleRoot(),serviceName);
         File ugDir= new File(getSecurityManager().getUserGroupRoot(),serviceName);

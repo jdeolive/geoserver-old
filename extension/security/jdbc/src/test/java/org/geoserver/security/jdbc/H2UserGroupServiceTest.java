@@ -5,8 +5,6 @@
 
 package org.geoserver.security.jdbc;
 
-import java.io.IOException;
-
 import org.geoserver.security.GeoserverUserGroupService;
 
 public class H2UserGroupServiceTest extends JDBCUserGroupServiceTest {
@@ -17,7 +15,7 @@ public class H2UserGroupServiceTest extends JDBCUserGroupServiceTest {
     }
 
 
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws IOException {        
+    public GeoserverUserGroupService createUserGroupService(String serviceName) throws Exception {        
         return JDBCTestSupport.createH2UserGroupService(getFixtureId(), getSecurityManager());
     }
 

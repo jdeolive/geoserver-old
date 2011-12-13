@@ -143,7 +143,6 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
         config.setConnectURL("jdbc:connect");
         try {            
-            config.setConnectURL(null);
             validator.validateAddRoleService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_203,ex.getErrorId());
@@ -230,7 +229,6 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
         config.setConnectURL("jdbc:connect");
         try {            
-            config.setConnectURL(null);
             validator.validateAddUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_203,ex.getErrorId());

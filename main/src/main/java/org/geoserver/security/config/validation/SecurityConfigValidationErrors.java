@@ -21,6 +21,8 @@ public class SecurityConfigValidationErrors  {
     public final static String SEC_ERR_02 = "SEC_ERR_02";
     public final static String SEC_ERR_03 = "SEC_ERR_03";
     public final static String SEC_ERR_04 = "SEC_ERR_04";
+    public final static String SEC_ERR_05 = "SEC_ERR_05";
+    public final static String SEC_ERR_06 = "SEC_ERR_06";
     public final static String SEC_ERR_20 = "SEC_ERR_20";
     public final static String SEC_ERR_21 = "SEC_ERR_21";
     public final static String SEC_ERR_22 = "SEC_ERR_22";
@@ -49,6 +51,12 @@ public class SecurityConfigValidationErrors  {
         return MessageFormat.format("No authentication provider named {0} ",args);
     if (SEC_ERR_04==id)
         return MessageFormat.format("Bean {0} is not a valid password password encoder",args);
+    if (SEC_ERR_05==id)
+        return MessageFormat.format("Install unrestricted security policy files before using a strong configuration " +
+        		"password encrypter",args);
+    if (SEC_ERR_06==id)
+        return MessageFormat.format("Install unrestricted security policy files before using a strong user " +
+                        "password encrypter",args);    
     if (SEC_ERR_20==id)
         return MessageFormat.format("Class not found {0} ",args);
     if (SEC_ERR_21==id)
@@ -72,7 +80,7 @@ public class SecurityConfigValidationErrors  {
     if (SEC_ERR_35==id)
         return MessageFormat.format("User/group service {0} is used by authentication provider {1}",args);    
     if (SEC_ERR_40==id)
-        return MessageFormat.format("Minimum length of password must be greater 0",args);
+        return MessageFormat.format("Minimum length of password must be >= 0",args);
     if (SEC_ERR_41==id)
         return MessageFormat.format("Maximum length of password must be greater or equal to the minimum length",args);
     if (SEC_ERR_42==id)

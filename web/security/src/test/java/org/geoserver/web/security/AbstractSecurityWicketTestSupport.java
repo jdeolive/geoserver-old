@@ -74,7 +74,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     }
 
     protected void initialize(AbstractUserGroupServiceTest ugTest, AbstractRoleServiceTest gaTest) 
-        throws IOException {
+        throws Exception {
 
         this.ugTest = ugTest;
         this.gaTest = gaTest;
@@ -90,7 +90,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         initializeDataAccessRules();
     }
 
-    protected void initializeForXML() throws IOException {
+    protected void initializeForXML() throws Exception {
         initialize(new XMLUserGroupServiceTest() ,new XMLRoleServiceTest());
     }
 
@@ -135,9 +135,9 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         MemoryRoleServiceConfigImpl config = new MemoryRoleServiceConfigImpl();
         config.setName(getRORoleServiceName());
         config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
-        config.setLockingNeeded(false);
         config.setClassName(ReadOnlyRoleService.class.getName());
-        getSecurityManager().saveRoleService(config);
+        getSecurityManager().saveRoleService(config,
+                !(getSecurityManager().listRoleServices().contains(getRORoleServiceName())));
         gaService = getSecurityManager().loadRoleService(getRORoleServiceName());
         gaService.initializeFromConfig(config);
         gaService.setSecurityManager(GeoServerApplication.get().getSecurityManager());
@@ -154,10 +154,10 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName(getROUserGroupServiceName());        
         config.setClassName(ReadOnlyUGService.class.getName());
-        config.setLockingNeeded(false);
         config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        getSecurityManager().saveUserGroupService(config);
+        getSecurityManager().saveUserGroupService(config,
+                !(getSecurityManager().listUserGroupServices().contains(getROUserGroupServiceName())));
         ugService = getSecurityManager().loadUserGroupService(getROUserGroupServiceName());
         ugService.initializeFromConfig(config);
         ugService.setSecurityManager(GeoServerApplication.get().getSecurityManager());
@@ -273,12 +273,13 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
           return result;
       }
       
-      protected void createUserPasswordAuthProvider(String name, String ugName) throws IOException{
+      protected void createUserPasswordAuthProvider(String name, String ugName) throws Exception{
           UsernamePasswordAuthenticationProviderConfig config = new 
                   UsernamePasswordAuthenticationProviderConfig();
           config.setName(name);
           config.setClassName(UsernamePasswordAuthenticationProvider.class.getName());
           config.setUserGroupServiceName(ugName);
-          getSecurityManager().saveAuthenticationProvider(config);
+          getSecurityManager().saveAuthenticationProvider(config,
+                  !getSecurityManager().listAuthenticationProviders().contains(name));
       }
 }

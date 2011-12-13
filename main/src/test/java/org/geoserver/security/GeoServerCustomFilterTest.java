@@ -3,7 +3,6 @@ package org.geoserver.security;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.FilterChain;
@@ -14,18 +13,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geoserver.security.FilterChainEntry.Position;
-import org.geoserver.security.GeoServerCustomAuthTest.AuthProvider;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.test.GeoServerTestSupport;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class GeoServerCustomFilterTest extends GeoServerTestSupport {
@@ -52,7 +46,7 @@ public class GeoServerCustomFilterTest extends GeoServerTestSupport {
         config.setName("custom");
         config.setClassName(Filter.class.getName());
         config.setAssertAuth(assertSecurityContext);
-        secMgr.saveFilter(config);
+        secMgr.saveFilter(config,true);
 
         SecurityManagerConfig mgrConfig = secMgr.getSecurityConfig();
 

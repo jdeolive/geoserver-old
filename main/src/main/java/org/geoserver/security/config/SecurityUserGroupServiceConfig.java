@@ -21,13 +21,4 @@ public interface SecurityUserGroupServiceConfig extends SecurityNamedServiceConf
     public void   setPasswordEncoderName(String name);
     public String getPasswordPolicyName();
     public void   setPasswordPolicyName(String name);
-    /**
-     * Indicates if a {@link LockingUserGroupService} wrapper
-     * is created automatically to protect concurrent access
-     * to user/group objects.
-     * 
-     * @return
-     */
-    public boolean isLockingNeeded();
-    public void setLockingNeeded(boolean needed);
 }

@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.test.GeoServerTestSupport;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -42,7 +41,7 @@ public class GeoServerCustomAuthTest extends GeoServerTestSupport {
                 new UsernamePasswordAuthenticationProviderConfig();
         config.setName("custom");
         config.setClassName(AuthProvider.class.getName());
-        secMgr.saveAuthenticationProvider(config);
+        secMgr.saveAuthenticationProvider(config,true);
 
         SecurityManagerConfig mgrConfig = secMgr.getSecurityConfig();
         mgrConfig.getAuthProviderNames().add("custom");

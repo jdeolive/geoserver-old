@@ -10,8 +10,6 @@ package org.geoserver.web.security;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -25,10 +23,7 @@ import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
-import org.apache.wicket.markup.html.form.IChoiceRenderer;
-import org.apache.wicket.markup.html.form.PasswordTextField;
 import org.apache.wicket.markup.html.form.Radio;
-import org.apache.wicket.markup.html.form.RadioChoice;
 import org.apache.wicket.markup.html.form.RadioGroup;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
@@ -36,7 +31,6 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.geotools.util.logging.Logging;
 
-import com.ibm.db2.jcc.am.be;
 
 /**
  * Reusable form component for jdbc connect
@@ -134,7 +128,7 @@ public class JDBCConnectFormComponent extends
     TextField<String> jndiNameComponent;
     Label jndiNameLabel;
     TextField<String> usernameComponent;
-    PasswordTextField passwordComponent;
+    TextField<String> passwordComponent;
     TextField<String> driverNameComponent;
     TextField<String> connectURLComponent;
         
@@ -254,7 +248,7 @@ public class JDBCConnectFormComponent extends
         usernameComponent.setOutputMarkupId(true);
         add(usernameComponent);
         
-        passwordComponent = new PasswordTextField("password");
+        passwordComponent = new TextField<String>("password");
         passwordComponent.setVisible(!isJndi);
         passwordComponent.setOutputMarkupId(true);
         add(passwordComponent);

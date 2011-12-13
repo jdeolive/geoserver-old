@@ -33,12 +33,20 @@ import org.geotools.data.DataUtilities;
  */
 public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestSupport {
 
-    public GeoserverUserGroupService createUserGroupService(String name) throws IOException {
+    public GeoserverUserGroupService createUserGroupService(String name) throws Exception {
         return null;
     }
-    public GeoserverRoleService createRoleService(String name) throws IOException {
+    public GeoserverRoleService createRoleService(String name) throws Exception {
         return null;
     }
+
+    protected boolean isNewRoleService(String name) throws IOException {
+          return !(getSecurityManager().listRoleServices().contains(name));
+    }
+    
+    protected boolean isNewUGService(String name) throws IOException {
+        return !(getSecurityManager().listUserGroupServices().contains(name));
+  }
 
     public GeoserverUserGroupStore createStore(GeoserverUserGroupService service) throws IOException {
         return service.createStore();

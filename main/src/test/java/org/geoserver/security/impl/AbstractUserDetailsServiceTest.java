@@ -31,7 +31,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
 
     
     
-    protected void setServices(String serviceName) throws IOException{
+    protected void setServices(String serviceName) throws Exception{
         roleService=createRoleService(serviceName);
         usergroupService=createUserGroupService(serviceName);
         roleStore = createStore(roleService);
@@ -49,7 +49,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
                     getSecurityManager().loadUserGroupService("config").getName());
             assertTrue(roleService.canCreateStore());
             assertTrue(usergroupService.canCreateStore());
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Assert.fail(ex.getMessage());
         }
     }

@@ -12,15 +12,7 @@ public class JdbcJndiUserGroupServiceConfigImpl extends JdbcJndiSecurityServiceC
 
     protected String passwordEncoderName;
     protected String passwordPolicyName;
-    protected boolean lockingNeeded;
     
-    public boolean isLockingNeeded() {
-        return lockingNeeded;
-    }
-
-    public void setLockingNeeded(boolean lockingNeeded) {
-        this.lockingNeeded = lockingNeeded;
-    }
 
     
     public String getPasswordPolicyName() {

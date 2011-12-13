@@ -45,24 +45,29 @@ public abstract class GeoServerSecurityProvider {
         for (GeoServerSecurityProvider prov : 
             GeoServerExtensions.extensions(GeoServerSecurityProvider.class)) {
             
-            if (GeoServerAuthenticationProvider.class==serviceClass) {
+            if (GeoServerAuthenticationProvider.class==serviceClass &&
+                    prov.getAuthenticationProviderClass()!=null) {
                 if (prov.getAuthenticationProviderClass().getName().equals(className))
                     return prov;
             }
-            if (GeoserverUserGroupService.class==serviceClass) {
+            if (GeoserverUserGroupService.class==serviceClass &&
+                    prov.getUserGroupServiceClass()!=null) {
                 if (prov.getUserGroupServiceClass().getName().equals(className))
                     return prov;
             }
-            if (GeoserverRoleService.class==serviceClass) {
+            if (GeoserverRoleService.class==serviceClass &&
+                    prov.getRoleServiceClass()!=null) {
                 if (prov.getRoleServiceClass().getName().equals(className))
                     return prov;
 
             }
-            if (PasswordValidator.class==serviceClass) {
+            if (PasswordValidator.class==serviceClass &&
+                    prov.getPasswordValidatorClass()!=null ) {
                 if (prov.getPasswordValidatorClass().getName().equals(className))
                     return prov;
             }
-            if (GeoServerSecurityFilter.class==serviceClass) {
+            if (GeoServerSecurityFilter.class==serviceClass && 
+                    prov.getFilterClass()!=null) {
                 if (prov.getFilterClass().getName().equals(className))
                     return prov;
             }                        

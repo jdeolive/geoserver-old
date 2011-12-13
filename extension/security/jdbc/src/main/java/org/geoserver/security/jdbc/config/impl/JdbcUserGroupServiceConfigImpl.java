@@ -12,18 +12,8 @@ public class JdbcUserGroupServiceConfigImpl extends JdbcSecurityServiceConfigImp
     private static final long serialVersionUID = 1L;
     protected String passwordEncoderName;
     protected String passwordPolicyName;
-    protected boolean lockingNeeded;
     
-
     
-    public boolean isLockingNeeded() {
-        return lockingNeeded;
-    }
-
-    public void setLockingNeeded(boolean lockingNeeded) {
-        this.lockingNeeded = lockingNeeded;
-    }
-
     
     public String getPasswordPolicyName() {
         return passwordPolicyName;

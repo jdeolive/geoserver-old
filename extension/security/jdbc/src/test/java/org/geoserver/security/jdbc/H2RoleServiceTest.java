@@ -5,8 +5,6 @@
 
 package org.geoserver.security.jdbc;
 
-import java.io.IOException;
-
 import org.geoserver.security.GeoserverRoleService;
 
 public class H2RoleServiceTest extends JDBCRoleServiceTest {
@@ -18,7 +16,7 @@ public class H2RoleServiceTest extends JDBCRoleServiceTest {
     }
         
     @Override
-    public GeoserverRoleService createRoleService(String serviceName) throws IOException {
+    public GeoserverRoleService createRoleService(String serviceName) throws Exception {
         return JDBCTestSupport.createH2RoleService(getFixtureId(), getSecurityManager());
     }
 

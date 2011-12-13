@@ -22,7 +22,6 @@ public class MemoryRoleServiceTest extends AbstractRoleServiceTest {
         MemoryRoleServiceConfigImpl config = new MemoryRoleServiceConfigImpl();
         config.setName(name);
         config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
-        config.setLockingNeeded(false);
         GeoserverRoleService service = new MemoryRoleService();
         service.initializeFromConfig(config);
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));

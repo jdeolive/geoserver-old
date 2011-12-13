@@ -12,7 +12,6 @@ public class MemoryUserGroupServiceConfigImpl extends SecurityNamedServiceConfig
     private static final long serialVersionUID = 1L;
     protected String passwordEncoderName;
     protected String passwordPolicyName;
-    protected boolean lockingNeeded;
     protected String toBeEncrypted;
     
     public String getToBeEncrypted() {
@@ -24,14 +23,6 @@ public class MemoryUserGroupServiceConfigImpl extends SecurityNamedServiceConfig
     }
 
     
-    public boolean isLockingNeeded() {
-        return lockingNeeded;
-    }
-
-    public void setLockingNeeded(boolean lockingNeeded) {
-        this.lockingNeeded = lockingNeeded;
-    }
-
     public String getPasswordPolicyName() {
         return passwordPolicyName;
     }
