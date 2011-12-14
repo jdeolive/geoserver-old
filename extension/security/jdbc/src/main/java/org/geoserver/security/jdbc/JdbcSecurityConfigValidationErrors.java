@@ -20,15 +20,15 @@ public class JdbcSecurityConfigValidationErrors extends SecurityConfigValidation
     @Override
     public String formatErrorMsg(String id, Object... args) {
         
-        if (SEC_ERR_200==id)
+        if (SEC_ERR_200.equals(id))
             return MessageFormat.format("Driver name is mandatory",args);
-        if (SEC_ERR_201==id)
+        if (SEC_ERR_201.equals(id))
             return MessageFormat.format("Username is mandatory",args);
-        if (SEC_ERR_202==id)
+        if (SEC_ERR_202.equals(id))
             return MessageFormat.format("Jdbc connect url is mandatory",args);        
-        if (SEC_ERR_203==id)
+        if (SEC_ERR_203.equals(id))
             return MessageFormat.format("Driver named {0} is not in class path",args);        
-        if (SEC_ERR_210==id)
+        if (SEC_ERR_210.equals(id))
             return MessageFormat.format("JNDI name is mandatory",args);
 
 

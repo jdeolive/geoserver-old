@@ -317,7 +317,12 @@
     <property name="providerName" value="BC" />
     <property name="algorithm" value="PBEWITHSHA256AND256BITAES-CBC-BC" />
     <property name="availableWithoutStrongCryptogaphy" value="false" />
-  </bean>  
+  </bean>
+  <bean id="plainTextConfigPasswordEncoder"        
+    class="org.geoserver.security.password.GeoserverConfigPlainTextPasswordEncoder">
+    <property name="prefix" value="plain2" />
+  </bean>
+    
  
   
   <!-- password encoders for user passwords-->

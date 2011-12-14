@@ -22,6 +22,9 @@ import org.geoserver.web.security.config.list.NamedServicesPanel;
 
 public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecurityWicketTestSupport {
 
+    
+    public static final String FIRST_COLUM_PATH="itemProperties:0:component:link";
+
     protected AbstractSecurityPage tabbedPage;
     protected FormTester form;
     
@@ -71,6 +74,11 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
         tester.clickLink("tabbedPanel:panel:addNew");
     }
     
+    void clickRemove() {
+        tester.clickLink("tabbedPanel:panel:removeSelected");
+    }
+
+    
     protected DataView<SecurityNamedServiceConfig> getDataView() {
         return (DataView<SecurityNamedServiceConfig>)
                 getNamedServicesPanel().get("table:listContainer:items");
@@ -90,6 +98,18 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
        }
     return null;   
     }
+    
+    protected void clickNamedServiceConfig(String name) {
+        //<SecurityNamedServiceConfig>
+       Iterator<Item<SecurityNamedServiceConfig>> it = getDataView().getItems();
+       while (it.hasNext()) {
+           Item<SecurityNamedServiceConfig> item = it.next();
+           if (name.equals(item.getModelObject().getName()))
+               tester.clickLink(item.getPageRelativePath()+":"+FIRST_COLUM_PATH);
+       }
+       
+    }
+
 
     protected void setSecurityConfigName(String aName) {
         form.setValue("config.name", aName);

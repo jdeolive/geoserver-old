@@ -1,6 +1,5 @@
 package org.geoserver.security.password;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -52,6 +51,27 @@ public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
         assertTrue(encoder.isPasswordValid(enc, "", null));
         
     }
+    
+    public void testConfigPlainTextEncoder() {
+        GeoserverConfigPasswordEncoder encoder = 
+                GeoserverConfigPlainTextPasswordEncoder.get();
+
+        assertEquals(PasswordEncodingType.PLAIN,encoder.getEncodingType());
+        assertEquals("plain2:"+testPassword,encoder.encodePassword(testPassword, null));
+        assertTrue(encoder.isResponsibleForEncoding("plain2:123"));
+        assertFalse(encoder.isResponsibleForEncoding("digest1:123"));
+        
+        String enc = encoder.encodePassword(testPassword, null);
+        assertTrue(encoder.isPasswordValid(enc, testPassword, null));
+        assertFalse(encoder.isPasswordValid(enc, "plain:blabla", null));
+        
+        assertEquals(testPassword, encoder.decode(enc));
+        
+        enc = encoder.encodePassword("", null);
+        assertTrue(encoder.isPasswordValid(enc, "", null));
+        
+    }
+
     
     public void testDigestEncoder() {
         
@@ -192,7 +212,7 @@ public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
         List<GeoserverPasswordEncoder> encoders = GeoServerExtensions.extensions(GeoserverPasswordEncoder.class);
         boolean found = false;
         for (GeoserverPasswordEncoder enc : encoders) {
-            if (enc.getPrefix()!= null && enc.getPrefix().equals("plain2")) {
+            if (enc.getPrefix()!= null && enc.getPrefix().equals("plain4711")) {
                 found=true;
                 break;
             }            		

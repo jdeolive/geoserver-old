@@ -5,27 +5,7 @@
 
 package org.geoserver.security.config.validation;
 
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_01;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_02;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_03;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_04;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_05;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_06;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_20;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_21;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_22;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_23;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_24;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_30;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_31;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_32;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_33;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_34;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_35;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_40;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_41;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_42;
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.SEC_ERR_50;
+import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.*;
 
 
 import java.io.IOException;
@@ -82,19 +62,21 @@ public class SecurityConfigValidator {
         
         String encrypterName =config.getConfigPasswordEncrypterName();
         GeoserverConfigPasswordEncoder encoder = null;
-        if (encrypterName!=null && 
-                encrypterName.length()>0) {
-            Object o=null;
-            try {
-                o = GeoServerExtensions.bean(config.getConfigPasswordEncrypterName());
-            } catch (NoSuchBeanDefinitionException ex) {
-                throw createSecurityException(SEC_ERR_01, encrypterName);
-            }
-            if (o instanceof GeoserverConfigPasswordEncoder == false) {
-                throw createSecurityException(SEC_ERR_01, encrypterName);
-            }
-            encoder = (GeoserverConfigPasswordEncoder) o;
+        if (encrypterName==null || 
+                encrypterName.length()==0) {
+            throw createSecurityException(SEC_ERR_07);
         }
+        
+        Object o=null;
+        try {
+            o = GeoServerExtensions.bean(config.getConfigPasswordEncrypterName());
+        } catch (NoSuchBeanDefinitionException ex) {
+            throw createSecurityException(SEC_ERR_01, encrypterName);
+        }
+        if (o instanceof GeoserverConfigPasswordEncoder == false) {
+            throw createSecurityException(SEC_ERR_01, encrypterName);
+        }
+        encoder = (GeoserverConfigPasswordEncoder) o;
         
         if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false) {
             if (encoder!=null && encoder.isAvailableWithoutStrongCryptogaphy()==false)                
@@ -130,18 +112,17 @@ public class SecurityConfigValidator {
         try {
             aClass=Class.forName(className);
         } catch (ClassNotFoundException e) {
-            throw createSecurityException(SEC_ERR_20, extensionPoint,className);
+            throw createSecurityException(SEC_ERR_20, className);
         }
         if (extensionPoint.isAssignableFrom(aClass)==false) {
-            throw createSecurityException(SEC_ERR_21, 
-                    extensionPoint,
+            throw createSecurityException(SEC_ERR_21, extensionPoint,
                     className);
         }
     }
     
     protected void checkServiceName(Class<?> extensionPoint,String name) throws SecurityConfigException{
         if (name==null || name.isEmpty())
-                throw createSecurityException(SEC_ERR_22, extensionPoint, name);
+                throw createSecurityException(SEC_ERR_22);
             
             
     }
@@ -169,7 +150,7 @@ public class SecurityConfigValidator {
         checkServiceName(extensionPoint, config.getName());
         SortedSet<String> names= getNamesFor(extensionPoint);
         if (names.contains(config.getName()))
-            throw createSecurityException(SEC_ERR_23, extensionPoint,config.getName());
+            throw createSecurityException(prepareForExtPoint(extensionPoint, "SEC_ERR_23"), config.getName());
         
     }
     
@@ -178,7 +159,7 @@ public class SecurityConfigValidator {
         checkServiceName(extensionPoint, config.getName());
         SortedSet<String> names= getNamesFor(extensionPoint);
         if (names.contains(config.getName())==false)
-            throw createSecurityException(SEC_ERR_24, extensionPoint,config.getName());
+            throw createSecurityException(prepareForExtPoint(extensionPoint, "SEC_ERR_24"),config.getName());
         
     }
 
@@ -297,8 +278,8 @@ public class SecurityConfigValidator {
                 config.getUserGroupServiceName().length()>0) {
             if (getNamesFor(GeoserverUserGroupService.class).
                     contains(config.getUserGroupServiceName())==false)
-                    throw createSecurityException(SEC_ERR_24,
-                            GeoserverUserGroupService.class,config.getUserGroupServiceName() );
+                    throw createSecurityException(SEC_ERR_24d,
+                            config.getUserGroupServiceName() );
         }        
     }
     
@@ -337,7 +318,7 @@ public class SecurityConfigValidator {
         }
         
         if (getNamesFor(PasswordValidator.class).contains(policyName)==false) {
-            throw createSecurityException(SEC_ERR_24, PasswordValidator.class,policyName);
+            throw createSecurityException(SEC_ERR_24b,policyName);
         }
     }
     
@@ -350,7 +331,19 @@ public class SecurityConfigValidator {
         }
     }
 
-    
+    protected String prepareForExtPoint(Class<?> extPoint, String id) {
+        if (GeoServerAuthenticationProvider.class==extPoint)
+            return id+"a";
+        if (PasswordValidator.class==extPoint)
+            return id+"b";
+        if (GeoserverRoleService.class==extPoint)
+            return id+"c";
+        if (GeoserverUserGroupService.class==extPoint)
+            return id+"d";
+        if (GeoserverAuthenticationProcessingFilter.class==extPoint)
+            return id+"e";
+        throw new RuntimeException("Unkonw extension point: "+extPoint.getName());
+    }
         
     /**
      * Helper method for creating a proper

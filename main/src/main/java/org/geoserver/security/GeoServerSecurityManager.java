@@ -701,6 +701,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         try {
             //set the new configuration
             init(config);
+            if (config.getConfigPasswordEncrypterName().equals(
+                    oldConfig.getConfigPasswordEncrypterName())==false){
+                updateConfigurationFilesWithEncryptedFields();
+            }
 
             //save out new configuration
             xStreamPersist(new File(getSecurityRoot(), CONFIG_FILE_NAME), config, globalPersister());
@@ -950,7 +954,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             LOGGER.info("Renamed "+usersFile.getCanonicalPath() + " to " +
                     oldUserFile.getCanonicalPath());
         }
-                
+                        
         LOGGER.info("End security migration");
     }
 
@@ -1314,6 +1318,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      */
     public  void updateConfigurationFilesWithEncryptedFields() throws IOException{
         // rewrite stores in catalog
+        LOGGER.info("Start encrypting configuration passwords using "+getConfigPasswordEncrypterName());
         Catalog catalog = (Catalog)
                 GeoServerExtensions.bean("catalog");
         List<StoreInfo> stores = catalog.getStores(StoreInfo.class);
@@ -1356,8 +1361,27 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 }                    
             }
         }
-        // TODO, add rewrite for auth configurations
         
+        for (String name : listAuthenticationProviders()) {
+            SecurityNamedServiceConfig config = authProviderHelper.loadConfig(name);
+            for (Class<?> classWithEncryption : configClasses) {
+                if (config.getClass().isAssignableFrom(classWithEncryption)) {
+                    authProviderHelper.saveConfig(config);
+                    break;
+                }                    
+            }
+        }
+        
+        for (String name : listFilters()) {
+            SecurityNamedServiceConfig config = filterHelper.loadConfig(name);
+            for (Class<?> classWithEncryption : configClasses) {
+                if (config.getClass().isAssignableFrom(classWithEncryption)) {
+                    filterHelper.saveConfig(config);
+                    break;
+                }                    
+            }
+        }
+        LOGGER.info("End encrypting configuration passwords");
     }
  
     class AuthProviderHelper extends HelperBase<GeoServerAuthenticationProvider, SecurityAuthProviderConfig>{

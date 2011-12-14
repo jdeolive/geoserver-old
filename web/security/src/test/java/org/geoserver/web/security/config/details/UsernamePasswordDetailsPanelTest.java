@@ -48,7 +48,9 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
     
     
                                 
-    public void testAdd() {
+    public void testAdd() throws Exception{
+        initializeForXML();
+        
         activatePanel();
                 
         assertEquals(1, countItmes());
@@ -90,8 +92,7 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
         assertEquals(UsernamePasswordAuthenticationProvider.class.getName(),authConfig.getClassName());
         assertEquals("default",authConfig.getUserGroupServiceName());
         
-        // test add with name clash
-        
+        // test add with name clash        
         clickAddNew();        
         detailsPage = (AuthenticationProviderPage) tester.getLastRenderedPage();
         newFormTester();
@@ -99,12 +100,39 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
         setSecurityConfigClassName(UsernamePasswordAuthenticationProvider.class.getName());
         setUGName("default");
         clickSave(); // should not work
-        //tester.assertRenderedPage(detailsPage.getClass());
+        tester.assertRenderedPage(detailsPage.getClass());
         testErrorMessagesWithRegExp(".*default2.*");
         clickCancel();
         tester.assertRenderedPage(tabbedPage.getClass());
+        // end test add with name clash        
         
-        print(detailsPage,true,true);
+        // start test modify        
+        clickNamedServiceConfig("default");
+        tester.assertRenderedPage(AuthenticationProviderPage.class);
+        detailsPage = (AuthenticationProviderPage) tester.getLastRenderedPage();
+        newFormTester();
+        setUGName("test");
+        clickCancel();
+        tester.assertRenderedPage(tabbedPage.getClass());
+
+        authConfig=
+                (UsernamePasswordAuthenticationProviderConfig)
+                getSecurityNamedServiceConfig("default");
+        assertEquals("default",authConfig.getUserGroupServiceName());
         
+        clickNamedServiceConfig("default2");
+        detailsPage = (AuthenticationProviderPage) tester.getLastRenderedPage();
+        newFormTester();
+        setUGName("test");
+        clickSave();
+        tester.assertRenderedPage(tabbedPage.getClass());
+        
+        authConfig=
+                (UsernamePasswordAuthenticationProviderConfig)
+                getSecurityNamedServiceConfig("default2");
+        assertEquals("test",authConfig.getUserGroupServiceName());
+
+        // test remove
+        print(tabbedPage,true,true);
     }
 }
