@@ -6,7 +6,9 @@
 package org.geoserver.web.security.config.list;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
+import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -36,10 +38,19 @@ public class AuthenticationServicesPanel extends NamedServicesPanel {
                 Property<SecurityAuthProviderConfig> property) {
             Component comp = super.getComponentForProperty(id, itemModel, property);
             if (comp!=null) return comp;
+            if (property == AuthProviderListProvider.USERGROUPSERVICENAME) {
+                return new Label(id,property.getModel(itemModel).getObject().toString());
+            }
+
             throw new RuntimeException("Unknow propterty: "+property.getName());
         }
 
         
+    }
+    
+    @Override
+    protected Class<?> getServiceClass() {
+        return GeoServerAuthenticationProvider.class;
     }
     
     @Override

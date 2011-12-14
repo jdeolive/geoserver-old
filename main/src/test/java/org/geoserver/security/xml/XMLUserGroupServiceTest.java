@@ -38,7 +38,8 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     protected void tearDownInternal() throws Exception {
         super.tearDownInternal();
         if (getSecurityManager().listUserGroupServices().contains("test")) {
-            getSecurityManager().removeUserGroupService("test");
+            getSecurityManager().removeUserGroupService(
+                    getSecurityManager().loadUserGroupServiceConfig("test"));
         }
     }
 

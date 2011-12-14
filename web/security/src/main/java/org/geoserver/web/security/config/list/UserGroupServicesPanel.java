@@ -8,6 +8,8 @@ package org.geoserver.web.security.config.list;
 import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
+import org.geoserver.security.GeoServerAuthenticationProvider;
+import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -48,6 +50,12 @@ public class UserGroupServicesPanel extends NamedServicesPanel {
 
         
     }
+    
+    @Override
+    protected Class<?> getServiceClass() {
+        return GeoserverUserGroupService.class;
+    }
+
     
     @Override
     protected  AbstractSecurityPage getEditPage(String serviceName) {

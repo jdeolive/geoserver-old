@@ -1,8 +1,8 @@
 package org.geoserver.security.xml;
 
 import static org.geoserver.security.xml.XMLSecurityConfigValidationErrors.SEC_ERR_100;
-import static org.geoserver.security.xml.XMLSecurityConfigValidationErrors.SEC_ERR_101;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.geoserver.security.config.SecurityRoleServiceConfig;
@@ -25,7 +25,6 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
     @Override
     protected void setUpInternal() throws Exception {
         super.setUpInternal();
-        validator = new XMLSecurityConfigValidator();          
     }
         
     protected SecurityUserGroupServiceConfig getUGConfig(String name, Class<?> aClass,
@@ -50,7 +49,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         return config;
     }
 
-    public void testRoleConfig() {
+    public void testRoleConfig() throws IOException{
         
         super.testRoleConfig();
         
@@ -64,7 +63,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         try {
             config.setName("default2");
             config.setCheckInterval(-1l);
-            validator.validateAddRoleService(config);                         
+            getSecurityManager().saveRoleService(config, true);                                     
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_100,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -77,7 +76,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         try {
             config.setName(XMLRoleService.DEFAULT_NAME);
             config.setCheckInterval(999l);
-            validator.validateModifiedRoleService(config);                         
+            getSecurityManager().saveRoleService(config, false);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_100,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -120,7 +119,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
     }
 
     
-    public void testUserGroupConfig() {
+    public void testUserGroupConfig() throws IOException{
 
         super.testUserGroupConfig();
         XMLFileBasedUserGroupServiceConfigImpl config = (XMLFileBasedUserGroupServiceConfigImpl) 
@@ -132,7 +131,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         try {
             config.setName("default2");
             config.setCheckInterval(-1l);
-            validator.validateAddUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_100,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -145,7 +144,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         try {
             config.setName(XMLUserGroupService.DEFAULT_NAME);
             config.setCheckInterval(999l);
-            validator.validateModifiedUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, false);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_100,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);

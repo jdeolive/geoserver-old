@@ -35,7 +35,8 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
     protected void tearDownInternal() throws Exception {
         super.tearDownInternal();
         if (getSecurityManager().listRoleServices().contains("test")) {
-            getSecurityManager().removeRoleService("test");
+            getSecurityManager().removeRoleService(
+                    getSecurityManager().loadRoleServiceConfig("test"));
         }
     }
     

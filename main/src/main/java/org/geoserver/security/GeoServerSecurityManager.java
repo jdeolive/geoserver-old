@@ -445,7 +445,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         if (isNew)
             validator.validateAddPasswordPolicy(config);
         else
-            validator.validateAddPasswordPolicy(config);
+            validator.validateModifiedPasswordPolicy(config);
         
         passwordValidatorHelper.saveConfig(config);
     }
@@ -454,11 +454,11 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Removes a role service configuration.
      * 
-     * @param name The name of the role service configuration.
+     * @param name The  role service configuration.
      */
-    public void removeRoleService(String name) throws IOException,SecurityConfigException {
+    public void removeRoleService(SecurityRoleServiceConfig config) throws IOException,SecurityConfigException {
 
-        SecurityRoleServiceConfig config = loadRoleServiceConfig(name);
+        
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
                         GeoserverRoleService.class,
@@ -466,25 +466,24 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         validator.validateRemoveRoleService(config);
         
-        roleServices.remove(name);
-        roleServiceHelper.removeConfig(name);
+        roleServices.remove(config.getName());
+        roleServiceHelper.removeConfig(config.getName());
     }
     
     /**
      * Removes a password validator configuration.
      * 
-     * @param name The name of the password validator configuration.
+     * @param  The  password validator configuration.
      */
-    public void removePasswordValidator(String name) throws IOException,SecurityConfigException {
-        PasswordPolicyConfig config = loadPasswordPolicyConfig(name);
+    public void removePasswordValidator(PasswordPolicyConfig config) throws IOException,SecurityConfigException {
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
                         PasswordValidator.class,
                         config.getClassName());
 
         validator.validateRemovePasswordPolicy(config);
-        passwordValidators.remove(name);        
-        passwordValidatorHelper.removeConfig(name);
+        passwordValidators.remove(config.getName());        
+        passwordValidatorHelper.removeConfig(config.getName());
     }
 
 
@@ -555,10 +554,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Removes a user group service configuration.
      * 
-     * @param name The name of the user group service configuration.
+     * @param name The  user group service configuration.
      */
-    public void removeUserGroupService(String name) throws IOException,SecurityConfigException {
-        SecurityUserGroupServiceConfig config = loadUserGroupServiceConfig(name);
+    public void removeUserGroupService(SecurityUserGroupServiceConfig config) throws IOException,SecurityConfigException {
+        
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
                         GeoserverUserGroupService.class,
@@ -566,8 +565,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         validator.validateRemoveUserGroupService(config);
                  
-        userGroupServices.remove(name);
-        userGroupServiceHelper.removeConfig(name);
+        userGroupServices.remove(config.getName());
+        userGroupServiceHelper.removeConfig(config.getName());
     }
 
     /**
@@ -638,6 +637,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     
     public void saveFilter(SecurityNamedServiceConfig config, boolean isNew) 
             throws IOException,SecurityConfigException {
+        // TODO
 //        SecurityConfigValidator validator = 
 //                SecurityConfigValidator.getConfigurationValiator(
 //                        GeoserverAuthenticationProcessingFilter.class,
@@ -653,26 +653,25 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Removes an authentication provider configuration.
      * 
-     * @param name The name of the authentication provider configuration.
+     * @param name The  authentication provider configuration.
      */
-    public void removeAuthenticationProvider(String name) throws IOException,SecurityConfigException {
-        SecurityAuthProviderConfig config = loadAuthenticationProviderConfig(name);
+    public void removeAuthenticationProvider(SecurityAuthProviderConfig config) throws IOException,SecurityConfigException {        
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(GeoServerAuthenticationProvider.class,
                         config.getClassName());
         validator.validateRemoveAuthProvider(config);        
-        authProviderHelper.removeConfig(name);
+        authProviderHelper.removeConfig(config.getName());
     }
     
 
-    public void removeAuthenticationFilter(String name) throws IOException,SecurityConfigException {
-//        SecurityNamedServiceConfig config = loadFilterConfig(name);
+    public void removeAuthenticationFilter(SecurityNamedServiceConfig config) throws IOException,SecurityConfigException {
+        // TODO
 //        SecurityConfigValidator validator = 
 //                SecurityConfigValidator.getConfigurationValiator(
 //                        GeoserverAuthenticationProcessingFilter.class,
 //                        config.getClassName());
 //        validator.validateRemoveFilter(config);        
-        filterHelper.removeConfig(name);
+        filterHelper.removeConfig(config.getName());
     }
 
 
