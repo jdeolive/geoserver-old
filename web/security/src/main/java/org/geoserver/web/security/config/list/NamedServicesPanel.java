@@ -8,11 +8,11 @@ import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
-import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.config.SelectionNamedServiceRemovalLink;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
@@ -31,7 +31,8 @@ public abstract class NamedServicesPanel extends Panel {
             super(id, dataProvider,selectable);
             
         }
-
+        
+        
         @Override
         protected Component getComponentForProperty(String id, IModel itemModel,
                 Property<T> property) {
@@ -46,8 +47,8 @@ public abstract class NamedServicesPanel extends Panel {
         
         @Override
         protected void onSelectionUpdate(AjaxRequestTarget target) {
-            //removal.setEnabled(namedServices.getSelection().size() > 0);               
-            //target.addComponent(removal);
+            removal.setEnabled(namedServices.getSelection().size() > 0);               
+            target.addComponent(removal);
         }
 
         Component editLink(String id, IModel<SecurityNamedServiceConfig> itemModel, Property<T> property) {
@@ -64,12 +65,13 @@ public abstract class NamedServicesPanel extends Panel {
     
     protected GeoServerTablePanel<? extends SecurityNamedServiceConfig> namedServices;
     protected GeoServerDialog dialog;
-//    protected SelectionRoleRemovalLink removal;
+    protected SelectionNamedServiceRemovalLink removal;
     protected Link<?> add;
 
     protected abstract NamedServicesTablePanel<? extends SecurityNamedServiceConfig> getTablePanel();
     protected abstract AbstractSecurityPage getEditPage(String serviceName);
     protected abstract AbstractSecurityPage getNewPage();
+    protected abstract Class<?> getServiceClass();
     
     public NamedServicesPanel(String id) {
         super(id);
@@ -82,9 +84,6 @@ public abstract class NamedServicesPanel extends Panel {
     }
     
     protected void headerPanel() {
-//        Fragment header = new Fragment("header", "header", this);
-
-        // the add button
         add(add=new Link<Object>("addNew") {
             @Override
             public void onClick() {
@@ -92,11 +91,12 @@ public abstract class NamedServicesPanel extends Panel {
             }                        
         });        
                                 
-//        // the removal button
-//        header.add(removal = new SelectionRoleRemovalLink(roleServiceName,"removeSelected", namedServices, dialog));
-//        removal.setOutputMarkupId(true);
-//        removal.setEnabled(false);
-//        removal.setVisible(hasRoleStore(roleServiceName));
+        // the removal button
+        add(removal = new SelectionNamedServiceRemovalLink("removeSelected", 
+                (GeoServerTablePanel<SecurityNamedServiceConfig>) namedServices, dialog,getServiceClass()));
+        removal.setOutputMarkupId(true);
+        removal.setEnabled(false);
+        
 
     }
 

@@ -6,6 +6,7 @@ import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_203;
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_210;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 import org.geoserver.security.config.SecurityRoleServiceConfig;
@@ -29,7 +30,6 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
     @Override
     protected void setUpInternal() throws Exception {
         super.setUpInternal();
-        validator = new JdbcSecurityConfigValidator();          
     }
         
     protected SecurityUserGroupServiceConfig getUGConfig(String name, Class<?> aClass,
@@ -70,7 +70,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
     }
 
 
-    public void testRoleConfig() {
+    public void testRoleConfig() throws IOException {
         
         super.testRoleConfig();
         
@@ -94,7 +94,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             configJNDI.setJndiName("");
-            validator.validateAddRoleService(configJNDI);                         
+            getSecurityManager().saveRoleService(configJNDI, true);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_210,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -106,7 +106,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setDriverClassName("");
-            validator.validateAddRoleService(config);                         
+            getSecurityManager().saveRoleService(config, true);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_200,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -119,7 +119,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setUserName("");
-            validator.validateAddRoleService(config);                         
+            getSecurityManager().saveRoleService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_201,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -132,7 +132,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setConnectURL(null);
-            validator.validateAddRoleService(config);                         
+            getSecurityManager().saveRoleService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_202,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -143,7 +143,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
         config.setConnectURL("jdbc:connect");
         try {            
-            validator.validateAddRoleService(config);                         
+            getSecurityManager().saveRoleService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_203,ex.getErrorId());
             assertEquals("a.b.c",ex.getArgs()[0]);
@@ -155,7 +155,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
     }
 
     
-    public void testUserGroupConfig() {
+    public void testUserGroupConfig() throws IOException {
 
         super.testUserGroupConfig();
         
@@ -180,7 +180,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             configJNDI.setJndiName("");
-            validator.validateAddUserGroupService(configJNDI);                         
+            getSecurityManager().saveUserGroupService(configJNDI, true);                                     
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_210,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -192,7 +192,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setDriverClassName("");
-            validator.validateAddUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_200,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -205,7 +205,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setUserName("");
-            validator.validateAddUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_201,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -218,7 +218,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setConnectURL(null);
-            validator.validateAddUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_202,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -229,7 +229,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
         config.setConnectURL("jdbc:connect");
         try {            
-            validator.validateAddUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_203,ex.getErrorId());
             assertEquals("a.b.c",ex.getArgs()[0]);

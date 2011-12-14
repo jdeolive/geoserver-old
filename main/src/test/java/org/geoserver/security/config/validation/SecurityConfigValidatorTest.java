@@ -23,6 +23,7 @@ import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
 import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.MemoryRoleService;
 import org.geoserver.security.impl.MemoryUserGroupService;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
 import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
@@ -39,15 +40,6 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
 
     
     static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
-    protected SecurityConfigValidator validator;
-    
-    
-    @Override
-    protected void setUpInternal() throws Exception {
-        super.setUpInternal();
-         
-         
-    }
         
     public void testMasterConfigValidation() throws Exception{
         SecurityManagerConfig config = new SecurityManagerConfigImpl();
@@ -129,6 +121,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
     
     public void testNamedServices() {
         boolean fail;
+        SecurityConfigValidator validator = new SecurityConfigValidator(); 
         Class<?>[] extensionPoints = new Class<?>[] {
                 GeoserverUserGroupService.class,
                 GeoserverRoleService.class,
@@ -330,7 +323,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
     }
 
     
-    public void testPasswordPolicy() {
+    public void testPasswordPolicy() throws IOException{
         
         PasswordPolicyConfig config = getPolicyConfig(PasswordValidator.DEFAULT_NAME, PasswordValidatorImpl.class, -1,10);
         boolean fail;
@@ -338,7 +331,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName("default2");
-            validator.validateAddPasswordPolicy(config);                         
+            getSecurityManager().savePasswordPolicy(config, true);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_40,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -350,7 +343,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName(PasswordValidator.DEFAULT_NAME);
-            validator.validateModifiedPasswordPolicy(config);                         
+            getSecurityManager().savePasswordPolicy(config, false);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_40,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -365,7 +358,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName("default2");
-            validator.validateAddPasswordPolicy(config);                         
+            getSecurityManager().savePasswordPolicy(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_41,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -377,7 +370,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName(PasswordValidator.DEFAULT_NAME);
-            validator.validateModifiedPasswordPolicy(config);                         
+            getSecurityManager().savePasswordPolicy(config, false);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_41,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -392,7 +385,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName("");
-            validator.validateRemovePasswordPolicy(config);                         
+            getSecurityManager().removePasswordValidator(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_22,ex.getErrorId());
             assertEquals(PasswordValidator.class,ex.getArgs()[0]);
@@ -406,7 +399,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName(PasswordValidator.DEFAULT_NAME);
-            validator.validateRemovePasswordPolicy(config);                         
+            getSecurityManager().removePasswordValidator(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_34,ex.getErrorId());
             assertEquals(PasswordValidator.DEFAULT_NAME,ex.getArgs()[0]);
@@ -420,7 +413,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName(PasswordValidator.MASTERPASSWORD_NAME);
-            validator.validateRemovePasswordPolicy(config);                         
+            getSecurityManager().removePasswordValidator(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_42,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -432,9 +425,9 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         
     }
 
-    public void testRoleConfig() {
+    public void testRoleConfig() throws IOException {
         
-        SecurityRoleServiceConfig config = getRoleConfig(XMLRoleService.DEFAULT_NAME, GeoserverRoleService.class, 
+        SecurityRoleServiceConfig config = getRoleConfig(XMLRoleService.DEFAULT_NAME, MemoryRoleService.class, 
                 GeoserverRole.ADMIN_ROLE.getAuthority());
         boolean fail;
 
@@ -443,7 +436,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName("default2");
             config.setAdminRoleName("adminrole");
-            validator.validateAddRoleService(config);                         
+            getSecurityManager().saveRoleService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_50,ex.getErrorId());
             assertEquals(GeoserverRole.ADMIN_ROLE.getAuthority(),ex.getArgs()[0]);
@@ -456,7 +449,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName(XMLRoleService.DEFAULT_NAME);
             config.setAdminRoleName("adminrole");
-            validator.validateModifiedRoleService(config);                         
+            getSecurityManager().saveRoleService(config, false);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_50,ex.getErrorId());
             assertEquals(GeoserverRole.ADMIN_ROLE.getAuthority(),ex.getArgs()[0]);
@@ -470,7 +463,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName(null);
-            validator.validateRemoveRoleService(config);                         
+            getSecurityManager().removeRoleService(config) ;                        
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_22,ex.getErrorId());
             assertEquals(GeoserverRoleService.class,ex.getArgs()[0]);
@@ -484,7 +477,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName(XMLRoleService.DEFAULT_NAME);
-            validator.validateRemoveRoleService(config);                         
+            getSecurityManager().removeRoleService(config) ;                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_30,ex.getErrorId());
             assertEquals(XMLRoleService.DEFAULT_NAME,ex.getArgs()[0]);
@@ -507,7 +500,6 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName("default2");            
-            //validator.validateAddAuthProvider(config);
             getSecurityManager().saveAuthenticationProvider(config, true);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_24,ex.getErrorId());
@@ -535,8 +527,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName("");
-            //validator.validateRemoveAuthProvider(config);                  
-            getSecurityManager().removeAuthenticationProvider(config.getName());
+            getSecurityManager().removeAuthenticationProvider(config);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_22,ex.getErrorId());
             assertEquals(GeoServerAuthenticationProvider.class,ex.getArgs()[0]);
@@ -551,8 +542,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName(GeoServerAuthenticationProvider.DEFAULT_NAME);
-            //validator.validateRemoveAuthProvider(config);
-            getSecurityManager().removeAuthenticationProvider(config.getName());
+            getSecurityManager().removeAuthenticationProvider(config);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_31,ex.getErrorId());
             assertEquals(GeoServerAuthenticationProvider.DEFAULT_NAME,ex.getArgs()[0]);
@@ -564,7 +554,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
     }
 
 
-    public void testUserGroupConfig() {
+    public void testUserGroupConfig() throws IOException {
         
         SecurityUserGroupServiceConfig config = getUGConfig(XMLUserGroupService.DEFAULT_NAME, MemoryUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME);
@@ -574,7 +564,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName("default2");
             config.setPasswordEncoderName("xxx");
-            validator.validateAddUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_04,ex.getErrorId());
             assertEquals("xxx",ex.getArgs()[0]);
@@ -587,7 +577,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
             config.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.StrongPrototypeName);
             fail = false;
             try {
-                validator.validateAddUserGroupService(config);
+                getSecurityManager().saveUserGroupService(config, true);
             } catch (SecurityConfigException ex){
                 assertEquals(SEC_ERR_06,ex.getErrorId());
                 LOGGER.info(ex.getMessage());
@@ -601,7 +591,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName(XMLUserGroupService.DEFAULT_NAME);
             config.setPasswordEncoderName("xxx");
-            validator.validateModifiedUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, false);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_04,ex.getErrorId());
             assertEquals("xxx",ex.getArgs()[0]);
@@ -614,7 +604,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName("default2");
             config.setPasswordEncoderName("");
-            validator.validateAddUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_32,ex.getErrorId());
             assertEquals("default2",ex.getArgs()[0]);
@@ -627,7 +617,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName(XMLUserGroupService.DEFAULT_NAME);
             config.setPasswordEncoderName(null);
-            validator.validateModifiedUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, false);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_32,ex.getErrorId());
             assertEquals(XMLUserGroupService.DEFAULT_NAME,ex.getArgs()[0]);
@@ -644,7 +634,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName("default2");
             config.setPasswordPolicyName("default2");
-            validator.validateAddUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_24,ex.getErrorId());
             assertEquals(PasswordValidator.class,ex.getArgs()[0]);
@@ -658,7 +648,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName(XMLUserGroupService.DEFAULT_NAME);
             config.setPasswordPolicyName("default2");
-            validator.validateModifiedUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, false);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_24,ex.getErrorId());
             assertEquals(PasswordValidator.class,ex.getArgs()[0]);
@@ -672,7 +662,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName("default2");
             config.setPasswordPolicyName("");
-            validator.validateAddUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, true);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_33,ex.getErrorId());
             assertEquals("default2",ex.getArgs()[0]);
@@ -685,7 +675,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         try {
             config.setName(XMLUserGroupService.DEFAULT_NAME);
             config.setPasswordPolicyName(null);
-            validator.validateModifiedUserGroupService(config);                         
+            getSecurityManager().saveUserGroupService(config, false);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_33,ex.getErrorId());
             assertEquals(XMLUserGroupService.DEFAULT_NAME,ex.getArgs()[0]);
@@ -699,7 +689,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName(null);
-            validator.validateRemoveUserGroupService(config);                         
+            getSecurityManager().removeUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_22,ex.getErrorId());
             assertEquals(GeoserverUserGroupService.class,ex.getArgs()[0]);
@@ -713,7 +703,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         fail=false;
         try {
             config.setName(XMLUserGroupService.DEFAULT_NAME);
-            validator.validateRemoveUserGroupService(config);                         
+            getSecurityManager().removeUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_35,ex.getErrorId());
             assertEquals(XMLUserGroupService.DEFAULT_NAME,ex.getArgs()[0]);
