@@ -18,9 +18,9 @@ public class XMLSecurityConfigValidationErrors extends SecurityConfigValidationE
     @Override
     public String formatErrorMsg(String id, Object... args) {
         
-        if (SEC_ERR_100==id)
+        if (SEC_ERR_100.equals(id))
             return MessageFormat.format("Check interval in millisecs can be 0 (disabled) or >= 1000",args);
-        if (SEC_ERR_101==id)
+        if (SEC_ERR_101.equals(id))
             return MessageFormat.format("File name must be {0}",args);        
         return super.formatErrorMsg(id, args);
     }

@@ -132,8 +132,7 @@ public class ManagerConfigPanel extends Panel {
             protected boolean isDisabled(String object, int index, String selected) {
                 return disabledEncoders.contains(object);
             }
-        };                
-        passwordEncrypters.setNullValid(true);
+        };                        
         form.add(passwordEncrypters);
         
         

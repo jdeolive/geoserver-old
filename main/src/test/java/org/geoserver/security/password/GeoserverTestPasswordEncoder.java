@@ -7,7 +7,7 @@ public class GeoserverTestPasswordEncoder extends  AbstractGeoserverPasswordEnco
 
     @Override
     public String getPrefix() {
-        return "plain2";
+        return "plain4711";
     }
 
     @Override

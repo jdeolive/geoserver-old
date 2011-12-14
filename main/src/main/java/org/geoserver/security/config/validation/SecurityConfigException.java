@@ -18,6 +18,8 @@ public class SecurityConfigException extends Exception {
     private String errorId;
     private Object args[];
     
+
+
     /**
      * errorid is a unique identifier, message is a 
      * default error description, args are message arguments
@@ -27,13 +29,12 @@ public class SecurityConfigException extends Exception {
      * @param message
      * @param args 
      */
-    public SecurityConfigException(String errorId ,String message, Object... args) {
+    public SecurityConfigException(String errorId ,String message, Object... args) {        
         super(message);
         this.errorId=errorId;
-        this.args=args;
+        this.args=args;        
     }
-
-    
+        
     public String getErrorId() {
         return errorId;
     }
