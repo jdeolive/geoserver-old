@@ -1,7 +1,9 @@
 <!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
 <beans>
 
-  <bean id="ldapSecurityProvider" class="org.geoserver.security.ldap.LDAPSecurityProvider"/>
+  <bean id="ldapSecurityProvider" class="org.geoserver.security.ldap.LDAPSecurityProvider">
+    <constructor-arg ref="geoServerSecurityManager"/>
+  </bean>
   
   <!--bean id="ldapContext" class="org.springframework.security.ldap.DefaultSpringSecurityContextSource">
     <constructor-arg value="ldap://192.168.0.108:389/dc=skunkworks,dc=org"/>

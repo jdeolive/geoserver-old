@@ -12,6 +12,7 @@ public class LDAPSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
     String userDnPattern;
     String groupSearchBase;
     String groupSearchFilter;
+    String userGroupService;
     Boolean useTLS;
 
     public String getServerURL() {
@@ -46,5 +47,12 @@ public class LDAPSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
     }
     public Boolean isUseTLS() {
         return useTLS;
+    }
+
+    public String getUserGroupService() {
+        return userGroupService;
+    }
+    public void setUserGroupService(String userGroupService) {
+        this.userGroupService = userGroupService;
     }
 }
