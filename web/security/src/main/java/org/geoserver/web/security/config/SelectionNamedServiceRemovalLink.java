@@ -33,6 +33,7 @@ public class SelectionNamedServiceRemovalLink extends AjaxLink<Object> {
     GeoServerTablePanel<SecurityNamedServiceConfig> namedServices;
     GeoServerDialog dialog;
     GeoServerDialog.DialogDelegate delegate;
+
     ConfirmRemovalNamedServicePanel removePanel;
     Class<?> serviceClass;
     
@@ -130,5 +131,9 @@ public class SelectionNamedServiceRemovalLink extends AjaxLink<Object> {
         }        
         return null;
     }
-
+    
+    public GeoServerDialog.DialogDelegate getDelegate() {
+        return delegate;
+    }
+    
 }

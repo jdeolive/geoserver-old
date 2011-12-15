@@ -9,21 +9,26 @@ package org.geoserver.web.security.config.details;
 import java.util.Iterator;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.util.tester.FormTester;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.web.ComponentBuilder;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
+import org.geoserver.web.security.GeoserverTablePanelTestPage;
 import org.geoserver.web.security.config.list.NamedServicesPanel;
 
 public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecurityWicketTestSupport {
 
     
     public static final String FIRST_COLUM_PATH="itemProperties:0:component:link";
+    public static final String CHECKBOX_PATH="selectItemContainer:selectItem";
 
     protected AbstractSecurityPage tabbedPage;
     protected FormTester form;
@@ -78,6 +83,12 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
         tester.clickLink("tabbedPanel:panel:removeSelected");
     }
 
+    protected Component getRemoveLink() {
+        Component result =tester.getLastRenderedPage().get("tabbedPanel:panel:removeSelected");
+        assertNotNull(result);
+        return result;
+    }
+
     
     protected DataView<SecurityNamedServiceConfig> getDataView() {
         return (DataView<SecurityNamedServiceConfig>)
@@ -109,7 +120,56 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
        }
        
     }
+    
 
+    protected void checkNamedServiceConfig(String name) {
+        //<SecurityNamedServiceConfig>
+       Iterator<Item<SecurityNamedServiceConfig>> it = getDataView().getItems();
+       while (it.hasNext()) {
+           Item<SecurityNamedServiceConfig> item = it.next();
+           if (name.equals(item.getModelObject().getName()))
+               tester.executeAjaxEvent(item.getPageRelativePath()+":"+CHECKBOX_PATH,"onclick");
+       }       
+    }
+
+    
+    protected void doRemove(String pathForLink) throws Exception {
+        
+        
+        GeoserverTablePanelTestPage testPage = 
+         new GeoserverTablePanelTestPage(new ComponentBuilder() {            
+            private static final long serialVersionUID = 1L;
+
+            public Component buildComponent(String id) {
+                try {
+                    return tabbedPage;
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+        
+        tester.startPage(testPage);
+                
+        String selectAllPath = testPage.getWicketPath()+":tabbedPanel:panel:table:listContainer:selectAllContainer:selectAll";        
+        tester.assertComponent(selectAllPath, CheckBox.class);
+        
+        FormTester ft = tester.newFormTester(GeoserverTablePanelTestPage.FORM);
+        ft.setValue(testPage.getComponentId()+":tabbedPanel:panel:table:listContainer:selectAllContainer:selectAll", "true");
+        tester.executeAjaxEvent(selectAllPath, "onclick");
+        
+        ModalWindow w  = (ModalWindow) tester.getLastRenderedPage().get("tabbedPanel:panel:dialog:dialog");
+        print(tester.getLastRenderedPage(),true,true);
+        assertNull(w.getTitle()); // window was not opened
+        tester.executeAjaxEvent(pathForLink, "onclick");
+        assertNotNull(w.getTitle()); // window was opened        
+        simulateDeleteSubmit();        
+        executeModalWindowCloseButtonCallback(w);
+        //print(tester.getLastRenderedPage(),true,true);                                        
+    }
+
+    protected abstract void simulateDeleteSubmit() throws Exception;
+    
 
     protected void setSecurityConfigName(String aName) {
         form.setValue("config.name", aName);

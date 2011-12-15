@@ -6,13 +6,20 @@
 
 package org.geoserver.web.security.config.details;
 
+import java.lang.reflect.Method;
+import java.util.SortedSet;
+
 import org.apache.wicket.Component;
+import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
+import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.AuthenticationProviderPage;
 import org.geoserver.web.security.config.GlobalTabbedPage;
+import org.geoserver.web.security.config.SelectionNamedServiceRemovalLink;
 import org.geoserver.web.security.config.list.AuthenticationServicesPanel;
+import org.geoserver.web.security.group.SelectionGroupRemovalLink;
 
 public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetailsPanelTest {
 
@@ -131,8 +138,16 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
                 (UsernamePasswordAuthenticationProviderConfig)
                 getSecurityNamedServiceConfig("default2");
         assertEquals("test",authConfig.getUserGroupServiceName());
-
-        // test remove
-        print(tabbedPage,true,true);
+        
+        doRemove("tabbedPanel:panel:removeSelected");                
     }
+    
+    @Override
+    protected void simulateDeleteSubmit() throws Exception {
+        SelectionNamedServiceRemovalLink link =   
+                (SelectionNamedServiceRemovalLink)  getRemoveLink();
+        Method m = link.getDelegate().getClass().getDeclaredMethod("onSubmit", AjaxRequestTarget.class,Component.class);
+        m.invoke(link.getDelegate(), null,null);        
+    }
+
 }
