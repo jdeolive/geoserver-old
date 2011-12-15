@@ -12,7 +12,7 @@ import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
-import org.geoserver.web.security.config.SelectionNamedServiceRemovalLink;
+import org.geoserver.web.security.config.details.SelectionNamedServiceRemovalLink;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;

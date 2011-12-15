@@ -6,7 +6,9 @@
 
 package org.geoserver.web.security.config.details;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
@@ -29,7 +31,6 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
     
     public static final String FIRST_COLUM_PATH="itemProperties:0:component:link";
     public static final String CHECKBOX_PATH="selectItemContainer:selectItem";
-
     protected AbstractSecurityPage tabbedPage;
     protected FormTester form;
     
@@ -133,7 +134,7 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
     }
 
     
-    protected void doRemove(String pathForLink) throws Exception {
+    protected void doRemove(String pathForLink, String ... serviceNames) throws Exception {
         
         
         GeoserverTablePanelTestPage testPage = 
@@ -150,17 +151,40 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
         });
         
         tester.startPage(testPage);
+        
                 
-        String selectAllPath = testPage.getWicketPath()+":tabbedPanel:panel:table:listContainer:selectAllContainer:selectAll";        
-        tester.assertComponent(selectAllPath, CheckBox.class);
+        //form:0:tabbedPanel:panel:table:listContainer:items:5:selectItemContainer:selectItem
+        if (serviceNames.length==0) {
+            String selectAllPath = testPage.getWicketPath()+":tabbedPanel:panel:table:listContainer:selectAllContainer:selectAll";        
+            tester.assertComponent(selectAllPath, CheckBox.class);        
+            FormTester ft = tester.newFormTester(GeoserverTablePanelTestPage.FORM);
+            ft.setValue(testPage.getComponentId()+":tabbedPanel:panel:table:listContainer:selectAllContainer:selectAll", "true");
+            tester.executeAjaxEvent(selectAllPath, "onclick");
+        } 
+        else {
+            DataView<SecurityNamedServiceConfig> dataview = (DataView<SecurityNamedServiceConfig>)
+                    testPage.get("form:0:tabbedPanel:panel:table:listContainer:items");
+            List<String> nameList = Arrays.asList(serviceNames);
+            FormTester ft = tester.newFormTester(GeoserverTablePanelTestPage.FORM);
+            
+            Iterator<Item<SecurityNamedServiceConfig>> it = getDataView().getItems();
+            while (it.hasNext()) {
+                Item<SecurityNamedServiceConfig> item = it.next();
+                if (nameList.contains(item.getModelObject().getName())) {
+                    String checkBoxPath=item.getPageRelativePath()+":"+CHECKBOX_PATH;
+                    tester.assertComponent(checkBoxPath, CheckBox.class);
+                    tester.executeAjaxEvent(checkBoxPath, "onclick");
+                }
+            }
+        }
         
-        FormTester ft = tester.newFormTester(GeoserverTablePanelTestPage.FORM);
-        ft.setValue(testPage.getComponentId()+":tabbedPanel:panel:table:listContainer:selectAllContainer:selectAll", "true");
-        tester.executeAjaxEvent(selectAllPath, "onclick");
         
-        ModalWindow w  = (ModalWindow) tester.getLastRenderedPage().get("tabbedPanel:panel:dialog:dialog");
+        print(testPage,true,true);
+        ModalWindow w  = (ModalWindow) testPage.get(
+                testPage.getWicketPath()+":tabbedPanel:panel:dialog:dialog");
         print(tester.getLastRenderedPage(),true,true);
         assertNull(w.getTitle()); // window was not opened
+        //tester.executeAjaxEvent(testPage.getWicketPath()+":"+pathForLink, "onclick");
         tester.executeAjaxEvent(pathForLink, "onclick");
         assertNotNull(w.getTitle()); // window was opened        
         simulateDeleteSubmit();        

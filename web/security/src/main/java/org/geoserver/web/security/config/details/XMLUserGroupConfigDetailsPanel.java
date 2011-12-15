@@ -19,12 +19,13 @@ public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPane
     
     public XMLUserGroupConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
+        
     }
 
     @Override
     protected void initializeComponents() {
         super.initializeComponents();
-        comp = new XMLFileFormComponent();
+        comp = new XMLFileFormComponent(configHelper.isNew());
         addOrReplace(comp);        
     };
         

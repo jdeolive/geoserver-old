@@ -33,7 +33,7 @@ import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 public class SecurityConfigValidator {
 
-    GeoServerSecurityManager manager;
+    protected GeoServerSecurityManager manager;
 
     
     /**

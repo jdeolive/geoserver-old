@@ -1,4 +1,4 @@
-package org.geoserver.web.security.config;
+package org.geoserver.web.security.config.details;
 
 import java.io.IOException;
 import java.util.List;
