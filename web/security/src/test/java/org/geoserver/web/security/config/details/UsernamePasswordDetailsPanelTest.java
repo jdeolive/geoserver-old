@@ -17,7 +17,6 @@ import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.AuthenticationProviderPage;
 import org.geoserver.web.security.config.GlobalTabbedPage;
-import org.geoserver.web.security.config.SelectionNamedServiceRemovalLink;
 import org.geoserver.web.security.config.list.AuthenticationServicesPanel;
 import org.geoserver.web.security.group.SelectionGroupRemovalLink;
 
@@ -139,7 +138,7 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
                 getSecurityNamedServiceConfig("default2");
         assertEquals("test",authConfig.getUserGroupServiceName());
         
-        doRemove("tabbedPanel:panel:removeSelected");                
+        doRemove("tabbedPanel:panel:removeSelected","default2");                
     }
     
     @Override

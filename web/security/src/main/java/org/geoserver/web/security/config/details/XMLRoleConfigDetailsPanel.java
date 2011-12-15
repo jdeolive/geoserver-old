@@ -23,8 +23,8 @@ public class XMLRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
 
     @Override
     protected void initializeComponents() {
-        super.initializeComponents();
-        comp = new XMLFileFormComponent();
+        super.initializeComponents();        
+        comp = new XMLFileFormComponent(configHelper.isNew());
         addOrReplace(comp);        
     };
         

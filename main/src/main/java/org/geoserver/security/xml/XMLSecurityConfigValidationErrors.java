@@ -14,6 +14,9 @@ public class XMLSecurityConfigValidationErrors extends SecurityConfigValidationE
 
     public final static String SEC_ERR_100 = "SEC_ERR_100";
     public final static String SEC_ERR_101 = "SEC_ERR_101";
+    public final static String SEC_ERR_102 = "SEC_ERR_102";
+    public final static String SEC_ERR_103 = "SEC_ERR_103";
+    public final static String SEC_ERR_104 = "SEC_ERR_104";
     
     @Override
     public String formatErrorMsg(String id, Object... args) {
@@ -21,7 +24,15 @@ public class XMLSecurityConfigValidationErrors extends SecurityConfigValidationE
         if (SEC_ERR_100.equals(id))
             return MessageFormat.format("Check interval in millisecs can be 0 (disabled) or >= 1000",args);
         if (SEC_ERR_101.equals(id))
-            return MessageFormat.format("File name must be {0}",args);        
+            return MessageFormat.format("Cannot create file {0}",args);
+        if (SEC_ERR_102.equals(id))
+            return MessageFormat.format("Role service {0} must be empty",args);        
+        if (SEC_ERR_103.equals(id))
+            return MessageFormat.format("User/group service {0} must be empty",args);
+        if (SEC_ERR_104.equals(id))
+            return MessageFormat.format("File name required",args);        
+
+
         return super.formatErrorMsg(id, args);
     }
 }
