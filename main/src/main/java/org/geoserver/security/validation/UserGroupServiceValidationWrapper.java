@@ -54,6 +54,9 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
         this.service=service;
     }
 
+    public GeoserverUserGroupService getWrappedService() {
+        return service;
+    }
     
     protected void checkUserName(String userName) throws IOException{
         if (isNotEmpty(userName)==false)

@@ -27,7 +27,7 @@ import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.password.GeoserverPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
 import org.geoserver.security.password.PasswordEncodingType;
-import org.geoserver.security.password.PasswordValidationException;
+import org.geoserver.security.validation.PasswordValidationException;
 
 
 /**
@@ -110,12 +110,7 @@ public class Util {
             for (Object key: user.getProperties().keySet()) {
                 newUser.getProperties().put(key, user.getProperties().get(key));
             }
-            try {
-                store.addUser(newUser);
-            } catch (PasswordValidationException e) {
-                throw new IOException("should not have reached this point, " +
-                		"copy works with alread encoded passwords",e);
-            }
+            store.addUser(newUser);
             newUserDict.put(newUser.getUsername(),newUser);
         }
         for (GeoserverUserGroup group : service.getUserGroups()) {

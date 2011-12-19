@@ -23,7 +23,7 @@ public class XMLSecurityConfigValidationErrors extends SecurityConfigValidationE
     public String formatErrorMsg(String id, Object... args) {
         
         if (SEC_ERR_100.equals(id))
-            return MessageFormat.format("Check interval in millisecs can be 0 (disabled) or >= 1000",args);
+            return MessageFormat.format("Check interval in milliseconds can be 0 (disabled) or >= 1000",args);
         if (SEC_ERR_101.equals(id))
             return MessageFormat.format("Cannot create file {0}",args);
         if (SEC_ERR_102.equals(id))

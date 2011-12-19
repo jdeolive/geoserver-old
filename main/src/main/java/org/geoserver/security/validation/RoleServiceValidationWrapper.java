@@ -56,6 +56,10 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
         this.services=services;
     }
 
+
+    public GeoserverRoleService getWrappedService() {
+        return service;
+    }
     
     /**
      * Checks if a user name is valid
@@ -195,7 +199,8 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
     }
 
 
-    public GeoserverRole createRoleObject(String role) throws IOException {        
+    public GeoserverRole createRoleObject(String role) throws IOException {
+        checkRoleName(role);
         return service.createRoleObject(role);
     }
 

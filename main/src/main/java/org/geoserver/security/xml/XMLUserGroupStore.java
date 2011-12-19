@@ -39,7 +39,6 @@ import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractUserGroupStore;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
-import org.geoserver.security.password.PasswordValidationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -212,7 +211,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
     }
 
     @Override
-    public void addUser(GeoserverUser user) throws IOException, PasswordValidationException {
+    public void addUser(GeoserverUser user) throws IOException  {
         ensureLock();
         super.addUser(user);
     }
@@ -224,7 +223,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
     }
 
     @Override
-    public void updateUser(GeoserverUser user) throws IOException, PasswordValidationException {
+    public void updateUser(GeoserverUser user) throws IOException {
         ensureLock();
         super.updateUser(user);
     }

@@ -12,9 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Level;
 
-import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
@@ -24,8 +23,10 @@ import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.RoleHierarchyHelper;
+import org.geoserver.security.validation.AbstractSecurityException;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.PropertyEditorFormComponent;
+import org.geoserver.web.wicket.ParamResourceModel;
 
 
 /**
@@ -96,9 +97,21 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
         return new SubmitLink("save") {
             @Override
             public void onSubmit() {
-                onFormSubmit();
-                responsePage.setDirty(true);
-                setResponsePage(responsePage);
+                try {
+                    onFormSubmit();
+                    responsePage.setDirty(true);
+                    setResponsePage(responsePage);
+                } catch (IOException e) {
+                    if (e.getCause() instanceof AbstractSecurityException) {
+                        AbstractSecurityException secEx = 
+                                (AbstractSecurityException)e.getCause();
+                        error(new ParamResourceModel("security."+secEx.getErrorId(), 
+                                null, secEx.getArgs()).getObject());
+                    } else {                    
+                        LOGGER.log(Level.SEVERE, "Error occurred while saving role", e);
+                        error(new ParamResourceModel("saveError", getPage(), e.getMessage()).getObject());
+                    }
+                }
 
             }
         };
@@ -140,7 +153,7 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
     /**
      * Implements the actual save action
      */
-    protected abstract void onFormSubmit();
+    protected abstract void onFormSubmit() throws IOException;
     
     /**
      * Mediates between the UI and the {@link GeoserverRole}  class

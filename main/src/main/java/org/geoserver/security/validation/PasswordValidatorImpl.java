@@ -3,14 +3,17 @@
  * application directory.
  */
 
-package org.geoserver.security.password;
+package org.geoserver.security.validation;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.PasswordPolicyConfig;
+import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.password.PasswordValidator;
 
 
 /**
@@ -19,7 +22,7 @@ import org.geoserver.security.config.PasswordPolicyConfig;
  * @author christian
  *
  */
-public class PasswordValidatorImpl implements PasswordValidator {
+public class PasswordValidatorImpl extends AbstractSecurityValidator implements PasswordValidator {
 
     protected PasswordPolicyConfig config;
     protected Set<String> notAllowedPrefixes;
@@ -46,34 +49,35 @@ public class PasswordValidatorImpl implements PasswordValidator {
     }
 
     @Override
-    public void validatePassword(String password) throws PasswordValidationException {
+    public void validatePassword(String password) throws IOException {
         if (password==null)
-            throw new PasswordValidationException(PasswordInvalidReason.PW_IS_NULL);
+            throw createSecurityException(PasswordValidationErrors.PW_IS_NULL); 
+            
         
         if (password.length() < config.getMinLength())
-            throw new PasswordValidationException(PasswordInvalidReason.PW_MIN_LENGTH);
+            throw createSecurityException(PasswordValidationErrors.PW_MIN_LENGTH, config.getMinLength());
         
         if (config.getMaxLength() >=0 &&  password.length() >config.getMaxLength())
-            throw new PasswordValidationException(PasswordInvalidReason.PW_MAX_LENGTH);
+            throw createSecurityException(PasswordValidationErrors.PW_MAX_LENGTH,config.getMaxLength());
 
         char[] charArray = password.toCharArray();
         
         if (config.isDigitRequired()) {
             if (checkUsingMethod("isDigit", charArray)==false)
-                throw new PasswordValidationException(PasswordInvalidReason.PW_NO_DIGIT);
+                throw createSecurityException(PasswordValidationErrors.PW_NO_DIGIT);
         }
         if (config.isUppercaseRequired()) {
             if (checkUsingMethod("isUpperCase", charArray)==false)
-                throw new PasswordValidationException(PasswordInvalidReason.PW_NO_UPPERCASE);
+                throw createSecurityException(PasswordValidationErrors.PW_NO_UPPERCASE);
         }
         if (config.isLowercaseRequired()) {
             if (checkUsingMethod("isLowerCase", charArray)==false)
-                throw new PasswordValidationException(PasswordInvalidReason.PW_NO_LOWERCASE);
+                throw createSecurityException(PasswordValidationErrors.PW_NO_LOWERCASE);
         }    
         
         for (String prefix: notAllowedPrefixes) {
             if (password.startsWith(prefix))
-                throw new PasswordValidationException(PasswordInvalidReason.PW_RESERVED_PREFIX);
+                throw createSecurityException(PasswordValidationErrors.PW_RESERVED_PREFIX,prefix);
         }
     }
     
@@ -107,6 +111,27 @@ public class PasswordValidatorImpl implements PasswordValidator {
 
     public boolean isLowerCase(Character c) {
         return Character.isLowerCase(c);
+    }
+
+    
+    @Override
+    protected AbstractSecurityValidationErrors getSecurityErrors() {
+        return new PasswordValidationErrors();
+    }
+
+    
+    /**
+     * Helper method for creating a proper
+     * {@link SecurityConfigException} object
+     * 
+     * @param errorid
+     * @param args
+     * @return
+     */
+    protected IOException createSecurityException (String errorid, Object ...args) {
+        String message = getSecurityErrors().formatErrorMsg(errorid, args);
+        PasswordValidationException ex =  new PasswordValidationException(errorid,message,args);
+        return new IOException("Details are in the nested excetpion",ex);
     }
 
 }

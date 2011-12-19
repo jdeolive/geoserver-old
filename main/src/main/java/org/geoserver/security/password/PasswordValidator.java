@@ -5,7 +5,11 @@
 
 package org.geoserver.security.password;
 
+import java.io.IOException;
+
 import org.geoserver.security.config.PasswordPolicyConfig;
+import org.geoserver.security.validation.PasswordValidationException;
+import org.geoserver.security.validation.PasswordValidatorImpl;
 
 /**
  * Validates a password based on 
@@ -56,6 +60,6 @@ public interface PasswordValidator {
      * @param password
      * @throws PasswordValidationException
      */
-    public void validatePassword(String password) throws PasswordValidationException;
+    public void validatePassword(String password) throws IOException;
 
 }

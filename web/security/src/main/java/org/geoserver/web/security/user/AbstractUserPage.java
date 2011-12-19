@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -33,12 +34,14 @@ import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.security.impl.RoleCalculator;
+import org.geoserver.security.validation.AbstractSecurityException;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.PropertyEditorFormComponent;
 import org.geoserver.web.security.role.EditRolePage;
 import org.geoserver.web.security.role.RoleListProvider;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
+import org.geoserver.web.wicket.ParamResourceModel;
 import org.geoserver.web.wicket.SimpleAjaxLink;
 
 /**
@@ -174,9 +177,21 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
 
             @Override
             public void onSubmit() {
-                onFormSubmit();
-                responsePage.setDirty(true);
-                setResponsePage(responsePage);
+                try {
+                    onFormSubmit();
+                    responsePage.setDirty(true);
+                    setResponsePage(responsePage);
+                } catch (IOException e) {
+                    if (e.getCause() instanceof AbstractSecurityException) {
+                        AbstractSecurityException secEx = 
+                                (AbstractSecurityException)e.getCause();
+                        error(new ParamResourceModel("security."+secEx.getErrorId(), 
+                                null, secEx.getArgs()).getObject());
+                    } else {                    
+                        LOGGER.log(Level.SEVERE, "Error occurred while saving user", e);
+                        error(new ParamResourceModel("saveError", getPage(), e.getMessage()).getObject());
+                    }
+                }
             }
         };
     }
@@ -232,7 +247,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     /**
      * Implements the actual save action
      */
-    protected abstract void onFormSubmit();
+    protected abstract void onFormSubmit() throws IOException;
     
     /**
      * Mediates between the UI and the Spring User class

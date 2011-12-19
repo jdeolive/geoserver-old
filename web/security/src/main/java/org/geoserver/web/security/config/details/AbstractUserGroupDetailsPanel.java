@@ -19,7 +19,7 @@ import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
 import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
 import org.geoserver.security.password.PasswordEncodingType;
-import org.geoserver.security.password.PasswordValidatorImpl;
+import org.geoserver.security.validation.PasswordValidatorImpl;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**

@@ -5,97 +5,48 @@
 package org.geoserver.web.security.group;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.logging.Level;
 
-import org.apache.wicket.PageParameters;
-import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.FormComponent;
-import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
-import org.apache.wicket.model.ResourceModel;
 import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.validation.RoleStoreValidationWrapper;
+import org.geoserver.security.validation.UserGroupStoreValidationWrapper;
 import org.geoserver.web.security.AbstractSecurityPage;
-import org.geoserver.web.wicket.ParamResourceModel;
 
 public class NewGroupPage extends AbstractGroupPage {
 
     
     public NewGroupPage(String userGroupServiceName,AbstractSecurityPage responsePage) {
         super(userGroupServiceName,new GroupUIModel("", true),responsePage);
-        
-        form.add(new GroupConflictValidator());
+                
         if (hasUserGroupStore(userGroupServiceName)==false) {
             throw new RuntimeException("Workflow error, new user not possible for read only service");
         }
         
     }
                 
-    /**
-     * Checks the group is not a new one
-     */
-    class GroupConflictValidator extends AbstractFormValidator {
-
-        private static final long serialVersionUID = 1L;
-
-
-        @Override
-        public FormComponent<?>[] getDependentFormComponents() {
-            return new FormComponent[] { groupnameField };
-        }
-
-        @Override
-        public void validate(Form<?> form) {
-            if (form.findSubmittingButton() != saveLink) { // only validate on final submit
-                return;
-            }
-
-            groupnameField.updateModel();
-            String newName = uiGroup.getGroupname();            
-            try {
-                GeoserverUserGroup group =
-                    getSecurityManager().loadUserGroupService(userGroupServiceName).getGroupByGroupname(newName);
-                if (group!=null) {
-                    form.error(new ResourceModel("NewGroupPage.groupConflict").getObject(),
-                            Collections.singletonMap("group", (Object) newName));
-                    
-                }
-            } catch(IOException e) {
-                throw new RuntimeException(e);
-            }
-            
-        }
-        
-    }
-
-    
     @Override
-    protected void onFormSubmit() {
+    protected void onFormSubmit() throws IOException {        
+        GeoserverUserGroupStore store = new UserGroupStoreValidationWrapper(
+                getUserGroupStore(userGroupServiceName));
+        GeoserverUserGroup group = store.createGroupObject(
+                uiGroup.getGroupname(),uiGroup.isEnabled());
+        store.addGroup(group);
+        store.store();
         
-        try {
-            GeoserverUserGroupStore store = getUserGroupStore(userGroupServiceName);
-            GeoserverUserGroup group = store.createGroupObject(
-                    uiGroup.getGroupname(),uiGroup.isEnabled());
-            store.addGroup(group);
-            store.store();
-            
-            if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
-                GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
-                Iterator<GeoserverRole> roleIt =groupRolesFormComponent.
-                    getRolePalette().getSelectedChoices();
-                while (roleIt.hasNext()) {
-                    gaStore.associateRoleToGroup(roleIt.next(), group.getGroupname());
-                }
-                gaStore.store();
+        if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
+            GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
+            gaStore = new RoleStoreValidationWrapper(gaStore);
+            Iterator<GeoserverRole> roleIt =groupRolesFormComponent.
+                getRolePalette().getSelectedChoices();
+            while (roleIt.hasNext()) {
+                gaStore.associateRoleToGroup(roleIt.next(), group.getGroupname());
             }
-                            
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error occurred while saving group", e);
-            error(new ParamResourceModel("saveError", getPage(), e.getMessage()));
+            gaStore.store();
         }
+                        
     }
 
 }

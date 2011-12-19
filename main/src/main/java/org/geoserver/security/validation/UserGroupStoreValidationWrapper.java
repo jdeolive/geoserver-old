@@ -11,7 +11,6 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
-import org.geoserver.security.password.PasswordValidationException;
 
 
 
@@ -65,12 +64,12 @@ public class UserGroupStoreValidationWrapper extends UserGroupServiceValidationW
 
 
 
-    public void addUser(GeoserverUser user) throws IOException, PasswordValidationException {
+    public void addUser(GeoserverUser user) throws IOException {
         checkNotExistingUserName(user.getUsername());
         getStore().addUser(user);
     }
      
-    public void updateUser(GeoserverUser user) throws IOException, PasswordValidationException {
+    public void updateUser(GeoserverUser user) throws IOException {
         checkExistingUserName(user.getUsername());
         getStore().updateUser(user);
     }
