@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.config.PasswordPolicyConfig;
-import org.geoserver.security.password.PasswordValidatorImpl;
+import org.geoserver.security.validation.PasswordValidatorImpl;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.AuthenticationProviderPage;
 import org.geoserver.web.security.config.PasswordPolicyPage;

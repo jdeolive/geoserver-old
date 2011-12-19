@@ -15,7 +15,6 @@ import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.impl.MemorySecurityConfigValidator;
 import org.geoserver.security.jdbc.config.impl.JdbcJndiRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcJndiUserGroupServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;

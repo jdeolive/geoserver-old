@@ -30,7 +30,6 @@ import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
 import org.geoserver.security.password.GeoserverPlainTextPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
-import org.geoserver.security.password.PasswordValidatorImpl;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidator;
 import org.geoserver.security.xml.XMLRoleService;

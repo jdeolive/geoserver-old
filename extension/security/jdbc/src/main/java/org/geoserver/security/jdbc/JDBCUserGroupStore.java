@@ -16,7 +16,7 @@ import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
-import org.geoserver.security.password.PasswordValidationException;
+import org.geoserver.security.validation.PasswordValidationException;
 
 /**
  * JDBC Implementation of {@link GeoserverUserGroupStore}
@@ -144,7 +144,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
      * @throws IOException
      * @throws PasswordValidationException
      */
-    protected void preparePassword(GeoserverUser user) throws IOException,PasswordValidationException {
+    protected void preparePassword(GeoserverUser user) throws IOException {
         
         GeoserverUserPasswordEncoder enc  = (GeoserverUserPasswordEncoder) 
                 GeoServerExtensions.bean(getPasswordEncoderName());
@@ -166,7 +166,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#addUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void addUser(GeoserverUser user) throws IOException,PasswordValidationException {
+    public void addUser(GeoserverUser user) throws IOException {
         
         preparePassword(user);
         Connection con = null;
@@ -192,7 +192,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#updateUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void updateUser(GeoserverUser user) throws IOException,PasswordValidationException {
+    public void updateUser(GeoserverUser user) throws IOException {
         
         preparePassword(user);
         Connection con = null;

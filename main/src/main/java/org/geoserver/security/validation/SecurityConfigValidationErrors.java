@@ -125,7 +125,7 @@ public class SecurityConfigValidationErrors  extends AbstractSecurityValidationE
     if (SEC_ERR_42.equals(id))
         return MessageFormat.format("Policy for the master password cannot be deleted",args);
     if (SEC_ERR_50.equals(id))
-        return MessageFormat.format("The aministrator role has to be: {0}",args);
+        return MessageFormat.format("The administrator role has to be: {0}",args);
 
     return super.formatErrorMsg(id, args);
     }

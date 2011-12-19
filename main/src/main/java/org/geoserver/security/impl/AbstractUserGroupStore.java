@@ -24,7 +24,6 @@ import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
-import org.geoserver.security.password.PasswordValidationException;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -159,9 +158,8 @@ public abstract class AbstractUserGroupStore  implements GeoserverUserGroupStore
      * 
      * @param user
      * @throws IOException
-     * @throws PasswordValidationException
      */
-    protected void preparePassword(GeoserverUser user) throws IOException,PasswordValidationException {
+    protected void preparePassword(GeoserverUser user) throws IOException {
         
         GeoserverUserPasswordEncoder enc  = (GeoserverUserPasswordEncoder) 
                 GeoServerExtensions.bean(getPasswordEncoderName());
@@ -183,7 +181,7 @@ public abstract class AbstractUserGroupStore  implements GeoserverUserGroupStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#addUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void addUser(GeoserverUser user) throws IOException,PasswordValidationException{
+    public void addUser(GeoserverUser user) throws IOException{
         
         if(helper.userMap.containsKey(user.getUsername()))
             throw new IllegalArgumentException("The user " + user.getUsername() + " already exists");
@@ -210,7 +208,7 @@ public abstract class AbstractUserGroupStore  implements GeoserverUserGroupStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#updateUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void updateUser(GeoserverUser user) throws IOException,PasswordValidationException{
+    public void updateUser(GeoserverUser user) throws IOException{
         
        if(helper.userMap.containsKey(user.getUsername())==false) {
             throw new IllegalArgumentException("The user " + user.getUsername() + " does not exist");

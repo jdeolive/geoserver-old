@@ -6,6 +6,7 @@ package org.geoserver.web.security.group;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.logging.Level;
 
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
@@ -13,8 +14,10 @@ import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.PropertyModel;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.validation.AbstractSecurityException;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.wicket.ParamResourceModel;
 
 /**
  * Allows creation of a new user in users.properties
@@ -71,9 +74,22 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
         return new SubmitLink("save") {
             @Override
             public void onSubmit() {
-                onFormSubmit();
-                responsePage.setDirty(true);
-                setResponsePage(responsePage);
+                try {
+                    onFormSubmit();
+                    responsePage.setDirty(true);
+                    setResponsePage(responsePage);
+                } catch (IOException e) {
+                    if (e.getCause() instanceof AbstractSecurityException) {
+                        AbstractSecurityException secEx = 
+                                (AbstractSecurityException)e.getCause();
+                        error(new ParamResourceModel("security."+secEx.getErrorId(), 
+                                null, secEx.getArgs()).getObject());
+                    } else {                    
+                        LOGGER.log(Level.SEVERE, "Error occurred while saving group", e);
+                        error(new ParamResourceModel("saveError", getPage(), e.getMessage()).getObject());
+                    }
+                }
+
             }
         };
     }
@@ -126,7 +142,7 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
     /**
      * Implements the actual save action
      */
-    protected abstract void onFormSubmit();
+    protected abstract void onFormSubmit() throws IOException;
 
     
 

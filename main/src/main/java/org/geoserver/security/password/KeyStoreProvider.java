@@ -415,11 +415,7 @@ public class KeyStoreProvider implements BeanNameAware{
         GeoServerSecurityManager secManager = 
                 GeoServerExtensions.bean(GeoServerSecurityManager.class);
         PasswordValidator val = secManager.loadPasswordValidator(PasswordValidator.MASTERPASSWORD_NAME);
-        try {
-            val.validatePassword(newPassword);
-        } catch (PasswordValidationException ex) {            
-            throw new IOException ("Invalid master password "+newPassword,ex);
-        }
+        val.validatePassword(newPassword);
         // OK, master password is valid
         assertActivatedKeyStore();
         File dir = keyStoreFile.getParentFile();

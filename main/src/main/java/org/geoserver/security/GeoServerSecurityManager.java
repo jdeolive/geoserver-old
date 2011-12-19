@@ -57,12 +57,12 @@ import org.geoserver.security.password.ConfigurationPasswordHelper;
 import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
-import org.geoserver.security.password.PasswordValidationException;
 import org.geoserver.security.password.PasswordValidator;
-import org.geoserver.security.password.PasswordValidatorImpl;
 import org.geoserver.security.password.RandomPasswordProvider;
 import org.geoserver.security.rememberme.GeoServerTokenBasedRememberMeServices;
 import org.geoserver.security.rememberme.RememberMeServicesConfig;
+import org.geoserver.security.validation.PasswordValidationException;
+import org.geoserver.security.validation.PasswordValidatorImpl;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidator;
 import org.geoserver.security.xml.XMLConstants;
@@ -884,11 +884,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 if (attr != null) {
                     GeoserverUser user = 
                         userGroupStore.createUserObject(username, attr.getPassword(), attr.isEnabled());
-                    try {
-                        userGroupStore.addUser(user);
-                    } catch (PasswordValidationException e) {
-                        throw new IOException(e);
-                    }
+                    userGroupStore.addUser(user);
 
                     for (GrantedAuthority auth : attr.getAuthorities()) {
                         GeoserverRole role = 
@@ -904,11 +900,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         } else  {
             // no user.properties, populate with default user and roles
             if (userGroupService.getUserByUsername(GeoserverUser.AdminName) == null) {
-                try {
-                    userGroupStore.addUser(GeoserverUser.createDefaultAdmin());
-                } catch (PasswordValidationException e) {
-                    throw new IOException(e);
-                }
+                userGroupStore.addUser(GeoserverUser.createDefaultAdmin());
                 roleStore.addRole(GeoserverRole.ADMIN_ROLE);
                 roleStore.associateRoleToUser(GeoserverRole.ADMIN_ROLE,
                         GeoserverUser.AdminName);

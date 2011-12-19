@@ -20,7 +20,6 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.password.GeoserverPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPasswordEncoder;
-import org.geoserver.security.password.PasswordValidationException;
 import org.geoserver.test.GeoServerAbstractTestSupport;
 import org.geotools.data.DataUtilities;
 
@@ -426,14 +425,10 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         user2.getProperties().put("mail","user2@gmx.com");
         user2.getProperties().put("tel","12-34-38");
         
-        try {
-            userGroupStore.addUser(admin);
-            userGroupStore.addUser(user1);
-            userGroupStore.addUser(user2);
-            userGroupStore.addUser(disableduser);
-        } catch (PasswordValidationException ex) {
-            throw new IOException(ex);
-        }
+        userGroupStore.addUser(admin);
+        userGroupStore.addUser(user1);
+        userGroupStore.addUser(user2);
+        userGroupStore.addUser(disableduser);
         
         GeoserverUserGroup admins = userGroupStore.createGroupObject("admins", true);
         GeoserverUserGroup group1 = userGroupStore.createGroupObject("group1",true);
@@ -454,21 +449,13 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         disableduser.setEnabled(true);
         disableduser.setPassword("hallo");
         disableduser.getProperties().put("lastname","miller");
-        try {
-            userGroupStore.updateUser(disableduser);
-        } catch (PasswordValidationException ex) {
-            throw new IOException(ex);
-        }
+        userGroupStore.updateUser(disableduser);
 
         
         GeoserverUser user2 = userGroupStore.getUserByUsername("user2");
         user2.getProperties().remove("mail");
         user2.getProperties().put("tel", "11-22-33");
-        try {
-            userGroupStore.updateUser(user2);
-        } catch (PasswordValidationException ex) {
-            throw new IOException(ex);
-        }
+        userGroupStore.updateUser(user2);
         
         GeoserverUserGroup disabledgroup = userGroupStore.getGroupByGroupname("disabledgroup");
         disabledgroup.setEnabled(true);

@@ -46,9 +46,9 @@ public class RoleServiceValidationErrors  extends AbstractSecurityValidationErro
         return MessageFormat.format("Group name is mandatory",args);
 
     if (ROLE_ERR_06.equals(id))
-        return MessageFormat.format("User name {0} is not found",args);
+        return MessageFormat.format("User name {0} not found",args);
     if (ROLE_ERR_07.equals(id))
-        return MessageFormat.format("Group name {0} is not found",args);
+        return MessageFormat.format("Group name {0} not found",args);
 
 
     return super.formatErrorMsg(id, args);
