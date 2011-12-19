@@ -14,12 +14,12 @@ import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
-import org.geoserver.security.config.validation.SecurityConfigException;
-import org.geoserver.security.config.validation.SecurityConfigValidatorTest;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.security.password.GeoserverPlainTextPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
+import org.geoserver.security.validation.SecurityConfigException;
+import org.geoserver.security.validation.SecurityConfigValidatorTest;
 import org.geotools.util.logging.Logging;
 
 public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest {
@@ -77,7 +77,9 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
             fail=true;
         }
         assertTrue(fail);
+        
 
+                
         fail=false;
         try {
             config.setName(XMLRoleService.DEFAULT_NAME);
@@ -132,25 +134,48 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
             Assert.fail("Should work");
         }
 
-//        File tmp = new File(getSecurityManager().getRoleRoot(),"test4");
-//        tmp=new File(tmp,"test4.xml");
-//        xmlConfig = (XMLFileBasedRoleServiceConfigImpl) 
-//                getRoleConfig("test4",XMLRoleService.class,GeoserverRole.ADMIN_ROLE.getAuthority(),                        
-//                        tmp.getAbsolutePath());
-//        
-//        fail=false;
-//        try {
-//            getSecurityManager().saveRoleService(xmlConfig, true);
-//            GeoserverRoleStore store = getSecurityManager().loadRoleService("test4").createStore();
-//            store.addRole(GeoserverRole.ADMIN_ROLE);
-//            store.store();
-//            getSecurityManager().removeRoleService(xmlConfig);
-//        } catch (SecurityConfigException ex) {
-//            assertEquals(SEC_ERR_102, ex.getErrorId());
-//            assertEquals("test4", ex.getArgs()[0]);
-//            fail=true;
-//        }
-//        assertTrue(fail);
+        // run only if a temp dir is availbale
+        if (new XMLSecurityConfigValidator().getTempDir()!=null) {
+            String invalidPath="abc"+File.separator+"def.xml";
+            xmlConfig = (XMLFileBasedRoleServiceConfigImpl) 
+                    getRoleConfig("test4",XMLRoleService.class,GeoserverRole.ADMIN_ROLE.getAuthority(),                        
+                            invalidPath);
+            
+            fail=false;
+            try {
+                getSecurityManager().saveRoleService(xmlConfig, true);
+            } catch (SecurityConfigException ex) {
+                assertEquals(SEC_ERR_101, ex.getErrorId());
+                assertEquals(invalidPath, ex.getArgs()[0]);
+                fail=true;
+            }
+            assertTrue(fail);
+        }
+        /////////////// test modify
+        xmlConfig = (XMLFileBasedRoleServiceConfigImpl)
+                getRoleConfig("test4",XMLRoleService.class,GeoserverRole.ADMIN_ROLE.getAuthority(),                        
+                        "testModify.xml");
+
+        try {
+            getSecurityManager().saveRoleService(xmlConfig, true);
+            xmlConfig.setValidating(true);
+            getSecurityManager().saveRoleService(xmlConfig, false);
+        } catch (SecurityConfigException ex) {
+            Assert.fail("Should work");
+        }
+
+        fail=false;
+        try {
+            xmlConfig.setFileName("xyz.xml");
+            getSecurityManager().saveRoleService(xmlConfig, false);
+        } catch (SecurityConfigException ex) {
+            assertEquals(SEC_ERR_105, ex.getErrorId());
+            assertEquals("testModify.xml", ex.getArgs()[0]);
+            assertEquals("xyz.xml", ex.getArgs()[1]);
+            fail=true;
+        }
+        assertTrue(fail);
+
                 
     }
 
@@ -204,6 +229,8 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
             Assert.fail("Should work");
         }
         
+        
+        
         fail=false;
         xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
                 getUGConfig("test2", XMLUserGroupService.class, 
@@ -236,26 +263,24 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
             Assert.fail("Should work");
         }
 
-        File tmp = new File(getSecurityManager().getUserGroupRoot(),"test4");
-        tmp=new File(tmp,"test4.xml");
-        xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
-                getUGConfig("test4", XMLUserGroupService.class, 
-                GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,
-                tmp.getAbsolutePath());
-        
-//        fail=false;
-//        try {
-//            getSecurityManager().saveUserGroupService(xmlConfig, true);
-//            GeoserverUserGroupStore store = getSecurityManager().loadUserGroupService("test4").createStore();
-//            store.addGroup(group);
-//            store.store();
-//            getSecurityManager().removeUserGroupService(xmlConfig);
-//        } catch (SecurityConfigException ex) {
-//            assertEquals(SEC_ERR_103, ex.getErrorId());
-//            assertEquals("test4", ex.getArgs()[0]);
-//            fail=true;
-//        }
-//        assertTrue(fail);
+        // run only if a temp dir is availbale
+        if (new XMLSecurityConfigValidator().getTempDir()!=null) {
+            String invalidPath="abc"+File.separator+"def.xml";
+            xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
+                    getUGConfig("test4", XMLUserGroupService.class, 
+                    GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,
+                    invalidPath);
+            
+            fail=false;
+            try {
+                getSecurityManager().saveUserGroupService(xmlConfig, true);
+            } catch (SecurityConfigException ex) {
+                assertEquals(SEC_ERR_101, ex.getErrorId());
+                assertEquals(invalidPath, ex.getArgs()[0]);
+                fail=true;
+            }
+            assertTrue(fail);
+        }
         
         
         xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
@@ -280,7 +305,29 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         }
         assertTrue(fail);
 
-        
+        /////////////// test modify
+        xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
+                getUGConfig("testModify", XMLUserGroupService.class, 
+                GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,"testModify.xml");
+        try {
+            getSecurityManager().saveUserGroupService(xmlConfig, true);
+            xmlConfig.setValidating(true);
+            getSecurityManager().saveUserGroupService(xmlConfig, false);
+        } catch (SecurityConfigException ex) {
+            Assert.fail("Should work");
+        }
+
+        fail=false;
+        try {
+            xmlConfig.setFileName("xyz.xml");
+            getSecurityManager().saveUserGroupService(xmlConfig, false);
+        } catch (SecurityConfigException ex) {
+            assertEquals(SEC_ERR_105, ex.getErrorId());
+            assertEquals("testModify.xml", ex.getArgs()[0]);
+            assertEquals("xyz.xml", ex.getArgs()[1]);
+            fail=true;
+        }
+        assertTrue(fail);
     }
 
 

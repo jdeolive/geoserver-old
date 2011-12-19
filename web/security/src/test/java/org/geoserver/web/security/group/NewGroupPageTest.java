@@ -7,7 +7,9 @@ import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.util.tester.FormTester;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
+import org.geoserver.web.security.config.UserGroupTabbedPage;
 import org.geoserver.web.security.role.NewRolePage;
 
 public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
@@ -22,7 +24,8 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
 
     protected void doTestFill() throws Exception {
         insertValues();        
-        tester.startPage(page=new NewGroupPage(getUserGroupServiceName()));        
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getUserGroupServiceName());
+        tester.startPage(page=new NewGroupPage(getUserGroupServiceName(),returnPage));        
         tester.assertRenderedPage(NewGroupPage.class);
         
         FormTester form = tester.newFormTester("groupForm");
@@ -43,6 +46,7 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
         form.setValue("rolename", "ROLE_NEW");
         form.submit("save");
         
+        
         // assign the new role to the new group
         form=tester.newFormTester("groupForm");
         tester.assertRenderedPage(NewGroupPage.class);
@@ -57,9 +61,9 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
         // now save
         form=tester.newFormTester("groupForm");
         form.submit("save");
+        tester.assertRenderedPage(UserGroupTabbedPage.class);
         
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(GroupPage.class);
         
         GeoserverUserGroup group = ugService.getGroupByGroupname("testgroup");
         assertNotNull(group);
@@ -72,8 +76,9 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
     
     public void testGroupNameConflict() throws Exception {
         initializeForXML();
-        insertValues();        
-        tester.startPage(page=new NewGroupPage(getUserGroupServiceName()));
+        insertValues();
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getUserGroupServiceName());
+        tester.startPage(page=new NewGroupPage(getUserGroupServiceName(),returnPage));
         
         FormTester form = tester.newFormTester("groupForm");
         form.setValue("groupname", "group1");
@@ -87,9 +92,10 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
     public void testInvalidWorkflow() throws Exception{
         initializeForXML();
         activateROUGService();
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getROUserGroupServiceName());
         boolean fail = true;
         try {
-            tester.startPage(page=new NewGroupPage(getROUserGroupServiceName()));
+            tester.startPage(page=new NewGroupPage(getROUserGroupServiceName(),returnPage));
         } catch (RuntimeException ex) {
             fail = false;
         }
@@ -100,7 +106,8 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
     public void testReadOnlyRoleService() throws Exception{
         initializeForXML();
         activateRORoleService();
-        tester.startPage(page=new NewGroupPage(getUserGroupServiceName()));
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getUserGroupServiceName());
+        tester.startPage(page=new NewGroupPage(getUserGroupServiceName(),returnPage));
         assertFalse(page.groupRolesFormComponent.isEnabled());
         
         FormTester form = tester.newFormTester("groupForm");

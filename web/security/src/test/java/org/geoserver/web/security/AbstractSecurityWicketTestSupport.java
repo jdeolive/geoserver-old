@@ -9,15 +9,20 @@ package org.geoserver.web.security;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.wicket.Page;
 import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.behavior.AbstractAjaxBehavior;
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
+import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.feedback.FeedbackMessage;
+import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.markup.repeater.data.DataView;
 import org.geoserver.data.test.MockData;
 import org.geoserver.security.AccessMode;
 import org.geoserver.security.GeoserverRoleService;
@@ -25,6 +30,7 @@ import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
+import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
@@ -45,6 +51,9 @@ import org.geoserver.security.xml.XMLRoleServiceTest;
 import org.geoserver.security.xml.XMLUserGroupServiceTest;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.GeoServerWicketTestSupport;
+import org.geoserver.web.security.config.RoleTabbedPage;
+import org.geoserver.web.security.config.SecurityServicesTabbedPage;
+import org.geoserver.web.security.config.UserGroupTabbedPage;
 
 public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSupport {
     
@@ -82,7 +91,6 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         gaService=gaTest.createRoleService(getRoleServiceName());
         getSecurityManager().setActiveRoleService(gaService);
         ugService=ugTest.createUserGroupService(getUserGroupServiceName());
-        //getSecurityManager().setActiveUserGroupService(ugService);
         
         gaStore =  gaTest.createStore(gaService);
         ugStore =  ugTest.createStore(ugService);
@@ -267,11 +275,6 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
           return false;
       }
       
-      protected PageParameters getParamsForService(String serviceName) {
-          PageParameters result = new PageParameters();
-          result.put(AbstractSecurityPage.ServiceNameKey, serviceName);
-          return result;
-      }
       
       protected void createUserPasswordAuthProvider(String name, String ugName) throws Exception{
           UsernamePasswordAuthenticationProviderConfig config = new 
@@ -281,5 +284,37 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
           config.setUserGroupServiceName(ugName);
           getSecurityManager().saveAuthenticationProvider(config,
                   !getSecurityManager().listAuthenticationProviders().contains(name));
+      }
+      
+      protected AbstractSecurityPage initializeForRoleServiceNamed(String name) {
+          initializeForService(name, "1");
+          tester.assertRenderedPage(RoleTabbedPage.class);
+          return (AbstractSecurityPage) tester.getLastRenderedPage();
+      }
+      
+      protected AbstractSecurityPage initializeForUGServiceNamed(String name) {
+          initializeForService(name, "0");
+          tester.assertRenderedPage(UserGroupTabbedPage.class);
+          return (AbstractSecurityPage) tester.getLastRenderedPage();
+      }
+
+      
+      private void initializeForService(String name,String tabIndex) {
+          Page tabbedPage=new SecurityServicesTabbedPage();
+          tester.startPage(tabbedPage);
+          tester.assertRenderedPage(tabbedPage.getPageClass());
+          AjaxTabbedPanel tabbedPanel=  (AjaxTabbedPanel) tabbedPage.get(AbstractSecurityPage.TabbedPanelId);
+          String linkId = tabbedPanel.getId()+":tabs-container:tabs:"+tabIndex+":link";        
+          tester.clickLink(linkId,true);
+
+          DataView<SecurityNamedServiceConfig> dv =
+                  (DataView<SecurityNamedServiceConfig>)
+          tabbedPage.get("tabbedPanel:panel:table:listContainer:items");
+          Iterator<Item<SecurityNamedServiceConfig>> it = dv.getItems();
+          while (it.hasNext()) {
+              Item<SecurityNamedServiceConfig> item = it.next();
+              if (name.equals(item.getModelObject().getName()))
+                  tester.clickLink(item.getPageRelativePath()+":itemProperties:0:component:link");
+          }          
       }
 }

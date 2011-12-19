@@ -7,18 +7,15 @@
 package org.geoserver.web.security.config.details;
 
 import java.lang.reflect.Method;
-import java.util.SortedSet;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
-import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.AuthenticationProviderPage;
 import org.geoserver.web.security.config.GlobalTabbedPage;
 import org.geoserver.web.security.config.list.AuthenticationServicesPanel;
-import org.geoserver.web.security.group.SelectionGroupRemovalLink;
 
 public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetailsPanelTest {
 
@@ -45,16 +42,16 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
     }
     
     protected void setUGName(String serviceName){
-        form.setValue("details:config.userGroupServiceName", serviceName);
+        formTester.setValue("details:config.userGroupServiceName", serviceName);
     }
     
     protected String getUGServiceName(){
-        return form.getForm().get("details:config.userGroupServiceName").getDefaultModelObjectAsString();
+        return formTester.getForm().get("details:config.userGroupServiceName").getDefaultModelObjectAsString();
     }
     
     
                                 
-    public void testAdd() throws Exception{
+    public void testAddModifyRemove() throws Exception{
         initializeForXML();
         
         activatePanel();
@@ -83,16 +80,25 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
         newFormTester();
         setSecurityConfigName("default2");
         setSecurityConfigClassName(UsernamePasswordAuthenticationProvider.class.getName());
-        setUGName("default");
+        setUGName("default");        
         clickSave();
         
         
         tester.assertRenderedPage(tabbedPage.getClass());
         assertEquals(2, countItmes());        
         assertNotNull(getSecurityNamedServiceConfig("default"));
+        
         UsernamePasswordAuthenticationProviderConfig authConfig=
                 (UsernamePasswordAuthenticationProviderConfig)
                 getSecurityNamedServiceConfig("default2");
+        assertNotNull(authConfig);
+        assertEquals("default2",authConfig.getName());
+        assertEquals(UsernamePasswordAuthenticationProvider.class.getName(),authConfig.getClassName());
+        assertEquals("default",authConfig.getUserGroupServiceName());
+
+        // reload from manager
+        authConfig=(UsernamePasswordAuthenticationProviderConfig)
+                getSecurityManager().loadAuthenticationProviderConfig("default2");
         assertNotNull(authConfig);
         assertEquals("default2",authConfig.getName());
         assertEquals(UsernamePasswordAuthenticationProvider.class.getName(),authConfig.getClassName());
@@ -138,7 +144,13 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
                 getSecurityNamedServiceConfig("default2");
         assertEquals("test",authConfig.getUserGroupServiceName());
         
-        doRemove("tabbedPanel:panel:removeSelected","default2");                
+        // reload from manager
+        authConfig=(UsernamePasswordAuthenticationProviderConfig)
+                getSecurityManager().loadAuthenticationProviderConfig("default2");
+        assertEquals("test",authConfig.getUserGroupServiceName());
+
+        
+        doRemove("tabbedPanel:panel:removeSelected");
     }
     
     @Override
@@ -146,7 +158,10 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
         SelectionNamedServiceRemovalLink link =   
                 (SelectionNamedServiceRemovalLink)  getRemoveLink();
         Method m = link.getDelegate().getClass().getDeclaredMethod("onSubmit", AjaxRequestTarget.class,Component.class);
-        m.invoke(link.getDelegate(), null,null);        
+        m.invoke(link.getDelegate(), null,null);
+        
+        assertNull(getSecurityManager().loadAuthenticationProviderConfig("default2"));
+        assertNotNull(getSecurityManager().loadAuthenticationProviderConfig("default"));
     }
 
 }

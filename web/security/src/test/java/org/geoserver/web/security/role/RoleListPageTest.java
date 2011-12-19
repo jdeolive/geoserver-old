@@ -6,52 +6,64 @@ import java.util.List;
 import java.util.SortedSet;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.security.AbstractListPageTest;
+import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.AbstractTabbedListPageTest;
+import org.geoserver.web.security.config.RoleTabbedPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public class RoleListPageTest extends AbstractListPageTest<GeoserverRole> {
+public class RoleListPageTest extends AbstractTabbedListPageTest<GeoserverRole> {
     
     public static final String SECOND_COLUM_PATH="itemProperties:1:component:link";
     
+    protected  String getServiceName() {
+        return getRoleServiceName();
+    }
 
-    protected Page listPage(PageParameters params) {
-        if (params==null)
-            params = getParamsForService(getRoleServiceName()); 
-       return new  RolePanel(params);
+    protected AbstractSecurityPage listPage(String roleServiceName) {
+        RoleTabbedPage result = (RoleTabbedPage) 
+                initializeForRoleServiceNamed(roleServiceName);
+        tester.clickLink(getTabbedPanelPath()+":tabs-container:tabs:1:link", true);
+        return result;
     }
-    protected Page newPage(Object...params) {
+    protected AbstractSecurityPage newPage(AbstractSecurityPage page,Object...params) {
         if (params.length==0)
-            return new  NewRolePage(getSecurityManager().getActiveRoleService().getName());
+            return new  NewRolePage(getSecurityManager().getActiveRoleService().getName(),page);
         else
-            return new  NewRolePage((String) params[0]);
+            return new  NewRolePage((String) params[0],page);
     }
-    protected Page editPage(Object...params) {
+    protected AbstractSecurityPage editPage(AbstractSecurityPage page,Object...params) {
         if (params.length==0) {
             return new  EditRolePage(
                     getSecurityManager().getActiveRoleService().getName(),
-                    GeoserverRole.ADMIN_ROLE);            
+                    GeoserverRole.ADMIN_ROLE,page);            
         }
         if (params.length==1)
             return new  EditRolePage(
                     getSecurityManager().getActiveRoleService().getName(),
-                    (GeoserverRole) params[0]);
+                    (GeoserverRole) params[0],page);
         else
             return new  EditRolePage((String) params[0],
-                    (GeoserverRole) params[1]);
+                    (GeoserverRole) params[1],page);
     }
 
-
+    protected String getTabbedPanelPath() {
+        return "RoleTabbedPage";
+        
+    };
+    
+    protected String getItemsPath() {
+        return getTabbedPanelPath()+":panel:table:listContainer:items";
+    };
     
     
     public void testEditParentRole() throws Exception {
         initializeForXML();
         insertValues();
         
-        tester.startPage(listPage(null));
+        tester.startPage(listPage(getRoleServiceName()));
                    
         GeoserverRole role = gaService.getRoleByName("ROLE_AUTHENTICATED");
         assertNotNull(role);
@@ -99,13 +111,13 @@ public class RoleListPageTest extends AbstractListPageTest<GeoserverRole> {
     
     public void testReadOnlyService() throws Exception{
         initializeForXML();
-        tester.startPage(listPage(null));
+        listPage(getRoleServiceName());
         tester.assertVisible(getRemoveLink().getPageRelativePath());
         tester.assertVisible(getAddLink().getPageRelativePath());
         
         activateRORoleService();
         
-        tester.startPage(listPage(getParamsForService(getRORoleServiceName())));
+        listPage(getRORoleServiceName());
         tester.assertInvisible(getRemoveLink().getPageRelativePath());
         tester.assertInvisible(getAddLink().getPageRelativePath());        
     }

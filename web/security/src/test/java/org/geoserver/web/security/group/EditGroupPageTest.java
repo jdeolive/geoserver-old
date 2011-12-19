@@ -5,7 +5,9 @@ import java.util.SortedSet;
 import org.apache.wicket.util.tester.FormTester;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
+import org.geoserver.web.security.config.UserGroupTabbedPage;
 import org.geoserver.web.security.role.NewRolePage;
 
 public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
@@ -22,8 +24,9 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
     protected void doTestFill() throws Exception {
         insertValues();        
         
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getUserGroupServiceName());
         tester.startPage(page=new EditGroupPage(getUserGroupServiceName(),
-                ugService.getGroupByGroupname("group1")));        
+                ugService.getGroupByGroupname("group1"),returnPage));        
         tester.assertRenderedPage(EditGroupPage.class);
         
         tester.assertRenderedPage(EditGroupPage.class);
@@ -61,8 +64,9 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         form=tester.newFormTester("groupForm");
         form.submit("save");
         
+        tester.assertRenderedPage(UserGroupTabbedPage.class);
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(GroupPage.class);
+        
         
         GeoserverUserGroup group = ugService.getGroupByGroupname("group1");
         assertNotNull(group);
@@ -81,9 +85,9 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
     protected void doTestReadOnlyUserGroupService() throws Exception {
         insertValues();
         activateROUGService();
-        
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getROUserGroupServiceName());        
         tester.startPage(page=new EditGroupPage(getROUserGroupServiceName(),
-                ugService.getGroupByGroupname("group1")));
+                ugService.getGroupByGroupname("group1"),returnPage));
         tester.assertRenderedPage(EditGroupPage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:groupname").isEnabled());
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:enabled").isEnabled());
@@ -93,6 +97,7 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         FormTester form=tester.newFormTester("groupForm");
         form.setValue("roles:roles:recorder", gaService.getRoleByName("ROLE_WFS").getAuthority());
         form.submit("save");
+        tester.assertRenderedPage(UserGroupTabbedPage.class);
         
         SortedSet<GeoserverRole> roleList = gaService.getRolesForGroup("group1");
         assertEquals(1,roleList.size());
@@ -109,8 +114,8 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         insertValues();
         
         activateRORoleService();
-        
-        tester.startPage(page=new EditGroupPage(getUserGroupServiceName(),ugService.getGroupByGroupname("group1")));
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getUserGroupServiceName());
+        tester.startPage(page=new EditGroupPage(getUserGroupServiceName(),ugService.getGroupByGroupname("group1"),returnPage));
         tester.assertRenderedPage(EditGroupPage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:groupname").isEnabled());
         assertTrue(tester.getComponentFromLastRenderedPage("groupForm:enabled").isEnabled());
@@ -120,7 +125,8 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         FormTester form = tester.newFormTester("groupForm");
         form.setValue("enabled", Boolean.FALSE);
         form.submit("save");
-
+        tester.assertRenderedPage(UserGroupTabbedPage.class);
+        
         GeoserverUserGroup group = ugService.getGroupByGroupname("group1");
         assertNotNull(group);
         assertFalse(group.isEnabled());
@@ -132,8 +138,9 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         activateROUGService();
         activateRORoleService();
         
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getROUserGroupServiceName());
         tester.startPage(page=new EditGroupPage(getROUserGroupServiceName(),
-                ugService.getGroupByGroupname("group1")));
+                ugService.getGroupByGroupname("group1"),returnPage));
         tester.assertRenderedPage(EditGroupPage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:groupname").isEnabled());
         assertFalse(tester.getComponentFromLastRenderedPage("groupForm:enabled").isEnabled());

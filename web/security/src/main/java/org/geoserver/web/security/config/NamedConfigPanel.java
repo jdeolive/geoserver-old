@@ -36,8 +36,8 @@ import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.config.validation.SecurityConfigException;
 import org.geoserver.security.password.PasswordValidator;
+import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.details.AbstractNamedConfigDetailsPanel;
@@ -72,13 +72,12 @@ public class NamedConfigPanel extends Panel {
         add(form);        
         name = new TextField<String>("config.name");        
         name.setEnabled(helper.isNew());
-        name.setRequired(true);    
         form.add(name);
         
         List<String> classNames = getImplementations();
-        if (helper.isNew() && classNames.size()>=1) {
-            helper.getConfig().setClassName(classNames.get(0));                
-        }
+//        if (helper.isNew() && classNames.size()>=1) {
+//            helper.getConfig().setClassName(classNames.get(0));                
+//        }
         implClass = new DropDownChoice<String>("config.className",                  
             //new PropertyModel<String>(model.getObject(), "config.className"),                
             classNames,
@@ -127,17 +126,25 @@ public class NamedConfigPanel extends Panel {
 
         implClass.setEnabled(helper.isNew && classNames.size()>1);
         
-        if (helper.getConfig().getClassName() == null ||
-            helper.getConfig().getClassName().length()==0) {    
-            form.add(new NamedConfigDetailsEmptyPanel(DETAILS_WICKET_ID, model));            
-        } else {
-            form.add(getConfigDetailsPanel(helper.getConfig().getClassName()));
-        }        
+//        if (helper.getConfig().getClassName() == null ||
+//            helper.getConfig().getClassName().length()==0) {    
+//            form.add(new NamedConfigDetailsEmptyPanel(DETAILS_WICKET_ID, model));            
+//        } else {
+//            form.add(getConfigDetailsPanel(helper.getConfig().getClassName()));
+//        }
+
+      if (helper.isNew())
+              form.add(new NamedConfigDetailsEmptyPanel(DETAILS_WICKET_ID, model));
+      else
+          form.add(getConfigDetailsPanel(helper.getConfig().getClassName()));
+
+        
         form.get(DETAILS_WICKET_ID).setOutputMarkupId(true);
                 
         implClass.setRequired(true);        
         implClass.setOutputMarkupId(true);
-        implClass.setNullValid(false);
+        //implClass.setNullValid(false);
+        implClass.setNullValid(true);
         form.add(implClass);
         
         form.add(getCancelLink(responsePage));
@@ -204,7 +211,7 @@ public class NamedConfigPanel extends Panel {
                         setResponsePage(responsePage);
                     } catch (SecurityConfigException se) {    
                       error(new ParamResourceModel("security."+se.getErrorId()
-                              , null, se.getArgs()));
+                              , null, se.getArgs()).getObject());
                     } catch (IOException e) {
                         form.error(e.getMessage());
                         LOGGER.log(Level.SEVERE,e.getMessage(),e);                        

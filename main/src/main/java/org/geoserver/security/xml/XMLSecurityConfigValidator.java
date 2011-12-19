@@ -13,9 +13,9 @@ import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
-import org.geoserver.security.config.validation.SecurityConfigException;
-import org.geoserver.security.config.validation.SecurityConfigValidationErrors;
-import org.geoserver.security.config.validation.SecurityConfigValidator;
+import org.geoserver.security.validation.SecurityConfigException;
+import org.geoserver.security.validation.SecurityConfigValidationErrors;
+import org.geoserver.security.validation.SecurityConfigValidator;
 
 
 /**
@@ -46,7 +46,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     }
     
     protected void validateFileName(String fileName) throws SecurityConfigException {
-        if (fileName==null || fileName.length()==0)
+        if (isNotEmpty(fileName)==false)
             throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_104);
     }
     
@@ -149,20 +149,61 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
         checkFile(file);        
     }
 
+    protected File getTempDir() {
+        String tempPath = System.getProperty("java.io.tmpdir");
+        if (tempPath==null)
+            return null;
+        File tempDir = new File(tempPath);
+        if (tempDir.exists()==false) return null;
+        if (tempDir.isDirectory()==false) return null;
+        if (tempDir.canWrite()==false) return null;
+        return tempDir;
+    }
+    
     protected void checkFile(File file) throws SecurityConfigException {
-        if (file.isAbsolute()==false) return;
-        try {
-            if (file.exists()==false) {
-                file.createNewFile();
-                file.delete();
+        File testFile = null;
+        try {            
+            if (file.isAbsolute()) {
+                testFile=file;
+            } else {
+                File tempDir = getTempDir();
+                if (tempDir==null) return; // cannot check relative file name
+                testFile=new File(tempDir,file.getPath());
+            }
+         
+            if (testFile.exists()==false) {
+                testFile.createNewFile();
+                testFile.delete();
             }
         } catch (IOException ex) {
-            try {
-                throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_101,
-                        file.getCanonicalPath());
-            } catch (IOException ex2) {
-                throw new RuntimeException(ex2);
-            }
-        }                
+            throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_101,
+                    file.getPath());
+        }
+    }
+    
+    @Override
+    public void validateModifiedRoleService(SecurityRoleServiceConfig config,
+            SecurityRoleServiceConfig oldConfig) throws SecurityConfigException {
+        super.validateModifiedRoleService(config, oldConfig);
+        XMLFileBasedRoleServiceConfigImpl old = (XMLFileBasedRoleServiceConfigImpl) oldConfig;
+        XMLFileBasedRoleServiceConfigImpl modified = (XMLFileBasedRoleServiceConfigImpl) config;
+        
+        if (old.getFileName().equals(
+                modified.getFileName()) == false) 
+                throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_105,
+                        old.getFileName(),modified.getFileName());
+    }
+    @Override
+    public void validateModifiedUserGroupService(SecurityUserGroupServiceConfig config,
+            SecurityUserGroupServiceConfig oldConfig) throws SecurityConfigException {
+        super.validateModifiedUserGroupService(config, oldConfig);
+        XMLFileBasedUserGroupServiceConfigImpl old = (XMLFileBasedUserGroupServiceConfigImpl) oldConfig;
+        XMLFileBasedUserGroupServiceConfigImpl modified = (XMLFileBasedUserGroupServiceConfigImpl) config;
+        
+        if (old.getFileName().equals(
+                modified.getFileName()) == false) 
+                throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_105,
+                        old.getFileName(),modified.getFileName());
+
     }
 }

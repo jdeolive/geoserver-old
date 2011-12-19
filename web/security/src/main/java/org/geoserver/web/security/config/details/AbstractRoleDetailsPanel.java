@@ -52,13 +52,15 @@ public abstract class AbstractRoleDetailsPanel extends AbstractNamedConfigDetail
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
             }
+        } else {
+            rolesList.add(GeoserverRole.ADMIN_ROLE.getAuthority());
         }
         
         
         
         adminRoleName =  
                 new DropDownChoice<String>("config.adminRoleName",rolesList);
-        adminRoleName.setNullValid(true);
+        adminRoleName.setNullValid(false);
         adminRoleName.setEnabled(rolesList.size()>0);
         add(adminRoleName);
 

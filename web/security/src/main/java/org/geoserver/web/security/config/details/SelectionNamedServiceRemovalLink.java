@@ -17,9 +17,9 @@ import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.config.validation.SecurityConfigException;
-import org.geoserver.security.config.validation.SecurityConfigValidator;
 import org.geoserver.security.password.PasswordValidator;
+import org.geoserver.security.validation.SecurityConfigException;
+import org.geoserver.security.validation.SecurityConfigValidator;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
@@ -77,7 +77,7 @@ public class SelectionNamedServiceRemovalLink extends AjaxLink<Object> {
                 try {
                     for (SecurityNamedServiceConfig config : removePanel.getRoots()) {                     
                         if (serviceClass==GeoServerAuthenticationProvider.class)
-                            manager.removeAuthenticationFilter((SecurityAuthProviderConfig)config);
+                            manager.removeAuthenticationProvider((SecurityAuthProviderConfig)config);
                         if (serviceClass==GeoserverAuthenticationProcessingFilter.class)
                             manager.removeAuthenticationFilter(config);
                         if (serviceClass==PasswordValidator.class)

@@ -35,6 +35,9 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
     protected void tearDownInternal() throws Exception {
         super.tearDownInternal();
         if (getSecurityManager().listRoleServices().contains("test")) {
+            GeoserverRoleStore store = getSecurityManager().loadRoleService("test").createStore();
+            store.clear();
+            store.store();
             getSecurityManager().removeRoleService(
                     getSecurityManager().loadRoleServiceConfig("test"));
         }

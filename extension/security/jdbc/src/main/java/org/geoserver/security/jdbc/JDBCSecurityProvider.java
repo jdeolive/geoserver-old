@@ -15,12 +15,12 @@ import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.validation.SecurityConfigValidator;
 import org.geoserver.security.impl.MemorySecurityConfigValidator;
 import org.geoserver.security.jdbc.config.impl.JdbcJndiRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcJndiUserGroupServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
+import org.geoserver.security.validation.SecurityConfigValidator;
 
 /**
  * Provider for JDBC based security services.

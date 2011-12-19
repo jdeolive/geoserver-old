@@ -1,23 +1,38 @@
 package org.geoserver.web.security.role;
 
+import java.util.Iterator;
+
+import org.apache.wicket.Page;
+import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.feedback.FeedbackMessage;
+import org.apache.wicket.markup.repeater.Item;
+import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.util.tester.FormTester;
+import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
+import org.geoserver.web.security.config.RoleTabbedPage;
+import org.geoserver.web.security.config.SecurityServicesTabbedPage;
 
 public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
 
     NewRolePage page;
+     
 
     public void testFill() throws Exception{
         initializeForXML();
         doTestFill();
     }
+    
 
     protected void doTestFill() throws Exception {
         
         insertValues();        
-        tester.startPage(page=new NewRolePage(getRoleServiceName()));
+        
+        AbstractSecurityPage returnPage = initializeForRoleServiceNamed(getRoleServiceName());
+                        
+        tester.startPage(page=new NewRolePage(getRoleServiceName(),returnPage));
         
         tester.assertRenderedPage(NewRolePage.class);
         
@@ -43,9 +58,8 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
         form.setValue("roleparameditor:editortable:editor:1:value", "10 10 20 20");
                 
         form.submit("save");
-        
+        tester.assertRenderedPage(RoleTabbedPage.class);        
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(RolePanel.class);
         
         GeoserverRole role = gaService.getRoleByName("ROLE_TEST");
         assertNotNull(role);
@@ -60,7 +74,8 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
     public void testRoleNameConflict() throws Exception {
         initializeForXML();
         insertValues();        
-        tester.startPage(page=new NewRolePage(getRoleServiceName()));
+        AbstractSecurityPage returnPage = initializeForRoleServiceNamed(getRoleServiceName());
+        tester.startPage(page=new NewRolePage(getRoleServiceName(),returnPage));
         
         FormTester form = tester.newFormTester("roleForm");
         form.setValue("rolename", "ROLE_WFS");
@@ -74,9 +89,10 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
     public void testInvalidWorkflow() throws Exception{
         initializeForXML();
         activateRORoleService();
+        AbstractSecurityPage returnPage = initializeForRoleServiceNamed(getRORoleServiceName());
         boolean fail = true;
         try {
-            tester.startPage(page=new NewRolePage(getRORoleServiceName()));
+            tester.startPage(page=new NewRolePage(getRORoleServiceName(),returnPage));
         } catch (RuntimeException ex) {
             fail = false;
         }

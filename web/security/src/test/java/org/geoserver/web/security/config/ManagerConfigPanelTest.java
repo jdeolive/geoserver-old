@@ -64,7 +64,7 @@ public  class ManagerConfigPanelTest extends AbstractSecurityWicketTestSupport {
         
         assertEquals(false,hasAuthProviderImpl(AnonymousAuthenticationProvider.class));
         assertEquals(true,manager.isEncryptingUrlParams());
-        assertEquals("strongConfigPasswordEncoder",manager.getConfigPasswordEncrypterName());
+        assertEquals(GeoserverConfigPlainTextPasswordEncoder.BeanName,manager.getConfigPasswordEncrypterName());
         assertEquals(getRORoleServiceName(),manager.getActiveRoleService().getName());
         
         boolean authProvFound = false;

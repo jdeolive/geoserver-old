@@ -5,40 +5,41 @@ import java.lang.reflect.Method;
 import java.util.SortedSet;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.impl.GeoserverUserGroup;
-import org.geoserver.web.security.AbstractListPageTest;
+import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.AbstractTabbedListPageTest;
+import org.geoserver.web.security.config.UserGroupTabbedPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public class GroupListPageTest extends AbstractListPageTest<GeoserverUserGroup> {
+public class GroupListPageTest extends AbstractTabbedListPageTest<GeoserverUserGroup> {
     boolean withRoles=false;
         
-    protected Page listPage(PageParameters params ) {
-        if (params==null)
-            params = getParamsForService(getUserGroupServiceName());
-        return new  GroupPage(params);
+    protected AbstractSecurityPage listPage(String serviceName ) {
+        UserGroupTabbedPage result = (UserGroupTabbedPage) 
+                initializeForUGServiceNamed(serviceName);
+        tester.clickLink(getTabbedPanelPath()+":tabs-container:tabs:2:link", true);
+        return result;
     }
-    protected Page newPage(Object...params) {
+    protected AbstractSecurityPage newPage(AbstractSecurityPage page,Object...params) {
         if (params.length==0)
-            return new  NewGroupPage(getUserGroupServiceName());
+            return new  NewGroupPage(getUserGroupServiceName(),page);
         else
-            return new  NewGroupPage((String) params[0]);
+            return new  NewGroupPage((String) params[0],page);
     }
-    protected Page editPage(Object...params) {
+    protected AbstractSecurityPage editPage(AbstractSecurityPage page,Object...params) {
         if (params.length==0) {
             return new  EditGroupPage(
                     getUserGroupServiceName(),
-                    new GeoserverUserGroup("dummygroup"));            
+                    new GeoserverUserGroup("dummygroup"),page);            
         }
         if (params.length==1)
             return new  EditGroupPage(
                     getUserGroupServiceName(),
-                    (GeoserverUserGroup) params[0]);
+                    (GeoserverUserGroup) params[0],page);
         else
             return new  EditGroupPage( (String) params[0],
-                    (GeoserverUserGroup) params[1]);                    
+                    (GeoserverUserGroup) params[1],page);                    
     }
 
 
@@ -64,19 +65,19 @@ public class GroupListPageTest extends AbstractListPageTest<GeoserverUserGroup> 
     
     public void testReadOnlyService() throws Exception {
         initializeForXML();
-        tester.startPage(listPage(null));
+        tester.startPage(listPage(getUserGroupServiceName()));
         tester.assertVisible(getRemoveLink().getPageRelativePath());
         tester.assertVisible(getRemoveLinkWithRoles().getPageRelativePath());
         tester.assertVisible(getAddLink().getPageRelativePath());
         
         activateRORoleService();
-        tester.startPage(listPage(null));
+        tester.startPage(listPage(getUserGroupServiceName()));
         tester.assertVisible(getRemoveLink().getPageRelativePath());
         tester.assertInvisible(getRemoveLinkWithRoles().getPageRelativePath());
         tester.assertVisible(getAddLink().getPageRelativePath());
         
         activateROUGService();
-        tester.startPage(listPage(getParamsForService(getROUserGroupServiceName())));
+        tester.startPage(listPage(getROUserGroupServiceName()));
         tester.assertInvisible(getRemoveLink().getPageRelativePath());
         tester.assertInvisible(getAddLink().getPageRelativePath());
         tester.assertInvisible(getRemoveLinkWithRoles().getPageRelativePath());
@@ -103,7 +104,15 @@ public class GroupListPageTest extends AbstractListPageTest<GeoserverUserGroup> 
         initializeForXML();
         insertValues();
         addAdditonalData();
-        doRemove("headerPanel:removeSelectedWithRoles");
+        doRemove(getTabbedPanelPath()+":panel:removeSelectedWithRoles");
+    }
+    @Override
+    protected String getTabbedPanelPath() {
+        return "UserGroupTabbedPage";
+    }
+    @Override
+    protected String getServiceName() {
+        return getUserGroupServiceName();
     }
     
 }

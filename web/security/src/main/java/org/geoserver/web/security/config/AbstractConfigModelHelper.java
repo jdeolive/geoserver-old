@@ -83,4 +83,5 @@ public abstract  class AbstractConfigModelHelper<T extends SecurityConfig> imple
         byte[] bytes = serializeConfg(config);
         return ! (bytes.equals(serializedInitialConfig));
     }
+    
 }

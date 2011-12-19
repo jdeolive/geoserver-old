@@ -3,9 +3,9 @@
  * application directory.
  */
 
-package org.geoserver.security.config.validation;
+package org.geoserver.security.validation;
 
-import static org.geoserver.security.config.validation.SecurityConfigValidationErrors.*;
+import static org.geoserver.security.validation.SecurityConfigValidationErrors.*;
 
 
 import java.io.IOException;
@@ -13,7 +13,6 @@ import java.util.SortedSet;
 
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerAuthenticationProvider;
-import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverAuthenticationProcessingFilter;
 import org.geoserver.security.GeoserverRoleService;
@@ -31,9 +30,9 @@ import org.geoserver.security.password.GeoserverUserPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
-public class SecurityConfigValidator {
 
-    protected GeoServerSecurityManager manager;
+public class SecurityConfigValidator extends AbstractSecurityValidator{
+
 
     
     /**
@@ -48,9 +47,6 @@ public class SecurityConfigValidator {
         return prov.getConfigurationValidator();
     }
     
-    public SecurityConfigValidator() {
-        manager=GeoServerExtensions.bean(GeoServerSecurityManager.class);
-    }
     
     /**
      * Checks the {@link SecurityManagerConfig} object
@@ -62,8 +58,7 @@ public class SecurityConfigValidator {
         
         String encrypterName =config.getConfigPasswordEncrypterName();
         GeoserverConfigPasswordEncoder encoder = null;
-        if (encrypterName==null || 
-                encrypterName.length()==0) {
+        if (isNotEmpty(encrypterName)==false) {
             throw createSecurityException(SEC_ERR_07);
         }
         
@@ -122,9 +117,7 @@ public class SecurityConfigValidator {
     
     protected void checkServiceName(Class<?> extensionPoint,String name) throws SecurityConfigException{
         if (name==null || name.isEmpty())
-                throw createSecurityException(SEC_ERR_22);
-            
-            
+                throw createSecurityException(SEC_ERR_22);                        
     }
     
     protected  SortedSet<String> getNamesFor(Class<?> extensionPoint) {
@@ -163,6 +156,7 @@ public class SecurityConfigValidator {
         
     }
 
+        
     protected void validateRemoveNamedService(Class<?> extensionPoint,SecurityNamedServiceConfig config) throws SecurityConfigException{
         checkServiceName(extensionPoint, config.getName());
     }
@@ -192,27 +186,27 @@ public class SecurityConfigValidator {
         validateAddNamedService(GeoserverAuthenticationProcessingFilter.class, config);        
     }
     
-    public void validateModifiedUserGroupService(SecurityUserGroupServiceConfig config) throws SecurityConfigException{
+    public void validateModifiedUserGroupService(SecurityUserGroupServiceConfig config,SecurityUserGroupServiceConfig oldConfig) throws SecurityConfigException{
         validateModifiedNamedService(GeoserverUserGroupService.class, config);
         validate(config);
     }
     
-    public void validateModifiedRoleService(SecurityRoleServiceConfig config) throws SecurityConfigException{
+    public void validateModifiedRoleService(SecurityRoleServiceConfig config,SecurityRoleServiceConfig oldConfig) throws SecurityConfigException{
         validateModifiedNamedService(GeoserverRoleService.class, config);
         validate(config);
     }
 
-    public void validateModifiedPasswordPolicy(PasswordPolicyConfig config) throws SecurityConfigException{
+    public void validateModifiedPasswordPolicy(PasswordPolicyConfig config,PasswordPolicyConfig oldConfig) throws SecurityConfigException{
         validateModifiedNamedService(PasswordValidator.class, config);
         validate(config);
     }
     
-    public void validateModifiedAuthProvider(SecurityAuthProviderConfig config) throws SecurityConfigException{
+    public void validateModifiedAuthProvider(SecurityAuthProviderConfig config,SecurityAuthProviderConfig oldconfig) throws SecurityConfigException{
         validateModifiedNamedService(GeoServerAuthenticationProvider.class, config);
         validate(config);        
     }
 
-    public void validateModifiedFilter(SecurityNamedServiceConfig config) throws SecurityConfigException{
+    public void validateModifiedFilter(SecurityNamedServiceConfig config,SecurityNamedServiceConfig oldConfig) throws SecurityConfigException{
         validateModifiedNamedService(GeoserverAuthenticationProcessingFilter.class, config);        
     }
     
@@ -224,7 +218,7 @@ public class SecurityConfigValidator {
                 SecurityAuthProviderConfig authConfig = 
                         manager.loadAuthenticationProviderConfig(name);
                 String userGroupService=authConfig.getUserGroupServiceName();
-                if (userGroupService!=null && userGroupService.length()!=0) {
+                if (isNotEmpty(userGroupService)) {
                     if (authConfig.getUserGroupServiceName().equals(config.getName()))
                         throw createSecurityException(SEC_ERR_35, config.getName(),authConfig.getName());
                 }    
@@ -274,8 +268,7 @@ public class SecurityConfigValidator {
 
 
     public void validate(SecurityAuthProviderConfig config) throws SecurityConfigException {
-        if (config.getUserGroupServiceName() !=null && 
-                config.getUserGroupServiceName().length()>0) {
+        if (isNotEmpty(config.getUserGroupServiceName())) {
             if (getNamesFor(GeoserverUserGroupService.class).
                     contains(config.getUserGroupServiceName())==false)
                     throw createSecurityException(SEC_ERR_24d,
@@ -292,8 +285,7 @@ public class SecurityConfigValidator {
     public void validate(SecurityUserGroupServiceConfig config) throws SecurityConfigException {
         String encoderName =config.getPasswordEncoderName();
         GeoserverUserPasswordEncoder encoder = null;
-        if (encoderName!=null && 
-                encoderName.length()>0) {
+        if (isNotEmpty(encoderName)) {
             Object o=null;
             try {
                 o = GeoServerExtensions.bean(encoderName);
@@ -313,7 +305,7 @@ public class SecurityConfigValidator {
         }
         
         String policyName= config.getPasswordPolicyName();
-        if (policyName==null || policyName.length()==0) {
+        if (isNotEmpty(policyName)==false) {
             throw createSecurityException(SEC_ERR_33, config.getName());
         }
         
@@ -344,7 +336,14 @@ public class SecurityConfigValidator {
             return id+"e";
         throw new RuntimeException("Unkonw extension point: "+extPoint.getName());
     }
-        
+
+
+    @Override
+    protected AbstractSecurityValidationErrors getSecurityErrors() {
+        return new SecurityConfigValidationErrors();
+    }
+
+
     /**
      * Helper method for creating a proper
      * {@link SecurityConfigException} object
@@ -355,15 +354,7 @@ public class SecurityConfigValidator {
      */
     protected SecurityConfigException createSecurityException (String errorid, Object ...args) {
         String message = getSecurityErrors().formatErrorMsg(errorid, args);
-        return new SecurityConfigException(errorid, message,args);
+        return new SecurityConfigException(errorid,message,args);
     }
-    
-    /**
-     * Sublasses should override for additional messages 
-     * 
-     * @return
-     */
-    protected SecurityConfigValidationErrors getSecurityErrors() {
-        return new SecurityConfigValidationErrors();
-    }
+        
 }

@@ -5,8 +5,21 @@
 <body>
 <wicket:extend>
 	<fieldset>
-		<div wicket:id="xmlFileFormComponent"></div>
-	</fieldset>
+	<ul>	
+	 	<li>
+ 		<label for="config.fileName"><wicket:message key="fileName"></wicket:message></label>
+ 		<input type="text" wicket:id="config.fileName" /> 
+		</li>				
+		<li>
+ 		<label for="config.checkInterval"><wicket:message key="checkInterval"></wicket:message></label>
+ 		<input type="text" wicket:id="config.checkInterval" /> 
+		</li>	
+		<li>		
+ 		<label for="config.validating"><wicket:message key="validating">validating</wicket:message></label>
+ 		<input type="checkbox" wicket:id="config.validating" /> 		 
+		</li>
+	</ul>
+	</fieldset>	
 </wicket:extend>
 </body>
 </html>

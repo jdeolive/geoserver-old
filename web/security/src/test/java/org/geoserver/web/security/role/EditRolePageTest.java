@@ -2,7 +2,10 @@ package org.geoserver.web.security.role;
 
 import org.apache.wicket.util.tester.FormTester;
 import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
+import org.geoserver.web.security.config.RoleTabbedPage;
+import org.geoserver.web.security.config.UserGroupTabbedPage;
 
 public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
 
@@ -21,7 +24,8 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
     protected void doTestFill() throws Exception {
         insertValues();        
         
-        tester.startPage(page=new EditRolePage(getRoleServiceName(),gaService.getRoleByName("ROLE_WFS")));        
+        AbstractSecurityPage returnPage = initializeForRoleServiceNamed(getRoleServiceName());
+        tester.startPage(page=new EditRolePage(getRoleServiceName(),gaService.getRoleByName("ROLE_WFS"),returnPage));        
         tester.assertRenderedPage(EditRolePage.class);
         
         assertFalse(tester.getComponentFromLastRenderedPage("roleForm:rolename").isEnabled());
@@ -51,9 +55,8 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
         form.setValue("roleparameditor:editortable:editor:1:value", "10 10 20 20");
                 
         form.submit("save");
-        
+        tester.assertRenderedPage(RoleTabbedPage.class);
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(RolePanel.class);
         
         GeoserverRole role = gaService.getRoleByName("ROLE_WFS");
         assertNotNull(role);
@@ -67,7 +70,8 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
     protected void doTestFill2() throws Exception {
         insertValues();        
         
-        tester.startPage(page=new EditRolePage(getRoleServiceName(),gaService.getRoleByName("ROLE_AUTHENTICATED")));        
+        AbstractSecurityPage returnPage = initializeForRoleServiceNamed(getRoleServiceName());
+        tester.startPage(page=new EditRolePage(getRoleServiceName(),gaService.getRoleByName("ROLE_AUTHENTICATED"),returnPage));        
         tester.assertRenderedPage(EditRolePage.class);
         
         tester.assertModelValue("roleForm:rolename", "ROLE_AUTHENTICATED");
@@ -82,6 +86,7 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
         tester.executeAjaxEvent("roleForm:roleparameditor:editortable:editor:2:remove", "onclick");
         FormTester form = tester.newFormTester("roleForm");
         form.submit("save");
+        tester.assertRenderedPage(RoleTabbedPage.class);
 
         GeoserverRole role = gaService.getRoleByName("ROLE_AUTHENTICATED");
         assertNotNull(role);
@@ -94,7 +99,8 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
         initializeForXML();
         activateRORoleService();
         
-        tester.startPage(page=new EditRolePage(getRORoleServiceName(),GeoserverRole.ADMIN_ROLE));
+        AbstractSecurityPage returnPage = initializeForRoleServiceNamed(getRORoleServiceName());
+        tester.startPage(page=new EditRolePage(getRORoleServiceName(),GeoserverRole.ADMIN_ROLE,returnPage));
         tester.assertRenderedPage(EditRolePage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("roleForm:rolename").isEnabled());
         assertFalse(tester.getComponentFromLastRenderedPage("roleForm:roleparameditor").isEnabled());
