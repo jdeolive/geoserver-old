@@ -7,7 +7,7 @@ package org.geoserver.security.jdbc;
 
 import java.text.MessageFormat;
 
-import org.geoserver.security.config.validation.SecurityConfigValidationErrors;
+import org.geoserver.security.validation.SecurityConfigValidationErrors;
 
 public class JdbcSecurityConfigValidationErrors extends SecurityConfigValidationErrors {
 

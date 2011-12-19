@@ -14,9 +14,9 @@ import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
-import org.geoserver.security.config.validation.SecurityConfigValidator;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.password.PasswordValidatorImpl;
+import org.geoserver.security.validation.SecurityConfigValidator;
 
 /**
  * Security provider for default XML-based implementation.

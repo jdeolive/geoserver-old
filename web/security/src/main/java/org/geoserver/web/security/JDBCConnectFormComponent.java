@@ -236,33 +236,33 @@ public class JDBCConnectFormComponent extends
         
         add(jndiNameLabel=new Label("jndiNameLabel"));
         jndiNameLabel.setVisible(isJndi);
-        jndiNameLabel.setOutputMarkupId(true);
+        jndiNameLabel.setOutputMarkupPlaceholderTag(true);
         
         jndiNameComponent = new TextField<String>("jndiName");
         jndiNameComponent.setVisible(isJndi);
-        jndiNameComponent.setOutputMarkupId(true);
+        jndiNameComponent.setOutputMarkupPlaceholderTag(true);
         add(jndiNameComponent);
 
         usernameComponent = new TextField<String>("username");
         usernameComponent.setVisible(!isJndi);
-        usernameComponent.setOutputMarkupId(true);
+        usernameComponent.setOutputMarkupPlaceholderTag(true);
         add(usernameComponent);
         
         passwordComponent = new TextField<String>("password");
         passwordComponent.setVisible(!isJndi);
-        passwordComponent.setOutputMarkupId(true);
+        passwordComponent.setOutputMarkupPlaceholderTag(true);
         add(passwordComponent);
 
 
         driverNameComponent = new TextField<String>("driverName");
         driverNameComponent.setVisible(!isJndi);
-        driverNameComponent.setOutputMarkupId(true);
+        driverNameComponent.setOutputMarkupPlaceholderTag(true);
         add(driverNameComponent);
 
 
         connectURLComponent = new TextField<String>("connectURL");
         connectURLComponent.setVisible(!isJndi);
-        connectURLComponent.setOutputMarkupId(true);
+        connectURLComponent.setOutputMarkupPlaceholderTag(true);
         add(connectURLComponent);
         
         

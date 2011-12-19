@@ -5,43 +5,42 @@ import java.lang.reflect.Method;
 import java.util.SortedSet;
 
 import org.apache.wicket.Component;
-import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
-import org.geoserver.web.security.AbstractListPageTest;
-import org.geoserver.web.security.group.EditGroupPage;
+import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.AbstractTabbedListPageTest;
+import org.geoserver.web.security.config.UserGroupTabbedPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public class UserListPageTest extends AbstractListPageTest<GeoserverUser> {
+public class UserListPageTest extends AbstractTabbedListPageTest<GeoserverUser> {
     boolean withRoles=false;
     
-    protected Page listPage(PageParameters params ) {
-        if (params==null)
-            params=getParamsForService(getUserGroupServiceName());
-        return new  UserPage(params);
+    protected AbstractSecurityPage listPage(String serviceName ) {
+        UserGroupTabbedPage result = (UserGroupTabbedPage) 
+                initializeForUGServiceNamed(serviceName);
+        tester.clickLink(getTabbedPanelPath()+":tabs-container:tabs:1:link", true);
+        return result;
     }
-    protected Page newPage(Object...params) {
+    protected AbstractSecurityPage newPage(AbstractSecurityPage page,Object...params) {
         if (params.length==0)
-            return new  NewUserPage(getUserGroupServiceName());
+            return new  NewUserPage(getUserGroupServiceName(),page);
         else
-            return new  NewUserPage((String) params[0]);
+            return new  NewUserPage((String) params[0],page);
     }
-    protected Page editPage(Object...params) {
+    protected AbstractSecurityPage editPage(AbstractSecurityPage page,Object...params) {
         if (params.length==0) {
             return new  EditUserPage(
                     getUserGroupServiceName(),
-                    new GeoserverUser("dummyuser"));            
+                    new GeoserverUser("dummyuser"),page);            
         }
 
         if (params.length==1)
             return new  EditUserPage(
                     getUserGroupServiceName(),
-                    (GeoserverUser) params[0]);
+                    (GeoserverUser) params[0],page);
         else
             return new  EditUserPage( (String) params[0],
-                    (GeoserverUser) params[1]);                    
+                    (GeoserverUser) params[1],page);                    
     }
 
 
@@ -52,7 +51,7 @@ public class UserListPageTest extends AbstractListPageTest<GeoserverUser> {
          return u.getUsername();
     }
 
-
+   
     @Override
     protected Property<GeoserverUser> getEditProperty() {
         return UserListProvider.USERNAME;
@@ -67,19 +66,19 @@ public class UserListPageTest extends AbstractListPageTest<GeoserverUser> {
     
     public void testReadOnlyService() throws Exception {
         initializeForXML();
-        tester.startPage(listPage(null));
+        tester.startPage(listPage(getUserGroupServiceName()));
         tester.assertVisible(getRemoveLink().getPageRelativePath());
         tester.assertVisible(getRemoveLinkWithRoles().getPageRelativePath());
         tester.assertVisible(getAddLink().getPageRelativePath());
         
         activateRORoleService();
-        tester.startPage(listPage(null));
+        tester.startPage(listPage(getUserGroupServiceName()));
         tester.assertVisible(getRemoveLink().getPageRelativePath());
         tester.assertInvisible(getRemoveLinkWithRoles().getPageRelativePath());
         tester.assertVisible(getAddLink().getPageRelativePath());
         
         activateROUGService();
-        tester.startPage(listPage(getParamsForService(getROUserGroupServiceName())));
+        tester.startPage(listPage(getROUserGroupServiceName()));
         tester.assertInvisible(getRemoveLink().getPageRelativePath());
         tester.assertInvisible(getAddLink().getPageRelativePath());
         tester.assertInvisible(getRemoveLinkWithRoles().getPageRelativePath());
@@ -105,6 +104,16 @@ public class UserListPageTest extends AbstractListPageTest<GeoserverUser> {
         initializeForXML();
         insertValues();
         addAdditonalData();
-        doRemove("headerPanel:removeSelectedWithRoles");
+        doRemove(getTabbedPanelPath()+":panel:removeSelectedWithRoles");
     }
+    
+    @Override
+    protected String getTabbedPanelPath() {
+        return "UserGroupTabbedPage";
+    }
+    @Override
+    protected String getServiceName() {
+        return getUserGroupServiceName();
+    }
+
 }

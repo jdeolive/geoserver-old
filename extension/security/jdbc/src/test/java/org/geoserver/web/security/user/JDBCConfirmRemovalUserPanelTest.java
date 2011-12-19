@@ -4,12 +4,12 @@
  */
 package org.geoserver.web.security.user;
 
-import java.io.IOException;
-
 import org.geoserver.security.jdbc.H2RoleServiceTest;
 import org.geoserver.security.jdbc.H2UserGroupServiceTest;
 
 public class JDBCConfirmRemovalUserPanelTest extends ConfirmRemovalUserPanelTest{
+
+    private static final long serialVersionUID = 1L;
 
     public void testRemoveUser() throws Exception {
         disassociateRoles=false;
@@ -23,7 +23,7 @@ public class JDBCConfirmRemovalUserPanelTest extends ConfirmRemovalUserPanelTest
         removeObject();
     }
 
-    void initializeForJDBC() throws IOException {
+    void initializeForJDBC() throws Exception {
         initialize(new H2UserGroupServiceTest(), new H2RoleServiceTest());
     }
 }

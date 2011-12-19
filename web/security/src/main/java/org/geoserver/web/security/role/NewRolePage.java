@@ -33,6 +33,10 @@ public class NewRolePage extends AbstractRolePage {
     public NewRolePage(String roleServiceName,AbstractSecurityPage responsePage) {
         super(roleServiceName,new RoleUIModel("", "",null),new Properties(),responsePage);        
         form.add(new RoleConflictValidator());
+        if (hasRoleStore(roleServiceName)==false) {
+            throw new RuntimeException("Workflow error, new role not possible for read only service");
+        }
+
     }
 
     

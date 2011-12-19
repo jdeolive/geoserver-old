@@ -15,10 +15,10 @@ import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.validation.SecurityConfigValidator;
 import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
 import org.geoserver.security.password.GeoserverPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
+import org.geoserver.security.validation.SecurityConfigValidator;
 
 import com.thoughtworks.xstream.converters.SingleValueConverter;
 

@@ -38,6 +38,9 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     protected void tearDownInternal() throws Exception {
         super.tearDownInternal();
         if (getSecurityManager().listUserGroupServices().contains("test")) {
+            GeoserverUserGroupStore store = getSecurityManager().loadUserGroupService("test").createStore();
+            store.clear();
+            store.store();
             getSecurityManager().removeUserGroupService(
                     getSecurityManager().loadUserGroupServiceConfig("test"));
         }

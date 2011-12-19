@@ -4,6 +4,8 @@
  */
 package org.geoserver.web.security.config.details;
 
+import org.apache.wicket.markup.html.form.CheckBox;
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
@@ -15,7 +17,9 @@ import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
  */
 public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPanel{
     private static final long serialVersionUID = 1L;
-    XMLFileFormComponent comp;
+    protected CheckBox validating;
+    protected TextField<String> fileName;
+    protected TextField<Integer> checkInterval;
     
     public XMLUserGroupConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
@@ -25,8 +29,16 @@ public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPane
     @Override
     protected void initializeComponents() {
         super.initializeComponents();
-        comp = new XMLFileFormComponent(configHelper.isNew());
-        addOrReplace(comp);        
+        fileName = new TextField<String>("config.fileName");
+        fileName.setEnabled(configHelper.isNew());
+        add(fileName);
+
+        checkInterval = new TextField<Integer>("config.checkInterval", Integer.class);
+        add(checkInterval);
+        
+        validating  = new CheckBox("config.validating");
+        add(validating);
+
     };
         
     
@@ -39,7 +51,10 @@ public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPane
     @Override
     public void updateModel() {
         super.updateModel();
-        comp.updateModel();
+        validating.updateModel();
+        fileName.updateModel();
+        checkInterval.updateModel();
+
     }
                             
 }

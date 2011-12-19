@@ -8,6 +8,8 @@ import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.config.UserGroupTabbedPage;
 
 public class EditUserPageTest extends AbstractUserPageTest {
 
@@ -66,7 +68,7 @@ public class EditUserPageTest extends AbstractUserPageTest {
         form.submit("save");
         
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(UserPage.class);
+        tester.assertRenderedPage(UserGroupTabbedPage.class);
         
         GeoserverUser user = ugService.getUserByUsername("user1");
         assertNotNull(user);
@@ -91,9 +93,9 @@ public class EditUserPageTest extends AbstractUserPageTest {
     protected void doTestReadOnlyUserGroupService() throws Exception {
         insertValues();
         activateROUGService();
-        
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getROUserGroupServiceName());
         current = ugService.getUserByUsername("user1");
-        tester.startPage(page=new EditUserPage(getROUserGroupServiceName(),current));
+        tester.startPage(page=new EditUserPage(getROUserGroupServiceName(),current,returnPage));
         tester.assertRenderedPage(EditUserPage.class);
         
         assertFalse(tester.getComponentFromLastRenderedPage("userForm:username").isEnabled());
@@ -153,9 +155,9 @@ public class EditUserPageTest extends AbstractUserPageTest {
         insertValues();
         activateROUGService();
         activateRORoleService();
-        
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getROUserGroupServiceName());
         current = ugService.getUserByUsername("user1");
-        tester.startPage(page=new EditUserPage(getROUserGroupServiceName(),current));
+        tester.startPage(page=new EditUserPage(getROUserGroupServiceName(),current,returnPage));
         tester.assertRenderedPage(EditUserPage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("userForm:username").isEnabled());
         assertFalse(tester.getComponentFromLastRenderedPage("userForm:password").isEnabled());
@@ -169,7 +171,8 @@ public class EditUserPageTest extends AbstractUserPageTest {
 
     @Override
     protected void initializeTester() {
-        tester.startPage(page=new EditUserPage(getUserGroupServiceName(),current));
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getUserGroupServiceName());
+        tester.startPage(page=new EditUserPage(getUserGroupServiceName(),current,returnPage));
     }
 
     public void testPasswordsDontMatch() throws Exception {

@@ -7,11 +7,14 @@ import org.apache.wicket.feedback.FeedbackMessage;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.web.security.config.UserGroupTabbedPage;
 
 public class NewUserPageTest extends AbstractUserPageTest {
 
     protected void initializeTester() {
-        tester.startPage(page=new NewUserPage(getUserGroupServiceName()));
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getUserGroupServiceName());
+        tester.startPage(page=new NewUserPage(getUserGroupServiceName(),returnPage));
     }
     
     public void testFill() throws Exception{
@@ -56,7 +59,7 @@ public class NewUserPageTest extends AbstractUserPageTest {
         form.submit("save");
         
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(UserPage.class);
+        tester.assertRenderedPage(UserGroupTabbedPage.class);
         
         GeoserverUser user = ugService.getUserByUsername("testuser");
         assertNotNull(user);
@@ -104,7 +107,7 @@ public class NewUserPageTest extends AbstractUserPageTest {
 
         
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(UserPage.class);
+        tester.assertRenderedPage(UserGroupTabbedPage.class);
         
         GeoserverUser user = ugService.getUserByUsername("testuser");
         assertNotNull(user);
@@ -154,7 +157,7 @@ public class NewUserPageTest extends AbstractUserPageTest {
 
         
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(UserPage.class);
+        tester.assertRenderedPage(UserGroupTabbedPage.class);
         
         GeoserverUser user = ugService.getUserByUsername("testuser");
         assertNotNull(user);
@@ -195,9 +198,10 @@ public class NewUserPageTest extends AbstractUserPageTest {
     public void testInvalidWorkflow() throws Exception{
         initializeForXML();
         activateROUGService();        
+        AbstractSecurityPage returnPage = initializeForUGServiceNamed(getROUserGroupServiceName());
         boolean fail = true;
         try {
-            tester.startPage(page=new NewUserPage(getROUserGroupServiceName()));
+            tester.startPage(page=new NewUserPage(getROUserGroupServiceName(),returnPage));
         } catch (RuntimeException ex) {
             fail = false;
         }

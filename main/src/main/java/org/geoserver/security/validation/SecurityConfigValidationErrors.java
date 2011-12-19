@@ -4,18 +4,20 @@
  */
 
 
-package org.geoserver.security.config.validation;
+package org.geoserver.security.validation;
 
 import java.text.MessageFormat;
 
+import org.geoserver.security.config.SecurityConfig;
+
 /**
  *  
- * Validation error ids Constants
+ * Validation errors for {@link SecurityConfig} objects
  * 
  * @author christian
  *
  */
-public class SecurityConfigValidationErrors  {
+public class SecurityConfigValidationErrors  extends AbstractSecurityValidationErrors{
 
     public final static String SEC_ERR_01 = "SEC_ERR_01";
     public final static String SEC_ERR_02 = "SEC_ERR_02";
@@ -52,7 +54,8 @@ public class SecurityConfigValidationErrors  {
     public final static String SEC_ERR_50 = "SEC_ERR_50";
     
     
-        
+    
+    @Override
     public  String formatErrorMsg(String id,Object ... args) {
     
     if (SEC_ERR_01.equals(id))
@@ -123,7 +126,7 @@ public class SecurityConfigValidationErrors  {
         return MessageFormat.format("Policy for the master password cannot be deleted",args);
     if (SEC_ERR_50.equals(id))
         return MessageFormat.format("The aministrator role has to be: {0}",args);
-            
-    throw new RuntimeException( "Unknown error id "+id);
+
+    return super.formatErrorMsg(id, args);
     }
 }

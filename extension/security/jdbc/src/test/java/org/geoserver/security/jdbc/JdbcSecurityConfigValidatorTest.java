@@ -11,8 +11,6 @@ import java.util.logging.Logger;
 
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.config.validation.SecurityConfigException;
-import org.geoserver.security.config.validation.SecurityConfigValidatorTest;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.jdbc.config.impl.JdbcJndiRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcJndiUserGroupServiceConfigImpl;
@@ -20,6 +18,8 @@ import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
 import org.geoserver.security.password.GeoserverPlainTextPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
+import org.geoserver.security.validation.SecurityConfigException;
+import org.geoserver.security.validation.SecurityConfigValidatorTest;
 import org.geotools.util.logging.Logging;
 
 public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest {

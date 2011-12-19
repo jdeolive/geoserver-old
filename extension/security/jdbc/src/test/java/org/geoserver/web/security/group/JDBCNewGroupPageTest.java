@@ -1,7 +1,5 @@
 package org.geoserver.web.security.group;
 
-import java.io.IOException;
-
 import org.geoserver.security.jdbc.H2RoleServiceTest;
 import org.geoserver.security.jdbc.H2UserGroupServiceTest;
 
@@ -14,7 +12,7 @@ public class JDBCNewGroupPageTest extends NewGroupPageTest {
         doTestFill();
     }
 
-    void initializeForJDBC() throws IOException {
+    void initializeForJDBC() throws Exception {
         initialize(new H2UserGroupServiceTest(), new H2RoleServiceTest());
     }
     

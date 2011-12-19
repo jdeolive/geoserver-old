@@ -4,16 +4,16 @@
  */
 
 
-package org.geoserver.security.config.validation;
+package org.geoserver.security.validation;
 
 /**
- * Exception used for validation errors 
- * during security configuration
+ * Base class for exceptions used for validation errors 
+ * 
  * 
  * @author christian
  *
  */
-public class SecurityConfigException extends Exception {
+public class AbstractSecurityException extends Exception {
     private static final long serialVersionUID = 1L;
     private String errorId;
     private Object args[];
@@ -29,7 +29,7 @@ public class SecurityConfigException extends Exception {
      * @param message
      * @param args 
      */
-    public SecurityConfigException(String errorId ,String message, Object... args) {        
+    public AbstractSecurityException(String errorId ,String message, Object... args) {        
         super(message);
         this.errorId=errorId;
         this.args=args;        

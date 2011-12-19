@@ -7,9 +7,6 @@ package org.geoserver.security.jdbc;
 
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.config.validation.SecurityConfigException;
-import org.geoserver.security.config.validation.SecurityConfigValidationErrors;
-import org.geoserver.security.config.validation.SecurityConfigValidator;
 import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
 import org.geoserver.security.jdbc.config.impl.JdbcJndiRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcJndiSecurityServiceConfigImpl;
@@ -17,6 +14,9 @@ import org.geoserver.security.jdbc.config.impl.JdbcJndiUserGroupServiceConfigImp
 import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcSecurityServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
+import org.geoserver.security.validation.SecurityConfigException;
+import org.geoserver.security.validation.SecurityConfigValidationErrors;
+import org.geoserver.security.validation.SecurityConfigValidator;
 
 public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
 
@@ -42,16 +42,16 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
     }
     
     protected void validateJNDI(JdbcJndiSecurityServiceConfigImpl config) throws SecurityConfigException {
-        if (config.getJndiName()==null || config.getJndiName().length()==0)
+        if (isNotEmpty(config.getJndiName())==false)
             throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_210);
     }
     
     protected void validateJDBC(JdbcSecurityServiceConfigImpl config) throws SecurityConfigException {
-        if (config.getDriverClassName()==null || config.getDriverClassName().length()==0)
+        if (isNotEmpty(config.getDriverClassName())==false)
             throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_200);
-        if (config.getUserName()==null || config.getUserName().length()==0)
+        if (isNotEmpty(config.getUserName())==false)
             throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_201);
-        if (config.getConnectURL()==null || config.getConnectURL().length()==0)
+        if (isNotEmpty(config.getConnectURL())==false)
             throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_202);
 
         try {

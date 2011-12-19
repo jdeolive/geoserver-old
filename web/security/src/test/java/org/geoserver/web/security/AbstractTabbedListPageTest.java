@@ -13,9 +13,10 @@ import org.apache.wicket.util.tester.FormTester;
 import org.geoserver.web.ComponentBuilder;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTestSupport {
+import com.sun.java.swing.plaf.gtk.resources.gtk_zh_TW;
+
+public abstract class AbstractTabbedListPageTest<T> extends AbstractSecurityWicketTestSupport {
     
-     public static final String ITEMS_PATH = "table:listContainer:items";
      public static final String FIRST_COLUM_PATH="itemProperties:0:component:link";
     
 
@@ -26,13 +27,21 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
 
     public void testRenders() throws Exception {
         initializeForXML();
-        tester.startPage(listPage(null));
-        tester.assertRenderedPage(listPage(null).getClass());
+        AbstractSecurityPage listPage =listPage(getServiceName());
+        tester.assertRenderedPage(listPage.getClass());
     }
     
-    abstract protected Page listPage(PageParameters params);
-    abstract protected Page newPage(Object...params);
-    abstract protected Page editPage(Object...params);
+    
+            
+    protected String getItemsPath() {
+        return getTabbedPanelPath()+":panel:table:listContainer:items";
+    };
+
+    protected abstract String getTabbedPanelPath();
+    protected abstract String getServiceName();
+    abstract protected AbstractSecurityPage listPage(String serviceName);
+    abstract protected AbstractSecurityPage newPage(AbstractSecurityPage responsePage,Object...params);
+    abstract protected AbstractSecurityPage editPage(AbstractSecurityPage responsePage,Object...params);
  
     abstract protected String getSearchString() throws Exception;
     abstract protected Property<T> getEditProperty();
@@ -43,8 +52,8 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
         // the name link for the first user
         initializeForXML();
         insertValues();
-        
-        tester.startPage(listPage(null));
+        AbstractSecurityPage listPage = listPage(getServiceName());
+        //tester.startPage(listPage);
                    
         String search = getSearchString();
         assertNotNull(search);
@@ -52,7 +61,7 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
         assertNotNull(c);
         tester.clickLink(c.getPageRelativePath());
         
-        tester.assertRenderedPage(editPage().getClass());
+        tester.assertRenderedPage(editPage(listPage).getClass());
         assertTrue(checkEditForm(search));                
     }
     
@@ -60,7 +69,8 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
     
     
     protected Component getFromList(String columnPath, Object columnValue, Property<T> property) {
-        MarkupContainer listView = (MarkupContainer) tester.getLastRenderedPage().get(ITEMS_PATH);
+        
+        MarkupContainer listView = (MarkupContainer) tester.getLastRenderedPage().get(getItemsPath());
         
         @SuppressWarnings("unchecked")
         Iterator<MarkupContainer> it = (Iterator<MarkupContainer>) listView.iterator();
@@ -78,8 +88,8 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
     
     public void testNew() throws Exception {
         initializeForXML();
-        tester.startPage(listPage(null));        
-        tester.clickLink("headerPanel:addNew");
+        listPage(getServiceName());        
+        tester.clickLink(getTabbedPanelPath()+":panel:addNew");        
         Page newPage = tester.getLastRenderedPage();
         tester.assertRenderedPage(newPage.getClass());
     }
@@ -90,7 +100,7 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
         initializeForXML();
         insertValues();
         addAdditonalData();
-        doRemove("headerPanel:removeSelected");
+        doRemove(getTabbedPanelPath()+":panel:removeSelected");
     }
     
     
@@ -103,7 +113,7 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
 
             public Component buildComponent(String id) {
                 try {
-                    return listPage(null);
+                    return listPage(getServiceName());
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -111,15 +121,15 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
         });
         
         tester.startPage(testPage);
-                
-        String selectAllPath = testPage.getWicketPath()+":table:listContainer:selectAllContainer:selectAll";        
+        String selectAllPath = testPage.getWicketPath()+":"+getTabbedPanelPath()+":panel:table:listContainer:selectAllContainer:selectAll";        
         tester.assertComponent(selectAllPath, CheckBox.class);
         
         FormTester ft = tester.newFormTester(GeoserverTablePanelTestPage.FORM);
-        ft.setValue(testPage.getComponentId()+":table:listContainer:selectAllContainer:selectAll", "true");
+        ft.setValue(testPage.getComponentId()+":"+getTabbedPanelPath()+":panel:table:listContainer:selectAllContainer:selectAll", "true");
         tester.executeAjaxEvent(selectAllPath, "onclick");
-        
-        ModalWindow w  = (ModalWindow) tester.getLastRenderedPage().get("dialog:dialog");        
+
+        String windowPath=testPage.getWicketPath()+":"+getTabbedPanelPath()+ ":panel:dialog:dialog";       
+        ModalWindow w  = (ModalWindow) testPage.get(windowPath);                        
         assertNull(w.getTitle()); // window was not opened
         tester.executeAjaxEvent(pathForLink, "onclick");
         assertNotNull(w.getTitle()); // window was opened        
@@ -130,20 +140,20 @@ public abstract class AbstractListPageTest<T> extends AbstractSecurityWicketTest
     protected abstract void simulateDeleteSubmit() throws Exception;        
 
     protected Component getRemoveLink() {
-        Component result =tester.getLastRenderedPage().get("headerPanel:removeSelected");
+        Component result =tester.getLastRenderedPage().get(getTabbedPanelPath()+":panel:removeSelected");
         assertNotNull(result);
         return result;
     }
     
     protected Component getRemoveLinkWithRoles() {
-        Component result =tester.getLastRenderedPage().get("headerPanel:removeSelectedWithRoles");
+        Component result =tester.getLastRenderedPage().get(getTabbedPanelPath()+":panel:removeSelectedWithRoles");
         assertNotNull(result);
         return result;
     }
 
     
     protected Component getAddLink() {
-        Component result =tester.getLastRenderedPage().get("headerPanel:addNew");
+        Component result =tester.getLastRenderedPage().get(getTabbedPanelPath()+":panel:addNew");
         assertNotNull(result);
         return result;
     }

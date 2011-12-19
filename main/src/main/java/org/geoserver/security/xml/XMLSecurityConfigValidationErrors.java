@@ -7,7 +7,7 @@ package org.geoserver.security.xml;
 
 import java.text.MessageFormat;
 
-import org.geoserver.security.config.validation.SecurityConfigValidationErrors;
+import org.geoserver.security.validation.SecurityConfigValidationErrors;
 
 
 public class XMLSecurityConfigValidationErrors extends SecurityConfigValidationErrors {
@@ -17,6 +17,7 @@ public class XMLSecurityConfigValidationErrors extends SecurityConfigValidationE
     public final static String SEC_ERR_102 = "SEC_ERR_102";
     public final static String SEC_ERR_103 = "SEC_ERR_103";
     public final static String SEC_ERR_104 = "SEC_ERR_104";
+    public final static String SEC_ERR_105 = "SEC_ERR_105";
     
     @Override
     public String formatErrorMsg(String id, Object... args) {
@@ -31,6 +32,8 @@ public class XMLSecurityConfigValidationErrors extends SecurityConfigValidationE
             return MessageFormat.format("User/group service {0} must be empty",args);
         if (SEC_ERR_104.equals(id))
             return MessageFormat.format("File name required",args);        
+        if (SEC_ERR_105.equals(id))
+            return MessageFormat.format("Cannot change file name from {0} to {1}",args);        
 
 
         return super.formatErrorMsg(id, args);

@@ -48,8 +48,6 @@ import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
 import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
-import org.geoserver.security.config.validation.SecurityConfigException;
-import org.geoserver.security.config.validation.SecurityConfigValidator;
 import org.geoserver.security.file.RoleFileWatcher;
 import org.geoserver.security.file.UserGroupFileWatcher;
 import org.geoserver.security.impl.GeoserverRole;
@@ -65,6 +63,8 @@ import org.geoserver.security.password.PasswordValidatorImpl;
 import org.geoserver.security.password.RandomPasswordProvider;
 import org.geoserver.security.rememberme.GeoServerTokenBasedRememberMeServices;
 import org.geoserver.security.rememberme.RememberMeServicesConfig;
+import org.geoserver.security.validation.SecurityConfigException;
+import org.geoserver.security.validation.SecurityConfigValidator;
 import org.geoserver.security.xml.XMLConstants;
 import org.geoserver.security.xml.XMLRoleService;
 import org.geoserver.security.xml.XMLUserGroupService;
@@ -427,7 +427,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         if (isNew)
             validator.validateAddRoleService(config);
         else
-            validator.validateModifiedRoleService(config);
+            validator.validateModifiedRoleService(config,
+                    roleServiceHelper.loadConfig(config.getName()));
 
         roleServiceHelper.saveConfig(config);
     }
@@ -444,8 +445,10 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         if (isNew)
             validator.validateAddPasswordPolicy(config);
-        else
-            validator.validateModifiedPasswordPolicy(config);
+        else 
+            validator.validateModifiedPasswordPolicy(config,
+                    passwordValidatorHelper.loadConfig(config.getName()));
+        
         
         passwordValidatorHelper.saveConfig(config);
     }
@@ -545,8 +548,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                         config.getClassName());
         if (isNew)
             validator.validateAddUserGroupService(config);
-        else
-            validator.validateModifiedUserGroupService(config);
+        else 
+            validator.validateModifiedUserGroupService(config,
+                    userGroupServiceHelper.loadConfig(config.getName()));
 
         userGroupServiceHelper.saveConfig(config);
     }
@@ -603,8 +607,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                         config.getClassName());
         if (isNew)
             validator.validateAddAuthProvider(config);
-        else
-            validator.validateModifiedAuthProvider(config);
+        else 
+            validator.validateModifiedAuthProvider(config,
+                    authProviderHelper.loadConfig(config.getName()));
         authProviderHelper.saveConfig(config);
     }
 
@@ -645,7 +650,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 //        if (isNew)
 //            validator.validateAddFilter(config);
 //        else
-//            validator.validateModifiedFilter(config);
+//            validator.validateModifiedFilter(config,
+//                    filterHelper.loadConfig(config.getName()));
 
         filterHelper.saveConfig(config);
     }

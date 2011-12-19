@@ -35,7 +35,7 @@ public class NewUserPage extends AbstractUserPage {
        super(userGroupServiceName,new UserUIModel(),new Properties(),responsePage);       
        form.add(new UserConflictValidator());
        if (hasUserGroupStore(userGroupServiceName)==false) {
-           throw new RuntimeException("Workflow error, new role not possible for read only service");
+           throw new RuntimeException("Workflow error, new user not possible for read only service");
        }
 
     }

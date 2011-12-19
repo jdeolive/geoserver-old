@@ -34,8 +34,7 @@ public  class RememberMeConfigPanelTest extends AbstractSecurityWicketTestSuppor
 
         newFormTester();
         form.submit("save");
-        
-        print(page,true,true);
+                
                                                 
     }
     

@@ -32,12 +32,12 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
     public static final String FIRST_COLUM_PATH="itemProperties:0:component:link";
     public static final String CHECKBOX_PATH="selectItemContainer:selectItem";
     protected AbstractSecurityPage tabbedPage;
-    protected FormTester form;
+    protected FormTester formTester;
     
     GeoServerSecurityManager manager; 
     
     protected void newFormTester() {
-        form = tester.newFormTester(getDetailsFormComponentId());
+        formTester = tester.newFormTester(getDetailsFormComponentId());
     }
 
     @Override
@@ -60,7 +60,7 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
         tabbedPage=getTabbedPage();
         tester.startPage(tabbedPage);
         tester.assertRenderedPage(tabbedPage.getPageClass());
-        String linkId = getTabbedPanel().getId()+":tabs-container:tabs:"+getTabIndex()+":link";
+        String linkId = getTabbedPanel().getId()+":tabs-container:tabs:"+getTabIndex()+":link";        
         tester.clickLink(linkId,true);
         assertEquals(getNamedServicesClass(), getNamedServicesPanel().getClass());
 
@@ -166,56 +166,56 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
                     testPage.get("form:0:tabbedPanel:panel:table:listContainer:items");
             List<String> nameList = Arrays.asList(serviceNames);
             FormTester ft = tester.newFormTester(GeoserverTablePanelTestPage.FORM);
-            
+            print(testPage,true,true);
             Iterator<Item<SecurityNamedServiceConfig>> it = getDataView().getItems();
             while (it.hasNext()) {
                 Item<SecurityNamedServiceConfig> item = it.next();
                 if (nameList.contains(item.getModelObject().getName())) {
                     String checkBoxPath=item.getPageRelativePath()+":"+CHECKBOX_PATH;
                     tester.assertComponent(checkBoxPath, CheckBox.class);
+                    ft.setValue(testPage.getComponentId()+":"+checkBoxPath.replace("form:0:", ""), true);
                     tester.executeAjaxEvent(checkBoxPath, "onclick");
                 }
             }
         }
         
         
-        print(testPage,true,true);
+        
         ModalWindow w  = (ModalWindow) testPage.get(
                 testPage.getWicketPath()+":tabbedPanel:panel:dialog:dialog");
-        print(tester.getLastRenderedPage(),true,true);
         assertNull(w.getTitle()); // window was not opened
-        //tester.executeAjaxEvent(testPage.getWicketPath()+":"+pathForLink, "onclick");
-        tester.executeAjaxEvent(pathForLink, "onclick");
+        tester.clickLink(pathForLink);
         assertNotNull(w.getTitle()); // window was opened        
         simulateDeleteSubmit();        
         executeModalWindowCloseButtonCallback(w);
-        //print(tester.getLastRenderedPage(),true,true);                                        
     }
 
     protected abstract void simulateDeleteSubmit() throws Exception;
     
 
     protected void setSecurityConfigName(String aName) {
-        form.setValue("config.name", aName);
+        formTester.setValue("config.name", aName);
     }
     
     protected String getSecurityConfigName() {
-        return form.getForm().get("config.name").getDefaultModelObjectAsString();
+        return formTester.getForm().get("config.name").getDefaultModelObjectAsString();
     }
 
     protected String setSecurityConfigClassName() {
-        return form.getForm().get("config.className").getDefaultModelObjectAsString();
+        return formTester.getForm().get("config.className").getDefaultModelObjectAsString();
     }
     
     protected void setSecurityConfigClassName(String aName) {
-        form.setValue("config.className", aName);
+        formTester.setValue("config.className", aName);
     }
 
-    protected void clickSave() {
-        form.submit("save");
+    protected void clickSave() {        
+//        formTester.setValue("save", "save");
+//        formTester.submit();
+          formTester.submit("save");
     }
     protected void clickCancel() {        
-        form.submitLink("cancel",false);
+        formTester.submitLink("cancel",false);
     }
     
 }
