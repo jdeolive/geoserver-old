@@ -82,10 +82,5 @@ public abstract  class AbstractConfigModelHelper<T extends SecurityConfig> imple
     public boolean hasChanges() {
         byte[] bytes = serializeConfg(config);
         return ! (bytes.equals(serializedInitialConfig));
-    }
-    
-    // needed for the compund property model
-    public T getDetails() {
-        return config;
-    }
+    }    
 }

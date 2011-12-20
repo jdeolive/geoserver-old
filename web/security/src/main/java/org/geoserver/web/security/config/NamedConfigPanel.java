@@ -116,11 +116,11 @@ public class NamedConfigPanel extends Panel {
                 Component comp = getConfigDetailsPanel(
 //                        implClass.getModel().getObject());
                         NamedConfigPanel.this.model.getObject().getConfig().getClassName());
-                comp.setOutputMarkupId(true);
                 old.replaceWith(comp);                
                 //comp.setMarkupId(old.getMarkupId());
                 //form.addOrReplace(comp);
-                target.addComponent(comp);                         
+                target.addComponent(comp);
+                target.addComponent(old);
             }
         });
 
@@ -139,8 +139,7 @@ public class NamedConfigPanel extends Panel {
           form.add(getConfigDetailsPanel(helper.getConfig().getClassName()));
 
         
-        form.get(DETAILS_WICKET_ID).setOutputMarkupId(true);
-                
+        form.get(DETAILS_WICKET_ID).setOutputMarkupId(true);                
         implClass.setRequired(true);        
         implClass.setOutputMarkupId(true);
         //implClass.setNullValid(false);
@@ -238,8 +237,10 @@ public class NamedConfigPanel extends Panel {
                 GeoServerExtensions.extensions(NamedConfigDetailsPanelProvider.class);
         for (NamedConfigDetailsPanelProvider provider : providers) {
             panel=provider.getDetailsPanel(className, DETAILS_WICKET_ID, model);
-            if (panel!=null)
-                return panel;
+            if (panel!=null) {
+                panel.setOutputMarkupId(true);
+                return panel;                
+            }
         }
         throw new RuntimeException("No details panel for "+className);
     }
