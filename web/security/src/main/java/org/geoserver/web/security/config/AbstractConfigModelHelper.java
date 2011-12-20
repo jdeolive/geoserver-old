@@ -84,4 +84,8 @@ public abstract  class AbstractConfigModelHelper<T extends SecurityConfig> imple
         return ! (bytes.equals(serializedInitialConfig));
     }
     
+    // needed for the compund property model
+    public T getDetails() {
+        return config;
+    }
 }

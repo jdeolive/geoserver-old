@@ -186,8 +186,11 @@ public class NewUserPageTest extends AbstractUserPageTest {
         insertValues();        
         
         initializeTester();
+        tester.assertRenderedPage(NewUserPage.class);
         newFormTester();
         form.setValue("username", "user1");
+        form.setValue("password", "pwd");
+        form.setValue("confirmPassword", "pwd");
         form.submit("save");
         
         assertTrue(testErrorMessagesWithRegExp(".*user1.*"));

@@ -17,11 +17,13 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
+import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.Radio;
 import org.apache.wicket.markup.html.form.RadioGroup;
@@ -325,11 +327,16 @@ public class JDBCConnectFormComponent extends
     
     @Override
     public void updateModel() {
-        typeComponent.updateModel();
-        jndiNameComponent.updateModel();
-        usernameComponent.updateModel();
-        passwordComponent.updateModel();
-        driverNameComponent.updateModel();
-        connectURLComponent.updateModel();
+        updateComponent(typeComponent);
+        updateComponent(typeComponent);
+        updateComponent(jndiNameComponent);
+        updateComponent(usernameComponent);
+        updateComponent(passwordComponent);
+        updateComponent(driverNameComponent);
+        updateComponent(connectURLComponent);
+    }
+    protected void updateComponent(FormComponent<?> c) {
+        if (c.isVisible() && c.isEnabled())
+            c.updateModel();
     }
 }

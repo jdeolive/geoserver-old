@@ -127,7 +127,8 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
     public void updateModel() {
         super.updateModel();
         //isLockingNeeded.updateModel();
-        passwordEncoderName.updateModel();
+        if (passwordEncoderName.isEnabled())
+            passwordEncoderName.updateModel();
         passwordPolicyName.updateModel();        
     }
 }
