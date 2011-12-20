@@ -67,14 +67,18 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         add(form);
         
         // populate the form editing components
+//        username = new TextField<String>("username",
+//                new PropertyModel<String>(uiUser, "username")) {
+//                    private static final long serialVersionUID = 1L;
+//                    public boolean isRequired() {
+//                        Form<?> form = getForm();
+//                        return form.getRootForm().findSubmittingButton() == saveLink;
+//                    }
+//            };
+            
         username = new TextField<String>("username",
-                new PropertyModel<String>(uiUser, "username")) {
-                    private static final long serialVersionUID = 1L;
-                    public boolean isRequired() {
-                        Form<?> form = getForm();
-                        return form.getRootForm().findSubmittingButton() == saveLink;
-                    }
-            };        
+                    new PropertyModel<String>(uiUser, "username")); 
+            
         form.add(username);
         boolean hasUserGroupStore = hasUserGroupStore(userGroupServiceName);
         username.setEnabled(hasUserGroupStore);

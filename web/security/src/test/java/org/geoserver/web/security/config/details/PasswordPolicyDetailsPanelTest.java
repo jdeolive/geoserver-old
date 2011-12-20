@@ -77,6 +77,7 @@ public  class PasswordPolicyDetailsPanelTest extends AbstractNamedConfigDetailsP
     }
     
     protected void setMinLength(int value){
+        print(formTester.getForm(),true,true);
         formTester.setValue("details:config.minLength", new Integer(value).toString());
     }
     

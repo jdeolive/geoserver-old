@@ -64,6 +64,7 @@ public  class UsernamePasswordDetailsPanel extends AbstractNamedConfigDetailsPan
     
     @Override
     public void updateModel() {
-        userGroupService.updateModel();
+        if (userGroupService.isEnabled())
+            userGroupService.updateModel();
     }
 }

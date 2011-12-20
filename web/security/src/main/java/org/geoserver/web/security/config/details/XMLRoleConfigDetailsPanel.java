@@ -52,7 +52,8 @@ public class XMLRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     public void updateModel() {
         super.updateModel();
         validating.updateModel();
-        fileName.updateModel();
+        if (fileName.isEnabled())
+            fileName.updateModel();
         checkInterval.updateModel();
     }
 }

@@ -68,7 +68,8 @@ public abstract class AbstractRoleDetailsPanel extends AbstractNamedConfigDetail
     
     @Override
     public void updateModel() {
-        adminRoleName.updateModel();
+        if (adminRoleName.isEnabled())
+            adminRoleName.updateModel();
     }
                                                     
 }

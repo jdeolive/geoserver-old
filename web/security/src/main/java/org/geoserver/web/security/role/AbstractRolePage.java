@@ -64,12 +64,14 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
         form.add(descriptionLabel);
         
         // populate the form editing components
-        rolenameField = new TextField<String>("rolename") {
-                public boolean isRequired() {
-                    Form<?> form = getForm();
-                    return form.getRootForm().findSubmittingButton() == saveLink;
-                }
-        };
+//        rolenameField = new TextField<String>("rolename") {
+//                public boolean isRequired() {
+//                    Form<?> form = getForm();
+//                    return form.getRootForm().findSubmittingButton() == saveLink;
+//                }
+//        };
+        
+        rolenameField = new TextField<String>("rolename");
         boolean hasRoleStore = hasRoleStore(roleServiceName);
         rolenameField.setDefaultModel(new PropertyModel<RoleUIModel>(uiRole, "rolename"));
         rolenameField.setEnabled(hasRoleStore);

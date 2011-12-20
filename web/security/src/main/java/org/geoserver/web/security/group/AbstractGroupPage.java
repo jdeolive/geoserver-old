@@ -40,12 +40,15 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
         add(form);
                         
         // populate the form editing components
-        groupnameField = new TextField<String>("groupname") {
-            public boolean isRequired() {
-                Form<?> form = getForm();
-                return form.getRootForm().findSubmittingButton() == saveLink;
-            }
-        };        
+//        groupnameField = new TextField<String>("groupname") {
+//            public boolean isRequired() {
+//                Form<?> form = getForm();
+//                return form.getRootForm().findSubmittingButton() == saveLink;
+//            }
+//        };
+        
+        groupnameField = new TextField<String>("groupname");
+        
         boolean hasUserGroupStore = hasUserGroupStore(userGroupServiceName);
         groupnameField.setEnabled(hasUserGroupStore);
         groupnameField.setDefaultModel(new PropertyModel<GroupUIModel>(uiGroup, "groupname"));
