@@ -207,6 +207,7 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
     
     protected void setSecurityConfigClassName(String aName) {
         formTester.setValue("config.className", aName);
+        tester.executeAjaxEvent(formTester.getForm().getPageRelativePath()+":config.className", "onchange");
     }
 
     protected void clickSave() {        

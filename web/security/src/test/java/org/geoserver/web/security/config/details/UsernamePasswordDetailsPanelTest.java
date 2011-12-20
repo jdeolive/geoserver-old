@@ -42,7 +42,7 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
     }
     
     protected void setUGName(String serviceName){
-        formTester.setValue("details:config.userGroupServiceName", serviceName);
+        formTester.setValue("details:config.userGroupServiceName", serviceName);        
     }
     
     protected String getUGServiceName(){
@@ -68,7 +68,7 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
         newFormTester();
         
         setSecurityConfigName("default2");
-        setSecurityConfigClassName(UsernamePasswordAuthenticationProvider.class.getName());
+        setSecurityConfigClassName(UsernamePasswordAuthenticationProvider.class.getName());                
         setUGName("default");
         clickCancel();
         

@@ -136,7 +136,7 @@ public  class PasswordPolicyDetailsPanelTest extends AbstractNamedConfigDetailsP
         clickSave();
         
         print(detailsPage,true,true);
-        assertEquals(tester.getLastRenderedPage().getClass(),tabbedPage.getClass());
+        assertEquals(tabbedPage.getClass(),tester.getLastRenderedPage().getClass());
         assertEquals(3, countItmes());        
         assertNotNull(getSecurityNamedServiceConfig("default"));
         assertNotNull(getSecurityNamedServiceConfig("master"));

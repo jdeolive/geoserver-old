@@ -24,14 +24,13 @@ public abstract class AbstractNamedConfigDetailsPanel extends FormComponentPanel
     public AbstractNamedConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id);
         configHelper=model.getObject();
-        SecurityNamedConfigModelHelper helper = model.getObject();
-        if (helper.isNew()) {
+        
+        if (configHelper.isNew()) {
             SecurityNamedServiceConfig newConfig = createNewConfigObject(); 
-            SecurityNamedServiceConfig old =  helper.getConfig();
+            SecurityNamedServiceConfig old =  configHelper.getConfig();
             newConfig.setName(old.getName());
             newConfig.setClassName(old.getClassName());
             model.getObject().setNewConfig(newConfig);
-            //model.setObject(new SecurityNamedConfigModelHelper(newConfig, true));
         }
 
         initializeComponents();
