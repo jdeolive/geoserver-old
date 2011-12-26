@@ -6,6 +6,8 @@ package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
+import org.geoserver.security.jdbc.config.JdbcJndiSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JdbcSecurityServiceConfig;
 import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
 import org.geoserver.web.security.JDBCConnectFormComponent;
 import org.geoserver.web.security.JDBCConnectFormComponent.Mode;
@@ -25,7 +27,22 @@ public class JDBCRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     @Override
     protected void initializeComponents() {
         super.initializeComponents();
-        comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC);
+        if (configHelper.isNew()) {
+            comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC);
+        } else {
+           if (configHelper.getConfig() instanceof JdbcJndiSecurityServiceConfig) {
+               JdbcJndiSecurityServiceConfig jndiConfig = 
+                       (JdbcJndiSecurityServiceConfig) configHelper.getConfig();
+               comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC,jndiConfig.getJndiName());
+           } else {
+               JdbcSecurityServiceConfig jdbcConfig = 
+                       (JdbcSecurityServiceConfig) configHelper.getConfig();               
+               comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC,
+                       jdbcConfig.getDriverClassName(),jdbcConfig.getConnectURL(),
+                       jdbcConfig.getUserName(),jdbcConfig.getPassword()
+                       );
+           }
+        }        
         addOrReplace(comp);        
     };
         
@@ -39,5 +56,7 @@ public class JDBCRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     public void updateModel() {
         super.updateModel();
         comp.updateModel();
+        comp.getModelObject();
+        configHelper.toString();
     }
 }

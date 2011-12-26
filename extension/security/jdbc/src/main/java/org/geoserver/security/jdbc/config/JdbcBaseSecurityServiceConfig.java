@@ -21,7 +21,7 @@ public interface JdbcBaseSecurityServiceConfig  extends SecurityNamedServiceConf
     
 
     /**
-     * @return filename of property file containig DDL statements
+     * @return filename of property file containing DDL statements
      */
     public String getPropertyFileNameDDL();
     /**
@@ -31,7 +31,7 @@ public interface JdbcBaseSecurityServiceConfig  extends SecurityNamedServiceConf
     public void   setPropertyFileNameDDL (String fileName);
     
     /**
-     * @return filename of property file containig DML statements
+     * @return filename of property file containing DML statements
      */
     public String getPropertyFileNameDML();
     /**
