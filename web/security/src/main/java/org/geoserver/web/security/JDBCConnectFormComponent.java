@@ -323,12 +323,12 @@ public class JDBCConnectFormComponent extends
 
     public String testDriver(String driverName,String connectUrl,String username,String password) {
         try {
-            Class.forName(driverName==null ? "" : driverName);
+            Class.forName(driverName);
             Connection con = DriverManager.getConnection(connectUrl,username,password);
             con.close();
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING,ex.getLocalizedMessage(),ex);
-            return ex.getLocalizedMessage();
+            return ex.getLocalizedMessage() == null ? "" : ex.getLocalizedMessage();
         }
         return null;
     }
@@ -341,7 +341,7 @@ public class JDBCConnectFormComponent extends
         con.close();
         } catch (Exception ex) {
             LOGGER.log(Level.WARNING,ex.getLocalizedMessage(),ex);
-            return ex.getLocalizedMessage();
+            return ex.getLocalizedMessage() == null ? "" : ex.getLocalizedMessage();
         }
         return null;        
     }

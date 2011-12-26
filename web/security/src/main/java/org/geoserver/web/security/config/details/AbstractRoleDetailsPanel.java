@@ -36,28 +36,15 @@ public abstract class AbstractRoleDetailsPanel extends AbstractNamedConfigDetail
     @Override
     protected void initializeComponents() {
 
-        SecurityRoleServiceConfig config = 
-                (SecurityRoleServiceConfig) configHelper.getConfig();
+//        SecurityRoleServiceConfig config = 
+//                (SecurityRoleServiceConfig) configHelper.getConfig();
         
         
         
         rolesList = new ArrayList<String>();
+        rolesList.add(GeoserverRole.ADMIN_ROLE.getAuthority());
         
-        if (configHelper.isNew()==false) { 
-            try {
-                GeoserverRoleService service = getSecurityManager().loadRoleService(config.getName());
-                for (GeoserverRole role : service.getRoles()) {
-                    rolesList.add(role.getAuthority());
-                }
-            } catch (IOException ex) {
-                throw new RuntimeException(ex);
-            }
-        } else {
-            rolesList.add(GeoserverRole.ADMIN_ROLE.getAuthority());
-        }
-        
-        
-        
+                        
         adminRoleName =  
                 new DropDownChoice<String>("config.adminRoleName",rolesList);
         adminRoleName.setNullValid(false);

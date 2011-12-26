@@ -9,7 +9,7 @@ public class JDBCRoleListPageTest extends RoleListPageTest {
         initializeForJDBC();
         insertValues();
         addAdditonalData();
-        doRemove("headerPanel:removeSelected");
+        doRemove(getTabbedPanelPath()+":panel:removeSelected");
     }
 
     void initializeForJDBC() throws Exception {

@@ -25,8 +25,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.impl.AbstractGeoServerSecurityService;
-import org.geoserver.security.jdbc.config.JdbcJndiSecurityServiceConfig;
-import org.geoserver.security.jdbc.config.JdbcSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
 
 
 
@@ -58,29 +57,27 @@ public abstract class AbstractJDBCService extends AbstractGeoServerSecurityServi
      * @param config
      * @throws IOException
      */
-    public void initializeDSFromConfig(SecurityNamedServiceConfig config) throws IOException {
-        if (config instanceof JdbcJndiSecurityServiceConfig) {
-            String jndiName = ((JdbcJndiSecurityServiceConfig) config).getJndiName();            
+    public void initializeDSFromConfig(SecurityNamedServiceConfig namedConfig) throws IOException {
+        JdbcBaseSecurityServiceConfig config = (JdbcBaseSecurityServiceConfig) namedConfig; 
+        if (config.isJndi()) {
+            String jndiName = config.getJndiName();            
             try {
                 Context initialContext = new InitialContext();
                 datasource = (DataSource)initialContext.lookup(jndiName);
             } catch (NamingException e) {
                 throw new IOException(e);
             }
-        } else if (config instanceof JdbcSecurityServiceConfig) {
-            JdbcSecurityServiceConfig jdbcConfig = (JdbcSecurityServiceConfig) config;
+        } else {            
             BasicDataSource bds = new BasicDataSource();
-            bds.setDriverClassName(jdbcConfig.getDriverClassName());
-            bds.setUrl(jdbcConfig.getConnectURL());
-            bds.setUsername(jdbcConfig.getUserName());
-            bds.setPassword(jdbcConfig.getPassword());
+            bds.setDriverClassName(config.getDriverClassName());
+            bds.setUrl(config.getConnectURL());
+            bds.setUsername(config.getUserName());
+            bds.setPassword(config.getPassword());
             bds.setDefaultAutoCommit(false);
             bds.setDefaultTransactionIsolation(DEFAULT_ISOLATION_LEVEL);
             bds.setMaxActive(10);
             datasource=bds;
-        } else {
-            throw new IOException("Cannot data source initialize from "+config.getClass().getName());
-        }
+        } 
     }
 
     

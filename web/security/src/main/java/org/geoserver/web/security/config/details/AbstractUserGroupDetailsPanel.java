@@ -94,22 +94,16 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         };                
 
         // enable/disable changing the password encoder for an existing service
-        try {
-            if (configHelper.isNew()==false) {                
-                GeoserverUserPasswordEncoder encoder = (GeoserverUserPasswordEncoder) 
-                    GeoServerExtensions.bean(config.getPasswordEncoderName());
-                GeoserverUserGroupService service = 
-                        getSecurityManager().loadUserGroupService(config.getName());
-                // check if we have a write able service with digest encoding and
-                // if there are already digested passwords
-                boolean disabled = encoder.getEncodingType()==PasswordEncodingType.DIGEST &&                    
-                        service.canCreateStore();
-                        // TODO, to costly, need a method service.getCountUsers()            
-                    //  &&service.getUsers().size()>0;                    
-                passwordEncoderName.setEnabled(!disabled);
-            }
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
+        if (configHelper.isNew()==false) {                
+            GeoserverUserPasswordEncoder encoder = (GeoserverUserPasswordEncoder) 
+                GeoServerExtensions.bean(config.getPasswordEncoderName());
+            // check if we have a write able service with digest encoding and
+            // if there are already digested passwords
+            boolean disabled = encoder.getEncodingType()==PasswordEncodingType.DIGEST;                    
+                    
+                    // TODO, to costly, need a method service.getCountUsers()            
+                //  &&service.getUsers().size()>0;                    
+            passwordEncoderName.setEnabled(!disabled);
         }
         add(passwordEncoderName);
 

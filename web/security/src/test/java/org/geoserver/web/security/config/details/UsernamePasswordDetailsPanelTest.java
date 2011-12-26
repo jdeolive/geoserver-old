@@ -66,9 +66,9 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
         tester.assertRenderedPage(AuthenticationProviderPage.class);
         detailsPage = (AuthenticationProviderPage) tester.getLastRenderedPage();
         newFormTester();
-        
-        setSecurityConfigName("default2");
-        setSecurityConfigClassName(UsernamePasswordAuthenticationProvider.class.getName());                
+        setSecurityConfigClassName(UsernamePasswordAuthenticationProvider.class.getName());
+        newFormTester();
+        setSecurityConfigName("default2");                        
         setUGName("default");
         clickCancel();
         
@@ -78,9 +78,11 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
         
         clickAddNew();
         newFormTester();
-        setSecurityConfigName("default2");
         setSecurityConfigClassName(UsernamePasswordAuthenticationProvider.class.getName());
+        newFormTester();
+        setSecurityConfigName("default2");        
         setUGName("default");        
+        tester.assertRenderedPage(detailsPage.getClass());
         clickSave();
         
         
@@ -108,8 +110,9 @@ public  class UsernamePasswordDetailsPanelTest extends AbstractNamedConfigDetail
         clickAddNew();        
         detailsPage = (AuthenticationProviderPage) tester.getLastRenderedPage();
         newFormTester();
-        setSecurityConfigName("default2");
         setSecurityConfigClassName(UsernamePasswordAuthenticationProvider.class.getName());
+        newFormTester();
+        setSecurityConfigName("default2");        
         setUGName("default");
         clickSave(); // should not work
         tester.assertRenderedPage(detailsPage.getClass());

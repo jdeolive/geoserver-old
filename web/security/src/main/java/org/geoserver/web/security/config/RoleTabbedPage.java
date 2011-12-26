@@ -72,8 +72,17 @@ public class RoleTabbedPage extends AbstractSecurityPage {
             }
         }); 
 
+        // Check if service is working
+       boolean isWorking = false;
+       if (serviceName!=null) {
+           try {
+               getSecurityManager().loadRoleService(serviceName);
+               isWorking=true;
+           } catch (IOException ex) {               
+           }
+       }
 
-        if (serviceName!=null) {
+        if (isWorking) {                        
             tabs.add(new AbstractTab(new ResourceModel("roles")) {            
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -90,8 +99,7 @@ public class RoleTabbedPage extends AbstractSecurityPage {
         addOrReplace(tabbedPanel=new AjaxTabbedPanel(this.getClass().getSimpleName(), tabs));
         if (selectedTab!=null) {
             tabbedPanel.setSelectedTab(selectedTab);
-        }     
-        
+        }             
     }
     
     

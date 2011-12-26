@@ -14,7 +14,7 @@ import org.apache.wicket.Component;
 import org.apache.wicket.extensions.ajax.markup.html.modal.ModalWindow;
 import org.apache.wicket.extensions.ajax.markup.html.tabs.AjaxTabbedPanel;
 import org.apache.wicket.markup.html.form.CheckBox;
-import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.util.tester.FormTester;
@@ -201,12 +201,17 @@ public abstract class AbstractNamedConfigDetailsPanelTest extends AbstractSecuri
         return formTester.getForm().get("config.name").getDefaultModelObjectAsString();
     }
 
-    protected String setSecurityConfigClassName() {
+    protected String getSecurityConfigClassName() {
         return formTester.getForm().get("config.className").getDefaultModelObjectAsString();
     }
     
     protected void setSecurityConfigClassName(String aName) {
-        formTester.setValue("config.className", aName);
+        
+        DropDownChoice<String> component = (DropDownChoice<String>)
+                formTester.getForm().get("config.className");
+        int index = component.getChoices().indexOf(aName);                     
+        //formTester.setValue("config.className", aName);
+        formTester.select("config.className", index);     
         tester.executeAjaxEvent(formTester.getForm().getPageRelativePath()+":config.className", "onchange");
     }
 
