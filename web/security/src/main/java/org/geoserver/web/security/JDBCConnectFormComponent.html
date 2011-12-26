@@ -17,33 +17,32 @@
 		    </span>  				
 		</li>	
 		<li>
-			<label wicket:id="jndiNameLabel" for="jndiName"><wicket:message key="jndiName"></wicket:message></label>  
+			<span class="fieldname" wicket:id="jndiNameLabel"></span>			
 			<input wicket:id="jndiName" type="text" />	
 		</li>
-		<li>
-			<label for="driverName"><wicket:message key="driverName"></wicket:message></label>  
+		<li>			
+			<span class="fieldname" wicket:id="driverNameLabel"></span>  
 			<input wicket:id="driverName" type="text" />	
 		</li>
 		<li>
-			<label for="connectURL"><wicket:message key="connectURL"></wicket:message></label>  
+			<span class="fieldname" wicket:id="connectURLLabel"></span>  
 			<input wicket:id="connectURL" type="text" />	
 		</li>		
 		<li>
-			<label for="username"><wicket:message key="username"></wicket:message></label>  
+			<span class="fieldname" wicket:id="usernameLabel"></span>  
 			<input wicket:id="username" type="text" />	
 		</li>		
 		<li>
-			<label for="password"><wicket:message key="password"></wicket:message></label>  
+			<span class="fieldname" wicket:id="passwordLabel"></span>  
 			<input wicket:id="password" type="text" />	
 		</li>
 		<li>
-			<a href="#" wicket:id="testConnection"><wicket:message
-				key="testConnection"></wicket:message></a>
 				
-<!-- 			<input wicket:id="testConnection" type="submit" key>
-				<wicket:message key="testConnection"></wicket:message>
-			</input>	 -->
-			
+			<div class="button-group selfclear">
+				<a href="#" wicket:id="testConnection">
+					<wicket:message	key="testConnection"></wicket:message>
+				</a> 
+			</div>					
 		</li>				
 	</ul>
 </wicket:panel>

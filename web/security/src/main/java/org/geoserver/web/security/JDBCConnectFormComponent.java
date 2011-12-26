@@ -17,20 +17,20 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
 
-import org.apache.wicket.Component;
+import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.Radio;
 import org.apache.wicket.markup.html.form.RadioGroup;
+import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.ResourceModel;
+import org.apache.wicket.model.StringResourceModel;
 import org.geotools.util.logging.Logging;
 
 
@@ -127,16 +127,25 @@ public class JDBCConnectFormComponent extends
     
     Mode mode;    
     RadioGroup<String> typeComponent;
-    TextField<String> jndiNameComponent;
-    Label jndiNameLabel;
+    TextField<String> jndiNameComponent;    
     TextField<String> usernameComponent;
     TextField<String> passwordComponent;
     TextField<String> driverNameComponent;
     TextField<String> connectURLComponent;
+    
+    Label jndiNameLabel;
+    Label usernameLabel;
+    Label passwordLabel;
+    Label driverNameLabel;
+    Label connectURLLabel;
         
-    AjaxSubmitLink testComponent;
+    SubmitLink testComponent;
 
         
+    /**
+     * @param id
+     * @param mode
+     */
     public JDBCConnectFormComponent(String id, Mode mode) {
         super(id);
         this.mode=mode;
@@ -150,6 +159,11 @@ public class JDBCConnectFormComponent extends
     }
     
     
+    /**
+     * @param id
+     * @param mode
+     * @param jndiName
+     */
     public JDBCConnectFormComponent(String id, Mode mode, String jndiName) {
         super(id);
         this.mode=mode;
@@ -164,6 +178,14 @@ public class JDBCConnectFormComponent extends
         initializeComponents();
     }
 
+    /**
+     * @param id
+     * @param mode
+     * @param driverName
+     * @param url
+     * @param username
+     * @param password
+     */
     public JDBCConnectFormComponent(String id, Mode mode, String driverName,String url
             ,String username,String password) {
         super(id);
@@ -183,96 +205,92 @@ public class JDBCConnectFormComponent extends
     }
     
     protected void initializeComponents() {
-        
-        
-        
-        typeComponent = new RadioGroup<String>("type");
-        typeComponent.add(new Radio<String>(JDBCConnectConfig.TYPEDRIVER,
-                new PropertyModel<String>(getModelObject(), "type")));
-        typeComponent.add(new Radio<String>(JDBCConnectConfig.TYPEJNDI,
-                new PropertyModel<String>(getModelObject(), "type")));
-        
-//        List<String> types= new ArrayList<String>();
-//        types.add(JDBCConnectConfig.TYPEDRIVER);
-//        types.add(JDBCConnectConfig.TYPEJNDI);
-//        typeComponent = new RadioChoice<String>("type",types,new IChoiceRenderer<String>() {
-//            private static final long serialVersionUID = 1L;
-//
-//            @Override
-//            public Object getDisplayValue(String object) {
-//                return new ResourceModel(
-//                        this.getClass().getSimpleName()+"."+object.toString()).getObject();
-//            }
-//            @Override
-//            public String getIdValue(String object, int index) {
-//                return object;
-//            }
-//        });
-    
-        AjaxFormComponentUpdatingBehavior behavior = new AjaxFormComponentUpdatingBehavior("onchange") { 
-                      
+                                   
+        AjaxEventBehavior jndiBehavior = new AjaxEventBehavior("onclick") { 
+                     
             private static final long serialVersionUID = 1L;
 
             @Override
-            protected void onUpdate(AjaxRequestTarget target) {
-                String type = JDBCConnectFormComponent.this.getModelObject().getType();
-                boolean isJndi = JDBCConnectConfig.TYPEJNDI.equals(type);
-                jndiNameComponent.setVisible(isJndi);
-                usernameComponent.setVisible(!isJndi);
-                passwordComponent.setVisible(!isJndi);
-                driverNameComponent.setVisible(!isJndi);
-                connectURLComponent.setVisible(!isJndi);
-                target.addComponent(jndiNameComponent);
-                target.addComponent(usernameComponent);
-                target.addComponent(passwordComponent);
-                target.addComponent(driverNameComponent);
-                target.addComponent(connectURLComponent);
+            protected void onEvent(AjaxRequestTarget target) {
+                setVisibility(true);
+                addVisibilityComponents(target);
             }
             };
-                        
-        typeComponent.setVisible(mode==Mode.DYNAMIC);
-        typeComponent.add(behavior);
+            
+            AjaxEventBehavior driverBehavior = new AjaxEventBehavior("onclick") { 
+                
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected void onEvent(AjaxRequestTarget target) {
+                    setVisibility(false);
+                    addVisibilityComponents(target);
+                }
+                };
+
+                
+        PropertyModel<String> typeModel =   new PropertyModel<String>(getModelObject(), "type");        
+        typeComponent = new RadioGroup<String>("type",typeModel);
+        Radio<String> radioDriver = new Radio<String>(JDBCConnectConfig.TYPEDRIVER,
+                new Model<String>(JDBCConnectConfig.TYPEDRIVER));
+        radioDriver.add(driverBehavior);
+        Radio<String> radioJndi = new Radio<String>(JDBCConnectConfig.TYPEJNDI,
+                new Model<String>(JDBCConnectConfig.TYPEJNDI));
+        radioJndi.add(jndiBehavior);
+        
+        typeComponent.add(radioDriver);
+        typeComponent.add(radioJndi);
+                                       
+        typeComponent.setVisible(mode==Mode.DYNAMIC);        
         add(typeComponent);
         
-        boolean isJndi = JDBCConnectConfig.TYPEJNDI.equals(getModelObject().getType());
         
-        add(jndiNameLabel=new Label("jndiNameLabel"));
-        jndiNameLabel.setVisible(isJndi);
+        jndiNameLabel=new Label("jndiNameLabel", new StringResourceModel("jndiName",this,null));
+        add(jndiNameLabel);
         jndiNameLabel.setOutputMarkupPlaceholderTag(true);
         
-        jndiNameComponent = new TextField<String>("jndiName");
-        jndiNameComponent.setVisible(isJndi);
+        jndiNameComponent = new TextField<String>("jndiName");        
         jndiNameComponent.setOutputMarkupPlaceholderTag(true);
         add(jndiNameComponent);
 
+        usernameLabel=new Label("usernameLabel", new StringResourceModel("username",this,null));
+        add(usernameLabel);
+        usernameLabel.setOutputMarkupPlaceholderTag(true);
+        
         usernameComponent = new TextField<String>("username");
-        usernameComponent.setVisible(!isJndi);
         usernameComponent.setOutputMarkupPlaceholderTag(true);
         add(usernameComponent);
+
+        passwordLabel=new Label("passwordLabel", new StringResourceModel("password",this,null));
+        add(passwordLabel);
+        passwordLabel.setOutputMarkupPlaceholderTag(true);
         
         passwordComponent = new TextField<String>("password");
-        passwordComponent.setVisible(!isJndi);
         passwordComponent.setOutputMarkupPlaceholderTag(true);
         add(passwordComponent);
-
-
+        
+        driverNameLabel=new Label("driverNameLabel", new StringResourceModel("driverName",this,null));
+        add(driverNameLabel);
+        driverNameLabel.setOutputMarkupPlaceholderTag(true);
+                
         driverNameComponent = new TextField<String>("driverName");
-        driverNameComponent.setVisible(!isJndi);
         driverNameComponent.setOutputMarkupPlaceholderTag(true);
         add(driverNameComponent);
 
+        connectURLLabel=new Label("connectURLLabel", new StringResourceModel("connectURL",this,null));
+        add(connectURLLabel);
+        connectURLLabel.setOutputMarkupPlaceholderTag(true);
 
         connectURLComponent = new TextField<String>("connectURL");
-        connectURLComponent.setVisible(!isJndi);
         connectURLComponent.setOutputMarkupPlaceholderTag(true);
         add(connectURLComponent);
         
         
-        testComponent = new AjaxSubmitLink("testConnection") {
+        testComponent = new SubmitLink("testConnection") {
             
             private static final long serialVersionUID = 1L;
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            public void onSubmit() {
                 JDBCConnectConfig config = JDBCConnectFormComponent.this.getModelObject();
                 
                 String msg = null;                
@@ -298,11 +316,14 @@ public class JDBCConnectFormComponent extends
             }
         };
         add(testComponent);
+        
+        boolean isJndi = JDBCConnectConfig.TYPEJNDI.equals(getModelObject().getType());
+        setVisibility(isJndi);
     }
 
     public String testDriver(String driverName,String connectUrl,String username,String password) {
         try {
-            Class.forName(driverName);
+            Class.forName(driverName==null ? "" : driverName);
             Connection con = DriverManager.getConnection(connectUrl,username,password);
             con.close();
         } catch (Exception ex) {
@@ -328,7 +349,6 @@ public class JDBCConnectFormComponent extends
     @Override
     public void updateModel() {
         updateComponent(typeComponent);
-        updateComponent(typeComponent);
         updateComponent(jndiNameComponent);
         updateComponent(usernameComponent);
         updateComponent(passwordComponent);
@@ -338,5 +358,31 @@ public class JDBCConnectFormComponent extends
     protected void updateComponent(FormComponent<?> c) {
         if (c.isVisible() && c.isEnabled())
             c.updateModel();
+    }
+
+    protected void setVisibility(boolean isJndi) {
+        jndiNameComponent.setVisible(isJndi);
+        jndiNameLabel.setVisible(isJndi);
+        usernameComponent.setVisible(!isJndi);
+        usernameLabel.setVisible(!isJndi);
+        passwordComponent.setVisible(!isJndi);
+        passwordLabel.setVisible(!isJndi);
+        driverNameComponent.setVisible(!isJndi);
+        driverNameLabel.setVisible(!isJndi);
+        connectURLComponent.setVisible(!isJndi);
+        connectURLLabel.setVisible(!isJndi);
+    }
+    
+    protected void addVisibilityComponents (AjaxRequestTarget target) {
+        target.addComponent(jndiNameComponent);
+        target.addComponent(jndiNameLabel);
+        target.addComponent(usernameComponent);
+        target.addComponent(usernameLabel);
+        target.addComponent(passwordComponent);
+        target.addComponent(passwordLabel);
+        target.addComponent(driverNameComponent);
+        target.addComponent(driverNameLabel);
+        target.addComponent(connectURLComponent);
+        target.addComponent(connectURLLabel);
     }
 }

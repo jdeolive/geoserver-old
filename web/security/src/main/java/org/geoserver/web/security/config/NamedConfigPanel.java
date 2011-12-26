@@ -116,11 +116,12 @@ public class NamedConfigPanel extends Panel {
                 Component comp = getConfigDetailsPanel(
 //                        implClass.getModel().getObject());
                         NamedConfigPanel.this.model.getObject().getConfig().getClassName());
-                old.replaceWith(comp);                
+                old.replaceWith(comp);
+                comp.setOutputMarkupId(true);
                 //comp.setMarkupId(old.getMarkupId());
                 //form.addOrReplace(comp);
                 target.addComponent(comp);
-                target.addComponent(old);
+                //target.addComponent(old);
             }
         });
 
