@@ -12,8 +12,6 @@ import java.util.logging.Logger;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.jdbc.config.impl.JdbcJndiRoleServiceConfigImpl;
-import org.geoserver.security.jdbc.config.impl.JdbcJndiUserGroupServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
 import org.geoserver.security.password.GeoserverPlainTextPasswordEncoder;
@@ -42,16 +40,6 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         return config;
     }
     
-    protected SecurityUserGroupServiceConfig getUGConfigJNDI(String name, Class<?> aClass,
-            String encoder, String policyName) {
-        JdbcJndiUserGroupServiceConfigImpl config = new JdbcJndiUserGroupServiceConfigImpl();
-        config.setName(name);
-        config.setClassName(aClass.getName());
-        config.setPasswordEncoderName(encoder);
-        config.setPasswordPolicyName(policyName);
-        return config;
-    }
-
     
     protected SecurityRoleServiceConfig getRoleConfig(String name, Class<?> aClass,String adminRole) {
         JdbcRoleServiceConfigImpl config = new JdbcRoleServiceConfigImpl();
@@ -61,13 +49,6 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         return config;
     }
     
-    protected SecurityRoleServiceConfig getRoleConfigJNDI(String name, Class<?> aClass,String adminRole) {
-        JdbcJndiRoleServiceConfigImpl config = new JdbcJndiRoleServiceConfigImpl();
-        config.setName(name);
-        config.setClassName(aClass.getName());
-        config.setAdminRoleName(adminRole);
-        return config;
-    }
 
 
     public void testRoleConfig() throws IOException {
@@ -82,9 +63,10 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setUserName("user");
         config.setConnectURL("jdbc:connect");
         
-        JdbcJndiRoleServiceConfigImpl  configJNDI = 
-                (JdbcJndiRoleServiceConfigImpl)getRoleConfigJNDI("jndi", JDBCRoleService.class, 
+        JdbcRoleServiceConfigImpl  configJNDI = (JdbcRoleServiceConfigImpl) 
+                getRoleConfig("jndi", JDBCRoleService.class, 
                 GeoserverRole.ADMIN_ROLE.getAuthority());
+        configJNDI.setJndi(true);
         configJNDI.setJndiName("jndi:connect");
         
         boolean fail;
@@ -167,10 +149,10 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setUserName("user");
         config.setConnectURL("jdbc:connect");
 
-        JdbcJndiUserGroupServiceConfigImpl  configJNDI = 
-                (JdbcJndiUserGroupServiceConfigImpl)getUGConfigJNDI("jdbc", JDBCUserGroupService.class, 
+        JdbcUserGroupServiceConfigImpl  configJNDI = (JdbcUserGroupServiceConfigImpl) 
+                getUGConfig("jdbc", JDBCUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME);
-                        
+        configJNDI.setJndi(true);                        
         configJNDI.setJndiName("jndi:connect");
         
         boolean fail;

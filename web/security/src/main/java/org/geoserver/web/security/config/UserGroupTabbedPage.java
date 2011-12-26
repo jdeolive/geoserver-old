@@ -76,8 +76,17 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
             }
         }); 
 
-        
+         // Check if service is working
+        boolean isWorking = false;
         if (serviceName!=null) {
+           try {
+               getSecurityManager().loadUserGroupService(serviceName);
+               isWorking=true;
+           } catch (IOException ex) {               
+           }
+        }
+        
+        if (isWorking) {
             tabs.add(new AbstractTab(new ResourceModel("users")) {            
                 private static final long serialVersionUID = 1L;
     
@@ -111,8 +120,7 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
         addOrReplace(tabbedPanel=new AjaxTabbedPanel(this.getClass().getSimpleName(), tabs));
         if (selectedTab!=null) {
             tabbedPanel.setSelectedTab(selectedTab);
-        }     
-        
+        }                
     }
     
     

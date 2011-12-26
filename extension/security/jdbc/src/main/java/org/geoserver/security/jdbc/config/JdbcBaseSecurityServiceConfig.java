@@ -21,6 +21,27 @@ public interface JdbcBaseSecurityServiceConfig  extends SecurityNamedServiceConf
     
 
     /**
+     * Connect parameters via JNDI
+     * 
+     * @return
+     */
+    public boolean isJndi();
+    
+    public void setJndi(boolean jndi);
+    
+    /**
+     * @return the JNDI name 
+     */
+    public String getJndiName();
+    
+    /**
+     * set the JNDI name
+     * @param jndiName
+     */
+    public void setJndiName(String jndiName);
+
+    
+    /**
      * @return filename of property file containing DDL statements
      */
     public String getPropertyFileNameDDL();
@@ -39,4 +60,49 @@ public interface JdbcBaseSecurityServiceConfig  extends SecurityNamedServiceConf
      * @param fileName
      */
     public void   setPropertyFileNameDML (String fileName);
+    
+    /**
+     * @return the JDBC driver class name
+     */
+    public String getDriverClassName();
+    
+    /**
+     * set the driver class name
+     * 
+     * @param driverName
+     */
+    public void setDriverClassName(String driverName);
+    
+    /**
+     * @return the JDBC connect url
+     */
+    public String getConnectURL();
+    
+    /**
+     * set the JDBC connect url
+     * 
+     * @param urlString
+     */
+    public void setConnectURL(String urlString);
+
+    /**
+     * @return the user name for login
+     */
+    public String getUserName();
+    /**
+     * set the username
+     * @param userName
+     */
+    public void setUserName(String userName);
+    
+    /**
+     * @return the password for login
+     */
+    public String getPassword();
+    /**
+     * set the password for login
+     * @param password
+     */
+    public void setPassword(String password);
+
 }

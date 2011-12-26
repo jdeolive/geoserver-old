@@ -8,12 +8,6 @@ package org.geoserver.security.jdbc;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
-import org.geoserver.security.jdbc.config.impl.JdbcJndiRoleServiceConfigImpl;
-import org.geoserver.security.jdbc.config.impl.JdbcJndiSecurityServiceConfigImpl;
-import org.geoserver.security.jdbc.config.impl.JdbcJndiUserGroupServiceConfigImpl;
-import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
-import org.geoserver.security.jdbc.config.impl.JdbcSecurityServiceConfigImpl;
-import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidationErrors;
 import org.geoserver.security.validation.SecurityConfigValidator;
@@ -24,10 +18,11 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
     public void validate(SecurityRoleServiceConfig config) throws SecurityConfigException {
         super.validate(config);
         JdbcBaseSecurityServiceConfig jdbcConfig = (JdbcBaseSecurityServiceConfig) config;
-        if (config instanceof JdbcJndiRoleServiceConfigImpl)
-            validateJNDI((JdbcJndiRoleServiceConfigImpl)jdbcConfig);
-        if (config instanceof JdbcRoleServiceConfigImpl)
-            validateJDBC((JdbcRoleServiceConfigImpl)jdbcConfig);
+        
+        if (jdbcConfig.isJndi())
+            validateJNDI(jdbcConfig);
+        else 
+            validateJDBC(jdbcConfig);
     }
     
     @Override
@@ -35,18 +30,18 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
             throws SecurityConfigException {
         super.validate(config);
         JdbcBaseSecurityServiceConfig jdbcConfig = (JdbcBaseSecurityServiceConfig) config;
-        if (config instanceof JdbcJndiUserGroupServiceConfigImpl)
-            validateJNDI((JdbcJndiUserGroupServiceConfigImpl)jdbcConfig);
-        if (config instanceof JdbcUserGroupServiceConfigImpl)
-            validateJDBC((JdbcUserGroupServiceConfigImpl)jdbcConfig);
+        if (jdbcConfig.isJndi())
+            validateJNDI(jdbcConfig);
+        else
+            validateJDBC(jdbcConfig);
     }
     
-    protected void validateJNDI(JdbcJndiSecurityServiceConfigImpl config) throws SecurityConfigException {
+    protected void validateJNDI(JdbcBaseSecurityServiceConfig config) throws SecurityConfigException {
         if (isNotEmpty(config.getJndiName())==false)
             throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_210);
     }
     
-    protected void validateJDBC(JdbcSecurityServiceConfigImpl config) throws SecurityConfigException {
+    protected void validateJDBC(JdbcBaseSecurityServiceConfig config) throws SecurityConfigException {
         if (isNotEmpty(config.getDriverClassName())==false)
             throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_200);
         if (isNotEmpty(config.getUserName())==false)

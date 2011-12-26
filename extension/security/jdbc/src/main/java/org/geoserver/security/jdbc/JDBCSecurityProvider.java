@@ -15,8 +15,6 @@ import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.jdbc.config.impl.JdbcJndiRoleServiceConfigImpl;
-import org.geoserver.security.jdbc.config.impl.JdbcJndiUserGroupServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
 import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
 import org.geoserver.security.validation.SecurityConfigValidator;
@@ -33,8 +31,6 @@ public class JDBCSecurityProvider extends GeoServerSecurityProvider {
         super.configure(xp);
         xp.getXStream().alias("jdbcusergroupservice", JdbcUserGroupServiceConfigImpl.class);
         xp.getXStream().alias("jdbcroleservice", JdbcRoleServiceConfigImpl.class);
-        xp.getXStream().alias("jndiusergroupservice", JdbcJndiUserGroupServiceConfigImpl.class);
-        xp.getXStream().alias("jndiroleservice", JdbcJndiRoleServiceConfigImpl.class);        
     }
 
     @Override

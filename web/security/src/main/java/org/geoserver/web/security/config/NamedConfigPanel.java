@@ -125,7 +125,7 @@ public class NamedConfigPanel extends Panel {
             }
         });
 
-        implClass.setEnabled(helper.isNew && classNames.size()>1);
+        implClass.setEnabled(helper.isNew);
         
 //        if (helper.getConfig().getClassName() == null ||
 //            helper.getConfig().getClassName().length()==0) {    
@@ -134,9 +134,9 @@ public class NamedConfigPanel extends Panel {
 //            form.add(getConfigDetailsPanel(helper.getConfig().getClassName()));
 //        }
 
-      if (helper.isNew())
+        if (helper.isNew())
               form.add(new NamedConfigDetailsEmptyPanel(DETAILS_WICKET_ID, model));
-      else
+        else
           form.add(getConfigDetailsPanel(helper.getConfig().getClassName()));
 
         

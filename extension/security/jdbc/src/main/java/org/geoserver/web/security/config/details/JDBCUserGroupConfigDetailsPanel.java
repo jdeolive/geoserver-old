@@ -6,10 +6,10 @@ package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.jdbc.config.JdbcJndiSecurityServiceConfig;
-import org.geoserver.security.jdbc.config.JdbcSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
 import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
 import org.geoserver.web.security.JDBCConnectFormComponent;
+import org.geoserver.web.security.JDBCConnectFormComponent.JDBCConnectConfig;
 import org.geoserver.web.security.JDBCConnectFormComponent.Mode;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
@@ -27,22 +27,15 @@ public class JDBCUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPan
     @Override
     protected void initializeComponents() {
         super.initializeComponents();
-        if (configHelper.isNew()) {
-            comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC);
-        } else {
-           if (configHelper.getConfig() instanceof JdbcJndiSecurityServiceConfig) {
-               JdbcJndiSecurityServiceConfig jndiConfig = 
-                       (JdbcJndiSecurityServiceConfig) configHelper.getConfig();
-               comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC,jndiConfig.getJndiName());
-           } else {
-               JdbcSecurityServiceConfig jdbcConfig = 
-                       (JdbcSecurityServiceConfig) configHelper.getConfig();               
-               comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC,
-                       jdbcConfig.getDriverClassName(),jdbcConfig.getConnectURL(),
-                       jdbcConfig.getUserName(),jdbcConfig.getPassword()
-                       );
-           }
-        }        
+        JdbcBaseSecurityServiceConfig config = (JdbcBaseSecurityServiceConfig) configHelper.getConfig(); 
+       if (config.isJndi()) {
+           comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC,config.getJndiName());
+       } else {
+           comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC,
+                   config.getDriverClassName(),config.getConnectURL(),
+                   config.getUserName(),config.getPassword()
+                   );
+       }
         addOrReplace(comp);        
     };
         
@@ -56,5 +49,22 @@ public class JDBCUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPan
     public void updateModel() {
         super.updateModel();
         comp.updateModel();
+        JdbcBaseSecurityServiceConfig config = (JdbcBaseSecurityServiceConfig) configHelper.getConfig();
+        JDBCConnectConfig c = comp.getModelObject();
+        config.setJndiName(null);
+        config.setDriverClassName(null);
+        config.setConnectURL(null);
+        config.setUserName(null);
+        config.setPassword(null);
+        
+        config.setJndi(c.getType().equals(JDBCConnectConfig.TYPEJNDI));
+        if (config.isJndi()) {
+            config.setJndiName(c.getJndiName());
+        } else {
+            config.setDriverClassName(c.getDriverName());
+            config.setConnectURL(c.getConnectURL());
+            config.setUserName(c.getUsername());
+            config.setPassword(c.getPassword());
+        }
     }
 }

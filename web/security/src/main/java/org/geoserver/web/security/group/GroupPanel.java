@@ -80,7 +80,6 @@ public class GroupPanel extends Panel {
         groups.setOutputMarkupId(true);
         add(dialog = new GeoServerDialog("dialog"));
         headerComponents();
-
     }
     
     protected void headerComponents() {

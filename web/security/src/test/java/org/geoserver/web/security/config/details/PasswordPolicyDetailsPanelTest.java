@@ -13,7 +13,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.validation.PasswordValidatorImpl;
 import org.geoserver.web.security.AbstractSecurityPage;
-import org.geoserver.web.security.config.AuthenticationProviderPage;
 import org.geoserver.web.security.config.PasswordPolicyPage;
 import org.geoserver.web.security.config.SecurityServicesTabbedPage;
 import org.geoserver.web.security.config.list.PasswordPolicyServicesPanel;
@@ -77,7 +76,6 @@ public  class PasswordPolicyDetailsPanelTest extends AbstractNamedConfigDetailsP
     }
     
     protected void setMinLength(int value){
-        print(formTester.getForm(),true,true);
         formTester.setValue("details:config.minLength", new Integer(value).toString());
     }
     
@@ -109,9 +107,10 @@ public  class PasswordPolicyDetailsPanelTest extends AbstractNamedConfigDetailsP
         tester.assertRenderedPage(PasswordPolicyPage.class);
         detailsPage = (PasswordPolicyPage) tester.getLastRenderedPage();
         newFormTester();
-        
-        setSecurityConfigName("default2");
         setSecurityConfigClassName(PasswordValidatorImpl.class.getName());
+        newFormTester();
+        
+        setSecurityConfigName("default2");        
         setMinLength(5);
         clickCancel();
         
@@ -123,19 +122,19 @@ public  class PasswordPolicyDetailsPanelTest extends AbstractNamedConfigDetailsP
         clickAddNew();
         //detailsPage = (PasswordPolicyPage) tester.getLastRenderedPage();
         newFormTester();
-        setSecurityConfigName("default2");
         setSecurityConfigClassName(PasswordValidatorImpl.class.getName());
+        setUnlimted(false);
+        tester.assertVisible("passwordPolicyPanel:namedConfig:details:config.maxLength");
+        tester.assertVisible("passwordPolicyPanel:namedConfig:details:maxLengthLabel");
+        newFormTester();
+        setSecurityConfigName("default2");        
         setDigitRequired(true);
         setUpperCaseRequired(true);
         setLowerCaseRequired(true);        
-        setUnlimted(false);
         setMinLength(2);        
-        tester.assertVisible("passwordPolicyPanel:namedConfig:details:config.maxLength");
-        tester.assertVisible("passwordPolicyPanel:namedConfig:details:maxLengthLabel");
         setMaxLength(4);
         clickSave();
         
-        print(detailsPage,true,true);
         assertEquals(tabbedPage.getClass(),tester.getLastRenderedPage().getClass());
         assertEquals(3, countItmes());        
         assertNotNull(getSecurityNamedServiceConfig("default"));
@@ -169,8 +168,9 @@ public  class PasswordPolicyDetailsPanelTest extends AbstractNamedConfigDetailsP
         clickAddNew();        
         detailsPage = (PasswordPolicyPage) tester.getLastRenderedPage();
         newFormTester();
-        setSecurityConfigName("default2");
         setSecurityConfigClassName(PasswordValidatorImpl.class.getName());        
+        newFormTester();
+        setSecurityConfigName("default2");
         clickSave(); // should not work
         tester.assertRenderedPage(detailsPage.getClass());
         testErrorMessagesWithRegExp(".*default2.*");
@@ -180,7 +180,7 @@ public  class PasswordPolicyDetailsPanelTest extends AbstractNamedConfigDetailsP
         
         // start test modify        
         clickNamedServiceConfig("default2");
-        tester.assertRenderedPage(AuthenticationProviderPage.class);
+        tester.assertRenderedPage(PasswordPolicyPage.class);
         detailsPage = (PasswordPolicyPage) tester.getLastRenderedPage();
         newFormTester();
         setMaxLength(27);
@@ -195,12 +195,13 @@ public  class PasswordPolicyDetailsPanelTest extends AbstractNamedConfigDetailsP
         clickNamedServiceConfig("default2");
         detailsPage = (PasswordPolicyPage) tester.getLastRenderedPage();
         newFormTester();
-        setDigitRequired(false);
-        setUpperCaseRequired(false);
-        setLowerCaseRequired(false);
         setUnlimted(true);
         tester.assertInvisible("passwordPolicyPanel:namedConfig:details:config.maxLength");
         tester.assertInvisible("passwordPolicyPanel:namedConfig:details:maxLengthLabel");
+        newFormTester();
+        setDigitRequired(false);
+        setUpperCaseRequired(false);
+        setLowerCaseRequired(false);
 
         setMinLength(3);        
         
@@ -236,9 +237,9 @@ public  class PasswordPolicyDetailsPanelTest extends AbstractNamedConfigDetailsP
         Method m = link.getDelegate().getClass().getDeclaredMethod("onSubmit", AjaxRequestTarget.class,Component.class);
         m.invoke(link.getDelegate(), null,null);
         
-        assertNull(getSecurityManager().loadAuthenticationProviderConfig("default2"));
-        assertNotNull(getSecurityManager().loadAuthenticationProviderConfig("default"));
-        assertNotNull(getSecurityManager().loadAuthenticationProviderConfig("master"));
+        assertNull(getSecurityManager().loadPasswordPolicyConfig("default2"));
+        assertNotNull(getSecurityManager().loadPasswordPolicyConfig("default"));
+        assertNotNull(getSecurityManager().loadPasswordPolicyConfig("master"));
     }
 
 }
