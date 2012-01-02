@@ -42,6 +42,8 @@ public class SecurityConfigValidationErrors  extends AbstractSecurityValidationE
     public final static String SEC_ERR_24d = "SEC_ERR_24d";
     public final static String SEC_ERR_24e = "SEC_ERR_24e";
     
+    public final static String SEC_ERR_25 = "SEC_ERR_25";
+    
     public final static String SEC_ERR_30 = "SEC_ERR_30";    
     public final static String SEC_ERR_31 = "SEC_ERR_31";
     public final static String SEC_ERR_32 = "SEC_ERR_32";
@@ -51,7 +53,7 @@ public class SecurityConfigValidationErrors  extends AbstractSecurityValidationE
     public final static String SEC_ERR_40 = "SEC_ERR_40";
     public final static String SEC_ERR_41 = "SEC_ERR_41";
     public final static String SEC_ERR_42 = "SEC_ERR_42";
-    public final static String SEC_ERR_50 = "SEC_ERR_50";
+    //public final static String SEC_ERR_50 = "SEC_ERR_50";
     
     
     
@@ -104,6 +106,9 @@ public class SecurityConfigValidationErrors  extends AbstractSecurityValidationE
         return MessageFormat.format("User/group service {0} does not exist",args);
     if (SEC_ERR_24e.equals(id))
         return MessageFormat.format("Authentication filter {0} does not exist",args);
+    
+    if (SEC_ERR_25.equals(id))
+        return MessageFormat.format("Implementation name is required",args);
 
     
     if (SEC_ERR_30.equals(id))
@@ -124,8 +129,8 @@ public class SecurityConfigValidationErrors  extends AbstractSecurityValidationE
         return MessageFormat.format("Maximum length of password must be greater or equal to the minimum length",args);
     if (SEC_ERR_42.equals(id))
         return MessageFormat.format("Policy for the master password cannot be deleted",args);
-    if (SEC_ERR_50.equals(id))
-        return MessageFormat.format("The administrator role has to be: {0}",args);
+//    if (SEC_ERR_50.equals(id))
+//        return MessageFormat.format("The administrator role has to be: {0}",args);
 
     return super.formatErrorMsg(id, args);
     }

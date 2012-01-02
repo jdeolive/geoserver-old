@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 
@@ -88,6 +90,9 @@ public class RoleCalculator  {
      * After role calculation has finished, personalize each
      * role with role attributes if necessary
      * 
+     * If the user has the admin role of the active role service,
+     * {@link GeoserverRole#ADMIN_ROLE} is also included in the set. 
+     * 
      * @param user
      * @return
      * @throws IOException
@@ -112,6 +117,18 @@ public class RoleCalculator  {
         SortedSet<GeoserverRole> set2 = 
                 personalizeRoles(user, set1);
         
+        // if the user has the admin role of the role service the 
+        // GeoserverRole.ADMIN_ROLE must also be in the set
+        GeoserverRole adminRole = GeoServerExtensions.bean(GeoServerSecurityManager.class).getActiveRoleService().getAdminRole();
+        if (adminRole!=null) {
+            String adminRoleName = adminRole.getAuthority();
+            if (adminRoleName != null && adminRoleName.length()> 0 
+                    && (adminRoleName.equals(GeoserverRole.ADMIN_ROLE.getAuthority())==false)) {
+                if (set2.contains(adminRole)) {
+                    set2.add(GeoserverRole.ADMIN_ROLE);
+                }
+            }
+        }
         return set2;
     }
     

@@ -103,12 +103,16 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     }
     
     protected void checkExtensionPont(Class<?> extensionPoint, String className) throws SecurityConfigException{
+        if (isNotEmpty(className)==false) {
+            throw createSecurityException(SEC_ERR_25);
+        }
         Class<?> aClass = null;
         try {
             aClass=Class.forName(className);
         } catch (ClassNotFoundException e) {
             throw createSecurityException(SEC_ERR_20, className);
-        }
+        } 
+        
         if (extensionPoint.isAssignableFrom(aClass)==false) {
             throw createSecurityException(SEC_ERR_21, extensionPoint,
                     className);
@@ -138,7 +142,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
         throw new RuntimeException("Unkwnown extension point: "+extensionPoint.getName());
     }
     
-    protected void validateAddNamedService(Class<?> extensionPoint,SecurityNamedServiceConfig config) throws SecurityConfigException{
+    public void validateAddNamedService(Class<?> extensionPoint,SecurityNamedServiceConfig config) throws SecurityConfigException{
         checkExtensionPont(extensionPoint, config.getClassName());
         checkServiceName(extensionPoint, config.getName());
         SortedSet<String> names= getNamesFor(extensionPoint);
@@ -147,7 +151,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
         
     }
     
-    protected void validateModifiedNamedService(Class<?> extensionPoint,SecurityNamedServiceConfig config) throws SecurityConfigException{
+    public void validateModifiedNamedService(Class<?> extensionPoint,SecurityNamedServiceConfig config) throws SecurityConfigException{
         checkExtensionPont(extensionPoint, config.getClassName());
         checkServiceName(extensionPoint, config.getName());
         SortedSet<String> names= getNamesFor(extensionPoint);
@@ -157,7 +161,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     }
 
         
-    protected void validateRemoveNamedService(Class<?> extensionPoint,SecurityNamedServiceConfig config) throws SecurityConfigException{
+    public void validateRemoveNamedService(Class<?> extensionPoint,SecurityNamedServiceConfig config) throws SecurityConfigException{
         checkServiceName(extensionPoint, config.getName());
     }
     
@@ -277,9 +281,9 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     }
     
     public void validate(SecurityRoleServiceConfig config) throws SecurityConfigException {
-        if (GeoserverRole.ADMIN_ROLE.getAuthority().equals(config.getAdminRoleName())==false) {
-            throw createSecurityException(SEC_ERR_50, GeoserverRole.ADMIN_ROLE.getAuthority());
-        }
+//        if (GeoserverRole.ADMIN_ROLE.getAuthority().equals(config.getAdminRoleName())==false) {
+//            throw createSecurityException(SEC_ERR_50, GeoserverRole.ADMIN_ROLE.getAuthority());
+//        }
     }
 
     public void validate(SecurityUserGroupServiceConfig config) throws SecurityConfigException {

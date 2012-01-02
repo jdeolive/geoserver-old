@@ -7,11 +7,10 @@ package org.geoserver.web.security.config.details;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.SortedSet;
 
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.model.CompoundPropertyModel;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
@@ -36,19 +35,27 @@ public abstract class AbstractRoleDetailsPanel extends AbstractNamedConfigDetail
     @Override
     protected void initializeComponents() {
 
-//        SecurityRoleServiceConfig config = 
-//                (SecurityRoleServiceConfig) configHelper.getConfig();
-        
-        
         
         rolesList = new ArrayList<String>();
-        rolesList.add(GeoserverRole.ADMIN_ROLE.getAuthority());
-        
-                        
         adminRoleName =  
                 new DropDownChoice<String>("config.adminRoleName",rolesList);
-        adminRoleName.setNullValid(false);
-        adminRoleName.setEnabled(rolesList.size()>0);
+        adminRoleName.setNullValid(true);        
+
+        
+        if (configHelper.isNew()==false) {
+            String serviceName = configHelper.getConfig().getName();
+            try {
+                SortedSet<GeoserverRole> roles = 
+                        getSecurityManager().loadRoleService(serviceName).getRoles();
+                for (GeoserverRole role : roles) 
+                    rolesList.add(role.getAuthority());
+            } catch (IOException e) {
+                // do nothing, service not available
+            }
+            adminRoleName.setEnabled(rolesList.size()>0);
+        } else {
+            adminRoleName.setEnabled(false);
+        }                                        
         add(adminRoleName);
 
     }

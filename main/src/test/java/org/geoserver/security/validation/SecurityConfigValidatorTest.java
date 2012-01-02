@@ -162,6 +162,18 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
                fail=true;               
            }
            assertTrue(fail);
+           
+           fail=false;
+           String className = ep == GeoserverUserGroupService.class ? null : "";
+           try {               
+               validator.checkExtensionPont(ep, className);
+           } catch (SecurityConfigException ex) {
+               assertEquals(ex.getErrorId(), SEC_ERR_25);
+               assertEquals(0,ex.getArgs().length);
+               LOGGER.info(ex.getMessage());
+               fail=true;               
+           }
+           assertTrue(fail);
 
            fail=false;
            String name = ep == GeoserverUserGroupService.class ? null : "";
@@ -174,6 +186,9 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
                fail=true;               
            }
            assertTrue(fail);
+           
+           
+           
         }
 
         // test names
@@ -433,31 +448,31 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
         boolean fail;
 
         
-        fail=false;
-        try {
-            config.setName("default2");
-            config.setAdminRoleName("adminrole");
-            getSecurityManager().saveRoleService(config, true);                         
-        } catch (SecurityConfigException ex) {
-            assertEquals( SEC_ERR_50,ex.getErrorId());
-            assertEquals(GeoserverRole.ADMIN_ROLE.getAuthority(),ex.getArgs()[0]);
-            LOGGER.info(ex.getMessage());
-            fail=true;
-        }
-        assertTrue(fail);
-
-        fail=false;
-        try {
-            config.setName(XMLRoleService.DEFAULT_NAME);
-            config.setAdminRoleName("adminrole");
-            getSecurityManager().saveRoleService(config, false);                         
-        } catch (SecurityConfigException ex) {
-            assertEquals( SEC_ERR_50,ex.getErrorId());
-            assertEquals(GeoserverRole.ADMIN_ROLE.getAuthority(),ex.getArgs()[0]);
-            LOGGER.info(ex.getMessage());
-            fail=true;
-        }
-        assertTrue(fail);
+//        fail=false;
+//        try {
+//            config.setName("default2");
+//            config.setAdminRoleName("adminrole");
+//            getSecurityManager().saveRoleService(config, true);                         
+//        } catch (SecurityConfigException ex) {
+//            assertEquals( SEC_ERR_50,ex.getErrorId());
+//            assertEquals(GeoserverRole.ADMIN_ROLE.getAuthority(),ex.getArgs()[0]);
+//            LOGGER.info(ex.getMessage());
+//            fail=true;
+//        }
+//        assertTrue(fail);
+//
+//        fail=false;
+//        try {
+//            config.setName(XMLRoleService.DEFAULT_NAME);
+//            config.setAdminRoleName("adminrole");
+//            getSecurityManager().saveRoleService(config, false);                         
+//        } catch (SecurityConfigException ex) {
+//            assertEquals( SEC_ERR_50,ex.getErrorId());
+//            assertEquals(GeoserverRole.ADMIN_ROLE.getAuthority(),ex.getArgs()[0]);
+//            LOGGER.info(ex.getMessage());
+//            fail=true;
+//        }
+//        assertTrue(fail);
 
         config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
         

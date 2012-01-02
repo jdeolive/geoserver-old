@@ -13,7 +13,6 @@ import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
 import org.geoserver.security.password.GeoserverDigestPasswordEncoder;

@@ -39,7 +39,11 @@ public class RoleServicesPanel extends NamedServicesPanel {
             Component comp = super.getComponentForProperty(id, itemModel, property);
             if (comp!=null) return comp;
             if (property == RoleServiceListProvider.ADMINROLENAME) {
-                return new Label(id,property.getModel(itemModel).getObject().toString());
+                Object value = property.getModel(itemModel).getObject();
+                if (value == null)
+                    return new Label(id,"");
+                else    
+                    return new Label(id,property.getModel(itemModel).getObject().toString());
             }
             throw new RuntimeException("Unknow propterty: "+property.getName());
         }

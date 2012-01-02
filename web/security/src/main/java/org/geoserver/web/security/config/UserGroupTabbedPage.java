@@ -26,6 +26,7 @@ import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.group.GroupPanel;
 import org.geoserver.web.security.user.UserPanel;
+import org.geoserver.web.wicket.ParamResourceModel;
 
 
 public class UserGroupTabbedPage extends AbstractSecurityPage {
@@ -33,6 +34,7 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
     protected TabbedPanel tabbedPanel;
     protected String serviceName;
     protected AbstractSecurityPage responsePage;
+    protected IOException exception;
     
 
     public UserGroupTabbedPage(AbstractSecurityPage responsePage) {
@@ -77,16 +79,16 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
         }); 
 
          // Check if service is working
-        boolean isWorking = false;
+        exception = null;
         if (serviceName!=null) {
            try {
-               getSecurityManager().loadUserGroupService(serviceName);
-               isWorking=true;
+               getSecurityManager().loadUserGroupService(serviceName);               
            } catch (IOException ex) {               
+               exception=ex;
            }
         }
         
-        if (isWorking) {
+        if (exception == null) {
             tabs.add(new AbstractTab(new ResourceModel("users")) {            
                 private static final long serialVersionUID = 1L;
     
@@ -112,7 +114,16 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
                     }
                 }
             });
+        } else {                 
+            tabs.add(new AbstractTab(new ParamResourceModel("problem",this,serviceName== null ? "" : serviceName)) {            
+                private static final long serialVersionUID = 1L;
+                @Override
+                public Panel getPanel(String panelId) {
+                    return  new ErrorPanel(panelId,exception);
+                }
+            });            
         }
+
 
         Integer selectedTab = null;
         if (tabbedPanel!=null)
