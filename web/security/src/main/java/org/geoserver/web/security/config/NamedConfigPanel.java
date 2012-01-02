@@ -38,6 +38,7 @@ import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.validation.SecurityConfigException;
+import org.geoserver.security.validation.SecurityConfigValidator;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.details.AbstractNamedConfigDetailsPanel;
@@ -71,7 +72,8 @@ public class NamedConfigPanel extends Panel {
         form = new Form<SecurityNamedConfigModelHelper>("namedConfig",model); 
         add(form);        
         name = new TextField<String>("config.name");        
-        name.setEnabled(helper.isNew());
+        name.setEnabled(helper.isNew());   
+        name.setRequired(false);
         form.add(name);
         
         List<String> classNames = getImplementations();
@@ -125,7 +127,7 @@ public class NamedConfigPanel extends Panel {
             }
         });
 
-        implClass.setEnabled(helper.isNew);
+        implClass.setEnabled(helper.isNew());
         
 //        if (helper.getConfig().getClassName() == null ||
 //            helper.getConfig().getClassName().length()==0) {    
@@ -141,7 +143,7 @@ public class NamedConfigPanel extends Panel {
 
         
         form.get(DETAILS_WICKET_ID).setOutputMarkupId(true);                
-        implClass.setRequired(true);        
+        //implClass.setRequired(true);        
         implClass.setOutputMarkupId(true);
         //implClass.setNullValid(false);
         implClass.setNullValid(true);
@@ -204,10 +206,10 @@ public class NamedConfigPanel extends Panel {
 
             @Override
             public void onSubmit() {                
-                if (model.getObject().hasChanges()) {
-                    responsePage.setDirty(true);
-                    try {
+                if (model.getObject().hasChanges()) {                    
+                    try {                        
                         saveConfiguration();
+                        responsePage.setDirty(true);
                         setResponsePage(responsePage);
                     } catch (SecurityConfigException se) {    
                       error(new ParamResourceModel("security."+se.getErrorId()
@@ -249,7 +251,11 @@ public class NamedConfigPanel extends Panel {
     protected void saveConfiguration() throws IOException,SecurityConfigException {
         
         GeoServerSecurityManager manager = GeoServerApplication.get().getSecurityManager();
-        SecurityNamedConfigModelHelper helper = model.getObject();
+        SecurityNamedConfigModelHelper helper = model.getObject();        
+        if (helper.isNew()) {
+            SecurityConfigValidator val = new SecurityConfigValidator();
+            val.validateAddNamedService(extensionPoint, helper.getConfig());
+        }
         
         if (GeoServerAuthenticationProvider.class.isAssignableFrom(extensionPoint)) {
             manager.saveAuthenticationProvider((SecurityAuthProviderConfig) helper.getConfig(),helper.isNew());

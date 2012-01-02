@@ -22,6 +22,7 @@ import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.role.RolePanel;
+import org.geoserver.web.wicket.ParamResourceModel;
 
 
 public class RoleTabbedPage extends AbstractSecurityPage {
@@ -29,6 +30,7 @@ public class RoleTabbedPage extends AbstractSecurityPage {
     protected TabbedPanel tabbedPanel;
     protected String serviceName;
     protected AbstractSecurityPage responsePage;
+    protected IOException exception;
     
 
     public RoleTabbedPage(AbstractSecurityPage responsePage) {
@@ -73,16 +75,17 @@ public class RoleTabbedPage extends AbstractSecurityPage {
         }); 
 
         // Check if service is working
-       boolean isWorking = false;
+       exception=null;
        if (serviceName!=null) {
            try {
-               getSecurityManager().loadRoleService(serviceName);
-               isWorking=true;
+               getSecurityManager().loadRoleService(serviceName);               
            } catch (IOException ex) {               
+               exception=ex;
            }
        }
 
-        if (isWorking) {                        
+       
+        if (exception == null) {                        
             tabs.add(new AbstractTab(new ResourceModel("roles")) {            
                 private static final long serialVersionUID = 1L;
                 @Override
@@ -90,7 +93,16 @@ public class RoleTabbedPage extends AbstractSecurityPage {
                         return  new RolePanel(panelId,serviceName);
                 }
             });
+        } else {
+            tabs.add(new AbstractTab(new ParamResourceModel("problem",this,serviceName== null ? "" : serviceName)) {            
+                private static final long serialVersionUID = 1L;
+                @Override
+                public Panel getPanel(String panelId) {
+                        return  new ErrorPanel(panelId,exception);
+                }
+            });            
         }
+        
 
 
         Integer selectedTab = null;

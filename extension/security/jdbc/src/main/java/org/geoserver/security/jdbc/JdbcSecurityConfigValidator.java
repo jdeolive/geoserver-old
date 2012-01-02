@@ -19,6 +19,8 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
         super.validate(config);
         JdbcBaseSecurityServiceConfig jdbcConfig = (JdbcBaseSecurityServiceConfig) config;
         
+        validateFileNames(jdbcConfig);
+        
         if (jdbcConfig.isJndi())
             validateJNDI(jdbcConfig);
         else 
@@ -34,6 +36,11 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
             validateJNDI(jdbcConfig);
         else
             validateJDBC(jdbcConfig);
+    }
+    
+    protected void validateFileNames(JdbcBaseSecurityServiceConfig config) throws SecurityConfigException
+    {
+        
     }
     
     protected void validateJNDI(JdbcBaseSecurityServiceConfig config) throws SecurityConfigException {
