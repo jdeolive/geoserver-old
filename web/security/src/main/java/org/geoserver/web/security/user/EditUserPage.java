@@ -31,38 +31,52 @@ public class EditUserPage extends AbstractUserPage {
     @Override
     protected void onFormSubmit() throws IOException {
         GeoserverUser user = uiUser.toGeoserverUser(userGroupServiceName);
-        if (hasUserGroupStore(userGroupServiceName)) {
-            GeoserverUserGroupStore ugStore = new UserGroupStoreValidationWrapper(
-                    getUserGroupStore(userGroupServiceName));
-
-            user.getProperties().clear();
-            for (Entry<Object,Object> entry : userpropertyeditor.getProperties().entrySet())
-                user.getProperties().put(entry.getKey(),entry.getValue());
-
-        
-            ugStore.updateUser(user);
-        
-            Set<GeoserverUserGroup> added = new HashSet<GeoserverUserGroup>();
-            Set<GeoserverUserGroup> removed = new HashSet<GeoserverUserGroup>();
-            userGroupFormComponent.calculateAddedRemovedCollections(added, removed);
-            for (GeoserverUserGroup g : added)
-                ugStore.associateUserToGroup(user, g);
-            for (GeoserverUserGroup g : removed)
-                ugStore.disAssociateUserFromGroup(user,g);
-            ugStore.store();
+        GeoserverUserGroupStore ugStore=null;
+        try {
+            if (hasUserGroupStore(userGroupServiceName)) {
+                ugStore = new UserGroupStoreValidationWrapper(
+                        getUserGroupStore(userGroupServiceName));
+    
+                user.getProperties().clear();
+                for (Entry<Object,Object> entry : userpropertyeditor.getProperties().entrySet())
+                    user.getProperties().put(entry.getKey(),entry.getValue());
+    
+            
+                ugStore.updateUser(user);
+            
+                Set<GeoserverUserGroup> added = new HashSet<GeoserverUserGroup>();
+                Set<GeoserverUserGroup> removed = new HashSet<GeoserverUserGroup>();
+                userGroupFormComponent.calculateAddedRemovedCollections(added, removed);
+                for (GeoserverUserGroup g : added)
+                    ugStore.associateUserToGroup(user, g);
+                for (GeoserverUserGroup g : removed)
+                    ugStore.disAssociateUserFromGroup(user,g);
+                ugStore.store();
+            }
+        } catch (IOException ex) {
+            try {ugStore.load(); } catch (IOException ex2) {};
+            throw ex;
         }
-        if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {                                
-            GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
-            gaStore = new RoleStoreValidationWrapper(gaStore);
-            Set<GeoserverRole> addedRoles = new HashSet<GeoserverRole>();
-            Set<GeoserverRole> removedRoles = new HashSet<GeoserverRole>();
-            userRolesFormComponent.calculateAddedRemovedCollections(addedRoles, removedRoles);
-            for (GeoserverRole role : addedRoles)
-                gaStore.associateRoleToUser(role, user.getUsername());
-            for (GeoserverRole role : removedRoles)
-                gaStore.disAssociateRoleFromUser(role, user.getUsername());                                                                               
-            gaStore.store();
+
+        GeoserverRoleStore gaStore=null;
+        try {
+            if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {                                
+                 gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
+                gaStore = new RoleStoreValidationWrapper(gaStore);
+                Set<GeoserverRole> addedRoles = new HashSet<GeoserverRole>();
+                Set<GeoserverRole> removedRoles = new HashSet<GeoserverRole>();
+                userRolesFormComponent.calculateAddedRemovedCollections(addedRoles, removedRoles);
+                for (GeoserverRole role : addedRoles)
+                    gaStore.associateRoleToUser(role, user.getUsername());
+                for (GeoserverRole role : removedRoles)
+                    gaStore.disAssociateRoleFromUser(role, user.getUsername());                                                                               
+                gaStore.store();
+            }
+        } catch (IOException ex) {
+            try {gaStore.load(); } catch (IOException ex2) {};
+            throw ex;
         }
+
             
     }
 

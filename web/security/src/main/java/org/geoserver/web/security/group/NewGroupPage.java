@@ -28,24 +28,38 @@ public class NewGroupPage extends AbstractGroupPage {
     }
                 
     @Override
-    protected void onFormSubmit() throws IOException {        
-        GeoserverUserGroupStore store = new UserGroupStoreValidationWrapper(
-                getUserGroupStore(userGroupServiceName));
-        GeoserverUserGroup group = store.createGroupObject(
-                uiGroup.getGroupname(),uiGroup.isEnabled());
-        store.addGroup(group);
-        store.store();
-        
-        if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
-            GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
-            gaStore = new RoleStoreValidationWrapper(gaStore);
-            Iterator<GeoserverRole> roleIt =groupRolesFormComponent.
-                getRolePalette().getSelectedChoices();
-            while (roleIt.hasNext()) {
-                gaStore.associateRoleToGroup(roleIt.next(), group.getGroupname());
-            }
-            gaStore.store();
+    protected void onFormSubmit() throws IOException {
+        GeoserverUserGroupStore store=null;
+        GeoserverUserGroup group=null;
+        try {
+            store = new UserGroupStoreValidationWrapper(
+                    getUserGroupStore(userGroupServiceName));
+            group = store.createGroupObject(
+                    uiGroup.getGroupname(),uiGroup.isEnabled());
+            store.addGroup(group);
+            store.store();
+        } catch (IOException ex) {
+            try {store.load(); } catch (IOException ex2) {};
+            throw ex;
         }
+
+        GeoserverRoleStore gaStore=null;
+        try {
+            if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
+                gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
+                gaStore = new RoleStoreValidationWrapper(gaStore);
+                Iterator<GeoserverRole> roleIt =groupRolesFormComponent.
+                    getRolePalette().getSelectedChoices();
+                while (roleIt.hasNext()) {
+                    gaStore.associateRoleToGroup(roleIt.next(), group.getGroupname());
+                }
+                gaStore.store();
+            }
+        } catch (IOException ex) {
+            try {gaStore.load(); } catch (IOException ex2) {};
+            throw ex;
+        }
+
                         
     }
 

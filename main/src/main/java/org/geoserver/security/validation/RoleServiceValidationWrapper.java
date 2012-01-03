@@ -6,6 +6,8 @@
 package org.geoserver.security.validation;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
@@ -16,7 +18,12 @@ import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.RoleLoadedListener;
+import org.geoserver.security.impl.DataAccessRule;
+import org.geoserver.security.impl.DataAccessRuleDAO;
 import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.ServiceAccessRule;
+import org.geoserver.security.impl.ServiceAccessRuleDAO;
+import org.springframework.util.StringUtils;
 
 
 
@@ -43,17 +50,34 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
 
     protected GeoserverRoleService service;
     protected GeoserverUserGroupService[] services;
+    protected boolean checkAgainstRules;
     
     /**
-     * Creates a wrapper object. Optionally, {@link GeoserverUserGroupService} objects
+     * Creates a wrapper object. If  checkAgainstRules is true, no 
+     * roles used in rules can be removed
+     * 
+     * Optionally, {@link GeoserverUserGroupService} objects
      * can be passed if validation of user names and group names is required
      * 
      * @param service
+     * @param checkAgainstRules 
      * @param services
      */    
-    public RoleServiceValidationWrapper(GeoserverRoleService service, GeoserverUserGroupService ...services) {
+    public RoleServiceValidationWrapper(GeoserverRoleService service, boolean checkAgainstRules,
+            GeoserverUserGroupService ...services) {
         this.service=service;
         this.services=services;
+        this.checkAgainstRules=checkAgainstRules;
+    }
+    
+    /**
+     * Construct a wrapper without checking againset rules
+     * @param service
+     * @param services
+     */
+    public RoleServiceValidationWrapper(GeoserverRoleService service,
+            GeoserverUserGroupService ...services) {
+        this(service, false, services);
     }
 
 
@@ -80,6 +104,46 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
         }
         throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_06,userName);
     }
+    
+    /**
+     * Prevents the removal of the admin role
+     * 
+     * @param role
+     * @throws IOException
+     */
+    public void checkRemovalOfAdminRole(GeoserverRole role) throws IOException {
+        if (getAdminRole()==null)
+            return;
+        if (role.getAuthority().equals(getAdminRole().getAuthority()))
+            throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_08,role.getAuthority());
+    }
+    
+    
+    /**
+     * Prevents removal of a role used by access rules
+     * Only checks if {@link #checkAgainstRules} is 
+     * <code>true</code>
+     * 
+     * @param role
+     * @throws IOException
+     */
+    public void checkRoleIsUsed(GeoserverRole role) throws IOException {
+        
+        if (checkAgainstRules==false)
+            return;
+        
+        List<String> keys = new ArrayList<String>();
+        for (ServiceAccessRule rule : ServiceAccessRuleDAO.get().getRulesAssociatedWithRole(role.getAuthority()))
+            keys.add(rule.getKey());
+        for (DataAccessRule rule : DataAccessRuleDAO.get().getRulesAssociatedWithRole(role.getAuthority()))
+            keys.add(rule.getKey());
+        
+        if (keys.size()>0) {
+            String ruleString = StringUtils.collectionToCommaDelimitedString(keys);    
+            throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_09, role.getAuthority(),ruleString);
+        }
+    }
+    
     
     /**
      * Checks if a group name is valid

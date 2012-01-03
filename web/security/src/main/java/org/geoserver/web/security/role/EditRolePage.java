@@ -13,6 +13,7 @@ import org.geoserver.security.validation.RoleStoreValidationWrapper;
 import org.geoserver.web.security.AbstractSecurityPage;
 
 
+
 /**
  * Page for editing a  {@link GeoserverRole} object
  * 
@@ -22,13 +23,13 @@ import org.geoserver.web.security.AbstractSecurityPage;
 public class EditRolePage extends AbstractRolePage {
 
     public EditRolePage(String roleServiceName,GeoserverRole role,AbstractSecurityPage responsePage) {
-        // parentrole name not known at this moment, parent
+        // parent role name not known at this moment, parent
         // constructor will do the job 
         super(roleServiceName,new RoleUIModel(role.getAuthority(), null,role.getUserName()), 
                 role.getProperties(),responsePage);        
         rolenameField.setEnabled(false);
         
-        // do we hava a personalized role
+        // do we have a personalized role
         if (role.getUserName()!=null ) {
             roleParamEditor.setEnabled(false);
             parentRoles.setEnabled(false);
@@ -44,26 +45,31 @@ public class EditRolePage extends AbstractRolePage {
         if (hasRoleStore(roleServiceName)==false) {
             throw new RuntimeException("Invalid workflow, cannot store in a read only role service");
         }
-        
-        GeoserverRoleStore store = new RoleStoreValidationWrapper(
-                getRoleStore(roleServiceName));
-        
-        GeoserverRole role = store.getRoleByName(uiRole.getRolename());
-        
-        role.getProperties().clear();
-
-        
-      for (Entry<Object,Object> entry : roleParamEditor.getProperties().entrySet())
-          role.getProperties().put(entry.getKey(),entry.getValue());
-        
-        store.updateRole(role);
-                
-        GeoserverRole parentRole = null;
-        if (uiRole.getParentrolename()!=null && uiRole.getParentrolename().length() > 0) {
-            parentRole=store.getRoleByName(uiRole.getParentrolename());
+        GeoserverRoleStore store=null;
+        try {
+            store = new RoleStoreValidationWrapper(
+                    getRoleStore(roleServiceName));
+            
+            GeoserverRole role = store.getRoleByName(uiRole.getRolename());
+            
+            role.getProperties().clear();
+    
+            
+            for (Entry<Object,Object> entry : roleParamEditor.getProperties().entrySet())
+              role.getProperties().put(entry.getKey(),entry.getValue());
+            
+            store.updateRole(role);
+                    
+            GeoserverRole parentRole = null;
+            if (uiRole.getParentrolename()!=null && uiRole.getParentrolename().length() > 0) {
+                parentRole=store.getRoleByName(uiRole.getParentrolename());
+            }
+            store.setParentRole(role,parentRole);
+            store.store();
+        } catch (IOException ex) {
+            try {store.load(); } catch (IOException ex2) {};
+            throw ex;
         }
-        store.setParentRole(role,parentRole);
-        store.store();            
     }
 
 }

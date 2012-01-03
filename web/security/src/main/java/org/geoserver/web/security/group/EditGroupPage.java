@@ -29,28 +29,40 @@ public class EditGroupPage extends AbstractGroupPage {
         
                     
         GeoserverUserGroup group = getUserGroupService(userGroupServiceName).getGroupByGroupname(uiGroup.getGroupname());
-        
-        if (hasUserGroupStore(userGroupServiceName)) {
-            GeoserverUserGroupStore store = new UserGroupStoreValidationWrapper(                     
-                    getUserGroupStore(userGroupServiceName));            
-            group.setEnabled(uiGroup.isEnabled());
-            store.updateGroup(group);
-            store.store();
-        };   
 
-        if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
-            GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
-            gaStore = new RoleStoreValidationWrapper(gaStore);                   
-            Set<GeoserverRole> addedRoles = new HashSet<GeoserverRole>();
-            Set<GeoserverRole> removedRoles = new HashSet<GeoserverRole>();
-            groupRolesFormComponent.calculateAddedRemovedCollections(addedRoles, removedRoles);
-            for (GeoserverRole role : addedRoles)
-                gaStore.associateRoleToGroup(role, group.getGroupname());
-            for (GeoserverRole role : removedRoles)
-                gaStore.disAssociateRoleFromGroup(role, group.getGroupname());
-        
-            gaStore.store();
-        }            
+        GeoserverUserGroupStore store = null;
+        try {
+            if (hasUserGroupStore(userGroupServiceName)) {
+                store = new UserGroupStoreValidationWrapper(                     
+                        getUserGroupStore(userGroupServiceName));            
+                group.setEnabled(uiGroup.isEnabled());
+                store.updateGroup(group);
+                store.store();
+            };   
+        } catch (IOException ex) {
+            try {store.load(); } catch (IOException ex2) {};
+            throw ex;
+        }
+
+        GeoserverRoleStore gaStore = null;
+        try {
+            if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
+                gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
+                gaStore = new RoleStoreValidationWrapper(gaStore);                   
+                Set<GeoserverRole> addedRoles = new HashSet<GeoserverRole>();
+                Set<GeoserverRole> removedRoles = new HashSet<GeoserverRole>();
+                groupRolesFormComponent.calculateAddedRemovedCollections(addedRoles, removedRoles);
+                for (GeoserverRole role : addedRoles)
+                    gaStore.associateRoleToGroup(role, group.getGroupname());
+                for (GeoserverRole role : removedRoles)
+                    gaStore.disAssociateRoleFromGroup(role, group.getGroupname());        
+                gaStore.store();
+            }        
+        } catch (IOException ex) {
+            try {gaStore.load(); } catch (IOException ex2) {};
+            throw ex;
+        }
+
     }
 
 }
