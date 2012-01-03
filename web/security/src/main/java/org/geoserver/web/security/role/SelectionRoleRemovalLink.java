@@ -1,7 +1,6 @@
 package org.geoserver.web.security.role;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.wicket.Component;
@@ -10,16 +9,14 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.impl.DataAccessRule;
-import org.geoserver.security.impl.DataAccessRuleDAO;
 import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.ServiceAccessRule;
-import org.geoserver.security.impl.ServiceAccessRuleDAO;
+import org.geoserver.security.validation.AbstractSecurityException;
+import org.geoserver.security.validation.RoleServiceValidationWrapper;
+import org.geoserver.security.validation.RoleStoreValidationWrapper;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.ParamResourceModel;
-import org.springframework.util.StringUtils;
 
 public class SelectionRoleRemovalLink extends AjaxLink<Object> {
 
@@ -70,17 +67,18 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
                 // cascade delete the whole selection
 
                 
-
+                GeoserverRoleStore gaStore = null;
                 try {
                     GeoserverRoleService gaService =
                             GeoServerApplication.get().getSecurityManager().loadRoleService(roleServiceName);
-                    GeoserverRoleStore gaStore = gaService.createStore();
+                    gaStore = new RoleStoreValidationWrapper(gaService.createStore());
                     for (GeoserverRole role : removePanel.getRoots()) {                     
                          gaStore.removeRole(role);
                     }
                     gaStore.store();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                } catch (IOException ex) {
+                    try {gaStore.load(); } catch (IOException ex2) {};
+                    throw new RuntimeException(ex);
                 }
                 // the deletion will have changed what we see in the page
                 // so better clear out the selection
@@ -103,31 +101,23 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
     }
 
     protected StringResourceModel canRemove(GeoserverRole role) {
-        GeoserverRoleService activeService =
-                GeoServerApplication.get().getSecurityManager().getActiveRoleService();
-
+        
         GeoserverRoleService gaService=null;
         try {
             gaService = GeoServerApplication.get().getSecurityManager().loadRoleService(roleServiceName);
+            boolean isActive = GeoServerApplication.get().getSecurityManager().
+                    getActiveRoleService().getName().equals(roleServiceName);                    
+            RoleServiceValidationWrapper valService = new RoleServiceValidationWrapper(gaService,isActive); 
+            valService.checkRemovalOfAdminRole(role);
+            valService.checkRoleIsUsed(role);
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (activeService.getName().equals(gaService.getName()) ==false)
-            return null;
-        
-        if (role.equals(gaService.getAdminRole()))
-            return new StringResourceModel(getClass().getSimpleName()+".noDelete",null,new Object[] {role.getAuthority()});
-                        
-        List<String> keys = new ArrayList<String>();
-        for (ServiceAccessRule rule : ServiceAccessRuleDAO.get().getRulesAssociatedWithRole(role.getAuthority()))
-            keys.add(rule.getKey());
-        for (DataAccessRule rule : DataAccessRuleDAO.get().getRulesAssociatedWithRole(role.getAuthority()))
-            keys.add(rule.getKey());
-        
-        if (keys.size()>0) {
-            String ruleString = StringUtils.collectionToCommaDelimitedString(keys);
-            return new StringResourceModel(getClass().getSimpleName()+".isUsed",null,new Object[] {role.getAuthority(), ruleString});
+            if (e.getCause() instanceof AbstractSecurityException) {
+                AbstractSecurityException secEx = 
+                        (AbstractSecurityException)e.getCause();
+                return new StringResourceModel("security."+secEx.getErrorId(),null,secEx.getArgs());
+            } else {
+                throw new RuntimeException(e);
+            }            
         }
         
         return null;

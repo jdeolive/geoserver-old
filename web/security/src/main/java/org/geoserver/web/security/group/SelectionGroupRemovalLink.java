@@ -14,6 +14,8 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.validation.RoleStoreValidationWrapper;
+import org.geoserver.security.validation.UserGroupStoreValidationWrapper;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
@@ -67,30 +69,41 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
 
             protected boolean onSubmit(AjaxRequestTarget target, Component contents) {
 
+                GeoserverUserGroupStore ugStore=null;
                 try {
                     GeoserverUserGroupService ugService =
                             GeoServerApplication.get().getSecurityManager()
                             .loadUserGroupService(userGroupsServiceName);
-                    GeoserverUserGroupStore ugStore = ugService.createStore();
+                    ugStore = new UserGroupStoreValidationWrapper(ugService.createStore());
                     for (GeoserverUserGroup group : removePanel.getRoots()) {                     
                          ugStore.removeGroup(group);
-                        // TODO, keep admins ?
-                         if (disassociateRoles) {
-                             GeoserverRoleStore gaStore =
-                                     GeoServerApplication.get().getSecurityManager().getActiveRoleService().createStore();
-
-                             List<GeoserverRole> list= new ArrayList<GeoserverRole>();
-                             list.addAll(gaStore.getRolesForGroup(group.getGroupname()));
-                             for (GeoserverRole role: list)
-                                 gaStore.disAssociateRoleFromGroup(role, group.getGroupname());
-                             gaStore.store();        
-                         }
                     }
                     ugStore.store();
-                } catch (IOException e) {
-                    // TODO, is this correct ?
-                    throw new RuntimeException(e);
+                } catch (IOException ex) {
+                    try {ugStore.load(); } catch (IOException ex2) {};
+                    throw new RuntimeException(ex);
                 }
+                
+                GeoserverRoleStore gaStore = null;
+                if (disassociateRoles) {
+                    try {
+                        gaStore =
+                                GeoServerApplication.get().getSecurityManager().getActiveRoleService().createStore();
+                        gaStore = new RoleStoreValidationWrapper(gaStore);
+                        for (GeoserverUserGroup group : removePanel.getRoots()) {                                              
+                                 List<GeoserverRole> list= new ArrayList<GeoserverRole>();
+                                 list.addAll(gaStore.getRolesForGroup(group.getGroupname()));
+                                 for (GeoserverRole role: list)
+                                     gaStore.disAssociateRoleFromGroup(role, group.getGroupname());
+                        }
+                        gaStore.store();
+                    } catch (IOException ex) {
+                        try {gaStore.load(); } catch (IOException ex2) {};
+                        throw new RuntimeException(ex);
+                    }
+                }
+
+                
                 // the deletion will have changed what we see in the page
                 // so better clear out the selection
                 groups.clearSelection();

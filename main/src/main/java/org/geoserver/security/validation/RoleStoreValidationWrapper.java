@@ -38,16 +38,20 @@ public class RoleStoreValidationWrapper extends RoleServiceValidationWrapper imp
 
     
     /**
-     * Creates a wrapper object. Optionally, {@link GeoserverUserGroupService} objects
-     * can be passed if validation of user names and group names is required
-     * 
-     * @param store
-     * @param services
+     * @see RoleServiceValidationWrapper
+     */    
+    public RoleStoreValidationWrapper(GeoserverRoleStore store, boolean checkAgainstRules, 
+            GeoserverUserGroupService ...services) {
+        super(store,checkAgainstRules, services);
+    }
+
+    /**
+     * @see RoleServiceValidationWrapper
      */    
     public RoleStoreValidationWrapper(GeoserverRoleStore store, GeoserverUserGroupService ...services) {
         super(store,services);
     }
-    
+        
     GeoserverRoleStore getStore() {
         return (GeoserverRoleStore) service;
     }
@@ -73,6 +77,8 @@ public class RoleStoreValidationWrapper extends RoleServiceValidationWrapper imp
     }
 
     public boolean removeRole(GeoserverRole role) throws IOException {
+        checkRemovalOfAdminRole(role);
+        checkRoleIsUsed(role);
         return getStore().removeRole(role);
     }
 

@@ -36,30 +36,39 @@ public class NewUserPage extends AbstractUserPage {
     protected void onFormSubmit() throws IOException {
         GeoserverUserGroupStore ugStore = new UserGroupStoreValidationWrapper(
                 getUserGroupStore(userGroupServiceName));
-        GeoserverUser user =uiUser.toGeoserverUser(userGroupServiceName);             
-        user.getProperties().clear();
-        for (Entry<Object,Object> entry : userpropertyeditor.getProperties().entrySet())
-            user.getProperties().put(entry.getKey(),entry.getValue());
-
-        ugStore.addUser(user);
-                
-        Iterator<GeoserverUserGroup> it =userGroupFormComponent.groupPalette.getSelectedChoices();
-        while (it.hasNext()) {
-            ugStore.associateUserToGroup(user, it.next());
-        }
-        
-        if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
-            GeoserverRoleStore gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
-            gaStore = new RoleStoreValidationWrapper(gaStore);
-            Iterator<GeoserverRole> roleIt =userRolesFormComponent.
-                    getRolePalette().getSelectedChoices();
-            while (roleIt.hasNext()) {
-                gaStore.associateRoleToUser(roleIt.next(), user.getUsername());
+        GeoserverUser user =uiUser.toGeoserverUser(userGroupServiceName);
+        try {
+            user.getProperties().clear();
+            for (Entry<Object,Object> entry : userpropertyeditor.getProperties().entrySet())
+                user.getProperties().put(entry.getKey(),entry.getValue());
+    
+            ugStore.addUser(user);
+                    
+            Iterator<GeoserverUserGroup> it =userGroupFormComponent.groupPalette.getSelectedChoices();
+            while (it.hasNext()) {
+                ugStore.associateUserToGroup(user, it.next());
             }
-            gaStore.store();
+            ugStore.store();
+        } catch (IOException ex) {
+            try {ugStore.load(); } catch (IOException ex2) {};
+            throw ex;
         }
-        
-                                
-        ugStore.store();
+
+        GeoserverRoleStore gaStore = null;
+        try {
+            if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
+                gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
+                gaStore = new RoleStoreValidationWrapper(gaStore);
+                Iterator<GeoserverRole> roleIt =userRolesFormComponent.
+                        getRolePalette().getSelectedChoices();
+                while (roleIt.hasNext()) {
+                    gaStore.associateRoleToUser(roleIt.next(), user.getUsername());
+                }
+                gaStore.store();
+            }
+        } catch (IOException ex) {
+            try {gaStore.load(); } catch (IOException ex2) {};
+            throw ex;
+        }                                        
     }
 }

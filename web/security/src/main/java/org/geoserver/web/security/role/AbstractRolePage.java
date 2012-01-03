@@ -120,7 +120,7 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
     }
     
     /**
-     * Preparte the model for hierarchy handling
+     * Prepare the model for hierarchy handling
      * 
      * @param uimodel
      */

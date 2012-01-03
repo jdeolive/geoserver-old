@@ -35,26 +35,30 @@ public class NewRolePage extends AbstractRolePage {
     @Override
     protected void onFormSubmit() throws IOException {
         
-        
-        GeoserverRoleStore store = new RoleStoreValidationWrapper(
-                getRoleStore(roleServiceName));
-
-        GeoserverRole role = store.createRoleObject(uiRole.getRolename());
-        
-        role.getProperties().clear();
-        for (Entry<Object,Object> entry : roleParamEditor.getProperties().entrySet())
-            role.getProperties().put(entry.getKey(),entry.getValue());
-
-        store.addRole(role);
-                
-        GeoserverRole parentRole = null;
-        if (uiRole.getParentrolename()!=null && uiRole.getParentrolename().length() > 0) {
-            parentRole=store.getRoleByName(uiRole.getParentrolename());
-        }
-        store.setParentRole(role,parentRole);
-        store.store();
-                        
+        GeoserverRoleStore store = null;
+        try {
+            store = new RoleStoreValidationWrapper(
+                    getRoleStore(roleServiceName));
+    
+            GeoserverRole role = store.createRoleObject(uiRole.getRolename());
             
+            role.getProperties().clear();
+            for (Entry<Object,Object> entry : roleParamEditor.getProperties().entrySet())
+                role.getProperties().put(entry.getKey(),entry.getValue());
+    
+            store.addRole(role);
+                    
+            GeoserverRole parentRole = null;
+            if (uiRole.getParentrolename()!=null && uiRole.getParentrolename().length() > 0) {
+                parentRole=store.getRoleByName(uiRole.getParentrolename());
+            }
+            store.setParentRole(role,parentRole);
+            store.store();
+        } catch (IOException ex) {
+            try {store.load(); } catch (IOException ex2) {};
+            throw ex;
+        }
+                                    
     }
 
 }

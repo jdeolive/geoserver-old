@@ -27,7 +27,8 @@ public class RoleServiceValidationErrors  extends AbstractSecurityValidationErro
     public final static String ROLE_ERR_05 = "ROLE_ERR_05";
     public final static String ROLE_ERR_06 = "ROLE_ERR_06";
     public final static String ROLE_ERR_07 = "ROLE_ERR_07";
-    
+    public final static String ROLE_ERR_08 = "ROLE_ERR_08";
+    public final static String ROLE_ERR_09 = "ROLE_ERR_09";
     
         
     @Override
@@ -49,6 +50,12 @@ public class RoleServiceValidationErrors  extends AbstractSecurityValidationErro
         return MessageFormat.format("User name {0} not found",args);
     if (ROLE_ERR_07.equals(id))
         return MessageFormat.format("Group name {0} not found",args);
+    
+    if (ROLE_ERR_08.equals(id))
+        return MessageFormat.format("Administrator role {0} is not removable",args);
+
+    if (ROLE_ERR_09.equals(id))
+        return MessageFormat.format("The role {0} is used by the following rules: {1}",args);
 
 
     return super.formatErrorMsg(id, args);
