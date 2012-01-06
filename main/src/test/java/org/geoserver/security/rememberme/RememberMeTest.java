@@ -23,7 +23,6 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.SecurityUserGoupServiceConfig;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
 import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.security.impl.GeoserverUser;
@@ -51,7 +50,7 @@ public class RememberMeTest extends GeoServerTestSupport {
         filterCfg.setClassName(AuthCapturingFilter.class.getName());
 
         GeoServerSecurityManager secMgr = getSecurityManager();
-        secMgr.saveFilter(filterCfg);
+        secMgr.saveFilter(filterCfg, true);
 
         SecurityManagerConfig cfg = secMgr.getSecurityConfig();
         cfg.getFilterChain().put("/web/**", Arrays.asList(
