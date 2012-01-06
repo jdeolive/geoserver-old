@@ -40,12 +40,6 @@ public class MemorySecurityProvider extends GeoServerSecurityProvider {
         return map;
     }
 
-    
-    @Override
-    public AuthenticationProvider createAuthProvider(SecurityNamedServiceConfig config) {
-        return null;
-    }
-
     @Override
     public Class<? extends GeoserverUserGroupService> getUserGroupServiceClass() {
         return MemoryUserGroupService.class;

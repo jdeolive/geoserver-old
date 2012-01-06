@@ -1039,16 +1039,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     void saveConfigFile(SecurityConfig config, File directory, XStreamPersister xp) 
             throws IOException {
         
-        xStreamPersist(new File(directory, "config.xml"), config, xp);
-        //TODO: do a safe save, where we write first to a temp file to avoid corrupting the 
-        // existing file in case of an error during serialization
-        FileOutputStream fout = new FileOutputStream(new File(directory, CONFIG_FILE_NAME));
-        try {
-            xp.save(config, fout);
-        }
-        finally {
-            fout.close();
-        }
+        xStreamPersist(new File(directory, CONFIG_FILE_NAME), config, xp);
     }
 
     abstract class HelperBase<T, C extends SecurityNamedServiceConfig> {
