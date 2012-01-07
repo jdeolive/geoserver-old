@@ -5,9 +5,10 @@
 
 package org.geoserver.security.config.impl;
 
+import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 
-public class MemoryRoleServiceConfigImpl extends SecurityNamedServiceConfigImpl
+public class MemoryRoleServiceConfigImpl extends BaseSecurityNamedServiceConfig
         implements SecurityRoleServiceConfig {
     private static final long serialVersionUID = 1L;
     protected String adminRoleName;

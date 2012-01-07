@@ -5,20 +5,19 @@
 
 package org.geoserver.security.config;
 
+import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoserverUserGroupService;
 
-
 /**
- * 
- * The user / group service name may be null if no
- * {@link GeoserverUserGroupService} is needed 
- *  
- * @author christian
- *
+ * {@link GeoServerAuthenticationProvider} configuration object.
+ * <p>
+ * The {@link #getUserGroupServiceName()} may be null if no {@link GeoserverUserGroupService} is 
+ * needed.
+ * </p> 
  */
 public interface SecurityAuthProviderConfig extends SecurityNamedServiceConfig {
 
     public String getUserGroupServiceName();
     public void setUserGroupServiceName(String userGroupServiceName);
-    
+
 }

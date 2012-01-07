@@ -2,18 +2,18 @@ package org.geoserver.security.validation;
 
 import java.io.IOException;
 
-import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
+import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.impl.AbstractSecurityServiceTest;
 
 public class PasswordValidatorTest extends AbstractSecurityServiceTest {
 
-    PasswordPolicyConfigImpl config;
+    PasswordPolicyConfig config;
     PasswordValidatorImpl validator;
        
     @Override
     protected void setUpInternal() throws Exception {
         super.setUpInternal();
-        config = new PasswordPolicyConfigImpl();
+        config = new PasswordPolicyConfig();
         validator = new PasswordValidatorImpl();
         validator.setConfig(config);
         

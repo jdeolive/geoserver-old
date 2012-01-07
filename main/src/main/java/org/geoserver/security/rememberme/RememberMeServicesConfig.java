@@ -4,17 +4,19 @@
  */
 package org.geoserver.security.rememberme;
 
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
+import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 
 /**
  * Configuration object for remember me services.
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public class RememberMeServicesConfig extends SecurityNamedServiceConfigImpl {
+public class RememberMeServicesConfig extends BaseSecurityNamedServiceConfig {
+
+    public static final String DEFAULT_KEY = "geoserver";
 
     String userGroupService;
-    String key;
+    String key = DEFAULT_KEY;
 
     public RememberMeServicesConfig() {
     }

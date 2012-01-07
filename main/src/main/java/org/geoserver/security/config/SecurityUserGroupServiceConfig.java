@@ -6,19 +6,31 @@
 package org.geoserver.security.config;
 
 import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.concurrent.LockingUserGroupService;
 
 /**
- * 
- * Methods for a {@link GeoserverUserGroupService} object
- *  
- * @author christian
+ * Interface for {@link GeoserverUserGroupService} configuration objects.
  *
+ * @author christian
  */
 public interface SecurityUserGroupServiceConfig extends SecurityNamedServiceConfig {
 
-    public String getPasswordEncoderName();
-    public void   setPasswordEncoderName(String name);
-    public String getPasswordPolicyName();
-    public void   setPasswordPolicyName(String name);
+    /**
+     * The name of the {@link GeoserverPasswordEncoder} used by the service.
+     */
+    String getPasswordEncoderName();
+
+    /**
+     * Sets the name of the {@link GeoserverPasswordEncoder} used by the service.
+     */
+    void setPasswordEncoderName(String passwordEncoderName);
+
+    /**
+     * The name of the {@link PasswordValidator} used by the service.
+     */
+    String getPasswordPolicyName();
+
+    /**
+     * Sets the name of the {@link PasswordValidator} used by the service.
+     */
+    void setPasswordPolicyName(String passwordPolicyName);
 }

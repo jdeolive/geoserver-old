@@ -26,7 +26,7 @@ import org.geoserver.security.event.RoleLoadedEvent;
 import org.geoserver.security.event.RoleLoadedListener;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.Util;
-import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
 
 /**
  * JDBC implementation of {@link GeoserverRoleService}
@@ -83,9 +83,9 @@ public  class JDBCRoleService extends AbstractJDBCService implements GeoserverRo
         this.name=config.getName();
         initializeDSFromConfig(config);
 
-        if (config instanceof JdbcBaseSecurityServiceConfig) {
-            JdbcBaseSecurityServiceConfig jdbcConfig =
-                (JdbcBaseSecurityServiceConfig) config;
+        if (config instanceof JDBCSecurityServiceConfig) {
+            JDBCSecurityServiceConfig jdbcConfig =
+                (JDBCSecurityServiceConfig) config;
                         
             String fileNameDML =jdbcConfig.getPropertyFileNameDML();
             File file = checkORCreateJDBCPropertyFile(fileNameDML,getConfigRoot(),DEFAULT_DML_FILE);

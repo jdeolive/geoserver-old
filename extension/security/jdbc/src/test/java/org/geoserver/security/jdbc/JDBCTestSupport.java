@@ -18,8 +18,8 @@ import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.Util;
-import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
-import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
+import org.geoserver.security.jdbc.config.JDBCRoleServiceConfig;
+import org.geoserver.security.jdbc.config.JDBCUserGroupServiceConfig;
 import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 
@@ -69,7 +69,7 @@ public class JDBCTestSupport {
     protected static GeoserverUserGroupService createH2UserGroupService(String serviceName, 
         GeoServerSecurityManager securityManager) throws Exception {
         
-        JdbcUserGroupServiceConfigImpl config = new JdbcUserGroupServiceConfigImpl();           
+        JDBCUserGroupServiceConfig config = new JDBCUserGroupServiceConfig();           
         config.setName(serviceName);
         config.setConnectURL("jdbc:h2:target/h2/security");
         config.setDriverClassName("org.h2.Driver");
@@ -90,7 +90,7 @@ public class JDBCTestSupport {
     protected static GeoserverRoleService createH2RoleService(
         String serviceName, GeoServerSecurityManager securityManager) throws Exception {
         
-        JdbcRoleServiceConfigImpl config = new JdbcRoleServiceConfigImpl();
+        JDBCRoleServiceConfig config = new JDBCRoleServiceConfig();
         
         config.setName(serviceName);
         config.setConnectURL("jdbc:h2:target/h2/security");
@@ -110,8 +110,8 @@ public class JDBCTestSupport {
         String fixtureId, LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) 
             throws Exception {
     
-        JdbcRoleServiceConfigImpl config = new
-        JdbcRoleServiceConfigImpl();
+        JDBCRoleServiceConfig config = new
+        JDBCRoleServiceConfig();
         
         Properties props=Util.loadUniversal(new FileInputStream(data.getFixture()));
     
@@ -137,8 +137,8 @@ public class JDBCTestSupport {
     static protected GeoserverUserGroupService createUserGroupService(String fixtureId,
         LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) throws Exception {
         
-        JdbcUserGroupServiceConfigImpl config = new
-        JdbcUserGroupServiceConfigImpl();
+        JDBCUserGroupServiceConfig config = new
+        JDBCUserGroupServiceConfig();
         
         Properties props=Util.loadUniversal(new FileInputStream(data.getFixture()));
     

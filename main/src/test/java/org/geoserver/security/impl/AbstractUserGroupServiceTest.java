@@ -11,8 +11,6 @@ import junit.framework.Assert;
 
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
-import org.geoserver.security.password.PasswordValidator;
 
 public abstract class AbstractUserGroupServiceTest extends AbstractSecurityServiceTest {
 

@@ -13,9 +13,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.geoserver.security.FilterChainEntry.Position;
+import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.security.password.GeoserverConfigPlainTextPasswordEncoder;
 import org.geoserver.test.GeoServerTestSupport;
 import org.springframework.security.core.Authentication;
@@ -110,7 +110,7 @@ public class GeoServerCustomFilterTest extends GeoServerTestSupport {
         }
     }
 
-    static class FilterConfig extends SecurityNamedServiceConfigImpl {
+    static class FilterConfig extends BaseSecurityNamedServiceConfig {
         boolean assertAuth = true;
 
         public void setAssertAuth(boolean assertAuth) {

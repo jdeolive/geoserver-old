@@ -5,8 +5,8 @@
 package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -29,7 +29,6 @@ public class NamedConfigDetailsEmptyPanel extends AbstractNamedConfigDetailsPane
 
     @Override
     protected SecurityNamedServiceConfig createNewConfigObject() {
-        return new SecurityNamedServiceConfigImpl();
+        return new BaseSecurityNamedServiceConfig();
     }
-                            
 }

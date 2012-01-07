@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
-import org.geoserver.security.jdbc.config.impl.JdbcUserGroupServiceConfigImpl;
+import org.geoserver.security.jdbc.config.JDBCRoleServiceConfig;
+import org.geoserver.security.jdbc.config.JDBCUserGroupServiceConfig;
 import org.geoserver.security.password.GeoserverPlainTextPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.validation.SecurityConfigException;
@@ -32,7 +32,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
     protected SecurityUserGroupServiceConfig getUGConfig(String name, Class<?> aClass,
             String encoder, String policyName) {
-        JdbcUserGroupServiceConfigImpl config = new JdbcUserGroupServiceConfigImpl();
+        JDBCUserGroupServiceConfig config = new JDBCUserGroupServiceConfig();
         config.setName(name);
         config.setClassName(aClass.getName());
         config.setPasswordEncoderName(encoder);
@@ -42,7 +42,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
     
     
     protected SecurityRoleServiceConfig getRoleConfig(String name, Class<?> aClass,String adminRole) {
-        JdbcRoleServiceConfigImpl config = new JdbcRoleServiceConfigImpl();
+        JDBCRoleServiceConfig config = new JDBCRoleServiceConfig();
         config.setName(name);
         config.setClassName(aClass.getName());
         config.setAdminRoleName(adminRole);
@@ -55,15 +55,15 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
         super.testRoleConfig();
         
-        JdbcRoleServiceConfigImpl  config = 
-                (JdbcRoleServiceConfigImpl)getRoleConfig("jdbc", JDBCRoleService.class, 
+        JDBCRoleServiceConfig  config = 
+                (JDBCRoleServiceConfig)getRoleConfig("jdbc", JDBCRoleService.class, 
                 GeoserverRole.ADMIN_ROLE.getAuthority());
         
         config.setDriverClassName("a.b.c");
         config.setUserName("user");
         config.setConnectURL("jdbc:connect");
         
-        JdbcRoleServiceConfigImpl  configJNDI = (JdbcRoleServiceConfigImpl) 
+        JDBCRoleServiceConfig  configJNDI = (JDBCRoleServiceConfig) 
                 getRoleConfig("jndi", JDBCRoleService.class, 
                 GeoserverRole.ADMIN_ROLE.getAuthority());
         configJNDI.setJndi(true);
@@ -141,15 +141,15 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
 
         super.testUserGroupConfig();
         
-        JdbcUserGroupServiceConfigImpl  config = 
-                (JdbcUserGroupServiceConfigImpl)getUGConfig("jdbc", JDBCUserGroupService.class, 
+        JDBCUserGroupServiceConfig  config = 
+                (JDBCUserGroupServiceConfig)getUGConfig("jdbc", JDBCUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME);
 
         config.setDriverClassName("a.b.c");
         config.setUserName("user");
         config.setConnectURL("jdbc:connect");
 
-        JdbcUserGroupServiceConfigImpl  configJNDI = (JdbcUserGroupServiceConfigImpl) 
+        JDBCUserGroupServiceConfig  configJNDI = (JDBCUserGroupServiceConfig) 
                 getUGConfig("jdbc", JDBCUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME);
         configJNDI.setJndi(true);                        

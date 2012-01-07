@@ -5,53 +5,68 @@
 package org.geoserver.security.config;
 
 /**
- * Password Policy configuration file
+ * Password Policy configuration object.
  * 
  * @author christian
- *
  */
-public interface PasswordPolicyConfig extends SecurityNamedServiceConfig {
-        
-    /**
-     * Is an upper case letter required
-     * {@link Character#isUpperCase(char)}
-     * 
-     * @return 
-     */
-    public boolean isUppercaseRequired();
-    public void setUppercaseRequired(boolean uppercaseRequired);
-    
-    /**
-     * Is lower case letter required
-     * {@link Character#isLowerCase(char)}
-     * @return
-     */
-    public boolean isLowercaseRequired();
-    public void setLowercaseRequired(boolean lowercaseRequired);
-    
-    /**
-     * is digit required
-     * {@link Character#isDigit(char)}
-     * @return
-     */
-    public boolean isDigitRequired();
-    public void setDigitRequired(boolean digitRequired);
+public class PasswordPolicyConfig extends BaseSecurityNamedServiceConfig {
 
+    private static final long serialVersionUID = 1L;
+    private boolean uppercaseRequired,lowercaseRequired,digitRequired;
+    private int minLength,maxLength;
     
+    public PasswordPolicyConfig() {
+        maxLength=-1;
+    }
+
+    /**
+     * Is an upper case letter required {@link Character#isUpperCase(char)}
+     *
+     */
+    public boolean isUppercaseRequired() {
+        return uppercaseRequired;
+    }
+    public void setUppercaseRequired(boolean uppercaseRequired) {
+        this.uppercaseRequired = uppercaseRequired;
+    }
+
+    /**
+     * Is lower case letter required {@link Character#isLowerCase(char)}
+     */
+    public boolean isLowercaseRequired() {
+        return lowercaseRequired;
+    }
+    public void setLowercaseRequired(boolean lowercaseRequired) {
+        this.lowercaseRequired = lowercaseRequired;
+    }
+
+    /**
+     * Is digit required {@link Character#isDigit(char)}
+     */
+    public boolean isDigitRequired() {
+        return digitRequired;
+    }
+    public void setDigitRequired(boolean digitRequired) {
+        this.digitRequired = digitRequired;
+    }
+
     /**
      * The minimal length of a password
-     * 
-     * @return
      */
-    public int getMinLength();
-    public void setMinLength(int minLength);
+    public int getMinLength() {
+        return minLength;
+    }
+    public void setMinLength(int minLength) {
+        this.minLength = minLength;
+    }
     
     /**
-     * The maximal length of a password
-     * -1 means no restriction
-     * @return
+     * The maximal length of a password -1 means no restriction
      */
-    public int getMaxLength();
-    public void setMaxLength(int maxLength);
-    
+    public int getMaxLength() {
+        return maxLength;
+    }
+    public void setMaxLength(int maxLength) {
+        this.maxLength = maxLength;
+    }
 }

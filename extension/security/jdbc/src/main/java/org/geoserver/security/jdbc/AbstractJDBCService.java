@@ -25,7 +25,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.impl.AbstractGeoServerSecurityService;
-import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
 
 
 
@@ -58,7 +58,7 @@ public abstract class AbstractJDBCService extends AbstractGeoServerSecurityServi
      * @throws IOException
      */
     public void initializeDSFromConfig(SecurityNamedServiceConfig namedConfig) throws IOException {
-        JdbcBaseSecurityServiceConfig config = (JdbcBaseSecurityServiceConfig) namedConfig; 
+        JDBCSecurityServiceConfig config = (JDBCSecurityServiceConfig) namedConfig; 
         if (config.isJndi()) {
             String jndiName = config.getJndiName();            
             try {

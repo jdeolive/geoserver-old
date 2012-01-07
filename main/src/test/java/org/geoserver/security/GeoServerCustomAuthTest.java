@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
+import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.password.GeoserverConfigPlainTextPasswordEncoder;
 import org.geoserver.test.GeoServerTestSupport;
 import org.springframework.security.authentication.BadCredentialsException;

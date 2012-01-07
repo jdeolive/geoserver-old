@@ -13,8 +13,6 @@ import org.geoserver.data.test.TestData;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
-import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.impl.AbstractUserDetailsServiceTest;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUser;
@@ -30,7 +28,7 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 //                RandomPasswordProvider.get().getRandomPassword(32));
 
         
-        XMLFileBasedUserGroupServiceConfigImpl ugConfig = new XMLFileBasedUserGroupServiceConfigImpl();                 
+        XMLUserGroupServiceConfig ugConfig = new XMLUserGroupServiceConfig();                 
         ugConfig.setName(serviceName);
         ugConfig.setClassName(XMLUserGroupService.class.getName());
         ugConfig.setCheckInterval(1000); 
@@ -48,7 +46,7 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 
     public GeoserverRoleService createRoleService(String serviceName) throws Exception {
         
-        XMLFileBasedRoleServiceConfigImpl gaConfig = new XMLFileBasedRoleServiceConfigImpl();                 
+        XMLRoleServiceConfig gaConfig = new XMLRoleServiceConfig();                 
         gaConfig.setName(serviceName);
         gaConfig.setClassName(XMLRoleService.class.getName());
         gaConfig.setCheckInterval(1000); 

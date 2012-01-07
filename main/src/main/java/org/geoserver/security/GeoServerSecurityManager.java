@@ -31,6 +31,7 @@ import org.geoserver.catalog.StoreInfo;
 import org.geoserver.config.GeoServerDataDirectory;
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.config.util.XStreamPersisterFactory;
+import org.geoserver.platform.ContextLoadedEvent;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.FilterChainEntry.Position;
 import org.geoserver.security.concurrent.LockingRoleService;
@@ -43,11 +44,8 @@ import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
-import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
-import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
-import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
-import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
+import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
+import org.geoserver.security.file.FileWatcher;
 import org.geoserver.security.file.RoleFileWatcher;
 import org.geoserver.security.file.UserGroupFileWatcher;
 import org.geoserver.security.impl.GeoserverRole;
@@ -67,12 +65,18 @@ import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidator;
 import org.geoserver.security.xml.XMLConstants;
 import org.geoserver.security.xml.XMLRoleService;
+import org.geoserver.security.xml.XMLRoleServiceConfig;
 import org.geoserver.security.xml.XMLUserGroupService;
+import org.geoserver.security.xml.XMLUserGroupServiceConfig;
 import org.geotools.util.logging.Logging;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.AnonymousAuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -111,7 +115,8 @@ import com.thoughtworks.xstream.mapper.Mapper;
  * @author Justin Deoliveira, OpenGeo
  *
  */
-public class GeoServerSecurityManager extends ProviderManager implements ApplicationContextAware, UserDetailsService {
+public class GeoServerSecurityManager extends ProviderManager implements ApplicationContextAware, 
+    ApplicationListener, UserDetailsService {
 
     static Logger LOGGER = Logging.getLogger("org.geoserver.security");
     public static final String CONFIG_FILE_NAME = "config.xml";
@@ -135,7 +140,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     List<GeoServerAuthenticationProvider> authProviders;
 
     /** current security config */
-    SecurityManagerConfig securityConfig = new SecurityManagerConfigImpl();
+    SecurityManagerConfig securityConfig = new SecurityManagerConfig();
 
     /** cached user groups */
     ConcurrentHashMap<String, GeoserverUserGroupService> userGroupServices = 
@@ -173,21 +178,58 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     @Override
     public void setApplicationContext(ApplicationContext appContext) throws BeansException {
         this.appContext = appContext;
+    }
+    
+    @Override
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof ContextLoadedEvent) {
+            // migrate from old security config
+            try {
+                migrateIfNecessary();
+            } catch (Exception e1) {
+                throw new RuntimeException(e1);
+            }
 
-        //migrate from old security config
-        try {
-            migrateIfNecessary();
-        } catch (Exception e1) {
-            throw new RuntimeException(e1);
-        }
+            // read config and initialize... we do this now since we can be ensured that the spring
+            // context has been property initialized, and we can successfully look up security
+            // plugins
+            try {
+                init();
+            } catch (Exception e) {
+                throw new BeanCreationException("Error occured reading security configuration", e);
+            }
 
-        //read config and initialize... we do this now since we can be ensured that the spring
-        // context has been property initialized, and we can successfully look up security plugins
-        try {
-            init();
-        } catch (Exception e) {
-            throw new BeanCreationException("Error occured reading security configuration", e);
+            try {
+                afterPropertiesSetInternal();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
+        if (event instanceof ContextClosedEvent) {
+            try {
+                destroy();
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Error destroying security manager", e);
+            }
+        }
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        //this is a bit o a hack but override and do nothing for now, we will call the super 
+        // method later, after the app context is loaded, see afterPropertiesSetInternal()
+    }
+
+    void afterPropertiesSetInternal() throws Exception {
+        super.afterPropertiesSet();
+    }
+
+    public void destroy() throws Exception {
+        userGroupServices.clear();
+        roleServices.clear();
+
+        userGroupServiceHelper.destroy();
+        roleServiceHelper.destroy();
     }
 
     /**
@@ -288,7 +330,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         setProviders(allAuthProviders);
 
-        this.securityConfig = new SecurityManagerConfigImpl(config);
+        this.securityConfig = new SecurityManagerConfig(config);
     }
 
     /**
@@ -690,7 +732,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * </p>
      */
     public SecurityManagerConfig getSecurityConfig() {
-        return new SecurityManagerConfigImpl(this.securityConfig);
+        return new SecurityManagerConfig(this.securityConfig);
     }
 
     /*
@@ -702,7 +744,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         SecurityConfigValidator validator = new SecurityConfigValidator();
         validator.validateManagerConfig(config);
         //save the current config to fall back to                
-        SecurityManagerConfig oldConfig = new SecurityManagerConfigImpl(this.securityConfig);
+        SecurityManagerConfig oldConfig = new SecurityManagerConfig(this.securityConfig);
 
         try {
             //set the new configuration
@@ -776,7 +818,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         if (validator==null) {
             // Policy allows any password except null, this is the default
             // at before migration
-            PasswordPolicyConfig pwpconfig = new PasswordPolicyConfigImpl();
+            PasswordPolicyConfig pwpconfig = new PasswordPolicyConfig();
             pwpconfig.setName(PasswordValidator.DEFAULT_NAME);
             pwpconfig.setClassName(PasswordValidatorImpl.class.getName());
             pwpconfig.setMinLength(0);
@@ -787,7 +829,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         validator = loadPasswordValidator(PasswordValidator.MASTERPASSWORD_NAME); 
         if (validator==null) {
             // Policy requires a minimum of 8 chars for the master password            
-            PasswordPolicyConfig pwpconfig = new PasswordPolicyConfigImpl();
+            PasswordPolicyConfig pwpconfig = new PasswordPolicyConfig();
             pwpconfig.setName(PasswordValidator.MASTERPASSWORD_NAME);
             pwpconfig.setClassName(PasswordValidatorImpl.class.getName());
             pwpconfig.setMinLength(8);
@@ -796,7 +838,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
                 
         if (userGroupService == null) {
-            XMLFileBasedUserGroupServiceConfigImpl ugConfig = new XMLFileBasedUserGroupServiceConfigImpl();            
+            XMLUserGroupServiceConfig ugConfig = new XMLUserGroupServiceConfig();            
             ugConfig.setName(XMLUserGroupService.DEFAULT_NAME);
             ugConfig.setClassName(XMLUserGroupService.class.getName());
             ugConfig.setCheckInterval(checkInterval); 
@@ -814,7 +856,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             loadRoleService(XMLRoleService.DEFAULT_NAME);
 
         if (roleService == null) {
-            XMLFileBasedRoleServiceConfigImpl gaConfig = new XMLFileBasedRoleServiceConfigImpl();                 
+            XMLRoleServiceConfig gaConfig = new XMLRoleServiceConfig();                 
             gaConfig.setName(XMLRoleService.DEFAULT_NAME);
             gaConfig.setClassName(XMLRoleService.class.getName());
             gaConfig.setCheckInterval(checkInterval); 
@@ -840,7 +882,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
 
         //save the top level config
-        SecurityManagerConfigImpl config = new SecurityManagerConfigImpl();
+        SecurityManagerConfig config = new SecurityManagerConfig();
         config.setRoleServiceName(roleService.getName());
         config.getAuthProviderNames().add(authProvider.getName());
         config.setEncryptingUrlParams(false);
@@ -852,7 +894,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         RememberMeServicesConfig rememberMeConfig = new RememberMeServicesConfig();
         rememberMeConfig.setClassName(GeoServerTokenBasedRememberMeServices.class.getName());
         rememberMeConfig.setUserGroupService(userGroupService.getName());
-        rememberMeConfig.setKey("geoserver");
         config.setRememberMeService(rememberMeConfig);
 
         saveSecurityConfig(config);
@@ -988,8 +1029,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
     XStreamPersister globalPersister() throws IOException {
         XStreamPersister xp = persister();
-        xp.getXStream().alias("security", SecurityManagerConfigImpl.class);
-        xp.getXStream().registerLocalConverter( SecurityManagerConfigImpl.class, "filterChain", 
+        xp.getXStream().alias("security", SecurityManagerConfig.class);
+        xp.getXStream().registerLocalConverter( SecurityManagerConfig.class, "filterChain", 
             new FilterChainConverter(xp.getXStream().getMapper()));
         
         return xp;
@@ -1003,7 +1044,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
         //create and configure an xstream persister to load the configuration files
         XStreamPersister xp = new XStreamPersisterFactory().createXMLPersister();
-        xp.getXStream().alias("security", SecurityManagerConfigImpl.class);
+        xp.getXStream().alias("security", SecurityManagerConfig.class);
         
         for (GeoServerSecurityProvider roleService : all) {
             roleService.configure(xp);
@@ -1043,6 +1084,13 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     abstract class HelperBase<T, C extends SecurityNamedServiceConfig> {
+        /*
+         * list of file watchers
+         * TODO: we should probably manage these better rather than just throwing them in a 
+         * list, repeated loads will cause this list to fill up with threads
+         */
+        protected List<FileWatcher> fileWatchers = new ArrayList<FileWatcher>();
+
         public abstract T load(String name) throws IOException;
 
         /**
@@ -1073,6 +1121,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
          */
         public void removeConfig(String name) throws IOException {
             FileUtils.deleteDirectory(new File(getRoot(), name));
+        }
+
+        public void destroy() {
+            for (FileWatcher fw : fileWatchers) {
+                fw.setTerminate(true);
+            }
         }
 
         /**
@@ -1132,6 +1186,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                     watcher.setDelay(fileConfig.getCheckInterval());
                     service.registerUserGroupLoadedListener(watcher);
                     watcher.start();
+
+                    //register the watcher so we can kill it later on disposale
+                    fileWatchers.add(watcher);
                 }
             }
             
@@ -1202,6 +1259,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                     watcher.setDelay(fileConfig.getCheckInterval());
                     service.registerRoleLoadedListener(watcher);
                     watcher.start();
+
+                    //register the watcher so we can kill it later
+                    fileWatchers.add(watcher);
                 }
             }
 

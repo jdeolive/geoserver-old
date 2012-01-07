@@ -6,8 +6,8 @@ package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
-import org.geoserver.security.jdbc.config.impl.JdbcRoleServiceConfigImpl;
+import org.geoserver.security.jdbc.config.JDBCRoleServiceConfig;
+import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
 import org.geoserver.web.security.JDBCConnectFormComponent;
 import org.geoserver.web.security.JDBCConnectFormComponent.JDBCConnectConfig;
 import org.geoserver.web.security.JDBCConnectFormComponent.Mode;
@@ -30,7 +30,7 @@ public class JDBCRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
         if (configHelper.isNew()) {
             comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC);
         } else {
-            JdbcBaseSecurityServiceConfig config = (JdbcBaseSecurityServiceConfig) configHelper.getConfig(); 
+            JDBCSecurityServiceConfig config = (JDBCSecurityServiceConfig) configHelper.getConfig(); 
            if (config.isJndi()) {
                comp = new JDBCConnectFormComponent("jdbcConnectFormComponent",Mode.DYNAMIC,config.getJndiName());
            } else {
@@ -46,14 +46,14 @@ public class JDBCRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     
     @Override
     protected SecurityNamedServiceConfig createNewConfigObject() {
-        return new JdbcRoleServiceConfigImpl();
+        return new JDBCRoleServiceConfig();
     }
           
     @Override
     public void updateModel() {
         super.updateModel();
         comp.updateModel();
-        JdbcBaseSecurityServiceConfig config = (JdbcBaseSecurityServiceConfig) configHelper.getConfig();
+        JDBCSecurityServiceConfig config = (JDBCSecurityServiceConfig) configHelper.getConfig();
         JDBCConnectConfig c = comp.getModelObject();
         config.setJndiName(null);
         config.setDriverClassName(null);

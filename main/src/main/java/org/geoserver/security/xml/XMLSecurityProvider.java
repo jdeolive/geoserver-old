@@ -10,10 +10,7 @@ import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
-import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
-import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
-import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
+import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.validation.PasswordValidatorImpl;
 import org.geoserver.security.validation.SecurityConfigValidator;
@@ -28,9 +25,9 @@ public class XMLSecurityProvider extends GeoServerSecurityProvider {
     @Override
     public void configure(XStreamPersister xp) {
         super.configure(xp);
-        xp.getXStream().alias("usergroupservice", XMLFileBasedUserGroupServiceConfigImpl.class);
-        xp.getXStream().alias("roleservice", XMLFileBasedRoleServiceConfigImpl.class);
-        xp.getXStream().alias("passwordpolicy", PasswordPolicyConfigImpl.class);
+        xp.getXStream().alias("usergroupservice", XMLUserGroupServiceConfig.class);
+        xp.getXStream().alias("roleservice", XMLRoleServiceConfig.class);
+        xp.getXStream().alias("passwordpolicy", PasswordPolicyConfig.class);
         xp.getXStream().alias("usernamepassword", UsernamePasswordAuthenticationProviderConfig.class);
 
     }

@@ -12,8 +12,6 @@ import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.GeoserverUserGroupStore;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
-import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.security.password.GeoserverPlainTextPasswordEncoder;
@@ -35,7 +33,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         
     protected SecurityUserGroupServiceConfig getUGConfig(String name, Class<?> aClass,
             String encoder, String policyName, String fileName) {
-        XMLFileBasedUserGroupServiceConfigImpl config = new XMLFileBasedUserGroupServiceConfigImpl();
+        XMLUserGroupServiceConfig config = new XMLUserGroupServiceConfig();
         config.setName(name);
         config.setClassName(aClass.getName());
         config.setPasswordEncoderName(encoder);
@@ -46,7 +44,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
     }
     
     protected SecurityRoleServiceConfig getRoleConfig(String name, Class<?> aClass,String adminRole,String fileName) {
-        XMLFileBasedRoleServiceConfigImpl config = new XMLFileBasedRoleServiceConfigImpl();
+        XMLRoleServiceConfig config = new XMLRoleServiceConfig();
         config.setName(name);
         config.setClassName(aClass.getName());
         config.setAdminRoleName(adminRole);
@@ -59,8 +57,8 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         
         super.testRoleConfig();
         
-        XMLFileBasedRoleServiceConfigImpl  config = 
-                (XMLFileBasedRoleServiceConfigImpl )getRoleConfig(XMLRoleService.DEFAULT_NAME, XMLRoleService.class, 
+        XMLRoleServiceConfig  config = 
+                (XMLRoleServiceConfig )getRoleConfig(XMLRoleService.DEFAULT_NAME, XMLRoleService.class, 
                 GeoserverRole.ADMIN_ROLE.getAuthority(),XMLConstants.FILE_RR);
         boolean fail;
 
@@ -95,7 +93,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
 
         config.setCheckInterval(0);
         
-        XMLFileBasedRoleServiceConfigImpl xmlConfig = (XMLFileBasedRoleServiceConfigImpl) 
+        XMLRoleServiceConfig xmlConfig = (XMLRoleServiceConfig) 
                 getRoleConfig("test1",XMLRoleService.class,GeoserverRole.ADMIN_ROLE.getAuthority(),"test1.xml");
         
         try {
@@ -106,7 +104,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         }
         
         fail=false;
-        xmlConfig = (XMLFileBasedRoleServiceConfigImpl) 
+        xmlConfig = (XMLRoleServiceConfig) 
                 getRoleConfig("test2",XMLRoleService.class,GeoserverRole.ADMIN_ROLE.getAuthority(),"test2.xml");
         try {
             getSecurityManager().saveRoleService(xmlConfig, true);
@@ -121,7 +119,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         }
         assertTrue(fail);
 
-        xmlConfig = (XMLFileBasedRoleServiceConfigImpl) 
+        xmlConfig = (XMLRoleServiceConfig) 
                 getRoleConfig("test3",XMLRoleService.class,GeoserverRole.ADMIN_ROLE.getAuthority(),                        
                         new File(getSecurityManager().getRoleRoot(),"test3.xml").getAbsolutePath());
         try {
@@ -137,7 +135,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         // run only if a temp dir is availbale
         if (new XMLSecurityConfigValidator().getTempDir()!=null) {
             String invalidPath="abc"+File.separator+"def.xml";
-            xmlConfig = (XMLFileBasedRoleServiceConfigImpl) 
+            xmlConfig = (XMLRoleServiceConfig) 
                     getRoleConfig("test4",XMLRoleService.class,GeoserverRole.ADMIN_ROLE.getAuthority(),                        
                             invalidPath);
             
@@ -152,7 +150,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
             assertTrue(fail);
         }
         /////////////// test modify
-        xmlConfig = (XMLFileBasedRoleServiceConfigImpl)
+        xmlConfig = (XMLRoleServiceConfig)
                 getRoleConfig("test4",XMLRoleService.class,GeoserverRole.ADMIN_ROLE.getAuthority(),                        
                         "testModify.xml");
 
@@ -183,7 +181,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
     public void testUserGroupConfig() throws IOException{
 
         super.testUserGroupConfig();
-        XMLFileBasedUserGroupServiceConfigImpl config = (XMLFileBasedUserGroupServiceConfigImpl) 
+        XMLUserGroupServiceConfig config = (XMLUserGroupServiceConfig) 
                 getUGConfig(XMLUserGroupService.DEFAULT_NAME, XMLUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,XMLConstants.FILE_UR);
         boolean fail;
@@ -216,7 +214,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
 
         config.setCheckInterval(0);
 
-        XMLFileBasedUserGroupServiceConfigImpl xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
+        XMLUserGroupServiceConfig xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("test1", XMLUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,"test1.xml");
 
@@ -232,7 +230,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         
         
         fail=false;
-        xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
+        xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("test2", XMLUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,"test2.xml");
         try {
@@ -248,7 +246,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         }
         assertTrue(fail);
 
-        xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
+        xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("test3", XMLUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,
                 new File(getSecurityManager().getUserGroupRoot(),"test3.xml").getAbsolutePath());
@@ -266,7 +264,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         // run only if a temp dir is availbale
         if (new XMLSecurityConfigValidator().getTempDir()!=null) {
             String invalidPath="abc"+File.separator+"def.xml";
-            xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
+            xmlConfig = (XMLUserGroupServiceConfig) 
                     getUGConfig("test4", XMLUserGroupService.class, 
                     GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,
                     invalidPath);
@@ -283,7 +281,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         }
         
         
-        xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
+        xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("test5", XMLUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,
                 "abc.xml");
@@ -306,7 +304,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         assertTrue(fail);
 
         /////////////// test modify
-        xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) 
+        xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("testModify", XMLUserGroupService.class, 
                 GeoserverPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,"testModify.xml");
         try {

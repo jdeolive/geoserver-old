@@ -14,7 +14,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -101,7 +100,7 @@ public  class PasswordPolicyDetailsPanel extends AbstractNamedConfigDetailsPanel
 
     @Override
     protected SecurityNamedServiceConfig createNewConfigObject() {
-        return new PasswordPolicyConfigImpl();
+        return new PasswordPolicyConfig();
     }
      
     @Override

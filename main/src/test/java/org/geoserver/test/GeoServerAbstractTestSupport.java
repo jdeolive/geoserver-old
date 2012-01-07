@@ -65,6 +65,7 @@ import org.geoserver.data.test.TestData;
 import org.geoserver.logging.LoggingUtils;
 import org.geoserver.ows.util.KvpUtils;
 import org.geoserver.ows.util.ResponseUtils;
+import org.geoserver.platform.ContextLoadedEvent;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.platform.GeoServerResourceLoader;
 import org.geoserver.security.GeoServerSecurityManager;
@@ -210,6 +211,7 @@ public abstract class GeoServerAbstractTestSupport extends OneTimeSetupTest {
                     servletContext);
             applicationContext.setUseLegacyGeoServerLoader(useLegacyDataDirectory());
             applicationContext.refresh();
+            applicationContext.publishEvent(new ContextLoadedEvent(applicationContext));
 
             // set the parameter after a refresh because it appears a refresh
             // wipes

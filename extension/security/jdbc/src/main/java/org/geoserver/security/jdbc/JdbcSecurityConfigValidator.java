@@ -7,7 +7,7 @@ package org.geoserver.security.jdbc;
 
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidationErrors;
 import org.geoserver.security.validation.SecurityConfigValidator;
@@ -17,7 +17,7 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
     @Override
     public void validate(SecurityRoleServiceConfig config) throws SecurityConfigException {
         super.validate(config);
-        JdbcBaseSecurityServiceConfig jdbcConfig = (JdbcBaseSecurityServiceConfig) config;
+        JDBCSecurityServiceConfig jdbcConfig = (JDBCSecurityServiceConfig) config;
         
         validateFileNames(jdbcConfig);
         
@@ -31,24 +31,24 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
     public void validate(SecurityUserGroupServiceConfig config)
             throws SecurityConfigException {
         super.validate(config);
-        JdbcBaseSecurityServiceConfig jdbcConfig = (JdbcBaseSecurityServiceConfig) config;
+        JDBCSecurityServiceConfig jdbcConfig = (JDBCSecurityServiceConfig) config;
         if (jdbcConfig.isJndi())
             validateJNDI(jdbcConfig);
         else
             validateJDBC(jdbcConfig);
     }
     
-    protected void validateFileNames(JdbcBaseSecurityServiceConfig config) throws SecurityConfigException
+    protected void validateFileNames(JDBCSecurityServiceConfig config) throws SecurityConfigException
     {
         
     }
     
-    protected void validateJNDI(JdbcBaseSecurityServiceConfig config) throws SecurityConfigException {
+    protected void validateJNDI(JDBCSecurityServiceConfig config) throws SecurityConfigException {
         if (isNotEmpty(config.getJndiName())==false)
             throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_210);
     }
     
-    protected void validateJDBC(JdbcBaseSecurityServiceConfig config) throws SecurityConfigException {
+    protected void validateJDBC(JDBCSecurityServiceConfig config) throws SecurityConfigException {
         if (isNotEmpty(config.getDriverClassName())==false)
             throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_200);
         if (isNotEmpty(config.getUserName())==false)

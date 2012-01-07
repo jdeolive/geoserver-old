@@ -8,8 +8,8 @@ import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.xml.XMLConstants;
+import org.geoserver.security.xml.XMLRoleServiceConfig;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -43,7 +43,7 @@ public class XMLRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     
     @Override
     protected SecurityNamedServiceConfig createNewConfigObject() {
-        XMLFileBasedRoleServiceConfigImpl  config= new XMLFileBasedRoleServiceConfigImpl();
+        XMLRoleServiceConfig  config= new XMLRoleServiceConfig();
         config.setFileName(XMLConstants.FILE_RR);
         return config;        
     }

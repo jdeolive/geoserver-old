@@ -2,18 +2,20 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-package org.geoserver.security.config.impl;
+package org.geoserver.security.config;
 
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
-import org.geoserver.security.config.SecurityAuthProviderConfig;
 
 /**
  * Config object for {@link UsernamePasswordAuthenticationProvider}.
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public class UsernamePasswordAuthenticationProviderConfig extends SecurityNamedServiceConfigImpl implements SecurityAuthProviderConfig {
+public class UsernamePasswordAuthenticationProviderConfig extends BaseSecurityNamedServiceConfig 
+    implements SecurityAuthProviderConfig {
+
     private static final long serialVersionUID = 1L;
+
     String userGroupServiceName;
 
     public String getUserGroupServiceName() {

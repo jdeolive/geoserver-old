@@ -10,8 +10,8 @@ import java.lang.reflect.Method;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.xml.XMLRoleService;
+import org.geoserver.security.xml.XMLRoleServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.RoleTabbedPage;
 import org.geoserver.web.security.config.SecurityServicesTabbedPage;
@@ -121,8 +121,8 @@ public  class XMLRoleConfigDetailsPanelTest extends AbstractNamedConfigDetailsPa
         assertEquals(3, countItmes());        
         assertNotNull(getSecurityNamedServiceConfig("default"));
         
-        XMLFileBasedRoleServiceConfigImpl xmlConfig=
-                (XMLFileBasedRoleServiceConfigImpl)
+        XMLRoleServiceConfig xmlConfig=
+                (XMLRoleServiceConfig)
                 getSecurityNamedServiceConfig("default2");
         assertNotNull(xmlConfig);
         assertEquals("default2",xmlConfig.getName());
@@ -134,7 +134,7 @@ public  class XMLRoleConfigDetailsPanelTest extends AbstractNamedConfigDetailsPa
         
         // reload from manager
         xmlConfig=
-                (XMLFileBasedRoleServiceConfigImpl)
+                (XMLRoleServiceConfig)
                 getSecurityManager().loadRoleServiceConfig("default2");
         assertNotNull(xmlConfig);
         assertEquals("default2",xmlConfig.getName());
@@ -171,7 +171,7 @@ public  class XMLRoleConfigDetailsPanelTest extends AbstractNamedConfigDetailsPa
         tester.assertRenderedPage(tabbedPage.getClass());
 
         xmlConfig=
-                (XMLFileBasedRoleServiceConfigImpl)
+                (XMLRoleServiceConfig)
                 getSecurityNamedServiceConfig("default");        
         assertEquals("ROLE_ADMINISTRATOR",xmlConfig.getAdminRoleName());
         assertEquals("roles.xml",xmlConfig.getFileName());
@@ -190,7 +190,7 @@ public  class XMLRoleConfigDetailsPanelTest extends AbstractNamedConfigDetailsPa
         tester.assertRenderedPage(tabbedPage.getClass());
         
         xmlConfig=
-                (XMLFileBasedRoleServiceConfigImpl)
+                (XMLRoleServiceConfig)
                 getSecurityNamedServiceConfig("default2");
         assertNull(xmlConfig.getAdminRoleName());
         assertEquals("abc.xml",xmlConfig.getFileName());
@@ -198,7 +198,7 @@ public  class XMLRoleConfigDetailsPanelTest extends AbstractNamedConfigDetailsPa
         assertEquals(false,xmlConfig.isValidating());
         
         // reload from manager
-        xmlConfig=(XMLFileBasedRoleServiceConfigImpl)
+        xmlConfig=(XMLRoleServiceConfig)
                 getSecurityManager().loadRoleServiceConfig("default2");
         assertNull(xmlConfig.getAdminRoleName());
         assertEquals("abc.xml",xmlConfig.getFileName());

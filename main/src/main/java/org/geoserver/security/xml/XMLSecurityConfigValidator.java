@@ -11,8 +11,6 @@ import java.io.IOException;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
-import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidationErrors;
 import org.geoserver.security.validation.SecurityConfigValidator;
@@ -29,7 +27,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     @Override
     public void validate(SecurityRoleServiceConfig config) throws SecurityConfigException {
         super.validate(config);
-        XMLFileBasedRoleServiceConfigImpl xmlConfig = (XMLFileBasedRoleServiceConfigImpl) config;
+        XMLRoleServiceConfig xmlConfig = (XMLRoleServiceConfig) config;
         validateCheckIntervall(xmlConfig.getCheckInterval());
         validateFileName(xmlConfig.getFileName());
         
@@ -39,7 +37,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     public void validate(SecurityUserGroupServiceConfig config)
             throws SecurityConfigException {
         super.validate(config);
-        XMLFileBasedUserGroupServiceConfigImpl xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) config;
+        XMLUserGroupServiceConfig xmlConfig = (XMLUserGroupServiceConfig) config;
         validateCheckIntervall(xmlConfig.getCheckInterval());
         validateFileName(xmlConfig.getFileName());
         
@@ -72,7 +70,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
             throws SecurityConfigException {
         super.validateRemoveRoleService(config);
         
-        XMLFileBasedRoleServiceConfigImpl xmlConfig = (XMLFileBasedRoleServiceConfigImpl) config;
+        XMLRoleServiceConfig xmlConfig = (XMLRoleServiceConfig) config;
         File file = new File(xmlConfig.getFileName());                
         // check if if file name is absolute and not in standard role directory
         try {
@@ -102,7 +100,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     @Override
     public void validateRemoveUserGroupService(SecurityUserGroupServiceConfig config)
             throws SecurityConfigException {
-        XMLFileBasedUserGroupServiceConfigImpl xmlConfig = (XMLFileBasedUserGroupServiceConfigImpl) config;
+        XMLUserGroupServiceConfig xmlConfig = (XMLUserGroupServiceConfig) config;
         File file = new File(xmlConfig.getFileName());                
         // check if if file name is absolute and not in standard role directory
         try {
@@ -130,7 +128,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     public void validateAddRoleService(SecurityRoleServiceConfig config)
             throws SecurityConfigException {
         super.validateAddRoleService(config);
-        XMLFileBasedRoleServiceConfigImpl xmlConfig = (XMLFileBasedRoleServiceConfigImpl) config;
+        XMLRoleServiceConfig xmlConfig = (XMLRoleServiceConfig) config;
         File file  = new File(xmlConfig.getFileName());
         checkFile(file);        
     }
@@ -143,8 +141,8 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     public void validateAddUserGroupService(SecurityUserGroupServiceConfig config)
             throws SecurityConfigException {
         super.validateAddUserGroupService(config);
-        XMLFileBasedUserGroupServiceConfigImpl xmlConfig = 
-                (XMLFileBasedUserGroupServiceConfigImpl) config;
+        XMLUserGroupServiceConfig xmlConfig = 
+                (XMLUserGroupServiceConfig) config;
         File file  = new File(xmlConfig.getFileName());
         checkFile(file);        
     }
@@ -185,8 +183,8 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     public void validateModifiedRoleService(SecurityRoleServiceConfig config,
             SecurityRoleServiceConfig oldConfig) throws SecurityConfigException {
         super.validateModifiedRoleService(config, oldConfig);
-        XMLFileBasedRoleServiceConfigImpl old = (XMLFileBasedRoleServiceConfigImpl) oldConfig;
-        XMLFileBasedRoleServiceConfigImpl modified = (XMLFileBasedRoleServiceConfigImpl) config;
+        XMLRoleServiceConfig old = (XMLRoleServiceConfig) oldConfig;
+        XMLRoleServiceConfig modified = (XMLRoleServiceConfig) config;
         
         if (old.getFileName().equals(
                 modified.getFileName()) == false) 
@@ -197,8 +195,8 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     public void validateModifiedUserGroupService(SecurityUserGroupServiceConfig config,
             SecurityUserGroupServiceConfig oldConfig) throws SecurityConfigException {
         super.validateModifiedUserGroupService(config, oldConfig);
-        XMLFileBasedUserGroupServiceConfigImpl old = (XMLFileBasedUserGroupServiceConfigImpl) oldConfig;
-        XMLFileBasedUserGroupServiceConfigImpl modified = (XMLFileBasedUserGroupServiceConfigImpl) config;
+        XMLUserGroupServiceConfig old = (XMLUserGroupServiceConfig) oldConfig;
+        XMLUserGroupServiceConfig modified = (XMLUserGroupServiceConfig) config;
         
         if (old.getFileName().equals(
                 modified.getFileName()) == false) 

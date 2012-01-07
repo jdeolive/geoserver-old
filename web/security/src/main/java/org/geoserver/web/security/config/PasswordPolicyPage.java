@@ -8,8 +8,8 @@ package org.geoserver.web.security.config;
     
 import java.io.IOException;
 
+import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.PasswordPolicyConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -45,7 +45,7 @@ public class PasswordPolicyPage extends AbstractSecurityPage {
         
         SecurityNamedConfigModelHelper helper = null;
         if (config==null)
-            helper = new SecurityNamedConfigModelHelper(new SecurityNamedServiceConfigImpl(),true);
+            helper = new SecurityNamedConfigModelHelper(new BaseSecurityNamedServiceConfig(),true);
         else
             helper = new SecurityNamedConfigModelHelper(config,false);
         

@@ -2,14 +2,15 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-
-package org.geoserver.security.config.impl;
+package org.geoserver.security.jdbc.config;
 
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 
-public class XMLFileBasedRoleServiceConfigImpl extends XMLFileBasedSecurityServiceConfigImpl
+public class JDBCRoleServiceConfig extends JDBCSecurityServiceConfig
         implements SecurityRoleServiceConfig {
+
     private static final long serialVersionUID = 1L;
+
     protected String adminRoleName;
 
     @Override

@@ -5,10 +5,6 @@
 
 package org.geoserver.web.security.config;
 
-    
-
-
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,8 +16,8 @@ import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
 import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.group.GroupPanel;
@@ -66,7 +62,7 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
                     
                     SecurityNamedConfigModelHelper helper = null;
                     if (config==null)
-                        helper = new SecurityNamedConfigModelHelper(new SecurityNamedServiceConfigImpl(),true);
+                        helper = new SecurityNamedConfigModelHelper(new BaseSecurityNamedServiceConfig(),true);
                     else
                         helper = new SecurityNamedConfigModelHelper(config,false);
                     

@@ -5,70 +5,126 @@
 
 package org.geoserver.security.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.geoserver.security.GeoServerSecurityFilterChain;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.rememberme.RememberMeServicesConfig;
 
 
 /**
- * Interface for a {@link GeoserverUserDetailsService} configuration
+ * {@link GeoServerSecurityManager} configuration object.
  * 
  * @author christian
- *
  */
-public interface SecurityManagerConfig  extends SecurityConfig {
+public class SecurityManagerConfig implements SecurityConfig {
+
+    private static final long serialVersionUID = 1L;
+
+    private String roleServiceName;
+    private List<String> authProviderNames = new ArrayList<String>();
+    private Boolean anonymousAuth = Boolean.TRUE;
+    private String configPasswordEncrypterName;
+    private boolean encryptingUrlParams;
+
+    private GeoServerSecurityFilterChain filterChain = new GeoServerSecurityFilterChain();
+    private RememberMeServicesConfig rememberMeService = new RememberMeServicesConfig();
+
+    public SecurityManagerConfig() {
+    }
+
+    public SecurityManagerConfig(SecurityManagerConfig config) {
+        this.roleServiceName = config.getRoleServiceName();
+        this.authProviderNames = config.getAuthProviderNames() != null ? 
+            new ArrayList<String>(config.getAuthProviderNames()) : null;
+        this.anonymousAuth = config.isAnonymousAuth();
+        this.filterChain = config.getFilterChain() != null ? 
+            new GeoServerSecurityFilterChain(config.getFilterChain()) : null;
+        this.rememberMeService = new RememberMeServicesConfig(config.getRememberMeService());
+        this.encryptingUrlParams = config.isEncryptingUrlParams();
+        this.configPasswordEncrypterName = config.getConfigPasswordEncrypterName();
+    }
+
+    private Object readResolve() {
+        authProviderNames = authProviderNames != null ? authProviderNames : new ArrayList<String>();
+        anonymousAuth = anonymousAuth != null ? anonymousAuth : Boolean.TRUE;
+        filterChain = filterChain != null ? filterChain : new GeoServerSecurityFilterChain();
+        rememberMeService = rememberMeService != null ? rememberMeService : new RememberMeServicesConfig();
+        return this;
+    }
 
     /**
-     * @return the name for a 
-     * {@link GeoserverRoleService} object
-     * 
+     * Name of {@link GeoserverRoleService} object.
      */
-    public String getRoleServiceName();
-    /**
-     * @param roleServiceName, the name of a
-     * {@link GeoserverRoleService} object 
-     */
-    public void setRoleServiceName(String roleServiceName);
-    
+    public String getRoleServiceName() {
+        return roleServiceName;
+    }
+    public void setRoleServiceName(String roleServiceName) {
+        this.roleServiceName = roleServiceName;
+    }
+
     /**
      * @return list of names for {@link GeoServerAuthenticationProvider} objects
      */
-    public List<String> getAuthProviderNames();
+    public List<String> getAuthProviderNames() {
+        return authProviderNames;
+    }
 
     /**
      * Flag determining if anonymous authentication is active.
      */
-    public Boolean isAnonymousAuth();
+    public Boolean isAnonymousAuth() {
+        return anonymousAuth;
+    }
 
     /**
      * Sets flag determining if anonymous authentication is active.
      */
-    public void setAnonymousAuth(Boolean anonymousAuth);
+    public void setAnonymousAuth(Boolean anonymousAuth) {
+        this.anonymousAuth = anonymousAuth;
+    }
 
     /**
-     * @return The security filter chain.
+     * The security filter chain.
      */
-    public GeoServerSecurityFilterChain getFilterChain();
+    public GeoServerSecurityFilterChain getFilterChain() {
+        return filterChain;
+    }
 
-    public RememberMeServicesConfig getRememberMeService();
+    public void setFilterChain(GeoServerSecurityFilterChain filterChain) {
+        this.filterChain = filterChain;
+    }
 
     /**
-     * Admin Console encrypts URL Parameters ?
-     * @return
+     * The remember me service.
      */
-    public boolean isEncryptingUrlParams();
-    public void setEncryptingUrlParams(boolean encryptingUrlParams);
+    public RememberMeServicesConfig getRememberMeService() {
+        return rememberMeService;
+    }
+
+    public void setRememberMeService(RememberMeServicesConfig rememberMeService) {
+        this.rememberMeService = rememberMeService;
+    }
 
     /**
-     * if passwords in configuration files are encrypted, the
-     * Spring name of the encrypter 
-     * 
-     * @return
+     * Flag controlling if web admin should encrypt url parameters.
      */
-    public String getConfigPasswordEncrypterName();
-    public void setConfigPasswordEncrypterName(String configPasswordEncrypterName);
+    public boolean isEncryptingUrlParams() {
+        return encryptingUrlParams;
+    }
+    public void setEncryptingUrlParams(boolean encryptingUrlParams) {
+        this.encryptingUrlParams = encryptingUrlParams;
+    }
 
-
+    /**
+     * The name of the password encrypter for encrypting password in configuration files. 
+     */
+    public String getConfigPasswordEncrypterName() {
+        return configPasswordEncrypterName;
+    }
+    public void setConfigPasswordEncrypterName(String configPasswordEncrypterName) {
+        this.configPasswordEncrypterName = configPasswordEncrypterName;
+    }
 }

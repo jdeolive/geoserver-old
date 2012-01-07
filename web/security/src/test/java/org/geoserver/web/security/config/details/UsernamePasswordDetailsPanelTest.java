@@ -11,7 +11,7 @@ import java.lang.reflect.Method;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
-import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
+import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.AuthenticationProviderPage;
 import org.geoserver.web.security.config.GlobalTabbedPage;

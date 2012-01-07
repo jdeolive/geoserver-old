@@ -11,7 +11,7 @@ import java.util.List;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
+import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 import org.geoserver.web.wicket.SimpleChoiceRenderer;
 

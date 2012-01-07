@@ -7,14 +7,13 @@ package org.geoserver.security.config;
 
 import java.io.Serializable;
 
-/*
+/**
  * 
- * Common base interface for all security configuration 
- * interfaces
+ * Common base interface for all security configuration classes.
  * 
  * @author christian
- *
+
  */
-public interface SecurityConfig extends Serializable{
+public interface SecurityConfig extends Serializable {
 
 }

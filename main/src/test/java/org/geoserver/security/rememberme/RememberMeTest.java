@@ -19,18 +19,9 @@ import org.geoserver.security.GeoServerSecurityFilterChain;
 import org.geoserver.security.GeoServerSecurityFilterChainProxy;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.MemoryUserGroupService;
-import org.geoserver.security.impl.MemoryUserGroupStore;
-import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
-import org.geoserver.security.password.GeoserverPlainTextPasswordEncoder;
-import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.test.GeoServerTestSupport;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -41,11 +32,12 @@ import com.mockrunner.mock.web.MockHttpServletResponse;
 
 public class RememberMeTest extends GeoServerTestSupport {
 
+
     @Override
     protected void setUpInternal() throws Exception {
         //setup a custom filter to capture authentication
 
-        SecurityNamedServiceConfig filterCfg = new SecurityNamedServiceConfigImpl();
+        SecurityNamedServiceConfig filterCfg = new BaseSecurityNamedServiceConfig();
         filterCfg.setName("custom");
         filterCfg.setClassName(AuthCapturingFilter.class.getName());
 

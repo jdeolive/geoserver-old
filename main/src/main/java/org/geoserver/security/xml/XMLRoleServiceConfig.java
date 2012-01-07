@@ -3,17 +3,18 @@
  * application directory.
  */
 
-package org.geoserver.security.jdbc.config.impl;
+package org.geoserver.security.xml;
 
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 
-public class JdbcRoleServiceConfigImpl extends JdbcBaseSecurityServiceConfigImpl
-        implements SecurityRoleServiceConfig {
+
+public class XMLRoleServiceConfig extends XMLSecurityServiceConfig 
+    implements SecurityRoleServiceConfig {
+
     private static final long serialVersionUID = 1L;
 
     protected String adminRoleName;
 
-    
     @Override
     public String getAdminRoleName() {
         return adminRoleName;

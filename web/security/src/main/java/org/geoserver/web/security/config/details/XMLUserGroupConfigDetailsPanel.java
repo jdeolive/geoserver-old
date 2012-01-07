@@ -8,8 +8,8 @@ import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.xml.XMLConstants;
+import org.geoserver.security.xml.XMLUserGroupServiceConfig;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -44,7 +44,7 @@ public class XMLUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPane
     
     @Override
     protected SecurityNamedServiceConfig createNewConfigObject() {
-        XMLFileBasedUserGroupServiceConfigImpl config = new XMLFileBasedUserGroupServiceConfigImpl();
+        XMLUserGroupServiceConfig config = new XMLUserGroupServiceConfig();
         config.setFileName(XMLConstants.FILE_UR);
         return config;
     }

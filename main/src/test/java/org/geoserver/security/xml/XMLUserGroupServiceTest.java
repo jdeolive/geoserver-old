@@ -14,7 +14,6 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.impl.AbstractUserGroupServiceTest;
@@ -48,7 +47,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
 
     
     protected GeoserverUserGroupService createUserGroupService(String serviceName,String xmlFileName) throws Exception {
-        XMLFileBasedUserGroupServiceConfigImpl ugConfig = new XMLFileBasedUserGroupServiceConfigImpl();                 
+        XMLUserGroupServiceConfig ugConfig = new XMLUserGroupServiceConfig();                 
         ugConfig.setName(serviceName);
         ugConfig.setClassName(XMLUserGroupService.class.getName());
         ugConfig.setCheckInterval(1000); 

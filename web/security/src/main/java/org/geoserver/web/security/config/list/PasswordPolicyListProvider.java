@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.geoserver.security.config.PasswordPolicyConfig;
-import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 
 /**

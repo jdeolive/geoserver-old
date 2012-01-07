@@ -10,18 +10,16 @@ import org.geoserver.security.GeoserverAuthenticationProcessingFilter;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverUserGroupService;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
+import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
+import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
-import org.geoserver.security.config.impl.PasswordPolicyConfigImpl;
-import org.geoserver.security.config.impl.SecurityManagerConfigImpl;
-import org.geoserver.security.config.impl.SecurityNamedServiceConfigImpl;
-import org.geoserver.security.config.impl.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.impl.GeoserverRole;
 import org.geoserver.security.impl.MemoryRoleService;
 import org.geoserver.security.impl.MemoryUserGroupService;
@@ -43,7 +41,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
     static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
         
     public void testMasterConfigValidation() throws Exception{
-        SecurityManagerConfig config = new SecurityManagerConfigImpl();
+        SecurityManagerConfig config = new SecurityManagerConfig();
         config.setRoleServiceName(XMLRoleService.DEFAULT_NAME);
         config.setConfigPasswordEncrypterName(GeoserverConfigPBEPasswordEncoder.BeanName);
         config.getAuthProviderNames().add(GeoServerAuthenticationProvider.DEFAULT_NAME);
@@ -324,7 +322,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
     }
 
     protected PasswordPolicyConfig getPolicyConfig(String name, Class<?> aClass,int min, int max) {
-        PasswordPolicyConfig config = new PasswordPolicyConfigImpl();
+        PasswordPolicyConfig config = new PasswordPolicyConfig();
         config.setName(name);
         config.setClassName(aClass.getName());
         config.setMinLength(min);
@@ -333,7 +331,7 @@ public class SecurityConfigValidatorTest extends GeoServerTestSupport {
     }
     
     protected SecurityNamedServiceConfig getFilterConfig(String name, Class<?> aClass) {
-        SecurityNamedServiceConfig config = new SecurityNamedServiceConfigImpl();
+        SecurityNamedServiceConfig config = new BaseSecurityNamedServiceConfig();
         config.setName(name);
         config.setClassName(aClass.getName());
         return config;

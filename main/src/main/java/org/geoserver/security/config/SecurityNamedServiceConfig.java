@@ -5,39 +5,30 @@
 
 package org.geoserver.security.config;
 
-
 /**
- * Common base interface for all named security
- * services configuration objects
+ * Base class for named security service configuration objects.
  * 
  * @author christian
- *
  */
 public interface SecurityNamedServiceConfig extends SecurityConfig {
+
     /**
-     * @return the name of the service
+     * The name of the service.
      */
-    public String getName();
+    String getName();
+
     /**
-     * sets the name for a service
-     * 
-     * @param name
+     * Sets the name for a service.
      */
-    public void setName(String name);
-    
-        
+    void setName(String name);
+
     /**
-     * The class name of the service to be constructed
-     * The class must have a constructor with a string
-     * argument, specifying the name of the service
-     * 
-     * @param className
+     * Name of class for implementation of the service.
      */
-    public void setClassName(String className);
-    
-    
+    String getClassName();
+
     /**
-     * @return the service class name
+     * Sets name of class for implementation of the service.
      */
-    public String getClassName();
+    void setClassName(String className);
 }

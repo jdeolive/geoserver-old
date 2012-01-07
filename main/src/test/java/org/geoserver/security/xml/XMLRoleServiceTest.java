@@ -14,7 +14,6 @@ import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
 import org.geoserver.security.GeoserverRoleService;
 import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.config.impl.XMLFileBasedRoleServiceConfigImpl;
 import org.geoserver.security.event.RoleLoadedEvent;
 import org.geoserver.security.event.RoleLoadedListener;
 import org.geoserver.security.impl.AbstractRoleServiceTest;
@@ -45,7 +44,7 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
     
     protected GeoserverRoleService createRoleService(String serviceName, String xmlFileName) throws Exception {
          
-        XMLFileBasedRoleServiceConfigImpl gaConfig = new XMLFileBasedRoleServiceConfigImpl();                 
+        XMLRoleServiceConfig gaConfig = new XMLRoleServiceConfig();                 
         gaConfig.setName(serviceName);
         gaConfig.setClassName(XMLRoleService.class.getName());
         gaConfig.setCheckInterval(1000);   

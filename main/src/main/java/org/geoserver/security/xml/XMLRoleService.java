@@ -25,7 +25,6 @@ import org.geoserver.security.GeoserverRoleStore;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
-import org.geoserver.security.config.XMLBasedSecurityServiceConfig;
 import org.geoserver.security.impl.AbstractRoleService;
 import org.geoserver.security.impl.GeoserverRole;
 import org.w3c.dom.Document;
@@ -68,8 +67,8 @@ public class XMLRoleService extends AbstractRoleService {
             adminRole = createRoleObject(GeoserverRole.ADMIN_ROLE.getAuthority());
         }
 
-        if (config instanceof XMLBasedSecurityServiceConfig) {
-            validatingXMLSchema =((XMLBasedSecurityServiceConfig) config).isValidating();
+        if (config instanceof XMLSecurityServiceConfig) {
+            validatingXMLSchema =((XMLSecurityServiceConfig) config).isValidating();
             // copy schema file 
             File xsdFile = new File(getConfigRoot(), XMLConstants.FILE_RR_SCHEMA);
             if (xsdFile.exists()==false) {

@@ -28,7 +28,7 @@ import org.geoserver.security.impl.GeoserverUser;
 import org.geoserver.security.impl.GeoserverUserGroup;
 import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.security.impl.Util;
-import org.geoserver.security.jdbc.config.JdbcBaseSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -89,9 +89,9 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
         passwordValidatorName=((SecurityUserGroupServiceConfig)config).getPasswordPolicyName();
         initializeDSFromConfig(config);
 
-        if (config instanceof JdbcBaseSecurityServiceConfig) {
-            JdbcBaseSecurityServiceConfig jdbcConfig =
-                (JdbcBaseSecurityServiceConfig) config;
+        if (config instanceof JDBCSecurityServiceConfig) {
+            JDBCSecurityServiceConfig jdbcConfig =
+                (JDBCSecurityServiceConfig) config;
             
             String fileNameDML =jdbcConfig.getPropertyFileNameDML();
             File file = checkORCreateJDBCPropertyFile(fileNameDML, getConfigRoot(), DEFAULT_DML_FILE);

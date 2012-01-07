@@ -11,12 +11,12 @@ import java.lang.reflect.Method;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.DropDownChoice;
-import org.geoserver.security.config.impl.XMLFileBasedUserGroupServiceConfigImpl;
 import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
 import org.geoserver.security.password.GeoserverPlainTextPasswordEncoder;
 import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
 import org.geoserver.security.validation.PasswordValidatorImpl;
 import org.geoserver.security.xml.XMLUserGroupService;
+import org.geoserver.security.xml.XMLUserGroupServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.SecurityServicesTabbedPage;
 import org.geoserver.web.security.config.UserGroupTabbedPage;
@@ -143,8 +143,8 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         assertEquals(3, countItmes());        
         assertNotNull(getSecurityNamedServiceConfig("default"));
         
-        XMLFileBasedUserGroupServiceConfigImpl xmlConfig=
-                (XMLFileBasedUserGroupServiceConfigImpl)
+        XMLUserGroupServiceConfig xmlConfig=
+                (XMLUserGroupServiceConfig)
                 getSecurityNamedServiceConfig("default2");
         assertNotNull(xmlConfig);
         assertEquals("default2",xmlConfig.getName());
@@ -157,7 +157,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         
         // reload from manager
         xmlConfig=
-                (XMLFileBasedUserGroupServiceConfigImpl)
+                (XMLUserGroupServiceConfig)
                 getSecurityManager().loadUserGroupServiceConfig("default2");
         assertNotNull(xmlConfig);
         assertEquals("default2",xmlConfig.getName());
@@ -197,7 +197,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         tester.assertRenderedPage(tabbedPage.getClass());
 
         xmlConfig=
-                (XMLFileBasedUserGroupServiceConfigImpl)
+                (XMLUserGroupServiceConfig)
                 getSecurityNamedServiceConfig("default");        
         assertEquals(GeoserverUserPBEPasswordEncoder.PrototypeName,xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.DEFAULT_NAME,xmlConfig.getPasswordPolicyName());
@@ -217,7 +217,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         tester.assertRenderedPage(tabbedPage.getClass());
         
         xmlConfig=
-                (XMLFileBasedUserGroupServiceConfigImpl)
+                (XMLUserGroupServiceConfig)
                 getSecurityNamedServiceConfig("default2");
         assertEquals(GeoserverDigestPasswordEncoder.BeanName,xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.MASTERPASSWORD_NAME,xmlConfig.getPasswordPolicyName());
@@ -226,7 +226,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         assertEquals(false,xmlConfig.isValidating());
         
         // reload from manager
-        xmlConfig=(XMLFileBasedUserGroupServiceConfigImpl)
+        xmlConfig=(XMLUserGroupServiceConfig)
                 getSecurityManager().loadUserGroupServiceConfig("default2");
         assertEquals(GeoserverDigestPasswordEncoder.BeanName,xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.MASTERPASSWORD_NAME,xmlConfig.getPasswordPolicyName());

@@ -7,7 +7,6 @@ package org.geoserver.web.security.config.list;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.model.IModel;
-import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.password.PasswordValidator;
