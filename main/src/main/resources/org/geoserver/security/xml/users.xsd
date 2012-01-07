@@ -2,7 +2,7 @@
 <schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.geoserver.org/security/users" xmlns:gsu="http://www.geoserver.org/security/users" elementFormDefault="qualified">
 
 
-    <element name="userregistry" type="gsu:UserRegistryType"></element>
+    <element name="userRegistry" type="gsu:UserRegistryType"></element>
     
     <complexType name="UserType">
        	<sequence>

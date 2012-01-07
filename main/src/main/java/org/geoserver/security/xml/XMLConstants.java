@@ -36,7 +36,7 @@ public class XMLConstants {
     public final static String A_PROPERTY_NAME_UR = "name";
 
 
-    public final static String E_USERREGISTRY_UR = "userregistry";
+    public final static String E_USERREGISTRY_UR = "userRegistry";
     public final static String A_VERSION_UR = "version";
     
     public final static String E_USERS_UR = "users";
@@ -60,26 +60,26 @@ public class XMLConstants {
     public final static String NS_RR="http://www.geoserver.org/security/roles";    
     public final static String NSP_RR="gsr";        
     public final static String SCHEMA_RR=NS_RR+" "+FILE_RR_SCHEMA;
-    public final static String E_ROLEREGISTRY_RR = "roleregistry";
+    public final static String E_ROLEREGISTRY_RR = "roleRegistry";
     public final static String VERSION_RR_1_0="1.0";
     public final static String A_VERSION_RR = "version";
     public final static String E_PROPERTY_RR = "property";
     public final static String A_PROPERTY_NAME_RR = "name";
 
     
-    public final static String E_ROLELIST_RR = "rolelist";
+    public final static String E_ROLELIST_RR = "roleList";
     public final static String E_ROLE_RR = "role";
     public final static String A_ROLEID_RR = "id";
     public final static String A_PARENTID_RR = "parentID";
     
-    public final static String E_USERLIST_RR = "userlist";
-    public final static String E_USERROLES_RR = "userroles";
+    public final static String E_USERLIST_RR = "userList";
+    public final static String E_USERROLES_RR = "userRoles";
     public final static String A_USERNAME_RR = "username";
-    public final static String E_ROLEREF_RR = "roleref";
+    public final static String E_ROLEREF_RR = "roleRef";
     public final static String A_ROLEREFID_RR = "roleID";
     
-    public final static String E_GROUPLIST_RR = "grouplist";
-    public final static String E_GROUPROLES_RR = "grouproles";
+    public final static String E_GROUPLIST_RR = "groupList";
+    public final static String E_GROUPROLES_RR = "groupRoles";
     public final static String A_GROUPNAME_RR = "groupname";
     
 }

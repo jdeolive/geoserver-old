@@ -25,10 +25,10 @@ public class XMLSecurityProvider extends GeoServerSecurityProvider {
     @Override
     public void configure(XStreamPersister xp) {
         super.configure(xp);
-        xp.getXStream().alias("usergroupservice", XMLUserGroupServiceConfig.class);
-        xp.getXStream().alias("roleservice", XMLRoleServiceConfig.class);
-        xp.getXStream().alias("passwordpolicy", PasswordPolicyConfig.class);
-        xp.getXStream().alias("usernamepassword", UsernamePasswordAuthenticationProviderConfig.class);
+        xp.getXStream().alias("userGroupService", XMLUserGroupServiceConfig.class);
+        xp.getXStream().alias("roleService", XMLRoleServiceConfig.class);
+        xp.getXStream().alias("passwordPolicy", PasswordPolicyConfig.class);
+        xp.getXStream().alias("usernamePassword", UsernamePasswordAuthenticationProviderConfig.class);
 
     }
 
