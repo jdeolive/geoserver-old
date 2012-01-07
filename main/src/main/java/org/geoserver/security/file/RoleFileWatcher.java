@@ -7,7 +7,7 @@ package org.geoserver.security.file;
 
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.event.RoleLoadedEvent;
 import org.geoserver.security.event.RoleLoadedListener;
 
@@ -21,13 +21,13 @@ import org.geoserver.security.event.RoleLoadedListener;
 public class RoleFileWatcher extends FileWatcher implements RoleLoadedListener{
     
     
-    public RoleFileWatcher(String fileName,GeoserverRoleService service) {
+    public RoleFileWatcher(String fileName,GeoServerRoleService service) {
         super(fileName);
         this.service=service;
         checkAndConfigure();
     }
 
-    public RoleFileWatcher(String fileName,GeoserverRoleService service,long lastModified) {
+    public RoleFileWatcher(String fileName,GeoServerRoleService service,long lastModified) {
         super(fileName);
         this.service=service;
         this.lastModified=lastModified;
@@ -35,13 +35,13 @@ public class RoleFileWatcher extends FileWatcher implements RoleLoadedListener{
     }
 
     
-    protected GeoserverRoleService service;
+    protected GeoServerRoleService service;
     
-    public synchronized GeoserverRoleService getService() {
+    public synchronized GeoServerRoleService getService() {
         return service;
     }
 
-    public synchronized void setService(GeoserverRoleService service) {
+    public synchronized void setService(GeoServerRoleService service) {
         this.service = service;
     }
 
@@ -53,7 +53,7 @@ public class RoleFileWatcher extends FileWatcher implements RoleLoadedListener{
      */
     @Override
     protected void doOnChange() {        
-        GeoserverRoleService theService = getService();
+        GeoServerRoleService theService = getService();
         try {
             if (theService!=null)
                 theService.load();
@@ -75,7 +75,7 @@ public class RoleFileWatcher extends FileWatcher implements RoleLoadedListener{
     /**
      * Another method to avoid reloads if this object
      * is registered 
-     * @see GeoserverRoleService#registerRoleLoadedListener(RoleLoadedListener)
+     * @see GeoServerRoleService#registerRoleLoadedListener(RoleLoadedListener)
      * 
      */
     @Override

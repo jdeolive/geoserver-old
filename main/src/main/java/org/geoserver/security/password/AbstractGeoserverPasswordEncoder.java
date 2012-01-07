@@ -26,7 +26,7 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
  * @author christian
  *
  */
-public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPasswordEncoder {
+public abstract class AbstractGeoserverPasswordEncoder implements GeoServerPasswordEncoder {
 
     protected PasswordEncoder delegate = null;
     protected Object lock = new Object();
@@ -114,7 +114,7 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPassw
     
     @Override
     public String encodePassword(String rawPass, Object salt) throws DataAccessException {
-        StringBuffer buff = new StringBuffer(getPrefix()).append(GeoserverPasswordEncoder.PREFIX_DELIMTER); 
+        StringBuffer buff = new StringBuffer(getPrefix()).append(GeoServerPasswordEncoder.PREFIX_DELIMTER); 
         buff.append(getDelegate().encodePassword(rawPass, salt));
         return buff.toString();
     }
@@ -131,7 +131,7 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPassw
     public abstract PasswordEncodingType getEncodingType();
 
     protected String removePrefix(String encPass) {
-        return encPass.replaceFirst(getPrefix()+GeoserverPasswordEncoder.PREFIX_DELIMTER, "");
+        return encPass.replaceFirst(getPrefix()+GeoServerPasswordEncoder.PREFIX_DELIMTER, "");
     }
     
     /**
@@ -140,7 +140,7 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoserverPassw
      */
     public boolean isResponsibleForEncoding(String encPass) {
         if (encPass==null) return false;        
-        return encPass.startsWith(getPrefix()+GeoserverPasswordEncoder.PREFIX_DELIMTER);
+        return encPass.startsWith(getPrefix()+GeoServerPasswordEncoder.PREFIX_DELIMTER);
     }
     
     

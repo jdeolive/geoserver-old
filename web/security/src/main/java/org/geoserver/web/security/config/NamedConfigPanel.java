@@ -30,8 +30,8 @@ import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityFilter;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
@@ -260,10 +260,10 @@ public class NamedConfigPanel extends Panel {
         if (GeoServerAuthenticationProvider.class.isAssignableFrom(extensionPoint)) {
             manager.saveAuthenticationProvider((SecurityAuthProviderConfig) helper.getConfig(),helper.isNew());
         }
-        if (GeoserverUserGroupService.class.isAssignableFrom(extensionPoint)) {
+        if (GeoServerUserGroupService.class.isAssignableFrom(extensionPoint)) {
             manager.saveUserGroupService((SecurityUserGroupServiceConfig)helper.getConfig(),helper.isNew());
         }
-        if (GeoserverRoleService.class.isAssignableFrom(extensionPoint)) {
+        if (GeoServerRoleService.class.isAssignableFrom(extensionPoint)) {
             manager.saveRoleService((SecurityRoleServiceConfig) helper.getConfig(),helper.isNew());
         }
         if (PasswordValidator.class.isAssignableFrom(extensionPoint)) {

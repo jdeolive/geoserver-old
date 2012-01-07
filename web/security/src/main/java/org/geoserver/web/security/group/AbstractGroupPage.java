@@ -13,7 +13,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.PropertyModel;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.validation.AbstractSecurityException;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -98,7 +98,7 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
     }
     
     /**
-     * Mediates between the UI and the {@link GeoserverUserGroup}  class
+     * Mediates between the UI and the {@link GeoServerUserGroup}  class
      */
     static class GroupUIModel implements Serializable {
         private String groupname;
@@ -111,8 +111,8 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
             this.enabled=enabled;
         }        
 
-        public GeoserverUserGroup toGeoserverUserGroup(String userGroupServiceName) {
-            GeoserverUserGroup group;
+        public GeoServerUserGroup toGeoserverUserGroup(String userGroupServiceName) {
+            GeoServerUserGroup group;
             try {
                 group = GeoServerApplication.get().getSecurityManager()
                     .loadUserGroupService(userGroupServiceName).

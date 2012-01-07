@@ -16,7 +16,7 @@ import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
-import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.web.GeoServerApplication;
@@ -67,7 +67,7 @@ public class RoleTabbedPage extends AbstractSecurityPage {
                         helper = new SecurityNamedConfigModelHelper(config,false);
                     
                     return  new NamedConfigPanel(panelId,helper,
-                            GeoserverRoleService.class,responsePage);
+                            GeoServerRoleService.class,responsePage);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

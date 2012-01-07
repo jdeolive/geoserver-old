@@ -6,7 +6,7 @@ import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
 import org.apache.wicket.util.tester.FormTester;
 import org.geoserver.data.test.MockData;
 import org.geoserver.security.AccessMode;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
@@ -57,7 +57,7 @@ public class EditDataAccessRulePageTest extends AbstractSecurityWicketTestSuppor
         DataAccessRule rule = getRule(ruleName);
         assertNotNull(rule);
         assertEquals(1,rule.getRoles().size());
-        assertEquals(GeoserverRole.HASANY_ROLE,rule.getRoles().iterator().next());        
+        assertEquals(GeoServerRole.HASANY_ROLE,rule.getRoles().iterator().next());        
     }
     
     

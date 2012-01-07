@@ -11,19 +11,19 @@ import java.io.IOException;
 import org.geoserver.data.test.LiveData;
 import org.geoserver.data.test.TestData;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.impl.AbstractUserDetailsServiceTest;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
-import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 
 public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 
     @Override
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws Exception {
+    public GeoServerUserGroupService createUserGroupService(String serviceName) throws Exception {
 //        KeyStoreProvider.get().setUserGroupKey(serviceName,
 //                RandomPasswordProvider.get().getRandomPassword(32));
 
@@ -35,16 +35,16 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         ugConfig.setFileName(XMLConstants.FILE_UR);        
         ugConfig.setValidating(true);
 //        ugConfig.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
-        ugConfig.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+        ugConfig.setPasswordEncoderName(GeoServerDigestPasswordEncoder.BeanName);
         ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         getSecurityManager().saveUserGroupService(ugConfig,true);
 
-        GeoserverUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
+        GeoServerUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
         service.initializeFromConfig(ugConfig);
         return service;                
     }
 
-    public GeoserverRoleService createRoleService(String serviceName) throws Exception {
+    public GeoServerRoleService createRoleService(String serviceName) throws Exception {
         
         XMLRoleServiceConfig gaConfig = new XMLRoleServiceConfig();                 
         gaConfig.setName(serviceName);
@@ -52,10 +52,10 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         gaConfig.setCheckInterval(1000); 
         gaConfig.setFileName(XMLConstants.FILE_RR);
         gaConfig.setValidating(true);
-        gaConfig.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
+        gaConfig.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
         getSecurityManager().saveRoleService(gaConfig,isNewRoleService(serviceName));
 
-        GeoserverRoleService service = 
+        GeoServerRoleService service = 
             getSecurityManager().loadRoleService(serviceName);
         service.initializeFromConfig(gaConfig);
         return service;
@@ -70,38 +70,38 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 //                XMLRoleService.DEFAULT_NAME);
 //        getSecurityManager().setActiveRoleService(roleService);
 //        getSecurityManager().setActiveUserGroupService(userService);
-        GeoserverUserGroupService userService = getSecurityManager().loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
-        GeoserverRoleService roleService =getSecurityManager().loadRoleService(XMLRoleService.DEFAULT_NAME);
+        GeoServerUserGroupService userService = getSecurityManager().loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
+        GeoServerRoleService roleService =getSecurityManager().loadRoleService(XMLRoleService.DEFAULT_NAME);
         
         assertEquals(3,userService.getUsers().size());
         assertEquals(0,userService.getUserGroups().size());
         
         assertEquals(8,roleService.getRoles().size());
         
-        GeoserverUser admin = (GeoserverUser) userService.loadUserByUsername("admin");
+        GeoServerUser admin = (GeoServerUser) userService.loadUserByUsername("admin");
         assertNotNull(admin);
-        GeoserverPasswordEncoder enc= getEncoder(userService);
+        GeoServerPasswordEncoder enc= getEncoder(userService);
         assertTrue(enc.isPasswordValid(admin.getPassword(), "gs", null));
         
         assertTrue(admin.isEnabled());
         
-        GeoserverUser wfs = (GeoserverUser) userService.loadUserByUsername("wfs");
+        GeoServerUser wfs = (GeoServerUser) userService.loadUserByUsername("wfs");
         assertNotNull(wfs);
         assertTrue(enc.isPasswordValid(wfs.getPassword(), "webFeatureService", null));
         assertTrue(wfs.isEnabled());
 
-        GeoserverUser disabledUser = (GeoserverUser) userService.loadUserByUsername("disabledUser");
+        GeoServerUser disabledUser = (GeoServerUser) userService.loadUserByUsername("disabledUser");
         assertNotNull(disabledUser);
         assertTrue(enc.isPasswordValid(disabledUser.getPassword(), "nah", null));
         assertFalse(disabledUser.isEnabled());
         
-        GeoserverRole role_admin = roleService.getRoleByName("ROLE_ADMINISTRATOR");
+        GeoServerRole role_admin = roleService.getRoleByName("ROLE_ADMINISTRATOR");
         assertNotNull(role_admin);
-        GeoserverRole role_wfs_read = roleService.getRoleByName("ROLE_WFS_READ");
+        GeoServerRole role_wfs_read = roleService.getRoleByName("ROLE_WFS_READ");
         assertNotNull(role_wfs_read);
-        GeoserverRole role_wfs_write = roleService.getRoleByName("ROLE_WFS_WRITE");
+        GeoServerRole role_wfs_write = roleService.getRoleByName("ROLE_WFS_WRITE");
         assertNotNull(role_wfs_write);
-        GeoserverRole role_test = roleService.getRoleByName("ROLE_TEST");
+        GeoServerRole role_test = roleService.getRoleByName("ROLE_TEST");
         assertNotNull(role_test);
         assertNotNull(roleService.getRoleByName("NO_ONE"));
         assertNotNull(roleService.getRoleByName("TRUSTED_ROLE"));

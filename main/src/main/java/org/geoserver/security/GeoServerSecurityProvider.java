@@ -15,8 +15,8 @@ import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
-import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.validation.SecurityConfigValidator;
 
@@ -50,12 +50,12 @@ public abstract class GeoServerSecurityProvider {
                 if (prov.getAuthenticationProviderClass().getName().equals(className))
                     return prov;
             }
-            if (GeoserverUserGroupService.class==serviceClass &&
+            if (GeoServerUserGroupService.class==serviceClass &&
                     prov.getUserGroupServiceClass()!=null) {
                 if (prov.getUserGroupServiceClass().getName().equals(className))
                     return prov;
             }
-            if (GeoserverRoleService.class==serviceClass &&
+            if (GeoServerRoleService.class==serviceClass &&
                     prov.getRoleServiceClass()!=null) {
                 if (prov.getRoleServiceClass().getName().equals(className))
                     return prov;
@@ -102,21 +102,21 @@ public abstract class GeoServerSecurityProvider {
                     manager.getConfigPasswordEncrypterName().isEmpty())
                     return source; //end
             
-            GeoserverConfigPBEPasswordEncoder enc = (GeoserverConfigPBEPasswordEncoder)
+            GeoServerConfigPBEPasswordEncoder enc = (GeoServerConfigPBEPasswordEncoder)
                     GeoServerExtensions.bean(manager.getConfigPasswordEncrypterName());
             
-            if (source.startsWith(enc.getPrefix()+GeoserverPasswordEncoder.PREFIX_DELIMTER))
+            if (source.startsWith(enc.getPrefix()+GeoServerPasswordEncoder.PREFIX_DELIMTER))
                 throw new RuntimeException("Cannot encode a password with prefix: "+
-                        enc.getPrefix()+GeoserverPasswordEncoder.PREFIX_DELIMTER);
+                        enc.getPrefix()+GeoServerPasswordEncoder.PREFIX_DELIMTER);
             
             return enc.encodePassword(source, null);    
         };
 
         @Override
         public Object fromString(String str) {
-            List<GeoserverConfigPBEPasswordEncoder> encoders = 
-                    GeoServerExtensions.extensions(GeoserverConfigPBEPasswordEncoder.class);
-            for (GeoserverConfigPBEPasswordEncoder enc : encoders) {                    
+            List<GeoServerConfigPBEPasswordEncoder> encoders = 
+                    GeoServerExtensions.extensions(GeoServerConfigPBEPasswordEncoder.class);
+            for (GeoServerConfigPBEPasswordEncoder enc : encoders) {                    
                 if (enc.isResponsibleForEncoding(str))
                     return enc.decode(str);
             }    
@@ -201,7 +201,7 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p> 
      */
-    public Class<? extends GeoserverUserGroupService> getUserGroupServiceClass() {
+    public Class<? extends GeoServerUserGroupService> getUserGroupServiceClass() {
         return null;
     }
     
@@ -212,7 +212,7 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p>
      */
-    public GeoserverUserGroupService createUserGroupService(SecurityNamedServiceConfig config)
+    public GeoServerUserGroupService createUserGroupService(SecurityNamedServiceConfig config)
         throws IOException {
         return null;
     }
@@ -225,7 +225,7 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p> 
      */
-    public Class<? extends GeoserverRoleService> getRoleServiceClass() {
+    public Class<? extends GeoServerRoleService> getRoleServiceClass() {
         return null;
     }
     
@@ -236,7 +236,7 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>. 
      * </p>
      */
-    public GeoserverRoleService createRoleService(SecurityNamedServiceConfig config) 
+    public GeoServerRoleService createRoleService(SecurityNamedServiceConfig config) 
         throws IOException {
         return null;
     }
@@ -277,7 +277,7 @@ public abstract class GeoServerSecurityProvider {
     }
     
     /**
-     * Return true if the {@link GeoserverRoleService} implementation
+     * Return true if the {@link GeoServerRoleService} implementation
      * is not thread safe.
      * 
      * @return 
@@ -287,7 +287,7 @@ public abstract class GeoServerSecurityProvider {
     }
     
     /**
-     * Return true if the {@link GeoserverUserGroupService} implementation
+     * Return true if the {@link GeoServerUserGroupService} implementation
      * is not thread safe.
      * 
      * @return 

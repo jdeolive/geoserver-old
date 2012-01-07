@@ -50,10 +50,10 @@ public class MemoryRoleStore extends AbstractRoleStore {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            helper.roleMap = (TreeMap<String,GeoserverRole>) oin.readObject();
-            helper.role_parentMap =(HashMap<GeoserverRole,GeoserverRole>) oin.readObject();
-            helper.user_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
-            helper.group_roleMap = (TreeMap<String,SortedSet<GeoserverRole>>)oin.readObject();
+            helper.roleMap = (TreeMap<String,GeoServerRole>) oin.readObject();
+            helper.role_parentMap =(HashMap<GeoServerRole,GeoServerRole>) oin.readObject();
+            helper.user_roleMap = (TreeMap<String,SortedSet<GeoServerRole>>)oin.readObject();
+            helper.group_roleMap = (TreeMap<String,SortedSet<GeoServerRole>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
@@ -61,7 +61,7 @@ public class MemoryRoleStore extends AbstractRoleStore {
     }
     
     @Override
-    public GeoserverRole createRoleObject(String role)
+    public GeoServerRole createRoleObject(String role)
             throws IOException {
         return new MemoryGeoserverRole(role);
     }

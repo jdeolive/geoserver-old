@@ -10,8 +10,8 @@ import java.util.List;
 
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.form.Form;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.web.security.AbstractRuleRolesFormComponent;
 
@@ -29,10 +29,10 @@ public class ServiceRolesFormComponent extends AbstractRuleRolesFormComponent<Se
 
 
     @Override
-    protected List<GeoserverRole> getStoredGrantedAuthorities(ServiceAccessRule rootObject) {
+    protected List<GeoServerRole> getStoredGrantedAuthorities(ServiceAccessRule rootObject) {
         
-        GeoserverRoleService gaService = getSecurityManager().getActiveRoleService();
-        List<GeoserverRole> result = new ArrayList<GeoserverRole>();        
+        GeoServerRoleService gaService = getSecurityManager().getActiveRoleService();
+        List<GeoServerRole> result = new ArrayList<GeoServerRole>();        
         if (hasStoredAnyRole(rootObject))
             return result; // empty list
         
@@ -47,6 +47,6 @@ public class ServiceRolesFormComponent extends AbstractRuleRolesFormComponent<Se
 
     @Override
     public boolean hasStoredAnyRole(ServiceAccessRule rootObject) {
-        return rootObject.getRoles().contains(GeoserverRole.HASANY_ROLE.getAuthority());        
+        return rootObject.getRoles().contains(GeoServerRole.HASANY_ROLE.getAuthority());        
     }    
 }

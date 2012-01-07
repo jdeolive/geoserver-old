@@ -12,10 +12,10 @@ import java.util.Set;
 
 import junit.framework.Assert;
 
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,10 +23,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 public abstract class AbstractUserDetailsServiceTest extends AbstractSecurityServiceTest {
 
     
-    protected GeoserverRoleService roleService;
-    protected GeoserverUserGroupService usergroupService;
-    protected GeoserverRoleStore roleStore;
-    protected GeoserverUserGroupStore usergroupStore;
+    protected GeoServerRoleService roleService;
+    protected GeoServerUserGroupService usergroupService;
+    protected GeoServerRoleStore roleStore;
+    protected GeoServerUserGroupStore usergroupStore;
     
 
     
@@ -63,10 +63,10 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             insertValues(usergroupStore);
             
             String username = "theUser";
-            GeoserverUser theUser = null;
+            GeoServerUser theUser = null;
             boolean fail=true;
             try {
-                theUser = (GeoserverUser) usergroupService.loadUserByUsername(username);
+                theUser = (GeoServerUser) usergroupService.loadUserByUsername(username);
             } catch (UsernameNotFoundException ex) {
                 fail = false;
             }
@@ -77,8 +77,8 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             theUser=usergroupStore.createUserObject(username, "", true);
             usergroupStore.addUser(theUser);
                                                
-            GeoserverRole role = null;
-            Set<GeoserverRole> roles = new HashSet<GeoserverRole>();
+            GeoServerRole role = null;
+            Set<GeoServerRole> roles = new HashSet<GeoServerRole>();
             
            // no roles
             checkRoles(username, roles);
@@ -98,7 +98,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             checkRoles(username, roles);
 
             // first role inherited by first group
-            GeoserverUserGroup theGroup1=usergroupStore.createGroupObject("theGroup1",true);
+            GeoServerUserGroup theGroup1=usergroupStore.createGroupObject("theGroup1",true);
             usergroupStore.addGroup(theGroup1);
             usergroupStore.associateUserToGroup(theUser, theGroup1);
             role=roleStore.createRoleObject("grouprole1a");
@@ -115,7 +115,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             checkRoles(username, roles);
 
             // first role inherited by second group, but the group is disabled
-            GeoserverUserGroup theGroup2=usergroupStore.createGroupObject("theGroup2",false);
+            GeoServerUserGroup theGroup2=usergroupStore.createGroupObject("theGroup2",false);
             usergroupStore.addGroup(theGroup2);
             usergroupStore.associateUserToGroup(theUser, theGroup2);
             role=roleStore.createRoleObject("grouprole2a");
@@ -130,7 +130,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             checkRoles(username, roles);
 
             // check inheritance, first level
-            GeoserverRole tmp = role;
+            GeoServerRole tmp = role;
             role=roleStore.createRoleObject("grouprole2aa");
             roleStore.addRole(role);
             roleStore.setParentRole(tmp, role);
@@ -188,7 +188,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             insertValues(usergroupStore);
             
             String username = "persUser";
-            GeoserverUser theUser = null;
+            GeoServerUser theUser = null;
             
             theUser=usergroupStore.createUserObject(username, "", true);
             theUser.getProperties().put("propertyA", "A");
@@ -196,7 +196,7 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             theUser.getProperties().put("propertyC", "C");
             usergroupStore.addUser(theUser);
                                                
-            GeoserverRole role = null;
+            GeoServerRole role = null;
                         
             role=roleStore.createRoleObject("persrole1");
             role.getProperties().put("propertyA", "");
@@ -217,12 +217,12 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
             Collection<GrantedAuthority> authColl = details.getAuthorities();
             
             for (GrantedAuthority auth : authColl) {
-                role = (GeoserverRole) auth;
+                role = (GeoServerRole) auth;
                 if ("persrole1".equals(role.getAuthority())) {
                     assertEquals("A", role.getProperties().get("propertyA"));
                     assertEquals("X", role.getProperties().get("propertyX"));
                     
-                    GeoserverRole anonymousRole = 
+                    GeoServerRole anonymousRole = 
                         roleStore.getRoleByName(role.getAuthority());
                     
                     assertFalse(role.isAnonymous());
@@ -245,12 +245,12 @@ public abstract class AbstractUserDetailsServiceTest extends AbstractSecuritySer
        }                
     }
     
-    protected void checkRoles(String username, Set<GeoserverRole> roles) throws IOException{
+    protected void checkRoles(String username, Set<GeoServerRole> roles) throws IOException{
         syncbackends();
         UserDetails details = usergroupService.loadUserByUsername(username);
         Collection<GrantedAuthority> authColl = details.getAuthorities();
         assertEquals(roles.size(), authColl.size());
-        for (GeoserverRole role : roles) {
+        for (GeoServerRole role : roles) {
             assertTrue(authColl.contains(role));
         }
     }

@@ -14,13 +14,13 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.Util;
 import org.geoserver.security.jdbc.config.JDBCRoleServiceConfig;
 import org.geoserver.security.jdbc.config.JDBCUserGroupServiceConfig;
-import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
+import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 
 
@@ -66,7 +66,7 @@ public class JDBCTestSupport {
         return property != null && "false".equals(property.toLowerCase());                 
     }
     
-    protected static GeoserverUserGroupService createH2UserGroupService(String serviceName, 
+    protected static GeoServerUserGroupService createH2UserGroupService(String serviceName, 
         GeoServerSecurityManager securityManager) throws Exception {
         
         JDBCUserGroupServiceConfig config = new JDBCUserGroupServiceConfig();           
@@ -78,7 +78,7 @@ public class JDBCTestSupport {
         config.setClassName(JDBCUserGroupService.class.getName());
         config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
-        config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+        config.setPasswordEncoderName(GeoServerDigestPasswordEncoder.BeanName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
 
         securityManager.saveUserGroupService(config,
@@ -87,7 +87,7 @@ public class JDBCTestSupport {
         return securityManager.loadUserGroupService(serviceName);
     }
 
-    protected static GeoserverRoleService createH2RoleService(
+    protected static GeoServerRoleService createH2RoleService(
         String serviceName, GeoServerSecurityManager securityManager) throws Exception {
         
         JDBCRoleServiceConfig config = new JDBCRoleServiceConfig();
@@ -100,13 +100,13 @@ public class JDBCTestSupport {
         config.setClassName(JDBCRoleService.class.getName());
         config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
-        config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
+        config.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
         securityManager.saveRoleService(config,
                 !(securityManager.listRoleServices().contains(serviceName)));
         return securityManager.loadRoleService(serviceName);
     }
 
-    static  protected GeoserverRoleService createRoleService(
+    static  protected GeoServerRoleService createRoleService(
         String fixtureId, LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) 
             throws Exception {
     
@@ -121,7 +121,7 @@ public class JDBCTestSupport {
         config.setUserName(props.getProperty("user") == null ? props.getProperty("username") : props.getProperty("user"));
         config.setPassword(props.getProperty("password"));            
         config.setClassName(JDBCRoleService.class.getName());
-        config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());        
+        config.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());        
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("rolesddl.mysql.xml");            
         } else {
@@ -134,7 +134,7 @@ public class JDBCTestSupport {
         return securityManager.loadRoleService(fixtureId);
     }
     
-    static protected GeoserverUserGroupService createUserGroupService(String fixtureId,
+    static protected GeoServerUserGroupService createUserGroupService(String fixtureId,
         LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) throws Exception {
         
         JDBCUserGroupServiceConfig config = new
@@ -148,7 +148,7 @@ public class JDBCTestSupport {
         config.setUserName(props.getProperty("user")== null ? props.getProperty("username"): props.getProperty("user"));
         config.setPassword(props.getProperty("password"));                       
         config.setClassName(JDBCUserGroupService.class.getName());
-        config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+        config.setPasswordEncoderName(GeoServerDigestPasswordEncoder.BeanName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("usersddl.mysql.xml");            

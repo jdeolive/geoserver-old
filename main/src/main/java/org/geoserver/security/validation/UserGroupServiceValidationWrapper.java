@@ -9,19 +9,19 @@ import java.io.IOException;
 import java.util.SortedSet;
 
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.UserGroupLoadedListener;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
  * 
- * This class is a validation wrapper for {@link GeoserverUserGroupService}
+ * This class is a validation wrapper for {@link GeoServerUserGroupService}
  * 
  * Usage:
  * <code>
@@ -30,7 +30,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * 
  * </code>
  * 
- * Since the {@link GeoserverUserGroupService} interface does not allow to 
+ * Since the {@link GeoServerUserGroupService} interface does not allow to 
  * throw {@link UserGroupServiceException} objects directly, these objects
  * a wrapped into an IOException. Use {@link IOException#getCause()} to
  * get the proper exception.
@@ -41,20 +41,20 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  */
 
 
-public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator implements GeoserverUserGroupService{
+public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator implements GeoServerUserGroupService{
 
-    protected GeoserverUserGroupService service;
+    protected GeoServerUserGroupService service;
 
     /**
      * Creates a wrapper object. 
      * 
      * @param service
      */    
-    public UserGroupServiceValidationWrapper(GeoserverUserGroupService service) {
+    public UserGroupServiceValidationWrapper(GeoServerUserGroupService service) {
         this.service=service;
     }
 
-    public GeoserverUserGroupService getWrappedService() {
+    public GeoServerUserGroupService getWrappedService() {
         return service;
     }
     
@@ -129,7 +129,7 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
     }
 
 
-    public GeoserverUserGroupStore createStore() throws IOException {
+    public GeoServerUserGroupStore createStore() throws IOException {
         return service.createStore();
     }
 
@@ -159,17 +159,17 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
 
 
 
-    public GeoserverUserGroup getGroupByGroupname(String groupname) throws IOException {
+    public GeoServerUserGroup getGroupByGroupname(String groupname) throws IOException {
         return service.getGroupByGroupname(groupname);
     }
 
 
-    public GeoserverUser getUserByUsername(String username) throws IOException {
+    public GeoServerUser getUserByUsername(String username) throws IOException {
         return service.getUserByUsername(username);
     }
 
 
-    public GeoserverUser createUserObject(String username, String password, boolean isEnabled)
+    public GeoServerUser createUserObject(String username, String password, boolean isEnabled)
             throws IOException {
         return service.createUserObject(username, password, isEnabled);
     }
@@ -177,33 +177,33 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
 
 
 
-    public GeoserverUserGroup createGroupObject(String groupname, boolean isEnabled)
+    public GeoServerUserGroup createGroupObject(String groupname, boolean isEnabled)
             throws IOException {
         return service.createGroupObject(groupname, isEnabled);
     }
 
 
 
-    public SortedSet<GeoserverUser> getUsers() throws IOException {
+    public SortedSet<GeoServerUser> getUsers() throws IOException {
         return service.getUsers();
     }
 
 
 
-    public SortedSet<GeoserverUserGroup> getUserGroups() throws IOException {
+    public SortedSet<GeoServerUserGroup> getUserGroups() throws IOException {
         return service.getUserGroups();
     }
 
 
 
-    public SortedSet<GeoserverUser> getUsersForGroup(GeoserverUserGroup group) throws IOException {
+    public SortedSet<GeoServerUser> getUsersForGroup(GeoServerUserGroup group) throws IOException {
         checkExistingGroupName(group.getGroupname());
         return service.getUsersForGroup(group);
     }
 
 
 
-    public SortedSet<GeoserverUserGroup> getGroupsForUser(GeoserverUser user) throws IOException {
+    public SortedSet<GeoServerUserGroup> getGroupsForUser(GeoServerUser user) throws IOException {
         checkExistingUserName(user.getUsername());
         return service.getGroupsForUser(user);
     }

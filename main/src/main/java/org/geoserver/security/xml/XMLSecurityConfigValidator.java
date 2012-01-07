@@ -8,7 +8,7 @@ package org.geoserver.security.xml;
 import java.io.File;
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.validation.SecurityConfigException;
@@ -110,7 +110,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
                         new File(manager.getUserGroupRoot(),config.getName()).getCanonicalPath()+File.separator)==false)
                 return;
             // file in security sub dir, check if roles exists
-            GeoserverUserGroupService service = manager.loadUserGroupService(config.getName()); 
+            GeoServerUserGroupService service = manager.loadUserGroupService(config.getName()); 
             if (service.getUserGroups().size()>0 || service.getUsers().size()>0) {
                 throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_103, config.getName());
             }

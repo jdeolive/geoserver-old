@@ -12,16 +12,16 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.apache.commons.io.FileUtils;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.geoserver.security.impl.AbstractUserGroupServiceTest;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.impl.Util;
-import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
-import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 
 public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
@@ -29,7 +29,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
 
     @Override
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws Exception {
+    public GeoServerUserGroupService createUserGroupService(String serviceName) throws Exception {
         return createUserGroupService(serviceName,XMLConstants.FILE_UR); 
     }
     
@@ -37,7 +37,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     protected void tearDownInternal() throws Exception {
         super.tearDownInternal();
         if (getSecurityManager().listUserGroupServices().contains("test")) {
-            GeoserverUserGroupStore store = getSecurityManager().loadUserGroupService("test").createStore();
+            GeoServerUserGroupStore store = getSecurityManager().loadUserGroupService("test").createStore();
             store.clear();
             store.store();
             getSecurityManager().removeUserGroupService(
@@ -46,18 +46,18 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     }
 
     
-    protected GeoserverUserGroupService createUserGroupService(String serviceName,String xmlFileName) throws Exception {
+    protected GeoServerUserGroupService createUserGroupService(String serviceName,String xmlFileName) throws Exception {
         XMLUserGroupServiceConfig ugConfig = new XMLUserGroupServiceConfig();                 
         ugConfig.setName(serviceName);
         ugConfig.setClassName(XMLUserGroupService.class.getName());
         ugConfig.setCheckInterval(1000); 
         ugConfig.setFileName(xmlFileName);        
         ugConfig.setValidating(true);
-        ugConfig.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+        ugConfig.setPasswordEncoderName(GeoServerDigestPasswordEncoder.BeanName);
         ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         getSecurityManager().saveUserGroupService(ugConfig,isNewUGService(serviceName));
         
-        GeoserverUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
+        GeoServerUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
         service.initializeFromConfig(ugConfig); // create files
         return service;                
     }
@@ -66,10 +66,10 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     public void testCopyFrom() {
         try {
     
-            GeoserverUserGroupService service1 = createUserGroupService("copyFrom");
-            GeoserverUserGroupService service2 = createUserGroupService("copyTo");
-            GeoserverUserGroupStore store1 = createStore(service1);
-            GeoserverUserGroupStore store2 = createStore(service2);                        
+            GeoServerUserGroupService service1 = createUserGroupService("copyFrom");
+            GeoServerUserGroupService service2 = createUserGroupService("copyTo");
+            GeoServerUserGroupStore store1 = createStore(service1);
+            GeoServerUserGroupStore store2 = createStore(service2);                        
 
             
             store1.clear();
@@ -93,18 +93,18 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
 //            GeoserverUserGroupService service = createUserGroupService(
 //                    XMLUserGroupService.DEFAULT_NAME);
             
-            GeoserverUserGroupService service = 
+            GeoServerUserGroupService service = 
                     getSecurityManager().loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
                         
             assertEquals(1, service.getUsers().size());
             assertEquals(0, service.getUserGroups().size());
                         
-            GeoserverUser admin= service.getUserByUsername(GeoserverUser.AdminName);
+            GeoServerUser admin= service.getUserByUsername(GeoServerUser.AdminName);
             assertNotNull(admin);
-            assertEquals(GeoserverUser.AdminEnabled,admin.isEnabled());
+            assertEquals(GeoServerUser.AdminEnabled,admin.isEnabled());
             
-            GeoserverPasswordEncoder enc= getEncoder(service);
-            assertTrue(enc.isPasswordValid(admin.getPassword(), GeoserverUser.AdminPasword,null));
+            GeoServerPasswordEncoder enc= getEncoder(service);
+            assertTrue(enc.isPasswordValid(admin.getPassword(), GeoServerUser.AdminPasword,null));
             assertEquals(admin.getProperties().size(),0);
             
             assertEquals(0, service.getGroupsForUser(admin).size());
@@ -117,16 +117,16 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     public void testLocking() throws Exception {
         File xmlFile = File.createTempFile("users", ".xml");
         FileUtils.copyURLToFile(getClass().getResource("usersTemplate.xml"),xmlFile);
-        GeoserverUserGroupService service1 =  
+        GeoServerUserGroupService service1 =  
             createUserGroupService("locking1",xmlFile.getCanonicalPath());
-        GeoserverUserGroupService service2 =  
+        GeoServerUserGroupService service2 =  
             createUserGroupService("locking2",xmlFile.getCanonicalPath());
-        GeoserverUserGroupStore store1= createStore(service1);
-        GeoserverUserGroupStore store2= createStore(service2);
+        GeoServerUserGroupStore store1= createStore(service1);
+        GeoServerUserGroupStore store2= createStore(service2);
         
         
-        GeoserverUser user = store1.createUserObject("user", "ps", true);
-        GeoserverUserGroup group = store2.createGroupObject("group", true);
+        GeoServerUser user = store1.createUserObject("user", "ps", true);
+        GeoServerUserGroup group = store2.createGroupObject("group", true);
         
        // obtain a lock
         store1.addUser(user);
@@ -231,15 +231,15 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
     public void testDynamicReload() throws Exception {
         File xmlFile = File.createTempFile("users", ".xml");
         FileUtils.copyURLToFile(getClass().getResource("usersTemplate.xml"),xmlFile);
-        GeoserverUserGroupService service1 =  
+        GeoServerUserGroupService service1 =  
             createUserGroupService("reload1",xmlFile.getCanonicalPath());
-        GeoserverUserGroupService service2 =  
+        GeoServerUserGroupService service2 =  
             createUserGroupService("reload2",xmlFile.getCanonicalPath());
         
-        GeoserverUserGroupStore store1= createStore(service1);
+        GeoServerUserGroupStore store1= createStore(service1);
         
         
-        GeoserverUserGroup group = store1.createGroupObject("group",true);
+        GeoServerUserGroup group = store1.createGroupObject("group",true);
         
         checkEmpty(service1);
         checkEmpty(service2);

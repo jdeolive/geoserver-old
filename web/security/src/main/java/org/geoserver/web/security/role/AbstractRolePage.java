@@ -21,7 +21,7 @@ import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.model.StringResourceModel;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.RoleHierarchyHelper;
 import org.geoserver.security.validation.AbstractSecurityException;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -158,7 +158,7 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
     protected abstract void onFormSubmit() throws IOException;
     
     /**
-     * Mediates between the UI and the {@link GeoserverRole}  class
+     * Mediates between the UI and the {@link GeoServerRole}  class
      */
     static class RoleUIModel implements Serializable {
         private String rolename;

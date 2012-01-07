@@ -12,7 +12,7 @@ import java.util.Set;
 
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.PasswordPolicyConfig;
-import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 
 
@@ -32,9 +32,9 @@ public class PasswordValidatorImpl extends AbstractSecurityValidator implements 
      */
     public PasswordValidatorImpl() {
         notAllowedPrefixes = new HashSet<String>();
-        for (GeoserverPasswordEncoder enc : GeoServerExtensions.extensions(
-                GeoserverPasswordEncoder.class)) {
-            notAllowedPrefixes.add(enc.getPrefix()+GeoserverPasswordEncoder.PREFIX_DELIMTER);
+        for (GeoServerPasswordEncoder enc : GeoServerExtensions.extensions(
+                GeoServerPasswordEncoder.class)) {
+            notAllowedPrefixes.add(enc.getPrefix()+GeoServerPasswordEncoder.PREFIX_DELIMTER);
         }
     }
     

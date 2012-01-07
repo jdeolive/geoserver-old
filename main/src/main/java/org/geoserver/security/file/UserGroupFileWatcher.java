@@ -7,7 +7,7 @@ package org.geoserver.security.file;
 
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 
@@ -21,13 +21,13 @@ import org.geoserver.security.event.UserGroupLoadedListener;
 public class UserGroupFileWatcher extends FileWatcher implements UserGroupLoadedListener {
 
     
-    public UserGroupFileWatcher(String fileName,GeoserverUserGroupService service) {
+    public UserGroupFileWatcher(String fileName,GeoServerUserGroupService service) {
         super(fileName);
         this.service=service;
         checkAndConfigure();
     }
     
-    public UserGroupFileWatcher(String fileName,GeoserverUserGroupService service, long lastModified) {
+    public UserGroupFileWatcher(String fileName,GeoServerUserGroupService service, long lastModified) {
         super(fileName);
         this.service=service;
         this.lastModified=lastModified;
@@ -36,13 +36,13 @@ public class UserGroupFileWatcher extends FileWatcher implements UserGroupLoaded
 
 
     
-    protected GeoserverUserGroupService service;
+    protected GeoServerUserGroupService service;
     
-    public synchronized GeoserverUserGroupService getService() {
+    public synchronized GeoServerUserGroupService getService() {
         return service;
     }
 
-    public synchronized void setService(GeoserverUserGroupService service) {
+    public synchronized void setService(GeoServerUserGroupService service) {
         this.service = service;
     }
 
@@ -51,7 +51,7 @@ public class UserGroupFileWatcher extends FileWatcher implements UserGroupLoaded
      */
     @Override
     protected void doOnChange() {
-        GeoserverUserGroupService theService = getService();
+        GeoServerUserGroupService theService = getService();
         try {
             if (theService!=null)
                 theService.load();
@@ -73,7 +73,7 @@ public class UserGroupFileWatcher extends FileWatcher implements UserGroupLoaded
     /**
      * Another method to avoid reloads if this object
      * is registered
-     * @see GeoserverUserGroupService#registerUserGroupLoadedListener(UserGroupLoadedListener)
+     * @see GeoServerUserGroupService#registerUserGroupLoadedListener(UserGroupLoadedListener)
      */ 
     @Override
     public void usersAndGroupsChanged(UserGroupLoadedEvent event) {

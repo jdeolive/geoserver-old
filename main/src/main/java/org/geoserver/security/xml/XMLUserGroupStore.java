@@ -34,11 +34,11 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractUserGroupStore;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -73,7 +73,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#initializeFromServer(org.geoserver.security.GeoserverUserGroupService)
      */
-    public void initializeFromService(GeoserverUserGroupService service) throws IOException {
+    public void initializeFromService(GeoServerUserGroupService service) throws IOException {
         this.userFile=((XMLUserGroupService) service).userFile;
         this.validatingXMLSchema=((XMLUserGroupService) service).isValidatingXMLSchema();
         super.initializeFromService(service);
@@ -105,7 +105,7 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
         
         Element users = doc.createElement(E_USERS_UR);
         userreg.appendChild(users);
-        for (GeoserverUser userObject : helper.userMap.values()) {
+        for (GeoServerUser userObject : helper.userMap.values()) {
             Element user = doc.createElement(E_USER_UR);
             users.appendChild(user);
             user.setAttribute( A_USER_NAME_UR, userObject.getUsername());
@@ -121,14 +121,14 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
         
         Element groups = doc.createElement(E_GROUPS_UR);
         userreg.appendChild(groups);
-        for (GeoserverUserGroup groupObject : helper.groupMap.values()) {
+        for (GeoServerUserGroup groupObject : helper.groupMap.values()) {
             Element group = doc.createElement(E_GROUP_UR);
             groups.appendChild(group);
             group.setAttribute( A_GROUP_NAME_UR, groupObject.getGroupname());
             group.setAttribute( A_GROUP_ENABLED_UR, groupObject.isEnabled() ? "true" : "false");
-            SortedSet<GeoserverUser> userObjects = helper.group_userMap.get(groupObject);
+            SortedSet<GeoServerUser> userObjects = helper.group_userMap.get(groupObject);
             if (userObjects !=null) {
-                for (GeoserverUser userObject : userObjects) {
+                for (GeoServerUser userObject : userObjects) {
                     Element member = doc.createElement(E_MEMBER_UR);
                     group.appendChild(member);
                     member.setAttribute( A_MEMBER_NAME_UR, userObject.getUsername());
@@ -211,50 +211,50 @@ public class XMLUserGroupStore extends AbstractUserGroupStore {
     }
 
     @Override
-    public void addUser(GeoserverUser user) throws IOException  {
+    public void addUser(GeoServerUser user) throws IOException  {
         ensureLock();
         super.addUser(user);
     }
 
     @Override
-    public void addGroup(GeoserverUserGroup group) throws IOException {
+    public void addGroup(GeoServerUserGroup group) throws IOException {
         ensureLock();
         super.addGroup(group);
     }
 
     @Override
-    public void updateUser(GeoserverUser user) throws IOException {
+    public void updateUser(GeoServerUser user) throws IOException {
         ensureLock();
         super.updateUser(user);
     }
 
     @Override
-    public void updateGroup(GeoserverUserGroup group) throws IOException {
+    public void updateGroup(GeoServerUserGroup group) throws IOException {
         ensureLock();
         super.updateGroup(group);
     }
 
     @Override
-    public boolean removeUser(GeoserverUser user) throws IOException {
+    public boolean removeUser(GeoServerUser user) throws IOException {
         ensureLock();
         return super.removeUser(user);
     }
 
     @Override
-    public boolean removeGroup(GeoserverUserGroup group) throws IOException {
+    public boolean removeGroup(GeoServerUserGroup group) throws IOException {
         ensureLock();
         return super.removeGroup(group);
     }
 
     @Override
-    public void associateUserToGroup(GeoserverUser user, GeoserverUserGroup group)
+    public void associateUserToGroup(GeoServerUser user, GeoServerUserGroup group)
             throws IOException {
         ensureLock();
         super.associateUserToGroup(user, group);
     }
 
     @Override
-    public void disAssociateUserFromGroup(GeoserverUser user, GeoserverUserGroup group)
+    public void disAssociateUserFromGroup(GeoServerUser user, GeoServerUserGroup group)
             throws IOException {
         ensureLock();
         super.disAssociateUserFromGroup(user, group);

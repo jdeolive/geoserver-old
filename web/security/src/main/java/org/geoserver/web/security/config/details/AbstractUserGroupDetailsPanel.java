@@ -15,8 +15,8 @@ import org.apache.wicket.model.ResourceModel;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
-import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
+import org.geoserver.security.password.GeoServerUserPasswordEncoder;
 import org.geoserver.security.password.PasswordEncodingType;
 import org.geoserver.security.validation.PasswordValidatorImpl;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
@@ -50,12 +50,12 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
                 (SecurityUserGroupServiceConfig) configHelper.getConfig();
         
         
-        List<GeoserverUserPasswordEncoder> encoders = 
-                GeoServerExtensions.extensions(GeoserverUserPasswordEncoder.class);
+        List<GeoServerUserPasswordEncoder> encoders = 
+                GeoServerExtensions.extensions(GeoServerUserPasswordEncoder.class);
         
         encoderList = new ArrayList<String>();
         disabledEncoders = new ArrayList<String>();
-        for (GeoserverUserPasswordEncoder encoder : encoders) {
+        for (GeoServerUserPasswordEncoder encoder : encoders) {
             encoderList.add(encoder.getBeanName());
             if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false
                    && encoder.isAvailableWithoutStrongCryptogaphy()==false) {
@@ -65,7 +65,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         
         // set defaults for a new service
         if (configHelper.isNew()) {                 
-            config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+            config.setPasswordEncoderName(GeoServerDigestPasswordEncoder.BeanName);
             config.setPasswordPolicyName(PasswordValidatorImpl.DEFAULT_NAME);
         }
         
@@ -94,7 +94,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
 
         // enable/disable changing the password encoder for an existing service
         if (configHelper.isNew()==false) {                
-            GeoserverUserPasswordEncoder encoder = (GeoserverUserPasswordEncoder) 
+            GeoServerUserPasswordEncoder encoder = (GeoServerUserPasswordEncoder) 
                 GeoServerExtensions.bean(config.getPasswordEncoderName());
             // check if we have a write able service with digest encoding and
             // if there are already digested passwords

@@ -5,22 +5,22 @@
 
 package org.geoserver.security.config;
 
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 
 /**
- * Interface for {@link GeoserverUserGroupService} configuration objects.
+ * Interface for {@link GeoServerUserGroupService} configuration objects.
  *
  * @author christian
  */
 public interface SecurityUserGroupServiceConfig extends SecurityNamedServiceConfig {
 
     /**
-     * The name of the {@link GeoserverPasswordEncoder} used by the service.
+     * The name of the {@link GeoServerPasswordEncoder} used by the service.
      */
     String getPasswordEncoderName();
 
     /**
-     * Sets the name of the {@link GeoserverPasswordEncoder} used by the service.
+     * Sets the name of the {@link GeoServerPasswordEncoder} used by the service.
      */
     void setPasswordEncoderName(String passwordEncoderName);
 

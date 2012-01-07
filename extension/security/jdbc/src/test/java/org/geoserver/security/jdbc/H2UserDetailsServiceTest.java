@@ -5,8 +5,8 @@
 
 package org.geoserver.security.jdbc;
 
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
 
 public class H2UserDetailsServiceTest extends JDBCUserDetailsServiceTest {
 
@@ -17,12 +17,12 @@ public class H2UserDetailsServiceTest extends JDBCUserDetailsServiceTest {
     }
         
     @Override
-    public GeoserverRoleService createRoleService(String serviceName) throws Exception {
+    public GeoServerRoleService createRoleService(String serviceName) throws Exception {
         return JDBCTestSupport.createH2RoleService(getFixtureId(), getSecurityManager());
     }
 
     @Override
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws Exception {
+    public GeoServerUserGroupService createUserGroupService(String serviceName) throws Exception {
         return JDBCTestSupport.createH2UserGroupService(getFixtureId(), getSecurityManager());
     }
 

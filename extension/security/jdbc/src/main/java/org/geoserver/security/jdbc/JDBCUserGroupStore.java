@@ -11,20 +11,20 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
-import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
+import org.geoserver.security.password.GeoServerUserPasswordEncoder;
 import org.geoserver.security.validation.PasswordValidationException;
 
 /**
- * JDBC Implementation of {@link GeoserverUserGroupStore}
+ * JDBC Implementation of {@link GeoServerUserGroupStore}
  * 
  * @author christian
  *
  */
-public class JDBCUserGroupStore extends JDBCUserGroupService implements GeoserverUserGroupStore {
+public class JDBCUserGroupStore extends JDBCUserGroupService implements GeoServerUserGroupStore {
 
     public JDBCUserGroupStore() throws IOException {
         super();        
@@ -71,9 +71,9 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
 
     
     /**
-     * @see org.geoserver.security.GeoserverUserGroupStore#initializeFromServer(org.geoserver.security.GeoserverUserGroupService)
+     * @see org.geoserver.security.GeoServerUserGroupStore#initializeFromServer(org.geoserver.security.GeoServerUserGroupService)
      */
-    public void initializeFromService(GeoserverUserGroupService service) throws IOException {
+    public void initializeFromService(GeoServerUserGroupService service) throws IOException {
         jdbcService= (JDBCUserGroupService) service;
         setSecurityManager(service.getSecurityManager());
         this.name=jdbcService.getName();
@@ -117,7 +117,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
      * @throws SQLException
      * @throws IOException
      */
-    protected void addUserProperties(GeoserverUser user, Connection con) throws SQLException,IOException {
+    protected void addUserProperties(GeoServerUser user, Connection con) throws SQLException,IOException {
         if (user.getProperties().size()==0) return; // nothing to do
         
         PreparedStatement ps = getDMLStatement("userprops.insert", con);
@@ -144,9 +144,9 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
      * @throws IOException
      * @throws PasswordValidationException
      */
-    protected void preparePassword(GeoserverUser user) throws IOException {
+    protected void preparePassword(GeoServerUser user) throws IOException {
         
-        GeoserverUserPasswordEncoder enc  = (GeoserverUserPasswordEncoder) 
+        GeoServerUserPasswordEncoder enc  = (GeoServerUserPasswordEncoder) 
                 GeoServerExtensions.bean(getPasswordEncoderName());
         
         if (enc.isResponsibleForEncoding(user.getPassword()))
@@ -166,7 +166,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#addUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void addUser(GeoserverUser user) throws IOException {
+    public void addUser(GeoServerUser user) throws IOException {
         
         preparePassword(user);
         Connection con = null;
@@ -192,7 +192,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#updateUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public void updateUser(GeoserverUser user) throws IOException {
+    public void updateUser(GeoServerUser user) throws IOException {
         
         preparePassword(user);
         Connection con = null;
@@ -223,7 +223,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#removeUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public boolean removeUser(GeoserverUser user) throws IOException {
+    public boolean removeUser(GeoServerUser user) throws IOException {
         Connection con = null;
         PreparedStatement ps = null;
         boolean retval = false;
@@ -256,7 +256,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#addGroup(org.geoserver.security.impl.GeoserverUserGroup)
      */
-    public void addGroup(GeoserverUserGroup group) throws IOException {
+    public void addGroup(GeoServerUserGroup group) throws IOException {
         Connection con = null;
         PreparedStatement ps = null;
         try {
@@ -276,7 +276,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#updateGroup(org.geoserver.security.impl.GeoserverUserGroup)
      */
-    public void updateGroup(GeoserverUserGroup group) throws IOException {
+    public void updateGroup(GeoServerUserGroup group) throws IOException {
         Connection con = null;
         PreparedStatement ps = null;
         try {
@@ -296,7 +296,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#removeGroup(org.geoserver.security.impl.GeoserverUserGroup)
      */
-    public boolean removeGroup(GeoserverUserGroup group) throws IOException {
+    public boolean removeGroup(GeoServerUserGroup group) throws IOException {
         Connection con = null;
         PreparedStatement ps = null;
         boolean retval=false;
@@ -325,7 +325,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
      * Executes {@link Connection#commit()} and frees
      * the connection
      * 
-     * @see org.geoserver.security.GeoserverUserGroupStore#store()
+     * @see org.geoserver.security.GeoServerUserGroupStore#store()
      */
     public void store() throws IOException {
         // Simply commit the transaction
@@ -342,7 +342,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#associateUserToGroup(org.geoserver.security.impl.GeoserverUser, org.geoserver.security.impl.GeoserverUserGroup)
      */
-    public void associateUserToGroup(GeoserverUser user, GeoserverUserGroup group)
+    public void associateUserToGroup(GeoServerUser user, GeoServerUserGroup group)
             throws IOException {
         
         Connection con = null;
@@ -364,7 +364,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupStore#disAssociateUserFromGroup(org.geoserver.security.impl.GeoserverUser, org.geoserver.security.impl.GeoserverUserGroup)
      */
-    public void disAssociateUserFromGroup(GeoserverUser user, GeoserverUserGroup group)
+    public void disAssociateUserFromGroup(GeoServerUser user, GeoServerUserGroup group)
             throws IOException {
         
         Connection con = null;
@@ -422,10 +422,10 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements Geoserve
         setModified(true);                                                
     }    
     /** 
-     * Delegates to the {@link GeoserverUserGroupService} backend
+     * Delegates to the {@link GeoServerUserGroupService} backend
      */
     @Override
-    public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{        
+    public GeoServerUser createUserObject(String username,String password, boolean isEnabled) throws IOException{        
         return jdbcService.createUserObject(username, password, isEnabled);
      }
 

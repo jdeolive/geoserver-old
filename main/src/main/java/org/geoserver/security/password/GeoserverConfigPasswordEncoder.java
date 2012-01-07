@@ -2,9 +2,7 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-
 package org.geoserver.security.password;
-
 
 import org.jasypt.spring.security3.PasswordEncoder;
 import org.springframework.beans.factory.BeanNameAware;
@@ -17,7 +15,5 @@ import org.springframework.beans.factory.BeanNameAware;
  * @author christian
  *
  */
-public interface GeoserverConfigPasswordEncoder extends GeoserverPasswordEncoder, BeanNameAware {
-    
-        
+public interface GeoServerConfigPasswordEncoder extends GeoServerPasswordEncoder, BeanNameAware {
 }

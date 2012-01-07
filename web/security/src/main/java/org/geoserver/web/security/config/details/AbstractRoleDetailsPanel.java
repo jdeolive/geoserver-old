@@ -11,7 +11,7 @@ import java.util.SortedSet;
 
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.model.CompoundPropertyModel;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 
 /**
@@ -45,9 +45,9 @@ public abstract class AbstractRoleDetailsPanel extends AbstractNamedConfigDetail
         if (configHelper.isNew()==false) {
             String serviceName = configHelper.getConfig().getName();
             try {
-                SortedSet<GeoserverRole> roles = 
+                SortedSet<GeoServerRole> roles = 
                         getSecurityManager().loadRoleService(serviceName).getRoles();
-                for (GeoserverRole role : roles) 
+                for (GeoServerRole role : roles) 
                     rolesList.add(role.getAuthority());
             } catch (IOException e) {
                 // do nothing, service not available

@@ -12,8 +12,8 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.web.CatalogIconFactory;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -29,7 +29,7 @@ import org.geoserver.web.wicket.SimpleAjaxLink;
 @SuppressWarnings("serial")
 public class RolePanel extends Panel {
 
-    protected GeoServerTablePanel<GeoserverRole> roles;
+    protected GeoServerTablePanel<GeoServerRole> roles;
     protected GeoServerDialog dialog;
     protected SelectionRoleRemovalLink removal;
     protected Link<?> add;
@@ -40,11 +40,11 @@ public class RolePanel extends Panel {
         this.roleServiceName=serviceName;
                 
         RoleListProvider provider = new RoleListProvider(this.roleServiceName);
-        add(roles = new GeoServerTablePanel<GeoserverRole>("table", provider, true) {
+        add(roles = new GeoServerTablePanel<GeoServerRole>("table", provider, true) {
 
             @Override
             protected Component getComponentForProperty(String id, IModel itemModel,
-                    Property<GeoserverRole> property) {
+                    Property<GeoServerRole> property) {
                 if (property == RoleListProvider.ROLENAME) {
                     return editRoleLink(id, itemModel, property);
                 } else if (RoleListProvider.ParentPropertyName.equals(property.getName())) {
@@ -94,7 +94,7 @@ public class RolePanel extends Panel {
         
     }
     
-    protected GeoserverRoleService getService() {
+    protected GeoServerRoleService getService() {
         try {
             return GeoServerApplication.get().getSecurityManager().
                     loadRoleService(roleServiceName);
@@ -116,26 +116,26 @@ public class RolePanel extends Panel {
 //    }
 
     @SuppressWarnings("unchecked")
-    Component editRoleLink(String id, IModel itemModel, Property<GeoserverRole> property) {
+    Component editRoleLink(String id, IModel itemModel, Property<GeoServerRole> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
                 setResponsePage(new EditRolePage(roleServiceName, 
-                        (GeoserverRole) getDefaultModelObject(),(AbstractSecurityPage) getPage()));
+                        (GeoServerRole) getDefaultModelObject(),(AbstractSecurityPage) getPage()));
             }
 
         };
     }
     
     @SuppressWarnings("unchecked")
-    Component editParentRoleLink(String id, IModel itemModel, Property<GeoserverRole> property) {
+    Component editParentRoleLink(String id, IModel itemModel, Property<GeoServerRole> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                GeoserverRole role = (GeoserverRole) getDefaultModelObject();
-                GeoserverRole parentRole;
+                GeoServerRole role = (GeoServerRole) getDefaultModelObject();
+                GeoServerRole parentRole;
                 try {
                     parentRole = GeoServerApplication.get().getSecurityManager()
                             .loadRoleService(roleServiceName).getParentRole(role);

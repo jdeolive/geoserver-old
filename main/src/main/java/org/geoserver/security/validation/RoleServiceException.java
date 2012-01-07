@@ -6,11 +6,11 @@
 
 package org.geoserver.security.validation;
 
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 
 /**
  * Exception used for validation errors  
- * concerning {@link GeoserverRole}
+ * concerning {@link GeoServerRole}
  * 
  * @author christian
  *

@@ -8,14 +8,14 @@ import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.validation.RoleStoreValidationWrapper;
 import org.geoserver.web.security.AbstractSecurityPage;
 
 
 /**
- * Page for adding a new {@link GeoserverRole} object
+ * Page for adding a new {@link GeoServerRole} object
  * 
  * @author christian
  *
@@ -35,12 +35,12 @@ public class NewRolePage extends AbstractRolePage {
     @Override
     protected void onFormSubmit() throws IOException {
         
-        GeoserverRoleStore store = null;
+        GeoServerRoleStore store = null;
         try {
             store = new RoleStoreValidationWrapper(
                     getRoleStore(roleServiceName));
     
-            GeoserverRole role = store.createRoleObject(uiRole.getRolename());
+            GeoServerRole role = store.createRoleObject(uiRole.getRolename());
             
             role.getProperties().clear();
             for (Entry<Object,Object> entry : roleParamEditor.getProperties().entrySet())
@@ -48,7 +48,7 @@ public class NewRolePage extends AbstractRolePage {
     
             store.addRole(role);
                     
-            GeoserverRole parentRole = null;
+            GeoServerRole parentRole = null;
             if (uiRole.getParentrolename()!=null && uiRole.getParentrolename().length() > 0) {
                 parentRole=store.getRoleByName(uiRole.getParentrolename());
             }

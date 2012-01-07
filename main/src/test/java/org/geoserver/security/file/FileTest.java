@@ -10,8 +10,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.impl.AbstractRoleService;
 import org.geoserver.security.impl.AbstractUserGroupService;
@@ -27,7 +27,7 @@ public  class FileTest extends TestCase {
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.xml");
     int gaCounter=0,ugCounter=0;
     
-    GeoserverRoleService gaService = new AbstractRoleService() {
+    GeoServerRoleService gaService = new AbstractRoleService() {
         
         public String getName() {
             return "TestGAService";
@@ -43,7 +43,7 @@ public  class FileTest extends TestCase {
         }
     };
     
-    GeoserverUserGroupService ugService = new AbstractUserGroupService() {
+    GeoServerUserGroupService ugService = new AbstractUserGroupService() {
         
         public String getName() {
             return "TestUGService";

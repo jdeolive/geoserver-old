@@ -18,14 +18,14 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.logging.Logger;
 
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.security.impl.Util;
 import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
@@ -34,12 +34,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
- * JDBC implementation of {@link GeoserverUserGroupService}
+ * JDBC implementation of {@link GeoServerUserGroupService}
  * 
  * @author christian
  *
  */
-public  class JDBCUserGroupService extends AbstractJDBCService implements GeoserverUserGroupService {
+public  class JDBCUserGroupService extends AbstractJDBCService implements GeoServerUserGroupService {
     
     public final static String DEFAULT_DML_FILE="usersdml.xml";
     public final static String DEFAULT_DDL_FILE="usersddl.xml";
@@ -71,7 +71,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     }
 
     @Override
-    public GeoserverUserGroupStore createStore() throws IOException {
+    public GeoServerUserGroupStore createStore() throws IOException {
         JDBCUserGroupStore store = new JDBCUserGroupStore();
         store.initializeFromService(this);
         return store;
@@ -79,7 +79,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
 
     /** Uses {@link #initializeDSFromConfig(SecurityNamedServiceConfig)} and
      * {@link #checkORCreateJDBCPropertyFile(String, File, String)} for initializing
-     * @see org.geoserver.security.GeoserverUserGroupService#initializeFromConfig(org.geoserver.security.config.SecurityNamedServiceConfig)
+     * @see org.geoserver.security.GeoServerUserGroupService#initializeFromConfig(org.geoserver.security.config.SecurityNamedServiceConfig)
      */
     @Override
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
@@ -129,15 +129,15 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     
 
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#getUserByUsername(java.lang.String)
+     * @see org.geoserver.security.GeoServerUserGroupService#getUserByUsername(java.lang.String)
      */
-    public GeoserverUser getUserByUsername(String username) throws IOException {
+    public GeoServerUser getUserByUsername(String username) throws IOException {
             
 
         Connection con=null;
         PreparedStatement ps = null,ps2=null;
         ResultSet rs = null,rs2=null;
-        GeoserverUser u  = null;
+        GeoServerUser u  = null;
         try {
             con = getConnection();
             ps = getDMLStatement("users.keyed",con);            
@@ -171,13 +171,13 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     
     
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#getGroupByGroupname(java.lang.String)
+     * @see org.geoserver.security.GeoServerUserGroupService#getGroupByGroupname(java.lang.String)
      */
-    public GeoserverUserGroup getGroupByGroupname(String groupname) throws IOException {
+    public GeoServerUserGroup getGroupByGroupname(String groupname) throws IOException {
         Connection con=null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        GeoserverUserGroup g =null;
+        GeoServerUserGroup g =null;
         try {
             con = getConnection();            
             ps = getDMLStatement("groups.keyed",con);
@@ -201,13 +201,13 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     
 
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#getUsers()
+     * @see org.geoserver.security.GeoServerUserGroupService#getUsers()
      */
-    public SortedSet<GeoserverUser> getUsers() throws IOException{
+    public SortedSet<GeoServerUser> getUsers() throws IOException{
         Connection con=null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        Map<String,GeoserverUser> map = new HashMap<String,GeoserverUser>();
+        Map<String,GeoServerUser> map = new HashMap<String,GeoServerUser>();
         try {
             con = getConnection();
             ps = getDMLStatement("users.all",con);            
@@ -217,7 +217,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
                 String password = rs.getString(2);
                 String enabledString = rs.getString(3);
                 boolean isEnabled= convertFromString(enabledString);
-                GeoserverUser u = createUserObject(username,password, isEnabled);                
+                GeoServerUser u = createUserObject(username,password, isEnabled);                
                 map.put(username, u);
             }
             
@@ -230,7 +230,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
                 String useName = rs.getString(1);
                 String propName = rs.getString(2);
                 Object propValue = rs.getString(3);
-                GeoserverUser u = map.get(useName);
+                GeoServerUser u = map.get(useName);
                 if (u!=null) {
                     u.getProperties().put(propName, propValue==null ? "" : propValue);
                 }
@@ -241,19 +241,19 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
             closeFinally(con, ps, rs);
         }
                                         
-        SortedSet<GeoserverUser> users = new TreeSet<GeoserverUser>();
+        SortedSet<GeoServerUser> users = new TreeSet<GeoServerUser>();
         users.addAll(map.values());
         return Collections.unmodifiableSortedSet(users);
     }
     
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#getUserGroups()
+     * @see org.geoserver.security.GeoServerUserGroupService#getUserGroups()
      */
-    public SortedSet<GeoserverUserGroup> getUserGroups() throws IOException{
+    public SortedSet<GeoServerUserGroup> getUserGroups() throws IOException{
         Connection con=null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        Collection<GeoserverUserGroup> tmp = new ArrayList<GeoserverUserGroup>();
+        Collection<GeoServerUserGroup> tmp = new ArrayList<GeoServerUserGroup>();
         try {
             con = getConnection();
             ps = getDMLStatement("groups.all",con);            
@@ -262,7 +262,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
                 String groupname = rs.getString(1);
                 String enabledString = rs.getString(2);
                 boolean isEnabled= convertFromString(enabledString);
-                GeoserverUserGroup g = createGroupObject(groupname, isEnabled);
+                GeoServerUserGroup g = createGroupObject(groupname, isEnabled);
                 tmp.add(g);
             }
         } catch (SQLException ex) {
@@ -271,39 +271,39 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
             closeFinally(con, ps, rs);
         }        
         
-        SortedSet<GeoserverUserGroup> groups = new TreeSet<GeoserverUserGroup>();
+        SortedSet<GeoServerUserGroup> groups = new TreeSet<GeoServerUserGroup>();
         groups.addAll(tmp);
         return Collections.unmodifiableSortedSet(groups);
     }
 
     
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#createUserObject(java.lang.String, java.lang.String, boolean)
+     * @see org.geoserver.security.GeoServerUserGroupService#createUserObject(java.lang.String, java.lang.String, boolean)
      */
-    public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
-       GeoserverUser user = new GeoserverUser(username);
+    public GeoServerUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
+       GeoServerUser user = new GeoServerUser(username);
        user.setEnabled(isEnabled);
        user.setPassword(password==null ? "" : password);
        return user;
     }
     
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#createGroupObject(java.lang.String, boolean)
+     * @see org.geoserver.security.GeoServerUserGroupService#createGroupObject(java.lang.String, boolean)
      */
-    public GeoserverUserGroup createGroupObject(String groupname, boolean isEnabled) throws IOException{
-        GeoserverUserGroup group = new GeoserverUserGroup(groupname);
+    public GeoServerUserGroup createGroupObject(String groupname, boolean isEnabled) throws IOException{
+        GeoServerUserGroup group = new GeoServerUserGroup(groupname);
         group.setEnabled(isEnabled);
         return group;
     }
     
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#getGroupsForUser(org.geoserver.security.impl.GeoserverUser)
+     * @see org.geoserver.security.GeoServerUserGroupService#getGroupsForUser(org.geoserver.security.impl.GeoServerUser)
      */
-    public  SortedSet<GeoserverUserGroup> getGroupsForUser (GeoserverUser user) throws IOException{        
+    public  SortedSet<GeoServerUserGroup> getGroupsForUser (GeoServerUser user) throws IOException{        
         Connection con=null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        Collection<GeoserverUserGroup> tmp = new ArrayList<GeoserverUserGroup>();
+        Collection<GeoServerUserGroup> tmp = new ArrayList<GeoServerUserGroup>();
         try {
             con = getConnection();
             ps = getDMLStatement("groupmembers.groupsForUser",con);
@@ -313,7 +313,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
                 String groupname = rs.getString(1);
                 String enabledString = rs.getString(2);
                 boolean isEnabled= convertFromString(enabledString);
-                GeoserverUserGroup g = createGroupObject(groupname, isEnabled);
+                GeoServerUserGroup g = createGroupObject(groupname, isEnabled);
                 tmp.add(g);
             }
         } catch (SQLException ex) {
@@ -322,20 +322,20 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
             closeFinally(con, ps, rs);
         }        
                         
-        TreeSet<GeoserverUserGroup>  groups =  new TreeSet<GeoserverUserGroup>();
+        TreeSet<GeoServerUserGroup>  groups =  new TreeSet<GeoServerUserGroup>();
         groups.addAll(tmp);
         return Collections.unmodifiableSortedSet(groups);
     }
     
     
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#getUsersForGroup(org.geoserver.security.impl.GeoserverUserGroup)
+     * @see org.geoserver.security.GeoServerUserGroupService#getUsersForGroup(org.geoserver.security.impl.GeoServerUserGroup)
      */
-    public  SortedSet<GeoserverUser> getUsersForGroup (GeoserverUserGroup group) throws IOException{
+    public  SortedSet<GeoServerUser> getUsersForGroup (GeoServerUserGroup group) throws IOException{
         Connection con=null;
         PreparedStatement ps = null,ps2 = null;
         ResultSet rs = null,rs2=null;
-        Map<String,GeoserverUser> map = new HashMap<String,GeoserverUser>();
+        Map<String,GeoServerUser> map = new HashMap<String,GeoServerUser>();
         try {
             con = getConnection();
             ps = getDMLStatement("groupmembers.usersForGroup",con);
@@ -348,7 +348,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
                 String password = rs.getString(2);
                 String enabledString = rs.getString(3);
                 boolean isEnabled= convertFromString(enabledString);
-                GeoserverUser u = createUserObject(username,password, isEnabled);                
+                GeoServerUser u = createUserObject(username,password, isEnabled);                
                 map.put(username,u);         
                 
             }
@@ -362,7 +362,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
                 String userName = rs.getString(1);                
                 String propName = rs.getString(2);
                 Object propValue = rs.getObject(3);
-                GeoserverUser u = map.get(userName);
+                GeoServerUser u = map.get(userName);
                 if (u!=null) {
                     u.getProperties().put(propName, propValue==null ? "" : propValue);
                 }
@@ -375,14 +375,14 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
             closeFinally(con, ps, rs);
         }
                                 
-        TreeSet<GeoserverUser>users= new TreeSet<GeoserverUser>();
+        TreeSet<GeoServerUser>users= new TreeSet<GeoServerUser>();
         users.addAll(map.values());
         return Collections.unmodifiableSortedSet(users);
     }
 
 
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#load()
+     * @see org.geoserver.security.GeoServerUserGroupService#load()
      */
     public void load() throws IOException {
         // do nothing
@@ -391,7 +391,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
 
 
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#registerUserGroupChangedListener(org.geoserver.security.event.UserGroupChangedListener)
+     * @see org.geoserver.security.GeoServerUserGroupService#registerUserGroupChangedListener(org.geoserver.security.event.UserGroupChangedListener)
      */
     public void registerUserGroupLoadedListener(UserGroupLoadedListener listener) {
         listeners.add(listener);
@@ -399,7 +399,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
 
 
     /**
-     * @see org.geoserver.security.GeoserverUserGroupService#unregisterUserGroupChangedListener(org.geoserver.security.event.UserGroupChangedListener)
+     * @see org.geoserver.security.GeoServerUserGroupService#unregisterUserGroupChangedListener(org.geoserver.security.event.UserGroupChangedListener)
      */
     public void unregisterUserGroupLoadedListener(UserGroupLoadedListener listener) {
         listeners.remove(listener);
@@ -428,7 +428,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements Geoser
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
             DataAccessException {
-        GeoserverUser user=null;
+        GeoServerUser user=null;
         try {
             user = getUserByUsername(username);            
             if (user==null)

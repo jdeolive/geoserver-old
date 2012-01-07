@@ -19,7 +19,7 @@ import org.geoserver.security.validation.PasswordValidatorImpl;
  * should not be allowed.
  * 
  * Additionally, password must not start with 
- * prefixes used by the {@link GeoserverPasswordEncoder} objects
+ * prefixes used by the {@link GeoServerPasswordEncoder} objects
  * To get the prefixes use
  * 
  * <code>

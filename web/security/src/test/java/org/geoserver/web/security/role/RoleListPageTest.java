@@ -7,14 +7,14 @@ import java.util.SortedSet;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.web.security.AbstractListPageTest;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractTabbedListPageTest;
 import org.geoserver.web.security.config.RoleTabbedPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public class RoleListPageTest extends AbstractTabbedListPageTest<GeoserverRole> {
+public class RoleListPageTest extends AbstractTabbedListPageTest<GeoServerRole> {
     
     public static final String SECOND_COLUM_PATH="itemProperties:1:component:link";
     
@@ -38,15 +38,15 @@ public class RoleListPageTest extends AbstractTabbedListPageTest<GeoserverRole> 
         if (params.length==0) {
             return new  EditRolePage(
                     getSecurityManager().getActiveRoleService().getName(),
-                    GeoserverRole.ADMIN_ROLE,page);            
+                    GeoServerRole.ADMIN_ROLE,page);            
         }
         if (params.length==1)
             return new  EditRolePage(
                     getSecurityManager().getActiveRoleService().getName(),
-                    (GeoserverRole) params[0],page);
+                    (GeoServerRole) params[0],page);
         else
             return new  EditRolePage((String) params[0],
-                    (GeoserverRole) params[1],page);
+                    (GeoServerRole) params[1],page);
     }
 
     protected String getTabbedPanelPath() {
@@ -65,11 +65,11 @@ public class RoleListPageTest extends AbstractTabbedListPageTest<GeoserverRole> 
         
         tester.startPage(listPage(getRoleServiceName()));
                    
-        GeoserverRole role = gaService.getRoleByName("ROLE_AUTHENTICATED");
+        GeoServerRole role = gaService.getRoleByName("ROLE_AUTHENTICATED");
         assertNotNull(role);
-        List<Property<GeoserverRole>> props = new RoleListProvider(getRoleServiceName()).getProperties();
-        Property<GeoserverRole> parentProp = null;
-        for (Property<GeoserverRole> prop: props) {
+        List<Property<GeoServerRole>> props = new RoleListProvider(getRoleServiceName()).getProperties();
+        Property<GeoServerRole> parentProp = null;
+        for (Property<GeoServerRole> prop: props) {
             if (RoleListProvider.ParentPropertyName.equals(prop.getName())){
                 parentProp=prop;
                 break;
@@ -89,16 +89,16 @@ public class RoleListPageTest extends AbstractTabbedListPageTest<GeoserverRole> 
 
     @Override
     protected String getSearchString() throws Exception{
-        GeoserverRole role = 
+        GeoServerRole role = 
                 gaService.getRoleByName(
-                GeoserverRole.ADMIN_ROLE.getAuthority());
+                GeoServerRole.ADMIN_ROLE.getAuthority());
         assertNotNull(role);
         return role.getAuthority();
     }
 
 
     @Override
-    protected Property<GeoserverRole> getEditProperty() {
+    protected Property<GeoServerRole> getEditProperty() {
         return RoleListProvider.ROLENAME;
     }
 
@@ -130,14 +130,14 @@ public class RoleListPageTest extends AbstractTabbedListPageTest<GeoserverRole> 
         Method m = link.delegate.getClass().getDeclaredMethod("onSubmit", AjaxRequestTarget.class,Component.class);
         m.invoke(link.delegate, null,null);
         
-        SortedSet<GeoserverRole> roles = gaService.getRoles();
+        SortedSet<GeoServerRole> roles = gaService.getRoles();
         assertEquals(0,roles.size(),4);
-        assertTrue(roles.contains(GeoserverRole.ADMIN_ROLE));
+        assertTrue(roles.contains(GeoServerRole.ADMIN_ROLE));
     }
 
     @Override
     protected void doRemove(String pathForLink) throws Exception {
-        GeoserverRole newRole = gaStore.createRoleObject("NEW_ROLE");
+        GeoServerRole newRole = gaStore.createRoleObject("NEW_ROLE");
         gaStore.addRole(newRole);
         gaStore.store();
         assertEquals(5,gaService.getRoles().size());

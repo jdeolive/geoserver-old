@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.geoserver.data.test.TestData;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.impl.AbstractRoleServiceTest;
 
 
@@ -44,13 +44,13 @@ public abstract class JDBCRoleServiceTest extends AbstractRoleServiceTest {
 
     
     
-    public GeoserverRoleService createRoleService(String serviceName) throws Exception {    
+    public GeoServerRoleService createRoleService(String serviceName) throws Exception {    
         return JDBCTestSupport.createRoleService(getFixtureId(),
             (LiveDbmsDataSecurity)getTestData(), getSecurityManager());        
     }
 
     @Override
-    public GeoserverRoleStore createStore(GeoserverRoleService service) throws IOException {
+    public GeoServerRoleStore createStore(GeoServerRoleService service) throws IOException {
         JDBCRoleStore store = 
             (JDBCRoleStore) super.createStore(service);
         try {

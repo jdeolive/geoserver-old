@@ -5,32 +5,32 @@ import java.util.SortedSet;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.wicket.model.Model;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractConfirmRemovalPanel;
 
-public class ConfirmRemovalUserPanel extends AbstractConfirmRemovalPanel<GeoserverUser> {
+public class ConfirmRemovalUserPanel extends AbstractConfirmRemovalPanel<GeoServerUser> {
 
     private static final long serialVersionUID = 1L;
     
-    public ConfirmRemovalUserPanel(String id, Model<Boolean> model,List<GeoserverUser> roots) {        
+    public ConfirmRemovalUserPanel(String id, Model<Boolean> model,List<GeoServerUser> roots) {        
         super(id, model,roots);
     }
     
-    public ConfirmRemovalUserPanel(String id, Model<Boolean> model,GeoserverUser... roots) {
+    public ConfirmRemovalUserPanel(String id, Model<Boolean> model,GeoServerUser... roots) {
         super(id, model,roots);                
     }
 
 
     @Override
-    protected String getConfirmationMessage(GeoserverUser object) throws Exception{
+    protected String getConfirmationMessage(GeoServerUser object) throws Exception{
         StringBuffer buffer = new StringBuffer(BeanUtils.getProperty(object, "username"));
         if ((Boolean)getDefaultModelObject()) {
-            SortedSet<GeoserverRole> roles = GeoServerApplication.get().getSecurityManager()
+            SortedSet<GeoServerRole> roles = GeoServerApplication.get().getSecurityManager()
                 .getActiveRoleService().getRolesForUser(object.getUsername());
             buffer.append(" [");
-            for (GeoserverRole role: roles) {
+            for (GeoServerRole role: roles) {
                 buffer.append(role.getAuthority());
                 buffer.append(" ");
             }

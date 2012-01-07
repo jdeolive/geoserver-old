@@ -5,34 +5,34 @@ import java.util.SortedSet;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.wicket.model.Model;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractConfirmRemovalPanel;
 
-public class ConfirmRemovalGroupPanel extends AbstractConfirmRemovalPanel<GeoserverUserGroup> {
+public class ConfirmRemovalGroupPanel extends AbstractConfirmRemovalPanel<GeoServerUserGroup> {
 
     private static final long serialVersionUID = 1L;
 
     
-    public ConfirmRemovalGroupPanel(String id, Model<Boolean> model,List<GeoserverUserGroup> roots) {
+    public ConfirmRemovalGroupPanel(String id, Model<Boolean> model,List<GeoServerUserGroup> roots) {
         super(id, model,roots);                
     }
     
-    public ConfirmRemovalGroupPanel(String id, Model<Boolean> model,GeoserverUserGroup... roots) {
+    public ConfirmRemovalGroupPanel(String id, Model<Boolean> model,GeoServerUserGroup... roots) {
         super(id, model,roots);                
     }
 
     
     @Override
-    protected String getConfirmationMessage(GeoserverUserGroup object) throws Exception{
+    protected String getConfirmationMessage(GeoServerUserGroup object) throws Exception{
         StringBuffer buffer = new StringBuffer(BeanUtils.getProperty(object, "groupname"));
         if ((Boolean) getDefaultModelObject()) {
-            SortedSet<GeoserverRole> roles =
+            SortedSet<GeoServerRole> roles =
                 GeoServerApplication.get().getSecurityManager()
                     .getActiveRoleService().getRolesForGroup(object.getGroupname());
             buffer.append(" [");
-            for (GeoserverRole role: roles) {
+            for (GeoServerRole role: roles) {
                 buffer.append(role.getAuthority()).append(" ");
             }
             if (roles.size()>0) { // remove last delimiter

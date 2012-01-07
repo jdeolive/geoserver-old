@@ -27,7 +27,7 @@ import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoserverConfigPasswordEncoder;
+import org.geoserver.security.password.GeoServerConfigPasswordEncoder;
 import org.geoserver.web.GeoServerApplication;
 
 
@@ -98,12 +98,12 @@ public class ManagerConfigPanel extends Panel {
         form.add(roleServices);
 
         
-        List<GeoserverConfigPasswordEncoder> encoders = 
-                GeoServerExtensions.extensions(GeoserverConfigPasswordEncoder.class);
+        List<GeoServerConfigPasswordEncoder> encoders = 
+                GeoServerExtensions.extensions(GeoServerConfigPasswordEncoder.class);
         
         encoderList = new ArrayList<String>();
         disabledEncoders = new ArrayList<String>();
-        for (GeoserverConfigPasswordEncoder encoder : encoders) {
+        for (GeoServerConfigPasswordEncoder encoder : encoders) {
             encoderList.add(encoder.getBeanName());
             if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false
                    && encoder.isAvailableWithoutStrongCryptogaphy()==false) {

@@ -20,12 +20,12 @@ import java.util.SortedSet;
 import java.util.logging.Logger;
 
 import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.password.GeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
+import org.geoserver.security.password.GeoServerUserPasswordEncoder;
 import org.geoserver.security.password.PasswordEncodingType;
 import org.geoserver.security.validation.PasswordValidationException;
 
@@ -55,15 +55,15 @@ public class Util {
     }
 
     /**
-     * Checks if users can be copied from one {@link GeoserverUserGroupService} to another.
+     * Checks if users can be copied from one {@link GeoServerUserGroupService} to another.
      * This depends on the password encoding
      * 
      * @param service
      * @param store
      * @return
      */
-    static public boolean copyPossible(GeoserverUserGroupService service, GeoserverUserGroupStore store) {
-        GeoserverPasswordEncoder from = (GeoserverPasswordEncoder) 
+    static public boolean copyPossible(GeoServerUserGroupService service, GeoServerUserGroupStore store) {
+        GeoServerPasswordEncoder from = (GeoServerPasswordEncoder) 
                  GeoServerExtensions.bean(service.getPasswordEncoderName());
         if (from.getEncodingType()==PasswordEncodingType.PLAIN || 
                 from.getEncodingType()==PasswordEncodingType.ENCRYPT)
@@ -79,30 +79,30 @@ public class Util {
      * @param store
      * @throws IOException
      */
-    static public void copyFrom(GeoserverUserGroupService service, GeoserverUserGroupStore store) throws IOException {
+    static public void copyFrom(GeoServerUserGroupService service, GeoServerUserGroupStore store) throws IOException {
         
         
         if (copyPossible(service, store)==false)
             throw new IOException("Cannot copy user/group data, passwords encoders are not compatible");
         
-        GeoserverUserPasswordEncoder storeEncoder = null;
-        GeoserverUserPasswordEncoder serviceEncoder = (GeoserverUserPasswordEncoder) 
+        GeoServerUserPasswordEncoder storeEncoder = null;
+        GeoServerUserPasswordEncoder serviceEncoder = (GeoServerUserPasswordEncoder) 
                 GeoServerExtensions.bean(service.getPasswordEncoderName());
         serviceEncoder.initializeFor(service);
         if (serviceEncoder.getEncodingType()==PasswordEncodingType.PLAIN || 
                 serviceEncoder.getEncodingType()==PasswordEncodingType.ENCRYPT) {
-            storeEncoder = (GeoserverUserPasswordEncoder) 
+            storeEncoder = (GeoServerUserPasswordEncoder) 
                     GeoServerExtensions.bean(store.getPasswordEncoderName());
             storeEncoder.initializeFor(store);
         }
         
         
         store.clear();
-        Map<String,GeoserverUser> newUserDict = new HashMap<String,GeoserverUser>();
-        Map<String,GeoserverUserGroup> newGroupDict = new HashMap<String,GeoserverUserGroup>();
+        Map<String,GeoServerUser> newUserDict = new HashMap<String,GeoServerUser>();
+        Map<String,GeoServerUserGroup> newGroupDict = new HashMap<String,GeoServerUserGroup>();
         
-        for (GeoserverUser user : service.getUsers()) {
-            GeoserverUser newUser = store.createUserObject(user.getUsername(),user.getPassword(), user.isEnabled());
+        for (GeoServerUser user : service.getUsers()) {
+            GeoServerUser newUser = store.createUserObject(user.getUsername(),user.getPassword(), user.isEnabled());
             if (storeEncoder!=null) {
                 String plainText =serviceEncoder.decode(user.getPassword());
                 newUser.setPassword(storeEncoder.encodePassword(plainText, null));
@@ -113,16 +113,16 @@ public class Util {
             store.addUser(newUser);
             newUserDict.put(newUser.getUsername(),newUser);
         }
-        for (GeoserverUserGroup group : service.getUserGroups()) {
-            GeoserverUserGroup newGroup = store.createGroupObject(group.getGroupname(),group.isEnabled());
+        for (GeoServerUserGroup group : service.getUserGroups()) {
+            GeoServerUserGroup newGroup = store.createGroupObject(group.getGroupname(),group.isEnabled());
             store.addGroup(newGroup);
             newGroupDict.put(newGroup.getGroupname(),newGroup);
         }
-        for (GeoserverUserGroup group : service.getUserGroups()) {
-            GeoserverUserGroup newGroup = newGroupDict.get(group.getGroupname());
+        for (GeoServerUserGroup group : service.getUserGroups()) {
+            GeoServerUserGroup newGroup = newGroupDict.get(group.getGroupname());
             
-            for (GeoserverUser member : service.getUsersForGroup(group)) {
-                GeoserverUser newUser = newUserDict.get(member.getUsername());
+            for (GeoServerUser member : service.getUsersForGroup(group)) {
+                GeoServerUser newUser = newUserDict.get(member.getUsername());
                 store.associateUserToGroup(newUser, newGroup);
             }
         }        
@@ -135,12 +135,12 @@ public class Util {
      * @param store
      * @throws IOException
      */
-    static public void copyFrom(GeoserverRoleService service, GeoserverRoleStore store) throws IOException {
+    static public void copyFrom(GeoServerRoleService service, GeoServerRoleStore store) throws IOException {
         store.clear();
-        Map<String,GeoserverRole> newRoleDict = new HashMap<String,GeoserverRole>();
+        Map<String,GeoServerRole> newRoleDict = new HashMap<String,GeoServerRole>();
         
-        for (GeoserverRole role : service.getRoles()) {
-            GeoserverRole newRole = store.createRoleObject(role.getAuthority());
+        for (GeoServerRole role : service.getRoles()) {
+            GeoServerRole newRole = store.createRoleObject(role.getAuthority());
             for (Object key: role.getProperties().keySet()) {
                 newRole.getProperties().put(key, role.getProperties().get(key));
             }
@@ -148,16 +148,16 @@ public class Util {
             newRoleDict.put(newRole.getAuthority(),newRole);
         }
         
-        for (GeoserverRole role : service.getRoles()) {
-            GeoserverRole parentRole = service.getParentRole(role);
-            GeoserverRole newRole = newRoleDict.get(role.getAuthority());
-            GeoserverRole newParentRole = parentRole == null ?
+        for (GeoServerRole role : service.getRoles()) {
+            GeoServerRole parentRole = service.getParentRole(role);
+            GeoServerRole newRole = newRoleDict.get(role.getAuthority());
+            GeoServerRole newParentRole = parentRole == null ?
                     null : newRoleDict.get(parentRole.getAuthority());
             store.setParentRole(newRole, newParentRole);
         }
         
-        for (GeoserverRole role : service.getRoles()) {
-            GeoserverRole newRole = newRoleDict.get(role.getAuthority());
+        for (GeoServerRole role : service.getRoles()) {
+            GeoServerRole newRole = newRoleDict.get(role.getAuthority());
             SortedSet<String> usernames = service.getUserNamesForRole(role);
             for (String username : usernames) {
                 store.associateRoleToUser(newRole, username);
@@ -169,7 +169,7 @@ public class Util {
         }                        
     }
     
-    static SortedSet<GeoserverUser> usersHavingRole(GeoserverRole role) {
+    static SortedSet<GeoServerUser> usersHavingRole(GeoServerRole role) {
         // TODO
         return null;
     }

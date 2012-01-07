@@ -10,7 +10,7 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.apache.wicket.util.tester.FormTester;
 import org.apache.wicket.util.tester.WicketTester;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.test.GeoServerTestSupport;
 import org.geoserver.web.wicket.WicketHierarchyPrinter;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,7 +44,7 @@ public abstract class GeoServerWicketTestSupport extends GeoServerTestSupport {
     public void login(){
         SecurityContextHolder.setContext(new SecurityContextImpl());
         List<GrantedAuthority> l= new ArrayList<GrantedAuthority>();
-        l.add(GeoserverRole.ADMIN_ROLE);
+        l.add(GeoServerRole.ADMIN_ROLE);
         
         SecurityContextHolder.getContext().setAuthentication(
             new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("admin","geoserver",l));                                  
@@ -53,7 +53,7 @@ public abstract class GeoServerWicketTestSupport extends GeoServerTestSupport {
     public void logout(){
         SecurityContextHolder.setContext(new SecurityContextImpl());
         List<GrantedAuthority> l= new ArrayList<GrantedAuthority>();
-        l.add(new GeoserverRole("ROLE_ANONYMOUS"));
+        l.add(new GeoServerRole("ROLE_ANONYMOUS"));
         SecurityContextHolder.getContext().setAuthentication(
                 new org.springframework.security.authentication.UsernamePasswordAuthenticationToken("anonymousUser","",l));                                  
     }

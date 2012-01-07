@@ -21,23 +21,21 @@ import org.springframework.util.StringUtils;
  * @author christian
  * 
  */
-public class GeoserverUser  implements UserDetails, CredentialsContainer,Comparable<GeoserverUser>{
-    
-
+public class GeoServerUser  implements UserDetails, CredentialsContainer,Comparable<GeoServerUser>{
 
     private static final long serialVersionUID = 1L;
-    
-    
+
     public static final String AdminName="admin";
     public static final String AdminPasword="geoserver";
     public static final boolean AdminEnabled=true;
+
     /**
      * Create the geoserver default administrator
      * 
      * @return
      */
-    public static GeoserverUser createDefaultAdmin() {
-        GeoserverUser admin = new GeoserverUser(AdminName);
+    public static GeoServerUser createDefaultAdmin() {
+        GeoServerUser admin = new GeoServerUser(AdminName);
         admin.setPassword(AdminPasword);
         admin.setEnabled(AdminEnabled);
         return admin;
@@ -56,7 +54,7 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
     protected Collection<GrantedAuthority> unmodifiableAuthorities; 
 
 
-    public GeoserverUser(String username) {
+    public GeoServerUser(String username) {
         this.username=username;
         accountNonExpired=accountNonLocked=credentialsNonExpired=enabled=true;
         unmodifiableAuthorities=null;
@@ -180,7 +178,7 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
     /* (non-Javadoc)
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
-    public int compareTo(GeoserverUser o) {
+    public int compareTo(GeoServerUser o) {
         if (o==null) return 1;
         return getUsername().compareTo(o.getUsername());
     }
@@ -194,8 +192,8 @@ public class GeoserverUser  implements UserDetails, CredentialsContainer,Compara
      */
     @Override
     public boolean equals(Object rhs) {
-        if (rhs instanceof GeoserverUser) {
-            return username.equals(((GeoserverUser) rhs).username);
+        if (rhs instanceof GeoServerUser) {
+            return username.equals(((GeoServerUser) rhs).username);
         }
         return false;
     }

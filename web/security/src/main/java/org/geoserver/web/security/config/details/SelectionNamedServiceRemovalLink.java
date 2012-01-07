@@ -9,9 +9,9 @@ import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverAuthenticationProcessingFilter;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerAuthenticationProcessingFilter;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
@@ -78,13 +78,13 @@ public class SelectionNamedServiceRemovalLink extends AjaxLink<Object> {
                     for (SecurityNamedServiceConfig config : removePanel.getRoots()) {                     
                         if (serviceClass==GeoServerAuthenticationProvider.class)
                             manager.removeAuthenticationProvider((SecurityAuthProviderConfig)config);
-                        if (serviceClass==GeoserverAuthenticationProcessingFilter.class)
+                        if (serviceClass==GeoServerAuthenticationProcessingFilter.class)
                             manager.removeAuthenticationFilter(config);
                         if (serviceClass==PasswordValidator.class)
                             manager.removePasswordValidator((PasswordPolicyConfig)config);
-                        if (serviceClass==GeoserverUserGroupService.class)
+                        if (serviceClass==GeoServerUserGroupService.class)
                             manager.removeUserGroupService((SecurityUserGroupServiceConfig)config);
-                        if (serviceClass==GeoserverRoleService.class)
+                        if (serviceClass==GeoServerRoleService.class)
                             manager.removeRoleService((SecurityRoleServiceConfig)config);                         
                     }
                 } catch ( SecurityConfigException ex ) {
@@ -118,13 +118,13 @@ public class SelectionNamedServiceRemovalLink extends AjaxLink<Object> {
         try {
             if (serviceClass==GeoServerAuthenticationProvider.class)
                 validator.validateRemoveAuthProvider((SecurityAuthProviderConfig)config);
-            if (serviceClass==GeoserverAuthenticationProcessingFilter.class)
+            if (serviceClass==GeoServerAuthenticationProcessingFilter.class)
                 validator.validateRemoveFilter(config);
             if (serviceClass==PasswordValidator.class)
                 validator.validateRemovePasswordPolicy((PasswordPolicyConfig)config);
-            if (serviceClass==GeoserverUserGroupService.class)
+            if (serviceClass==GeoServerUserGroupService.class)
                 validator.validateRemoveUserGroupService((SecurityUserGroupServiceConfig)config);
-            if (serviceClass==GeoserverRoleService.class)
+            if (serviceClass==GeoServerRoleService.class)
                 validator.validateRemoveRoleService((SecurityRoleServiceConfig)config);
         } catch (SecurityConfigException ex) {
             return new StringResourceModel("security."+ex.getErrorId(),null,ex.getArgs());

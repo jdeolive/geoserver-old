@@ -35,10 +35,10 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.xml.serialize.OutputFormat;
 import org.apache.xml.serialize.XMLSerializer;
-import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.file.LockFile;
 import org.geoserver.security.impl.AbstractRoleStore;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -65,7 +65,7 @@ public class XMLRoleStore extends AbstractRoleStore {
     /* (non-Javadoc)
      * @see org.geoserver.security.impl.AbstractRoleStore#initializeFromService(org.geoserver.security.GeoserverRoleService)
      */
-    public void initializeFromService(GeoserverRoleService service) throws IOException {
+    public void initializeFromService(GeoServerRoleService service) throws IOException {
         this.roleFile=((XMLRoleService)service).roleFile;
         this.validatingXMLSchema=((XMLRoleService)service).isValidatingXMLSchema();
         super.initializeFromService(service);
@@ -93,11 +93,11 @@ public class XMLRoleStore extends AbstractRoleStore {
         Element rolelist = doc.createElement(E_ROLELIST_RR);
         rolereg.appendChild(rolelist);
         
-        for (GeoserverRole roleObject : helper.roleMap.values()) {
+        for (GeoServerRole roleObject : helper.roleMap.values()) {
             Element role = doc.createElement(E_ROLE_RR);
             rolelist.appendChild(role);
             role.setAttribute(A_ROLEID_RR, roleObject.getAuthority());
-            GeoserverRole parentObject = helper.role_parentMap.get(roleObject);
+            GeoServerRole parentObject = helper.role_parentMap.get(roleObject);
             if (parentObject!=null) {
                 role.setAttribute(A_PARENTID_RR, parentObject.getAuthority());
             }            
@@ -115,8 +115,8 @@ public class XMLRoleStore extends AbstractRoleStore {
             Element userroles = doc.createElement(E_USERROLES_RR);
             userList.appendChild(userroles);
             userroles.setAttribute(A_USERNAME_RR, userName);
-            SortedSet<GeoserverRole> roleObjects =  helper.user_roleMap.get(userName);
-            for (GeoserverRole roleObject: roleObjects) {
+            SortedSet<GeoServerRole> roleObjects =  helper.user_roleMap.get(userName);
+            for (GeoServerRole roleObject: roleObjects) {
                 Element ref = doc.createElement(E_ROLEREF_RR);
                 userroles.appendChild(ref);
                 ref.setAttribute(A_ROLEREFID_RR,roleObject.getAuthority());
@@ -130,8 +130,8 @@ public class XMLRoleStore extends AbstractRoleStore {
             Element grouproles = doc.createElement(E_GROUPROLES_RR);
             groupList.appendChild(grouproles);
             grouproles.setAttribute(A_GROUPNAME_RR, groupName);
-            SortedSet<GeoserverRole> roleObjects =  helper.group_roleMap.get(groupName);
-            for (GeoserverRole roleObject: roleObjects) {
+            SortedSet<GeoServerRole> roleObjects =  helper.group_roleMap.get(groupName);
+            for (GeoServerRole roleObject: roleObjects) {
                 Element ref = doc.createElement(E_ROLEREF_RR);
                 grouproles.appendChild(ref);
                 ref.setAttribute(A_ROLEREFID_RR,roleObject.getAuthority());
@@ -205,19 +205,19 @@ public class XMLRoleStore extends AbstractRoleStore {
 
 
     @Override
-    public void addRole(GeoserverRole role) throws IOException {
+    public void addRole(GeoServerRole role) throws IOException {
         ensureLock();
         super.addRole(role);
     }
 
     @Override
-    public void updateRole(GeoserverRole role) throws IOException {
+    public void updateRole(GeoServerRole role) throws IOException {
         ensureLock();
         super.updateRole(role);
     }
 
     @Override
-    public boolean removeRole(GeoserverRole role) throws IOException {
+    public boolean removeRole(GeoServerRole role) throws IOException {
         ensureLock();
         return super.removeRole(role);
     }
@@ -230,35 +230,35 @@ public class XMLRoleStore extends AbstractRoleStore {
     }
 
     @Override
-    public void disAssociateRoleFromGroup(GeoserverRole role, String groupname)
+    public void disAssociateRoleFromGroup(GeoServerRole role, String groupname)
             throws IOException {
         ensureLock();
         super.disAssociateRoleFromGroup(role, groupname);
     }
 
     @Override
-    public void associateRoleToGroup(GeoserverRole role, String groupname)
+    public void associateRoleToGroup(GeoServerRole role, String groupname)
             throws IOException {
         ensureLock();
         super.associateRoleToGroup(role, groupname);
     }
 
     @Override
-    public void associateRoleToUser(GeoserverRole role, String username)
+    public void associateRoleToUser(GeoServerRole role, String username)
             throws IOException {
         ensureLock();
         super.associateRoleToUser(role, username);
     }
 
     @Override
-    public void disAssociateRoleFromUser(GeoserverRole role, String username)
+    public void disAssociateRoleFromUser(GeoServerRole role, String username)
             throws IOException {
         ensureLock();
         super.disAssociateRoleFromUser(role, username);
     }
 
     @Override
-    public void setParentRole(GeoserverRole role, GeoserverRole parentRole)
+    public void setParentRole(GeoServerRole role, GeoServerRole parentRole)
             throws IOException {
         ensureLock();
         super.setParentRole(role, parentRole);

@@ -7,16 +7,16 @@ package org.geoserver.security.validation;
 
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.impl.GeoServerRole;
 
 
 
 /**
  * 
- * This class is a validation wrapper for {@link GeoserverRoleStore}
+ * This class is a validation wrapper for {@link GeoServerRoleStore}
  * 
  * Usage:
  * <code>
@@ -25,7 +25,7 @@ import org.geoserver.security.impl.GeoserverRole;
  * valStore.store()
  * </code>
  * 
- * Since the {@link GeoserverRoleStore} interface does not allow to 
+ * Since the {@link GeoServerRoleStore} interface does not allow to 
  * throw {@link RoleServiceException} objects directly, these objects
  * a wrapped into an IOException. Use {@link IOException#getCause()} to
  * get the proper exception.
@@ -34,29 +34,29 @@ import org.geoserver.security.impl.GeoserverRole;
  * @author christian
  *
  */
-public class RoleStoreValidationWrapper extends RoleServiceValidationWrapper implements GeoserverRoleStore{
+public class RoleStoreValidationWrapper extends RoleServiceValidationWrapper implements GeoServerRoleStore{
 
     
     /**
      * @see RoleServiceValidationWrapper
      */    
-    public RoleStoreValidationWrapper(GeoserverRoleStore store, boolean checkAgainstRules, 
-            GeoserverUserGroupService ...services) {
+    public RoleStoreValidationWrapper(GeoServerRoleStore store, boolean checkAgainstRules, 
+            GeoServerUserGroupService ...services) {
         super(store,checkAgainstRules, services);
     }
 
     /**
      * @see RoleServiceValidationWrapper
      */    
-    public RoleStoreValidationWrapper(GeoserverRoleStore store, GeoserverUserGroupService ...services) {
+    public RoleStoreValidationWrapper(GeoServerRoleStore store, GeoServerUserGroupService ...services) {
         super(store,services);
     }
         
-    GeoserverRoleStore getStore() {
-        return (GeoserverRoleStore) service;
+    GeoServerRoleStore getStore() {
+        return (GeoServerRoleStore) service;
     }
 
-    public void initializeFromService(GeoserverRoleService aService) throws IOException {
+    public void initializeFromService(GeoServerRoleService aService) throws IOException {
         getStore().initializeFromService(aService);
     }
 
@@ -65,42 +65,42 @@ public class RoleStoreValidationWrapper extends RoleServiceValidationWrapper imp
     }
 
 
-    public void addRole(GeoserverRole role) throws IOException {
+    public void addRole(GeoServerRole role) throws IOException {
         checkNotExistingRoleName(role.getAuthority());
         getStore().addRole(role);
     }
 
 
-    public void updateRole(GeoserverRole role) throws IOException {
+    public void updateRole(GeoServerRole role) throws IOException {
         checkExistingRoleName(role.getAuthority());
         getStore().updateRole(role);
     }
 
-    public boolean removeRole(GeoserverRole role) throws IOException {
+    public boolean removeRole(GeoServerRole role) throws IOException {
         checkRemovalOfAdminRole(role);
         checkRoleIsUsed(role);
         return getStore().removeRole(role);
     }
 
-    public void associateRoleToGroup(GeoserverRole role, String groupname) throws IOException {
+    public void associateRoleToGroup(GeoServerRole role, String groupname) throws IOException {
         checkExistingRoleName(role.getAuthority());
         checkValidGroupName(groupname);
         getStore().associateRoleToGroup(role, groupname);
     }
 
 
-    public void disAssociateRoleFromGroup(GeoserverRole role, String groupname) throws IOException {
+    public void disAssociateRoleFromGroup(GeoServerRole role, String groupname) throws IOException {
         checkExistingRoleName(role.getAuthority());
         checkValidGroupName(groupname);
         getStore().disAssociateRoleFromGroup(role, groupname);
     }
 
-    public void associateRoleToUser(GeoserverRole role, String username) throws IOException {
+    public void associateRoleToUser(GeoServerRole role, String username) throws IOException {
         checkExistingRoleName(role.getAuthority());
         checkValidUserName(username);
         getStore().associateRoleToUser(role, username);
     }
-    public void disAssociateRoleFromUser(GeoserverRole role, String username) throws IOException {
+    public void disAssociateRoleFromUser(GeoServerRole role, String username) throws IOException {
         checkExistingRoleName(role.getAuthority());
         checkValidUserName(username);
         getStore().disAssociateRoleFromUser(role, username);
@@ -117,7 +117,7 @@ public class RoleStoreValidationWrapper extends RoleServiceValidationWrapper imp
     }
 
 
-    public void setParentRole(GeoserverRole role, GeoserverRole parentRole) throws IOException {
+    public void setParentRole(GeoServerRole role, GeoServerRole parentRole) throws IOException {
         checkExistingRoleName(role.getAuthority());
         if (parentRole!=null)
             checkExistingRoleName(parentRole.getAuthority());

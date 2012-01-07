@@ -11,7 +11,7 @@ package org.geoserver.security.impl;
  * @author christian
  *
  */
-public class MemoryGeoserverUserGroup extends GeoserverUserGroup {
+public class MemoryGeoserverUserGroup extends GeoServerUserGroup {
 
     /**
      * 

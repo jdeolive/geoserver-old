@@ -8,11 +8,11 @@ package org.geoserver.security.validation;
 
 import java.text.MessageFormat;
 
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 
 /**
  *  
- * Validation errors for {@link GeoserverUserGroupService} 
+ * Validation errors for {@link GeoServerUserGroupService} 
  * 
  * 
  * @author christian

@@ -9,7 +9,7 @@ import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.apache.wicket.util.tester.FormTester;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 import org.geoserver.web.security.config.RoleTabbedPage;
@@ -61,11 +61,11 @@ public class NewRolePageTest extends AbstractSecurityWicketTestSupport {
         tester.assertRenderedPage(RoleTabbedPage.class);        
         tester.assertErrorMessages(new String[0]);
         
-        GeoserverRole role = gaService.getRoleByName("ROLE_TEST");
+        GeoServerRole role = gaService.getRoleByName("ROLE_TEST");
         assertNotNull(role);
         assertEquals(1,role.getProperties().size());
         assertEquals("10 10 20 20",role.getProperties().get("bbox"));
-        GeoserverRole parentRole = gaService.getParentRole(role);
+        GeoServerRole parentRole = gaService.getParentRole(role);
         assertNotNull(parentRole);
         assertEquals("ROLE_AUTHENTICATED",parentRole.getAuthority());
         

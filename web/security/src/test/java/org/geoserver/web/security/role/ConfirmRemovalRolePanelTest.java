@@ -13,23 +13,23 @@ import java.util.List;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.model.StringResourceModel;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.web.ComponentBuilder;
 import org.geoserver.web.FormTestPage;
 import org.geoserver.web.security.AbstractConfirmRemovalPanelTest;
 
-public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest<GeoserverRole> {
+public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest<GeoServerRole> {
     private static final long serialVersionUID = 1L;
 
-    protected void setupPanel(final List<GeoserverRole> roots)  {
+    protected void setupPanel(final List<GeoServerRole> roots)  {
         
         tester.startPage(new FormTestPage(new ComponentBuilder() {
             private static final long serialVersionUID = 1L;
 
             public Component buildComponent(String id) {
-                return new ConfirmRemovalRolePanel(id, roots.toArray(new GeoserverRole[roots.size()])) {
+                return new ConfirmRemovalRolePanel(id, roots.toArray(new GeoServerRole[roots.size()])) {
                     @Override
-                    protected StringResourceModel canRemove(GeoserverRole data) {
+                    protected StringResourceModel canRemove(GeoServerRole data) {
                         SelectionRoleRemovalLink link = new SelectionRoleRemovalLink(getRoleServiceName(),"XXX",null,null);
                         return link.canRemove(data);
                     }
@@ -48,8 +48,8 @@ public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest
     
 
     @Override
-    protected GeoserverRole getRemoveableObject() throws Exception{
-        GeoserverRole role =  gaService.getRoleByName("ROLE_NEW");
+    protected GeoServerRole getRemoveableObject() throws Exception{
+        GeoServerRole role =  gaService.getRoleByName("ROLE_NEW");
         if (role == null) {
             gaStore.addRole(role =gaStore.createRoleObject("ROLE_NEW"));
             gaStore.store();
@@ -58,9 +58,9 @@ public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest
     }
 
     @Override
-    protected GeoserverRole getProblematicObject() throws Exception {
+    protected GeoServerRole getProblematicObject() throws Exception {
         return gaService.getRoleByName(
-                GeoserverRole.ADMIN_ROLE.getAuthority());
+                GeoServerRole.ADMIN_ROLE.getAuthority());
     }
 
     @Override

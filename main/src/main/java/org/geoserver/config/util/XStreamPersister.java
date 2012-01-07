@@ -91,7 +91,7 @@ import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.SecureCatalogImpl;
 import org.geoserver.security.password.ConfigurationPasswordHelper;
-import org.geoserver.security.password.GeoserverPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerPBEPasswordEncoder;
 import org.geotools.coverage.grid.GeneralGridEnvelope;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.GeneralEnvelope;
@@ -675,7 +675,7 @@ public class XStreamPersister {
                             String encoderName = GeoServerExtensions.bean(
                                     GeoServerSecurityManager.class).getConfigPasswordEncrypterName();
                             if (encoderName!=null && encoderName.isEmpty()==false) {
-                                GeoserverPBEPasswordEncoder encoder = (GeoserverPBEPasswordEncoder) 
+                                GeoServerPBEPasswordEncoder encoder = (GeoServerPBEPasswordEncoder) 
                                         GeoServerExtensions.bean(encoderName);
                                 str=encoder.encodePassword(str, null);
                             }
@@ -1370,14 +1370,14 @@ public class XStreamPersister {
                 }
             }
 
-            List<GeoserverPBEPasswordEncoder> encoders = GeoServerExtensions.extensions(GeoserverPBEPasswordEncoder.class);
+            List<GeoServerPBEPasswordEncoder> encoders = GeoServerExtensions.extensions(GeoServerPBEPasswordEncoder.class);
             Set<String> encryptionFiels = ConfigurationPasswordHelper.getEncryptionFields(store);
             if (store.getConnectionParameters() !=null) {
                 for (String key : store.getConnectionParameters().keySet()) {
                     if (encryptionFiels.contains(key)) {
                         String value = (String)store.getConnectionParameters().get(key);
                         if (value!=null) {
-                            for (GeoserverPBEPasswordEncoder encoder : encoders) {
+                            for (GeoServerPBEPasswordEncoder encoder : encoders) {
                                 if (encoder.isResponsibleForEncoding(value)) {
                                     value = encoder.decode(value);
                                     store.getConnectionParameters().put(key, value);

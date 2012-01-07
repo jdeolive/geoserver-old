@@ -9,10 +9,10 @@ import java.io.IOException;
 import org.apache.wicket.Page;
 import org.apache.wicket.markup.html.link.Link;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.GeoServerSecuredPage;
 
@@ -53,7 +53,7 @@ public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
     }
 
     
-    public GeoserverUserGroupService getUserGroupService(String name)  {
+    public GeoServerUserGroupService getUserGroupService(String name)  {
         try {
             return getSecurityManager().loadUserGroupService(name);
         } catch (IOException e) {
@@ -61,7 +61,7 @@ public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
         }
     }
     
-    public GeoserverRoleService getRoleService(String name)  {
+    public GeoServerRoleService getRoleService(String name)  {
         try {
             return getSecurityManager().loadRoleService(name);
         } catch (IOException e) {
@@ -73,7 +73,7 @@ public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
         return getRoleService(name).canCreateStore();
     }
     
-    public GeoserverRoleStore getRoleStore(String name) throws IOException {
+    public GeoServerRoleStore getRoleStore(String name) throws IOException {
         return getRoleService(name).createStore();
     }
     
@@ -81,7 +81,7 @@ public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
         return getUserGroupService(name).canCreateStore();
     }
 
-    public GeoserverUserGroupStore getUserGroupStore(String name) throws IOException{
+    public GeoServerUserGroupStore getUserGroupStore(String name) throws IOException{
         return getUserGroupService(name).createStore();
     }
 

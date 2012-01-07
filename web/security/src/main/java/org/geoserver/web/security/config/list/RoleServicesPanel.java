@@ -8,7 +8,7 @@ package org.geoserver.web.security.config.list;
 import org.apache.wicket.Component;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
-import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -53,7 +53,7 @@ public class RoleServicesPanel extends NamedServicesPanel {
 
     @Override
     protected Class<?> getServiceClass() {
-        return GeoserverRoleService.class;
+        return GeoServerRoleService.class;
     }
 
     @Override

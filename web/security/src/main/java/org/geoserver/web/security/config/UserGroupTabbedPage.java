@@ -15,7 +15,7 @@ import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.ResourceModel;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.web.GeoServerApplication;
@@ -67,7 +67,7 @@ public class UserGroupTabbedPage extends AbstractSecurityPage {
                         helper = new SecurityNamedConfigModelHelper(config,false);
                     
                     return  new NamedConfigPanel(panelId,helper,
-                            GeoserverUserGroupService.class,responsePage);
+                            GeoServerUserGroupService.class,responsePage);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

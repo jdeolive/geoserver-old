@@ -20,50 +20,50 @@ import java.util.TreeSet;
  *
  */
 public class UserGroupStoreHelper{
-    public TreeMap<String, GeoserverUser> userMap = new TreeMap<String,GeoserverUser>();
-    public TreeMap<String, GeoserverUserGroup>groupMap = new TreeMap<String,GeoserverUserGroup>();
-    public TreeMap<GeoserverUserGroup, SortedSet<GeoserverUser>>group_userMap =
-        new TreeMap<GeoserverUserGroup, SortedSet<GeoserverUser>>();
-    public TreeMap<GeoserverUser, SortedSet<GeoserverUserGroup>> user_groupMap =
-        new TreeMap<GeoserverUser, SortedSet<GeoserverUserGroup>>();     
+    public TreeMap<String, GeoServerUser> userMap = new TreeMap<String,GeoServerUser>();
+    public TreeMap<String, GeoServerUserGroup>groupMap = new TreeMap<String,GeoServerUserGroup>();
+    public TreeMap<GeoServerUserGroup, SortedSet<GeoServerUser>>group_userMap =
+        new TreeMap<GeoServerUserGroup, SortedSet<GeoServerUser>>();
+    public TreeMap<GeoServerUser, SortedSet<GeoServerUserGroup>> user_groupMap =
+        new TreeMap<GeoServerUser, SortedSet<GeoServerUserGroup>>();     
 
     
-    public GeoserverUser getUserByUsername(String username) throws IOException {
+    public GeoServerUser getUserByUsername(String username) throws IOException {
         return  userMap.get(username);
 
     }
 
-    public GeoserverUserGroup getGroupByGroupname(String groupname) throws IOException {
+    public GeoServerUserGroup getGroupByGroupname(String groupname) throws IOException {
         return  groupMap.get(groupname);
     }
 
 
-    public SortedSet<GeoserverUser> getUsers() throws IOException{
+    public SortedSet<GeoServerUser> getUsers() throws IOException{
         
-        SortedSet<GeoserverUser> users = new TreeSet<GeoserverUser>();
+        SortedSet<GeoServerUser> users = new TreeSet<GeoServerUser>();
         users.addAll(userMap.values());
         return Collections.unmodifiableSortedSet(users);
     }
     
-    public SortedSet<GeoserverUserGroup> getUserGroups() throws IOException{
+    public SortedSet<GeoServerUserGroup> getUserGroups() throws IOException{
         
-        SortedSet<GeoserverUserGroup> groups = new TreeSet<GeoserverUserGroup>();
+        SortedSet<GeoServerUserGroup> groups = new TreeSet<GeoServerUserGroup>();
         groups.addAll(groupMap.values());
         return Collections.unmodifiableSortedSet(groups);
     }
     
-    public  SortedSet<GeoserverUserGroup> getGroupsForUser (GeoserverUser user) throws IOException{        
-        SortedSet<GeoserverUserGroup> groups = user_groupMap.get(user);
+    public  SortedSet<GeoServerUserGroup> getGroupsForUser (GeoServerUser user) throws IOException{        
+        SortedSet<GeoServerUserGroup> groups = user_groupMap.get(user);
         if  (groups==null) 
-            groups =  new TreeSet<GeoserverUserGroup>();
+            groups =  new TreeSet<GeoServerUserGroup>();
         return Collections.unmodifiableSortedSet(groups);
     }
     
     
-    public  SortedSet<GeoserverUser> getUsersForGroup (GeoserverUserGroup group) throws IOException{
-        SortedSet<GeoserverUser> users = group_userMap.get(group);
+    public  SortedSet<GeoServerUser> getUsersForGroup (GeoServerUserGroup group) throws IOException{
+        SortedSet<GeoServerUser> users = group_userMap.get(group);
         if  (users==null) 
-            users= new TreeSet<GeoserverUser>();
+            users= new TreeSet<GeoServerUser>();
         return Collections.unmodifiableSortedSet(users);
     }
     

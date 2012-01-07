@@ -14,19 +14,19 @@ import java.util.SortedSet;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityProvider;
-import org.geoserver.security.GeoserverAuthenticationProcessingFilter;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerAuthenticationProcessingFilter;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoserverConfigPasswordEncoder;
-import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.password.GeoServerConfigPasswordEncoder;
+import org.geoserver.security.password.GeoServerUserPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
@@ -57,7 +57,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     public void validateManagerConfig(SecurityManagerConfig config) throws SecurityConfigException{
         
         String encrypterName =config.getConfigPasswordEncrypterName();
-        GeoserverConfigPasswordEncoder encoder = null;
+        GeoServerConfigPasswordEncoder encoder = null;
         if (isNotEmpty(encrypterName)==false) {
             throw createSecurityException(SEC_ERR_07);
         }
@@ -68,10 +68,10 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
         } catch (NoSuchBeanDefinitionException ex) {
             throw createSecurityException(SEC_ERR_01, encrypterName);
         }
-        if (o instanceof GeoserverConfigPasswordEncoder == false) {
+        if (o instanceof GeoServerConfigPasswordEncoder == false) {
             throw createSecurityException(SEC_ERR_01, encrypterName);
         }
-        encoder = (GeoserverConfigPasswordEncoder) o;
+        encoder = (GeoServerConfigPasswordEncoder) o;
         
         if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false) {
             if (encoder!=null && encoder.isAvailableWithoutStrongCryptogaphy()==false)                
@@ -126,13 +126,13 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     
     protected  SortedSet<String> getNamesFor(Class<?> extensionPoint) {
         try {
-            if (extensionPoint==GeoserverUserGroupService.class)
+            if (extensionPoint==GeoServerUserGroupService.class)
                 return manager.listUserGroupServices();
-            if (extensionPoint==GeoserverRoleService.class)
+            if (extensionPoint==GeoServerRoleService.class)
                 return manager.listRoleServices();
             if (extensionPoint==GeoServerAuthenticationProvider.class)
                 return manager.listAuthenticationProviders();
-            if (extensionPoint==GeoserverAuthenticationProcessingFilter.class)
+            if (extensionPoint==GeoServerAuthenticationProcessingFilter.class)
                 return manager.listFilters();
             if (extensionPoint==PasswordValidator.class)
                 return manager.listPasswordValidators();
@@ -166,12 +166,12 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     }
     
     public void validateAddUserGroupService(SecurityUserGroupServiceConfig config) throws SecurityConfigException{
-        validateAddNamedService(GeoserverUserGroupService.class, config);        
+        validateAddNamedService(GeoServerUserGroupService.class, config);        
         validate(config);
     }
     
     public void validateAddRoleService(SecurityRoleServiceConfig config) throws SecurityConfigException{
-        validateAddNamedService(GeoserverRoleService.class, config);
+        validateAddNamedService(GeoServerRoleService.class, config);
         validate(config);
     }
 
@@ -187,16 +187,16 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     }
 
     public void validateAddFilter(SecurityNamedServiceConfig config) throws SecurityConfigException{
-        validateAddNamedService(GeoserverAuthenticationProcessingFilter.class, config);        
+        validateAddNamedService(GeoServerAuthenticationProcessingFilter.class, config);        
     }
     
     public void validateModifiedUserGroupService(SecurityUserGroupServiceConfig config,SecurityUserGroupServiceConfig oldConfig) throws SecurityConfigException{
-        validateModifiedNamedService(GeoserverUserGroupService.class, config);
+        validateModifiedNamedService(GeoServerUserGroupService.class, config);
         validate(config);
     }
     
     public void validateModifiedRoleService(SecurityRoleServiceConfig config,SecurityRoleServiceConfig oldConfig) throws SecurityConfigException{
-        validateModifiedNamedService(GeoserverRoleService.class, config);
+        validateModifiedNamedService(GeoServerRoleService.class, config);
         validate(config);
     }
 
@@ -211,12 +211,12 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     }
 
     public void validateModifiedFilter(SecurityNamedServiceConfig config,SecurityNamedServiceConfig oldConfig) throws SecurityConfigException{
-        validateModifiedNamedService(GeoserverAuthenticationProcessingFilter.class, config);        
+        validateModifiedNamedService(GeoServerAuthenticationProcessingFilter.class, config);        
     }
     
     
     public void validateRemoveUserGroupService(SecurityUserGroupServiceConfig config) throws SecurityConfigException{
-        validateRemoveNamedService(GeoserverUserGroupService.class, config);
+        validateRemoveNamedService(GeoServerUserGroupService.class, config);
         try {
             for (String name: manager.listAuthenticationProviders()) {
                 SecurityAuthProviderConfig authConfig = 
@@ -234,7 +234,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     }
     
     public void validateRemoveRoleService(SecurityRoleServiceConfig config) throws SecurityConfigException{
-        validateRemoveNamedService(GeoserverRoleService.class, config); 
+        validateRemoveNamedService(GeoServerRoleService.class, config); 
         if (manager.getActiveRoleService().getName().equals(config.getName())) {
                     throw createSecurityException(SEC_ERR_30, config.getName());
                 }
@@ -267,13 +267,13 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     }
 
     public void validateRemoveFilter(SecurityNamedServiceConfig config) throws SecurityConfigException{
-        validateRemoveNamedService(GeoserverAuthenticationProcessingFilter.class, config);        
+        validateRemoveNamedService(GeoServerAuthenticationProcessingFilter.class, config);        
     }
 
 
     public void validate(SecurityAuthProviderConfig config) throws SecurityConfigException {
         if (isNotEmpty(config.getUserGroupServiceName())) {
-            if (getNamesFor(GeoserverUserGroupService.class).
+            if (getNamesFor(GeoServerUserGroupService.class).
                     contains(config.getUserGroupServiceName())==false)
                     throw createSecurityException(SEC_ERR_24d,
                             config.getUserGroupServiceName() );
@@ -288,7 +288,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
 
     public void validate(SecurityUserGroupServiceConfig config) throws SecurityConfigException {
         String encoderName =config.getPasswordEncoderName();
-        GeoserverUserPasswordEncoder encoder = null;
+        GeoServerUserPasswordEncoder encoder = null;
         if (isNotEmpty(encoderName)) {
             Object o=null;
             try {
@@ -296,9 +296,9 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
             } catch (NoSuchBeanDefinitionException ex) {
                 throw createSecurityException(SEC_ERR_04, encoderName);
             }
-            if (o instanceof GeoserverUserPasswordEncoder == false)
+            if (o instanceof GeoServerUserPasswordEncoder == false)
                 throw createSecurityException(SEC_ERR_04, encoderName);
-            encoder = (GeoserverUserPasswordEncoder) o;
+            encoder = (GeoServerUserPasswordEncoder) o;
         } else {
             throw createSecurityException(SEC_ERR_32, config.getName());
         }
@@ -332,11 +332,11 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
             return id+"a";
         if (PasswordValidator.class==extPoint)
             return id+"b";
-        if (GeoserverRoleService.class==extPoint)
+        if (GeoServerRoleService.class==extPoint)
             return id+"c";
-        if (GeoserverUserGroupService.class==extPoint)
+        if (GeoServerUserGroupService.class==extPoint)
             return id+"d";
-        if (GeoserverAuthenticationProcessingFilter.class==extPoint)
+        if (GeoServerAuthenticationProcessingFilter.class==extPoint)
             return id+"e";
         throw new RuntimeException("Unkonw extension point: "+extPoint.getName());
     }

@@ -11,8 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
 import org.springframework.dao.DataAccessException;
@@ -20,13 +20,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 /**
- * Standard implementation of {@link GeoserverUserGroupService}
+ * Standard implementation of {@link GeoServerUserGroupService}
  * 
  * @author christian
  *
  */
 public abstract class AbstractUserGroupService extends AbstractGeoServerSecurityService
-    implements GeoserverUserGroupService {
+    implements GeoServerUserGroupService {
     
     
     protected Set<UserGroupLoadedListener> listeners = 
@@ -50,7 +50,7 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
 
     
     @Override
-    public GeoserverUserGroupStore createStore() throws IOException {
+    public GeoServerUserGroupStore createStore() throws IOException {
         //return null, subclasses can override if they support a store along with a service
         return null;
     }
@@ -74,12 +74,12 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupService#getUserByUsername(java.lang.String)
      */
-    public GeoserverUser getUserByUsername(String username) throws IOException {
+    public GeoServerUser getUserByUsername(String username) throws IOException {
         return helper.getUserByUsername(username);
 
     }
 
-    public GeoserverUserGroup getGroupByGroupname(String groupname) throws IOException {
+    public GeoServerUserGroup getGroupByGroupname(String groupname) throws IOException {
         return  helper.getGroupByGroupname(groupname);
     }
     
@@ -87,7 +87,7 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupService#getUsers()
      */
-    public SortedSet<GeoserverUser> getUsers() throws IOException{
+    public SortedSet<GeoServerUser> getUsers() throws IOException{
         return helper.getUsers();
         
     }
@@ -95,7 +95,7 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupService#getUserGroups()
      */
-    public SortedSet<GeoserverUserGroup> getUserGroups() throws IOException{
+    public SortedSet<GeoServerUserGroup> getUserGroups() throws IOException{
         return helper.getUserGroups();
     }
 
@@ -103,8 +103,8 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupService#createUserObject(java.lang.String, java.lang.String, boolean)
      */
-    public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
-       GeoserverUser user = new GeoserverUser(username);
+    public GeoServerUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
+       GeoServerUser user = new GeoServerUser(username);
        user.setEnabled(isEnabled);
        user.setPassword(password);
        return user;
@@ -113,8 +113,8 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupService#createGroupObject(java.lang.String, boolean)
      */
-    public GeoserverUserGroup createGroupObject(String groupname, boolean isEnabled) throws IOException{
-        GeoserverUserGroup group = new GeoserverUserGroup(groupname);
+    public GeoServerUserGroup createGroupObject(String groupname, boolean isEnabled) throws IOException{
+        GeoServerUserGroup group = new GeoServerUserGroup(groupname);
         group.setEnabled(isEnabled);
         return group;
     }
@@ -122,7 +122,7 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupService#getGroupsForUser(org.geoserver.security.impl.GeoserverUser)
      */
-    public  SortedSet<GeoserverUserGroup> getGroupsForUser (GeoserverUser user) throws IOException{
+    public  SortedSet<GeoServerUserGroup> getGroupsForUser (GeoServerUser user) throws IOException{
         return helper.getGroupsForUser(user);
     }
     
@@ -130,7 +130,7 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverUserGroupService#getUsersForGroup(org.geoserver.security.impl.GeoserverUserGroup)
      */
-    public  SortedSet<GeoserverUser> getUsersForGroup (GeoserverUserGroup group) throws IOException{
+    public  SortedSet<GeoServerUser> getUsersForGroup (GeoServerUserGroup group) throws IOException{
         return helper.getUsersForGroup(group);
     }
 
@@ -186,7 +186,7 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
             DataAccessException {
-        GeoserverUser user=null;
+        GeoServerUser user=null;
         try {
             user = getUserByUsername(username);            
             if (user==null)

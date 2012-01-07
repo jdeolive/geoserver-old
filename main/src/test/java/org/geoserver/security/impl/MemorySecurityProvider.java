@@ -8,8 +8,8 @@ import java.util.Set;
 
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.security.GeoServerSecurityProvider;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
@@ -41,23 +41,23 @@ public class MemorySecurityProvider extends GeoServerSecurityProvider {
     }
 
     @Override
-    public Class<? extends GeoserverUserGroupService> getUserGroupServiceClass() {
+    public Class<? extends GeoServerUserGroupService> getUserGroupServiceClass() {
         return MemoryUserGroupService.class;
     }
 
     @Override
-    public GeoserverUserGroupService createUserGroupService(SecurityNamedServiceConfig config)
+    public GeoServerUserGroupService createUserGroupService(SecurityNamedServiceConfig config)
             throws IOException {
         return new MemoryUserGroupService();
     }
 
     @Override
-    public Class<? extends GeoserverRoleService> getRoleServiceClass() {
+    public Class<? extends GeoServerRoleService> getRoleServiceClass() {
         return MemoryRoleService.class;
     }
 
     @Override
-    public GeoserverRoleService createRoleService(SecurityNamedServiceConfig config)
+    public GeoServerRoleService createRoleService(SecurityNamedServiceConfig config)
             throws IOException {
         return new MemoryRoleService();
     }

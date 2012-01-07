@@ -13,14 +13,14 @@ import java.util.Properties;
 import java.util.SortedSet;
 
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.RoleLoadedListener;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
 import org.springframework.util.StringUtils;
@@ -29,7 +29,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * 
- * This class is a validation wrapper for {@link GeoserverRoleService}
+ * This class is a validation wrapper for {@link GeoServerRoleService}
  * 
  * Usage:
  * <code>
@@ -37,7 +37,7 @@ import org.springframework.util.StringUtils;
  * valService.getRoles();
  * </code>
  * 
- * Since the {@link GeoserverRoleService} interface does not allow to 
+ * Since the {@link GeoServerRoleService} interface does not allow to 
  * throw {@link RoleServiceException} objects directly, these objects
  * a wrapped into an IOException. Use {@link IOException#getCause()} to
  * get the proper exception.
@@ -46,25 +46,25 @@ import org.springframework.util.StringUtils;
  * @author christian
  *
  */
-public class RoleServiceValidationWrapper extends AbstractSecurityValidator implements GeoserverRoleService{
+public class RoleServiceValidationWrapper extends AbstractSecurityValidator implements GeoServerRoleService{
 
-    protected GeoserverRoleService service;
-    protected GeoserverUserGroupService[] services;
+    protected GeoServerRoleService service;
+    protected GeoServerUserGroupService[] services;
     protected boolean checkAgainstRules;
     
     /**
      * Creates a wrapper object. If  checkAgainstRules is true, no 
      * roles used in rules can be removed
      * 
-     * Optionally, {@link GeoserverUserGroupService} objects
+     * Optionally, {@link GeoServerUserGroupService} objects
      * can be passed if validation of user names and group names is required
      * 
      * @param service
      * @param checkAgainstRules 
      * @param services
      */    
-    public RoleServiceValidationWrapper(GeoserverRoleService service, boolean checkAgainstRules,
-            GeoserverUserGroupService ...services) {
+    public RoleServiceValidationWrapper(GeoServerRoleService service, boolean checkAgainstRules,
+            GeoServerUserGroupService ...services) {
         this.service=service;
         this.services=services;
         this.checkAgainstRules=checkAgainstRules;
@@ -75,19 +75,19 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
      * @param service
      * @param services
      */
-    public RoleServiceValidationWrapper(GeoserverRoleService service,
-            GeoserverUserGroupService ...services) {
+    public RoleServiceValidationWrapper(GeoServerRoleService service,
+            GeoServerUserGroupService ...services) {
         this(service, false, services);
     }
 
 
-    public GeoserverRoleService getWrappedService() {
+    public GeoServerRoleService getWrappedService() {
         return service;
     }
     
     /**
      * Checks if a user name is valid
-     * if this validator was constructed with {@link GeoserverUserGroupService}
+     * if this validator was constructed with {@link GeoServerUserGroupService}
      * objects, a cross check is done 
      * 
      * @param userName
@@ -98,7 +98,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
             throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_04);
         
         if (services.length==0) return;
-        for (GeoserverUserGroupService service : services) {
+        for (GeoServerUserGroupService service : services) {
             if (service.getUserByUsername(userName)!=null)
                 return;
         }
@@ -111,7 +111,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
      * @param role
      * @throws IOException
      */
-    public void checkRemovalOfAdminRole(GeoserverRole role) throws IOException {
+    public void checkRemovalOfAdminRole(GeoServerRole role) throws IOException {
         if (getAdminRole()==null)
             return;
         if (role.getAuthority().equals(getAdminRole().getAuthority()))
@@ -127,7 +127,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
      * @param role
      * @throws IOException
      */
-    public void checkRoleIsUsed(GeoserverRole role) throws IOException {
+    public void checkRoleIsUsed(GeoServerRole role) throws IOException {
         
         if (checkAgainstRules==false)
             return;
@@ -147,7 +147,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
     
     /**
      * Checks if a group name is valid
-     * if this validator was constructed with {@link GeoserverUserGroupService}
+     * if this validator was constructed with {@link GeoServerUserGroupService}
      * objects, a cross check is done 
      * 
      * @param groupName
@@ -158,7 +158,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
             throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_05);
         
         if (services.length==0) return;
-        for (GeoserverUserGroupService service : services) {
+        for (GeoServerUserGroupService service : services) {
             if (service.getGroupByGroupname(groupName)!=null)
                 return;
         }
@@ -194,7 +194,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
     }
 
 
-    public GeoserverRoleStore createStore() throws IOException {
+    public GeoServerRoleStore createStore() throws IOException {
         return service.createStore();
     }
 
@@ -228,31 +228,31 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
     }
 
 
-    public SortedSet<String> getGroupNamesForRole(GeoserverRole role) throws IOException {
+    public SortedSet<String> getGroupNamesForRole(GeoServerRole role) throws IOException {
         checkExistingRoleName(role.getAuthority());
         return service.getGroupNamesForRole(role);
     }
 
 
-    public SortedSet<String> getUserNamesForRole(GeoserverRole role) throws IOException {
+    public SortedSet<String> getUserNamesForRole(GeoServerRole role) throws IOException {
         checkExistingRoleName(role.getAuthority());
         return service.getUserNamesForRole(role);
     }
 
 
-    public SortedSet<GeoserverRole> getRolesForUser(String username) throws IOException {
+    public SortedSet<GeoServerRole> getRolesForUser(String username) throws IOException {
         checkValidUserName(username);
         return service.getRolesForUser(username);
     }
 
 
-    public SortedSet<GeoserverRole> getRolesForGroup(String groupname) throws IOException {
+    public SortedSet<GeoServerRole> getRolesForGroup(String groupname) throws IOException {
         checkValidGroupName(groupname);
         return service.getRolesForGroup(groupname);
     }
 
 
-    public SortedSet<GeoserverRole> getRoles() throws IOException {
+    public SortedSet<GeoServerRole> getRoles() throws IOException {
         return service.getRoles();
     }
 
@@ -263,19 +263,19 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
     }
 
 
-    public GeoserverRole createRoleObject(String role) throws IOException {
+    public GeoServerRole createRoleObject(String role) throws IOException {
         checkRoleName(role);
         return service.createRoleObject(role);
     }
 
 
-    public GeoserverRole getParentRole(GeoserverRole role) throws IOException {
+    public GeoServerRole getParentRole(GeoServerRole role) throws IOException {
         checkExistingRoleName(role.getAuthority());
         return service.getParentRole(role);
     }
 
 
-    public GeoserverRole getRoleByName(String role) throws IOException {
+    public GeoServerRole getRoleByName(String role) throws IOException {
         return service.getRoleByName(role);
     }
 
@@ -291,7 +291,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
     }
 
 
-    public GeoserverRole getAdminRole() {
+    public GeoServerRole getAdminRole() {
         return service.getAdminRole();
     }
 

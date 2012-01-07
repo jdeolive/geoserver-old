@@ -6,18 +6,18 @@ import java.util.logging.Logger;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.AccessMode;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.MemoryRoleService;
 import org.geoserver.security.impl.MemoryUserGroupService;
-import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.test.GeoServerTestSupport;
 import org.geotools.util.logging.Logging;
@@ -27,24 +27,24 @@ public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
     static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
 
     public RoleStoreValidationWrapper createStore(String name,String adminRole,
-            GeoserverUserGroupService... services) throws IOException, SecurityConfigException {
+            GeoServerUserGroupService... services) throws IOException, SecurityConfigException {
         MemoryRoleServiceConfigImpl config = new MemoryRoleServiceConfigImpl();
         config.setName(name);
         config.setClassName(MemoryRoleService.class.getName());
         config.setAdminRoleName(adminRole);
-        GeoserverRoleService service = new MemoryRoleService();
+        GeoServerRoleService service = new MemoryRoleService();
         service.initializeFromConfig(config);
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
         getSecurityManager().saveRoleService(config, true);
         return new RoleStoreValidationWrapper(service.createStore(), services);
     }
 
-    protected GeoserverUserGroupStore createUGStore(String name) throws IOException {
+    protected GeoServerUserGroupStore createUGStore(String name) throws IOException {
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();
         config.setName(name);
-        config.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
+        config.setPasswordEncoderName(GeoServerUserPBEPasswordEncoder.PrototypeName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        GeoserverUserGroupService service = new MemoryUserGroupService();
+        GeoServerUserGroupService service = new MemoryUserGroupService();
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
         service.initializeFromConfig(config);
         return service.createStore();
@@ -61,7 +61,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
 
     public void testRoleStoreWrapper() throws Exception {
         boolean failed;
-        RoleStoreValidationWrapper store = createStore("test",GeoserverRole.ADMIN_ROLE.getAuthority());
+        RoleStoreValidationWrapper store = createStore("test",GeoServerRole.ADMIN_ROLE.getAuthority());
 
         failed = false;
         try {
@@ -74,7 +74,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
 
         store.addRole(store.createRoleObject("role1"));
         assertEquals(1, store.getRoles().size());
-        GeoserverRole role1 = store.getRoleByName("role1");
+        GeoServerRole role1 = store.getRoleByName("role1");
 
         failed = false;
         try {
@@ -95,7 +95,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
         assertTrue(failed);
 
         store.addRole(store.createRoleObject("parent1"));
-        GeoserverRole parent1 = store.getRoleByName("parent1");
+        GeoServerRole parent1 = store.getRoleByName("parent1");
         assertNotNull(parent1);
         failed = false;
         try {
@@ -183,7 +183,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
                 
         RoleStoreValidationWrapper store2 = new 
                 RoleStoreValidationWrapper(
-                        (GeoserverRoleStore) store.getWrappedService(),true);
+                        (GeoServerRoleStore) store.getWrappedService(),true);
         failed = false;
         try {        
             store2.removeRole(parent1);
@@ -201,10 +201,10 @@ public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
                 
         failed = false;
         try {
-            store.removeRole(GeoserverRole.ADMIN_ROLE);
+            store.removeRole(GeoServerRole.ADMIN_ROLE);
         } catch (IOException ex) {
             assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_08,
-                    GeoserverRole.ADMIN_ROLE.getAuthority());
+                    GeoServerRole.ADMIN_ROLE.getAuthority());
             failed = true;
         }
         assertTrue(failed);
@@ -213,18 +213,18 @@ public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
 
     public void testRoleStoreWrapperWithUGServices() throws Exception {
         boolean failed;
-        GeoserverUserGroupStore ugStore1 = createUGStore("test1");
+        GeoServerUserGroupStore ugStore1 = createUGStore("test1");
         ugStore1.addUser(ugStore1.createUserObject("user1", "abc", true));
         ugStore1.addGroup(ugStore1.createGroupObject("group1", true));
         ugStore1.store();
 
-        GeoserverUserGroupStore ugStore2 = createUGStore("test2");
+        GeoServerUserGroupStore ugStore2 = createUGStore("test2");
         ugStore2.addUser(ugStore1.createUserObject("user2", "abc", true));
         ugStore2.addGroup(ugStore1.createGroupObject("group2", true));
         ugStore2.store();
 
         RoleStoreValidationWrapper store = createStore("test", "role1",ugStore1, ugStore2);
-        GeoserverRole role1 = store.createRoleObject("role1");
+        GeoServerRole role1 = store.createRoleObject("role1");
         store.addRole(role1);
         store.store();
 
@@ -303,7 +303,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
         }
         assertTrue(failed);
 
-        store.removeRole(GeoserverRole.ADMIN_ROLE);
+        store.removeRole(GeoServerRole.ADMIN_ROLE);
     }
 
 }

@@ -4,10 +4,10 @@
  */
 package org.geoserver.security.config;
 
-import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoServerRoleService;
 
 /**
- * Interface for {@link GeoserverRoleService} configuration objects.
+ * Interface for {@link GeoServerRoleService} configuration objects.
  *
  * @author christian
  */

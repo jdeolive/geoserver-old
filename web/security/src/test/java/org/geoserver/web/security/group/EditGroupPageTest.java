@@ -3,8 +3,8 @@ package org.geoserver.web.security.group;
 import java.util.SortedSet;
 
 import org.apache.wicket.util.tester.FormTester;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 import org.geoserver.web.security.config.UserGroupTabbedPage;
@@ -68,10 +68,10 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         tester.assertErrorMessages(new String[0]);
         
         
-        GeoserverUserGroup group = ugService.getGroupByGroupname("group1");
+        GeoServerUserGroup group = ugService.getGroupByGroupname("group1");
         assertNotNull(group);
         assertFalse(group.isEnabled());
-        SortedSet<GeoserverRole> roleList = gaService.getRolesForGroup("group1");
+        SortedSet<GeoServerRole> roleList = gaService.getRolesForGroup("group1");
         assertEquals(1,roleList.size());
         assertEquals("ROLE_NEW",roleList.iterator().next().getAuthority());
                 
@@ -99,7 +99,7 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         form.submit("save");
         tester.assertRenderedPage(UserGroupTabbedPage.class);
         
-        SortedSet<GeoserverRole> roleList = gaService.getRolesForGroup("group1");
+        SortedSet<GeoServerRole> roleList = gaService.getRolesForGroup("group1");
         assertEquals(1,roleList.size());
         assertEquals("ROLE_WFS",roleList.iterator().next().getAuthority());
 
@@ -127,7 +127,7 @@ public class EditGroupPageTest extends AbstractSecurityWicketTestSupport {
         form.submit("save");
         tester.assertRenderedPage(UserGroupTabbedPage.class);
         
-        GeoserverUserGroup group = ugService.getGroupByGroupname("group1");
+        GeoServerUserGroup group = ugService.getGroupByGroupname("group1");
         assertNotNull(group);
         assertFalse(group.isEnabled());
 

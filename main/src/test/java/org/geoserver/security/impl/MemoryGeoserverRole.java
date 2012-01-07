@@ -11,7 +11,7 @@ package org.geoserver.security.impl;
  * @author christian
  *
  */
-public class MemoryGeoserverRole extends GeoserverRole {
+public class MemoryGeoserverRole extends GeoServerRole {
     
     /**
      * 

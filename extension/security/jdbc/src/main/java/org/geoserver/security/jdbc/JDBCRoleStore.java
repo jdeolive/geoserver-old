@@ -11,18 +11,18 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.RoleHierarchyHelper;
 
 /**
- * JDBC Implementation of {@link GeoserverRoleStore}
+ * JDBC Implementation of {@link GeoServerRoleStore}
  * 
  * @author christian
  *
  */
-public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore {
+public class JDBCRoleStore extends JDBCRoleService implements GeoServerRoleStore {
 
     protected boolean modified;
     protected Connection connection;
@@ -80,7 +80,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     }
 
     
-    protected void addRoleProperties(GeoserverRole role, Connection con) throws SQLException,IOException {
+    protected void addRoleProperties(GeoServerRole role, Connection con) throws SQLException,IOException {
         if (role.getProperties().size()==0) return; // nothing to do
         
         PreparedStatement ps = getDMLStatement("roleprops.insert", con);
@@ -101,7 +101,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleStore#addRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public void addRole(GeoserverRole role)  throws IOException{
+    public void addRole(GeoServerRole role)  throws IOException{
     
         Connection con = null;
         PreparedStatement ps = null;
@@ -125,7 +125,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleStore#updateRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public void updateRole(GeoserverRole role) throws IOException {
+    public void updateRole(GeoServerRole role) throws IOException {
  
         
         // No attributes for update   
@@ -157,7 +157,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleStore#removeRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public boolean removeRole(GeoserverRole role) throws IOException {
+    public boolean removeRole(GeoServerRole role) throws IOException {
         Connection con = null;
         PreparedStatement ps = null;
         boolean retval = false;
@@ -201,7 +201,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /**
      * Executes {@link Connection#commit()} and frees
      * the connection
-     * @see org.geoserver.security.GeoserverRoleStore#store()
+     * @see org.geoserver.security.GeoServerRoleStore#store()
      */
     public void store() throws IOException {
         // Simply commit the transaction
@@ -218,7 +218,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleStore#associateRoleToUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void associateRoleToUser(GeoserverRole role, String username) throws IOException{
+    public void associateRoleToUser(GeoServerRole role, String username) throws IOException{
         
         Connection con = null;
         PreparedStatement ps = null;
@@ -239,7 +239,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void disAssociateRoleFromUser(GeoserverRole role, String username) throws IOException{
+    public void disAssociateRoleFromUser(GeoServerRole role, String username) throws IOException{
     
        
         Connection con = null;
@@ -262,7 +262,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleStore#associateRoleToGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void associateRoleToGroup(GeoserverRole role, String groupname) throws IOException{
+    public void associateRoleToGroup(GeoServerRole role, String groupname) throws IOException{
         
         Connection con = null;
         PreparedStatement ps = null;
@@ -283,7 +283,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
      */
-    public void disAssociateRoleFromGroup(GeoserverRole role, String groupname) throws IOException{
+    public void disAssociateRoleFromGroup(GeoServerRole role, String groupname) throws IOException{
     
        
         Connection con = null;
@@ -314,7 +314,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleStore#setParentRole(org.geoserver.security.impl.GeoserverRole, org.geoserver.security.impl.GeoserverRole)
      */
-    public void setParentRole(GeoserverRole role, GeoserverRole parentRole)
+    public void setParentRole(GeoServerRole role, GeoServerRole parentRole)
             throws IOException {
         
         RoleHierarchyHelper helper = new RoleHierarchyHelper(getParentMappings());
@@ -380,7 +380,7 @@ public class JDBCRoleStore extends JDBCRoleService implements GeoserverRoleStore
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleStore#initializeFromService(org.geoserver.security.GeoserverRoleService)
      */
-    public void initializeFromService(GeoserverRoleService service) throws IOException {
+    public void initializeFromService(GeoServerRoleService service) throws IOException {
         JDBCRoleService jdbcService= (JDBCRoleService) service;
         this.name=service.getName();
         this.adminRole=service.getAdminRole();

@@ -13,7 +13,7 @@ import javax.servlet.ServletResponse;
 
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.SecurityManagerConfig;
-import org.geoserver.security.password.GeoserverConfigPlainTextPasswordEncoder;
+import org.geoserver.security.password.GeoServerConfigPlainTextPasswordEncoder;
 import org.geoserver.test.GeoServerTestSupport;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.ProviderNotFoundException;
@@ -97,7 +97,7 @@ public class GeoServerAnonymousAuthTest extends GeoServerTestSupport {
         GeoServerSecurityManager secMgr = getSecurityManager();
         SecurityManagerConfig cfg = secMgr.getSecurityConfig();
         cfg.setAnonymousAuth(false);
-        cfg.setConfigPasswordEncrypterName(GeoserverConfigPlainTextPasswordEncoder.BeanName);
+        cfg.setConfigPasswordEncrypterName(GeoServerConfigPlainTextPasswordEncoder.BeanName);
         secMgr.saveSecurityConfig(cfg);
     }
 

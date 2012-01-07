@@ -7,7 +7,7 @@ package org.geoserver.security.event;
 
 import java.util.EventObject;
 
-import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoServerRoleService;
 
 /**
  * 
@@ -15,7 +15,7 @@ import org.geoserver.security.GeoserverRoleService;
  * the backend store into memory 
  * 
  * This event is intended for stateful services of
- * type {@link GeoserverRoleService}. If the
+ * type {@link GeoServerRoleService}. If the
  * backend is changed externally and a reload occurs, listeners
  * should be notified. 
  * 
@@ -29,13 +29,13 @@ public class RoleLoadedEvent extends EventObject {
      */
     private static final long serialVersionUID = 1L;
 
-    public RoleLoadedEvent(GeoserverRoleService source) {
+    public RoleLoadedEvent(GeoServerRoleService source) {
         super(source);
         
     }
     
-    public GeoserverRoleService getService() {
-        return (GeoserverRoleService) getSource();
+    public GeoServerRoleService getService() {
+        return (GeoServerRoleService) getSource();
     }
 
 }

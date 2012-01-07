@@ -12,11 +12,11 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 
 import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
-import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.password.GeoServerUserPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
 import org.geoserver.security.password.PasswordEncodingType;
 import org.geoserver.security.password.RandomPasswordProvider;
@@ -49,7 +49,7 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
     }
 
     @Override
-    public GeoserverUserGroupStore createStore() throws IOException {
+    public GeoServerUserGroupStore createStore() throws IOException {
         MemoryUserGroupStore store = new MemoryUserGroupStore();
         store.initializeFromService(this);
         return store;
@@ -63,26 +63,26 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
         ByteArrayInputStream in = new ByteArrayInputStream(byteArray);
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            helper.userMap = (TreeMap<String,GeoserverUser>) oin.readObject();
-            helper.groupMap =(TreeMap<String,GeoserverUserGroup>) oin.readObject();
-            helper.user_groupMap = (TreeMap<GeoserverUser,SortedSet<GeoserverUserGroup>>)oin.readObject();
-            helper.group_userMap = (TreeMap<GeoserverUserGroup,SortedSet<GeoserverUser>>)oin.readObject();
+            helper.userMap = (TreeMap<String,GeoServerUser>) oin.readObject();
+            helper.groupMap =(TreeMap<String,GeoServerUserGroup>) oin.readObject();
+            helper.user_groupMap = (TreeMap<GeoServerUser,SortedSet<GeoServerUserGroup>>)oin.readObject();
+            helper.group_userMap = (TreeMap<GeoServerUserGroup,SortedSet<GeoServerUser>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
     }
 
     @Override
-    public GeoserverUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
-        GeoserverUser user = new MemoryGeoserverUser(username, this);
+    public GeoServerUser createUserObject(String username,String password, boolean isEnabled) throws IOException{
+        GeoServerUser user = new MemoryGeoserverUser(username, this);
         user.setEnabled(isEnabled);
         user.setPassword(password);
         return user;
      }
      
     @Override
-     public GeoserverUserGroup createGroupObject(String groupname, boolean isEnabled) throws IOException{
-         GeoserverUserGroup group = new MemoryGeoserverUserGroup(groupname);
+     public GeoServerUserGroup createGroupObject(String groupname, boolean isEnabled) throws IOException{
+         GeoServerUserGroup group = new MemoryGeoserverUserGroup(groupname);
          group.setEnabled(isEnabled);
          return group;
      }
@@ -92,7 +92,7 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
         this.name=config.getName();
         SecurityUserGroupServiceConfig ugConfig =(SecurityUserGroupServiceConfig) config;        
         passwordEncoderName=ugConfig.getPasswordEncoderName();
-        GeoserverUserPasswordEncoder enc = (GeoserverUserPasswordEncoder) 
+        GeoServerUserPasswordEncoder enc = (GeoServerUserPasswordEncoder) 
                 GeoServerExtensions.bean(passwordEncoderName);
         if (enc.getEncodingType()==PasswordEncodingType.ENCRYPT) {
             KeyStoreProvider prov = KeyStoreProvider.get();

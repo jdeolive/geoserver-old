@@ -14,8 +14,8 @@ import java.util.TreeSet;
 
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
 
 /**
  * Helper Object for role calculations 
@@ -26,8 +26,8 @@ import org.geoserver.security.GeoserverUserGroupService;
 public class RoleCalculator  {
     
 
-    protected GeoserverRoleService roleService;
-    protected GeoserverUserGroupService userGroupService;
+    protected GeoServerRoleService roleService;
+    protected GeoServerUserGroupService userGroupService;
 
     /**
      * Constructor
@@ -35,29 +35,29 @@ public class RoleCalculator  {
      * @param userGroupService
      * @param roleService
      */
-    public RoleCalculator (GeoserverUserGroupService userGroupService,GeoserverRoleService roleService) {
+    public RoleCalculator (GeoServerUserGroupService userGroupService,GeoServerRoleService roleService) {
         this.userGroupService=userGroupService;
         this.roleService=roleService;
         assertServicesNotNull();
     }
         
-    public void setRoleService(GeoserverRoleService service) {
+    public void setRoleService(GeoServerRoleService service) {
         roleService=service;
         assertServicesNotNull();
 
     }
 
-    public GeoserverRoleService getRoleService() {
+    public GeoServerRoleService getRoleService() {
         return roleService;
     }
 
 
-    public void setUserGroupService(GeoserverUserGroupService service) {
+    public void setUserGroupService(GeoServerUserGroupService service) {
         userGroupService=service;
         assertServicesNotNull();
    }
 
-    public GeoserverUserGroupService getUserGroupService() {
+    public GeoServerUserGroupService getUserGroupService() {
         return userGroupService;
     }
 
@@ -77,7 +77,7 @@ public class RoleCalculator  {
 
 
     /**
-     * Calculate the {@link GeoserverRole} objects for a user
+     * Calculate the {@link GeoServerRole} objects for a user
      * 
      * The algorithm
      * 
@@ -91,41 +91,41 @@ public class RoleCalculator  {
      * role with role attributes if necessary
      * 
      * If the user has the admin role of the active role service,
-     * {@link GeoserverRole#ADMIN_ROLE} is also included in the set. 
+     * {@link GeoServerRole#ADMIN_ROLE} is also included in the set. 
      * 
      * @param user
      * @return
      * @throws IOException
      */  
-    public SortedSet<GeoserverRole> calculateRoles(GeoserverUser user)
+    public SortedSet<GeoServerRole> calculateRoles(GeoServerUser user)
             throws IOException {
         
-        Set<GeoserverRole> set1 = new HashSet<GeoserverRole>();
+        Set<GeoServerRole> set1 = new HashSet<GeoServerRole>();
         
         // alle roles for the user
         set1.addAll(getRoleService().getRolesForUser(user.getUsername()));
         addInheritedRoles(set1);
         
         // add all roles for enabled groups
-        for (GeoserverUserGroup group : 
+        for (GeoServerUserGroup group : 
             getUserGroupService().getGroupsForUser(user)) {
             if (group.isEnabled())
                 set1.addAll(calculateRoles(group));
         }
         
        // personalize roles
-        SortedSet<GeoserverRole> set2 = 
+        SortedSet<GeoServerRole> set2 = 
                 personalizeRoles(user, set1);
         
         // if the user has the admin role of the role service the 
         // GeoserverRole.ADMIN_ROLE must also be in the set
-        GeoserverRole adminRole = GeoServerExtensions.bean(GeoServerSecurityManager.class).getActiveRoleService().getAdminRole();
+        GeoServerRole adminRole = GeoServerExtensions.bean(GeoServerSecurityManager.class).getActiveRoleService().getAdminRole();
         if (adminRole!=null) {
             String adminRoleName = adminRole.getAuthority();
             if (adminRoleName != null && adminRoleName.length()> 0 
-                    && (adminRoleName.equals(GeoserverRole.ADMIN_ROLE.getAuthority())==false)) {
+                    && (adminRoleName.equals(GeoServerRole.ADMIN_ROLE.getAuthority())==false)) {
                 if (set2.contains(adminRole)) {
-                    set2.add(GeoserverRole.ADMIN_ROLE);
+                    set2.add(GeoServerRole.ADMIN_ROLE);
                 }
             }
         }
@@ -133,13 +133,13 @@ public class RoleCalculator  {
     }
     
     /**
-     * Collects the ascendents for a {@link GeoserverRole} object
+     * Collects the ascendents for a {@link GeoServerRole} object
      * 
      * @param role
      * @param inherited
      */
-    protected void addParentRole(GeoserverRole role,Collection<GeoserverRole> inherited) throws IOException{
-        GeoserverRole parentRole = 
+    protected void addParentRole(GeoServerRole role,Collection<GeoServerRole> inherited) throws IOException{
+        GeoServerRole parentRole = 
             getRoleService().getParentRole(role);
         if (parentRole==null) 
             return; // end of recursion
@@ -153,16 +153,16 @@ public class RoleCalculator  {
     }
 
     /**
-     * Calculate the {@link GeoserverRole} objects for a group
+     * Calculate the {@link GeoServerRole} objects for a group
      * including inherited roles
      * 
      * @param group
      * @return
      * @throws IOException
      */
-    public SortedSet<GeoserverRole> calculateRoles(GeoserverUserGroup group) throws IOException {
+    public SortedSet<GeoServerRole> calculateRoles(GeoServerUserGroup group) throws IOException {
         
-        SortedSet<GeoserverRole> roles = new TreeSet<GeoserverRole>();
+        SortedSet<GeoServerRole> roles = new TreeSet<GeoServerRole>();
         roles.addAll(getRoleService().getRolesForGroup(group.getGroupname()));
         addInheritedRoles(roles);
         return roles;
@@ -174,9 +174,9 @@ public class RoleCalculator  {
      * @param coll
      * @throws IOException
      */
-    public void addInheritedRoles(Collection<GeoserverRole> coll) throws IOException {
-        Set<GeoserverRole> inherited = new HashSet<GeoserverRole>();
-        for (GeoserverRole role : coll)
+    public void addInheritedRoles(Collection<GeoServerRole> coll) throws IOException {
+        Set<GeoServerRole> inherited = new HashSet<GeoServerRole>();
+        for (GeoServerRole role : coll)
             addParentRole(role, inherited);
         coll.addAll(inherited);        
     }
@@ -191,16 +191,16 @@ public class RoleCalculator  {
      * @return
      * @throws IOException
      */
-    public SortedSet<GeoserverRole> personalizeRoles(GeoserverUser user, Collection<GeoserverRole> roles) throws IOException{
-        SortedSet<GeoserverRole> set = new TreeSet<GeoserverRole>();
-        for (GeoserverRole role : roles) {
+    public SortedSet<GeoServerRole> personalizeRoles(GeoServerUser user, Collection<GeoServerRole> roles) throws IOException{
+        SortedSet<GeoServerRole> set = new TreeSet<GeoServerRole>();
+        for (GeoServerRole role : roles) {
             Properties personalizedProps = getRoleService().personalizeRoleParams(
                     role.getAuthority(), role.getProperties(), 
                     user.getUsername(), user.getProperties());
             if (personalizedProps==null) {
                 set.add(role);
             } else { // create personalized role
-                GeoserverRole pRole = getRoleService().createRoleObject(role.getAuthority());
+                GeoServerRole pRole = getRoleService().createRoleObject(role.getAuthority());
                 pRole.setUserName(user.getUsername());
                 for (Object key : personalizedProps.keySet())
                     pRole.getProperties().put(key, personalizedProps.get(key));

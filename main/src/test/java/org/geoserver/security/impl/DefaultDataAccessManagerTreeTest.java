@@ -45,12 +45,12 @@ public class DefaultDataAccessManagerTreeTest extends TestCase {
         replay(catalog);
 
         rwUser = new TestingAuthenticationToken("rw", "supersecret", new GrantedAuthority[] {
-                new GeoserverRole("READER"), new GeoserverRole("WRITER") });
+                new GeoServerRole("READER"), new GeoServerRole("WRITER") });
         roUser = new TestingAuthenticationToken("ro", "supersecret",
-                new GrantedAuthority[] { new GeoserverRole("READER") });
+                new GrantedAuthority[] { new GeoServerRole("READER") });
         anonymous = new TestingAuthenticationToken("anonymous", null);
         milUser = new TestingAuthenticationToken("military", "supersecret", new GrantedAuthority[] {
-                new GeoserverRole("MILITARY") });
+                new GeoServerRole("MILITARY") });
 
     }
 

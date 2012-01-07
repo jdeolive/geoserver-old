@@ -7,10 +7,10 @@ package org.geoserver.web.security.group;
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.validation.RoleStoreValidationWrapper;
 import org.geoserver.security.validation.UserGroupStoreValidationWrapper;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -29,8 +29,8 @@ public class NewGroupPage extends AbstractGroupPage {
                 
     @Override
     protected void onFormSubmit() throws IOException {
-        GeoserverUserGroupStore store=null;
-        GeoserverUserGroup group=null;
+        GeoServerUserGroupStore store=null;
+        GeoServerUserGroup group=null;
         try {
             store = new UserGroupStoreValidationWrapper(
                     getUserGroupStore(userGroupServiceName));
@@ -43,12 +43,12 @@ public class NewGroupPage extends AbstractGroupPage {
             throw ex;
         }
 
-        GeoserverRoleStore gaStore=null;
+        GeoServerRoleStore gaStore=null;
         try {
             if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
                 gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
                 gaStore = new RoleStoreValidationWrapper(gaStore);
-                Iterator<GeoserverRole> roleIt =groupRolesFormComponent.
+                Iterator<GeoServerRole> roleIt =groupRolesFormComponent.
                     getRolePalette().getSelectedChoices();
                 while (roleIt.hasNext()) {
                     gaStore.associateRoleToGroup(roleIt.next(), group.getGroupname());

@@ -16,7 +16,7 @@ import org.geoserver.security.FilterChainEntry.Position;
 import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.password.GeoserverConfigPlainTextPasswordEncoder;
+import org.geoserver.security.password.GeoServerConfigPlainTextPasswordEncoder;
 import org.geoserver.test.GeoServerTestSupport;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -50,7 +50,7 @@ public class GeoServerCustomFilterTest extends GeoServerTestSupport {
         secMgr.saveFilter(config,true);
 
         SecurityManagerConfig mgrConfig = secMgr.getSecurityConfig();
-        mgrConfig.setConfigPasswordEncrypterName(GeoserverConfigPlainTextPasswordEncoder.BeanName);
+        mgrConfig.setConfigPasswordEncrypterName(GeoServerConfigPlainTextPasswordEncoder.BeanName);
 
         List<FilterChainEntry> filterEntries = new ArrayList<FilterChainEntry>();
         filterEntries.add(new FilterChainEntry("custom", pos, relativeTo));

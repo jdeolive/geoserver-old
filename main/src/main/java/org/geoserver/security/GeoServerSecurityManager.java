@@ -48,12 +48,12 @@ import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfi
 import org.geoserver.security.file.FileWatcher;
 import org.geoserver.security.file.RoleFileWatcher;
 import org.geoserver.security.file.UserGroupFileWatcher;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.Util;
 import org.geoserver.security.password.ConfigurationPasswordHelper;
-import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
-import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.password.RandomPasswordProvider;
@@ -129,7 +129,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     ApplicationContext appContext;
 
     /** the active role service */
-    GeoserverRoleService activeRoleService;
+    GeoServerRoleService activeRoleService;
     
     private boolean encryptingUrlParams;
     private String configPasswordEncrypterName;
@@ -143,12 +143,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     SecurityManagerConfig securityConfig = new SecurityManagerConfig();
 
     /** cached user groups */
-    ConcurrentHashMap<String, GeoserverUserGroupService> userGroupServices = 
-        new ConcurrentHashMap<String, GeoserverUserGroupService>();
+    ConcurrentHashMap<String, GeoServerUserGroupService> userGroupServices = 
+        new ConcurrentHashMap<String, GeoServerUserGroupService>();
 
     /** cached role services */
-    ConcurrentHashMap<String, GeoserverRoleService> roleServices = 
-        new ConcurrentHashMap<String, GeoserverRoleService>();
+    ConcurrentHashMap<String, GeoServerRoleService> roleServices = 
+        new ConcurrentHashMap<String, GeoServerRoleService>();
     
     /** cached password validators services */
     ConcurrentHashMap<String, PasswordValidator> passwordValidators = 
@@ -271,7 +271,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         //load the role authority and ensure it is properly configured
         String roleServiceName = config.getRoleServiceName();
-        GeoserverRoleService roleService = null;
+        GeoServerRoleService roleService = null;
         try {
             roleService = loadRoleService(roleServiceName);
             
@@ -394,9 +394,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * 
      * @param name The name of the role service configuration.
      */
-    public GeoserverRoleService loadRoleService(String name)
+    public GeoServerRoleService loadRoleService(String name)
             throws IOException {
-        GeoserverRoleService roleService = roleServices.get(name);
+        GeoServerRoleService roleService = roleServices.get(name);
         if (roleService == null) {
             synchronized (this) {
                 roleService = roleServices.get(name);
@@ -463,7 +463,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             throws IOException,SecurityConfigException {
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
-                        GeoserverRoleService.class,
+                        GeoServerRoleService.class,
                         config.getClassName());
 
         if (isNew)
@@ -506,7 +506,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
-                        GeoserverRoleService.class,
+                        GeoServerRoleService.class,
                         config.getClassName());
 
         validator.validateRemoveRoleService(config);
@@ -552,8 +552,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * 
      * @param name The name of the user group service configuration.
      */
-    public GeoserverUserGroupService loadUserGroupService(String name) throws IOException {
-        GeoserverUserGroupService ugService = userGroupServices.get(name);
+    public GeoServerUserGroupService loadUserGroupService(String name) throws IOException {
+        GeoServerUserGroupService ugService = userGroupServices.get(name);
         if (ugService == null) {
             synchronized (this) {
                 ugService = userGroupServices.get(name);
@@ -586,7 +586,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             throws IOException,SecurityConfigException {
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
-                        GeoserverUserGroupService.class,
+                        GeoServerUserGroupService.class,
                         config.getClassName());
         if (isNew)
             validator.validateAddUserGroupService(config);
@@ -606,7 +606,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
-                        GeoserverUserGroupService.class,
+                        GeoServerUserGroupService.class,
                         config.getClassName());
 
         validator.validateRemoveUserGroupService(config);
@@ -805,7 +805,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         long checkInterval = 10000; // 10 secs
 
         //check for the default user group service, create if necessary
-        GeoserverUserGroupService userGroupService = 
+        GeoServerUserGroupService userGroupService = 
             loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
 
         KeyStoreProvider.get().reloadKeyStore();
@@ -845,14 +845,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             ugConfig.setFileName(XMLConstants.FILE_UR);            
             ugConfig.setValidating(true);
             // start with weak encryption, plain passwords can be restored
-            ugConfig.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
+            ugConfig.setPasswordEncoderName(GeoServerUserPBEPasswordEncoder.PrototypeName);
             ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
             saveUserGroupService(ugConfig, true);
             userGroupService = loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
         }
 
         //check for the default role service, create if necessary
-        GeoserverRoleService roleService = 
+        GeoServerRoleService roleService = 
             loadRoleService(XMLRoleService.DEFAULT_NAME);
 
         if (roleService == null) {
@@ -862,7 +862,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             gaConfig.setCheckInterval(checkInterval); 
             gaConfig.setFileName(XMLConstants.FILE_RR);
             gaConfig.setValidating(true);
-            gaConfig.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
+            gaConfig.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
             saveRoleService(gaConfig,true);
             roleService = loadRoleService(XMLRoleService.DEFAULT_NAME);
         }
@@ -888,7 +888,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         config.setEncryptingUrlParams(false);
 
         // start with weak encryption
-        config.setConfigPasswordEncrypterName(GeoserverConfigPBEPasswordEncoder.BeanName);
+        config.setConfigPasswordEncrypterName(GeoServerConfigPBEPasswordEncoder.BeanName);
 
         // setup the default remember me service
         RememberMeServicesConfig rememberMeConfig = new RememberMeServicesConfig();
@@ -903,8 +903,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         roleService.setSecurityManager(this);
 
         //populate the user group and role service
-        GeoserverUserGroupStore userGroupStore = userGroupService.createStore();
-        GeoserverRoleStore roleStore = roleService.createStore();
+        GeoServerUserGroupStore userGroupStore = userGroupService.createStore();
+        GeoServerRoleStore roleStore = roleService.createStore();
 
         //migradate from users.properties
         File usersFile = new File(getSecurityRoot(), "users.properties");
@@ -923,12 +923,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 // if the parsing succeeded turn that into a user object
                 UserAttribute attr = (UserAttribute) configAttribEd.getValue();
                 if (attr != null) {
-                    GeoserverUser user = 
+                    GeoServerUser user = 
                         userGroupStore.createUserObject(username, attr.getPassword(), attr.isEnabled());
                     userGroupStore.addUser(user);
 
                     for (GrantedAuthority auth : attr.getAuthorities()) {
-                        GeoserverRole role = 
+                        GeoServerRole role = 
                             roleStore.getRoleByName(auth.getAuthority());
                         if (role==null) {
                             role = roleStore.createRoleObject(auth.getAuthority());
@@ -940,11 +940,11 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             }
         } else  {
             // no user.properties, populate with default user and roles
-            if (userGroupService.getUserByUsername(GeoserverUser.AdminName) == null) {
-                userGroupStore.addUser(GeoserverUser.createDefaultAdmin());
-                roleStore.addRole(GeoserverRole.ADMIN_ROLE);
-                roleStore.associateRoleToUser(GeoserverRole.ADMIN_ROLE,
-                        GeoserverUser.AdminName);
+            if (userGroupService.getUserByUsername(GeoServerUser.AdminName) == null) {
+                userGroupStore.addUser(GeoServerUser.createDefaultAdmin());
+                roleStore.addRole(GeoServerRole.ADMIN_ROLE);
+                roleStore.associateRoleToUser(GeoServerRole.ADMIN_ROLE,
+                        GeoServerUser.AdminName);
             }
         }
 
@@ -1134,8 +1134,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
          */
         protected abstract File getRoot() throws IOException;
     }
-    class UserGroupServiceHelper extends HelperBase<GeoserverUserGroupService,SecurityUserGroupServiceConfig> {
-        public GeoserverUserGroupService load(String name) throws IOException {
+    class UserGroupServiceHelper extends HelperBase<GeoServerUserGroupService,SecurityUserGroupServiceConfig> {
+        public GeoServerUserGroupService load(String name) throws IOException {
             
             SecurityNamedServiceConfig config = loadConfig(name);
             if (config == null) {
@@ -1144,7 +1144,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             }
 
             //look up the service for this config
-            GeoserverUserGroupService service = null;
+            GeoServerUserGroupService service = null;
 
             for (GeoServerSecurityProvider p : lookupSecurityProviders()) {
                 if (p.getUserGroupServiceClass() == null) {
@@ -1163,7 +1163,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             service.setSecurityManager(GeoServerSecurityManager.this);
             if (config instanceof SecurityUserGroupServiceConfig){
                 boolean needsLockProtection =
-                        GeoServerSecurityProvider.getProvider(GeoserverUserGroupService.class, 
+                        GeoServerSecurityProvider.getProvider(GeoServerUserGroupService.class, 
                         config.getClassName()).roleServiceNeedsLockProtection();
                 if (needsLockProtection)
                         service = new LockingUserGroupService(service);
@@ -1201,12 +1201,12 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         }
     }
 
-    class RoleServiceHelper extends HelperBase<GeoserverRoleService,SecurityRoleServiceConfig>{
+    class RoleServiceHelper extends HelperBase<GeoServerRoleService,SecurityRoleServiceConfig>{
 
          /**
          * Loads the role service for the named config from persistence.
          */
-        public GeoserverRoleService load(String name) throws IOException {
+        public GeoServerRoleService load(String name) throws IOException {
             
             SecurityNamedServiceConfig config = loadConfig(name);
             if (config == null) {
@@ -1215,7 +1215,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             }
 
             //look up the service for this config
-            GeoserverRoleService service = null;
+            GeoServerRoleService service = null;
 
             for (GeoServerSecurityProvider p  : lookupSecurityProviders()) {
                 if (p.getRoleServiceClass() == null) {
@@ -1234,7 +1234,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
             if (config instanceof SecurityRoleServiceConfig){
                 boolean needsLockProtection =
-                        GeoServerSecurityProvider.getProvider(GeoserverRoleService.class, 
+                        GeoServerSecurityProvider.getProvider(GeoServerRoleService.class, 
                         config.getClassName()).roleServiceNeedsLockProtection();
                 if (needsLockProtection)
                         service = new LockingRoleService(service);
@@ -1317,17 +1317,17 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     
     /**
      *
-     * @return the active {@link GeoserverRoleService}
+     * @return the active {@link GeoServerRoleService}
      */
-    public GeoserverRoleService getActiveRoleService() {
+    public GeoServerRoleService getActiveRoleService() {
         return activeRoleService;
     }
 
     /**
-     * set the active {@link GeoserverRoleService}
+     * set the active {@link GeoServerRoleService}
      * @param activeRoleService
      */
-    public void setActiveRoleService(GeoserverRoleService activeRoleService) {
+    public void setActiveRoleService(GeoServerRoleService activeRoleService) {
         this.activeRoleService = activeRoleService;
     }
 

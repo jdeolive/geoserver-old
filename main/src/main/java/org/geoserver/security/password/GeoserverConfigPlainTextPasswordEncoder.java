@@ -2,7 +2,6 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-
 package org.geoserver.security.password;
 
 import org.geoserver.platform.GeoServerExtensions;
@@ -15,16 +14,15 @@ import org.springframework.security.authentication.encoding.PlaintextPasswordEnc
  * @author christian
  *
  */
-public class GeoserverConfigPlainTextPasswordEncoder extends AbstractGeoserverPasswordEncoder implements GeoserverConfigPasswordEncoder {
+public class GeoServerConfigPlainTextPasswordEncoder extends AbstractGeoserverPasswordEncoder implements GeoServerConfigPasswordEncoder {
     
     public final static String BeanName="plainTextConfigPasswordEncoder";
     
-    public static GeoserverConfigPlainTextPasswordEncoder get() {
-          return (GeoserverConfigPlainTextPasswordEncoder)
+    public static GeoServerConfigPlainTextPasswordEncoder get() {
+          return (GeoServerConfigPlainTextPasswordEncoder)
                     GeoServerExtensions.bean(BeanName);        
     }
 
-    
     @Override
     protected PasswordEncoder getActualEncoder() {
         return new PlaintextPasswordEncoder();
@@ -38,9 +36,4 @@ public class GeoserverConfigPlainTextPasswordEncoder extends AbstractGeoserverPa
     public String decode(String encPass) throws UnsupportedOperationException {
         return removePrefix(encPass);
     }
-
-
-
-
-
 }

@@ -2,9 +2,7 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-
 package org.geoserver.security.password;
-
 
 /**
  * Password Encoder for password in configuration files
@@ -12,8 +10,8 @@ package org.geoserver.security.password;
  * @author christian
  *
  */
-public  class GeoserverConfigPBEPasswordEncoder extends GeoserverPBEPasswordEncoder  
-    implements GeoserverConfigPasswordEncoder {
+public  class GeoServerConfigPBEPasswordEncoder extends GeoServerPBEPasswordEncoder  
+    implements GeoServerConfigPasswordEncoder {
 
     public final static String BeanName = "configPasswordEncoder";
     public final static String StrongBeanName = "strongConfigPasswordEncoder";  
@@ -22,6 +20,4 @@ public  class GeoserverConfigPBEPasswordEncoder extends GeoserverPBEPasswordEnco
     public String getKeyAliasInKeyStore() {
         return KeyStoreProvider.CONFIGPASSWORDKEY;
     }
-
-
 }

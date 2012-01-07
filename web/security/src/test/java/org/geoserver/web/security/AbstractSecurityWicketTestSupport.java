@@ -25,10 +25,10 @@ import org.apache.wicket.markup.repeater.Item;
 import org.apache.wicket.markup.repeater.data.DataView;
 import org.geoserver.data.test.MockData;
 import org.geoserver.security.AccessMode;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
@@ -38,14 +38,14 @@ import org.geoserver.security.impl.AbstractRoleServiceTest;
 import org.geoserver.security.impl.AbstractUserGroupServiceTest;
 import org.geoserver.security.impl.DataAccessRule;
 import org.geoserver.security.impl.DataAccessRuleDAO;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.MemoryRoleStore;
 import org.geoserver.security.impl.MemoryUserGroupStore;
 import org.geoserver.security.impl.ReadOnlyRoleService;
 import org.geoserver.security.impl.ReadOnlyUGService;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
-import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
+import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.xml.XMLRoleServiceTest;
 import org.geoserver.security.xml.XMLUserGroupServiceTest;
@@ -68,10 +68,10 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     
     protected AbstractRoleServiceTest gaTest;
     protected AbstractUserGroupServiceTest ugTest;
-    protected GeoserverUserGroupService ugService;
-    protected GeoserverRoleService gaService;
-    protected GeoserverRoleStore gaStore;
-    protected GeoserverUserGroupStore ugStore;
+    protected GeoServerUserGroupService ugService;
+    protected GeoServerRoleService gaService;
+    protected GeoServerRoleStore gaStore;
+    protected GeoServerUserGroupStore ugStore;
     
     
     @Override
@@ -142,7 +142,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     protected void activateRORoleService() throws Exception{
         MemoryRoleServiceConfigImpl config = new MemoryRoleServiceConfigImpl();
         config.setName(getRORoleServiceName());
-        config.setAdminRoleName(GeoserverRole.ADMIN_ROLE.getAuthority());
+        config.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
         config.setClassName(ReadOnlyRoleService.class.getName());
         getSecurityManager().saveRoleService(config,
                 !(getSecurityManager().listRoleServices().contains(getRORoleServiceName())));
@@ -162,7 +162,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName(getROUserGroupServiceName());        
         config.setClassName(ReadOnlyUGService.class.getName());
-        config.setPasswordEncoderName(GeoserverDigestPasswordEncoder.BeanName);
+        config.setPasswordEncoderName(GeoServerDigestPasswordEncoder.BeanName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         getSecurityManager().saveUserGroupService(config,
                 !(getSecurityManager().listUserGroupServices().contains(getROUserGroupServiceName())));
@@ -207,7 +207,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
           dao.addRule(new ServiceAccessRule("wms", "*", "ROLE_WMS"));
           dao.addRule(new ServiceAccessRule("wfs", "GetFeature", "ROLE_AUTHENTICATED"));                    
           dao.addRule(new ServiceAccessRule("wfs", "*", "ROLE_WFS"));
-          dao.addRule(new ServiceAccessRule("*", "*", GeoserverRole.ADMIN_ROLE.getAuthority()));
+          dao.addRule(new ServiceAccessRule("*", "*", GeoServerRole.ADMIN_ROLE.getAuthority()));
           dao.storeRules();
       }
       
@@ -255,7 +255,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
           DataAccessRuleDAO dao = DataAccessRuleDAO.get();
           dao.getRules();
           dao.addRule(new DataAccessRule("*", "*", AccessMode.WRITE, 
-                  GeoserverRole.ADMIN_ROLE.getAuthority()));
+                  GeoServerRole.ADMIN_ROLE.getAuthority()));
           dao.addRule(new DataAccessRule(MockData.CITE_PREFIX, "*", AccessMode.READ,                   
                   "ROLE_AUTENTICATED"));
           dao.addRule(new DataAccessRule(MockData.CITE_PREFIX, MockData.LAKES.getLocalPart(), AccessMode.WRITE,                   

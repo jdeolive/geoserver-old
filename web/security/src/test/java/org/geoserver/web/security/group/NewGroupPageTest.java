@@ -5,8 +5,8 @@ import java.util.SortedSet;
 import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
 import org.apache.wicket.feedback.FeedbackMessage;
 import org.apache.wicket.util.tester.FormTester;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 import org.geoserver.web.security.config.UserGroupTabbedPage;
@@ -65,10 +65,10 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
         
         tester.assertErrorMessages(new String[0]);
         
-        GeoserverUserGroup group = ugService.getGroupByGroupname("testgroup");
+        GeoServerUserGroup group = ugService.getGroupByGroupname("testgroup");
         assertNotNull(group);
         assertFalse(group.isEnabled());
-        SortedSet<GeoserverRole> roleList = gaService.getRolesForGroup("testgroup");
+        SortedSet<GeoServerRole> roleList = gaService.getRolesForGroup("testgroup");
         assertEquals(1,roleList.size());
         assertEquals("ROLE_NEW",roleList.iterator().next().getAuthority());
         
@@ -114,10 +114,10 @@ public class NewGroupPageTest extends AbstractSecurityWicketTestSupport {
         form.setValue("groupname", "testgroup");
         form.submit("save");
         
-        GeoserverUserGroup group = ugService.getGroupByGroupname("testgroup");
+        GeoServerUserGroup group = ugService.getGroupByGroupname("testgroup");
         assertNotNull(group);
         assertTrue(group.isEnabled());
-        SortedSet<GeoserverRole> roleList = gaService.getRolesForGroup("testgroup");
+        SortedSet<GeoServerRole> roleList = gaService.getRolesForGroup("testgroup");
         assertEquals(0,roleList.size());
     }
 

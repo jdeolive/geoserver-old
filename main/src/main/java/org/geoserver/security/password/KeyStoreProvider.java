@@ -23,7 +23,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.geoserver.config.GeoServerDataDirectory;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geotools.util.logging.Logging;
 import org.springframework.beans.factory.BeanNameAware;
 
@@ -184,7 +184,7 @@ public class KeyStoreProvider implements BeanNameAware{
         }
     }
     /**
-     * Returns the key for a {@link GeoserverUserGroupService} 
+     * Returns the key for a {@link GeoServerUserGroupService} 
      * service Name. Needed if the service uses symmetric password
      * encryption 
      * 
@@ -263,7 +263,7 @@ public class KeyStoreProvider implements BeanNameAware{
 
     /**
      * 
-     * @param serviceName for a {@link GeoserverUserGroupService}
+     * @param serviceName for a {@link GeoServerUserGroupService}
      * @return the following String
      * {@link #USERGROUP_PREFIX}+serviceName+{@value #USERGROUP_POSTFIX}
      */
@@ -335,7 +335,7 @@ public class KeyStoreProvider implements BeanNameAware{
     }
     
     /**
-     * Sets  a secret for the name of a {@link GeoserverUserGroupService}
+     * Sets  a secret for the name of a {@link GeoServerUserGroupService}
      * @param serviceName
      * @param password
      * @throws IOException

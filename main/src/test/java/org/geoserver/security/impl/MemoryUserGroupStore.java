@@ -50,10 +50,10 @@ public class MemoryUserGroupStore extends AbstractUserGroupStore {
         ByteArrayInputStream in = new ByteArrayInputStream(bytes);                
         ObjectInputStream oin = new ObjectInputStream(in);
         try {
-            helper.userMap = (TreeMap<String,GeoserverUser>) oin.readObject();
-            helper.groupMap =(TreeMap<String,GeoserverUserGroup>) oin.readObject();
-            helper.user_groupMap = (TreeMap<GeoserverUser,SortedSet<GeoserverUserGroup>>)oin.readObject();
-            helper.group_userMap = (TreeMap<GeoserverUserGroup,SortedSet<GeoserverUser>>)oin.readObject();
+            helper.userMap = (TreeMap<String,GeoServerUser>) oin.readObject();
+            helper.groupMap =(TreeMap<String,GeoServerUserGroup>) oin.readObject();
+            helper.user_groupMap = (TreeMap<GeoServerUser,SortedSet<GeoServerUserGroup>>)oin.readObject();
+            helper.group_userMap = (TreeMap<GeoServerUserGroup,SortedSet<GeoServerUser>>)oin.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(e);
         }
@@ -63,8 +63,8 @@ public class MemoryUserGroupStore extends AbstractUserGroupStore {
 
      
     @Override
-     public GeoserverUserGroup createGroupObject(String groupname, boolean isEnabled) throws IOException{
-         GeoserverUserGroup group = new MemoryGeoserverUserGroup(groupname);
+     public GeoServerUserGroup createGroupObject(String groupname, boolean isEnabled) throws IOException{
+         GeoServerUserGroup group = new MemoryGeoserverUserGroup(groupname);
          group.setEnabled(isEnabled);
          return group;
      }

@@ -9,11 +9,11 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.validation.RoleStoreValidationWrapper;
 import org.geoserver.security.validation.UserGroupStoreValidationWrapper;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -23,15 +23,15 @@ import org.geoserver.web.security.AbstractSecurityPage;
  */
 public class EditUserPage extends AbstractUserPage {
 
-    public EditUserPage(String userGroupServiceName, GeoserverUser user,AbstractSecurityPage responsePage) {
+    public EditUserPage(String userGroupServiceName, GeoServerUser user,AbstractSecurityPage responsePage) {
         super(userGroupServiceName,new UserUIModel(user),user.getProperties(),responsePage);
         username.setEnabled(false);
     }
 
     @Override
     protected void onFormSubmit() throws IOException {
-        GeoserverUser user = uiUser.toGeoserverUser(userGroupServiceName);
-        GeoserverUserGroupStore ugStore=null;
+        GeoServerUser user = uiUser.toGeoserverUser(userGroupServiceName);
+        GeoServerUserGroupStore ugStore=null;
         try {
             if (hasUserGroupStore(userGroupServiceName)) {
                 ugStore = new UserGroupStoreValidationWrapper(
@@ -44,12 +44,12 @@ public class EditUserPage extends AbstractUserPage {
             
                 ugStore.updateUser(user);
             
-                Set<GeoserverUserGroup> added = new HashSet<GeoserverUserGroup>();
-                Set<GeoserverUserGroup> removed = new HashSet<GeoserverUserGroup>();
+                Set<GeoServerUserGroup> added = new HashSet<GeoServerUserGroup>();
+                Set<GeoServerUserGroup> removed = new HashSet<GeoServerUserGroup>();
                 userGroupFormComponent.calculateAddedRemovedCollections(added, removed);
-                for (GeoserverUserGroup g : added)
+                for (GeoServerUserGroup g : added)
                     ugStore.associateUserToGroup(user, g);
-                for (GeoserverUserGroup g : removed)
+                for (GeoServerUserGroup g : removed)
                     ugStore.disAssociateUserFromGroup(user,g);
                 ugStore.store();
             }
@@ -58,17 +58,17 @@ public class EditUserPage extends AbstractUserPage {
             throw ex;
         }
 
-        GeoserverRoleStore gaStore=null;
+        GeoServerRoleStore gaStore=null;
         try {
             if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {                                
                  gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
                 gaStore = new RoleStoreValidationWrapper(gaStore);
-                Set<GeoserverRole> addedRoles = new HashSet<GeoserverRole>();
-                Set<GeoserverRole> removedRoles = new HashSet<GeoserverRole>();
+                Set<GeoServerRole> addedRoles = new HashSet<GeoServerRole>();
+                Set<GeoServerRole> removedRoles = new HashSet<GeoServerRole>();
                 userRolesFormComponent.calculateAddedRemovedCollections(addedRoles, removedRoles);
-                for (GeoserverRole role : addedRoles)
+                for (GeoServerRole role : addedRoles)
                     gaStore.associateRoleToUser(role, user.getUsername());
-                for (GeoserverRole role : removedRoles)
+                for (GeoServerRole role : removedRoles)
                     gaStore.disAssociateRoleFromUser(role, user.getUsername());                                                                               
                 gaStore.store();
             }

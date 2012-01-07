@@ -23,7 +23,7 @@ import org.apache.wicket.model.util.SetModel;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoserverConfigPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
 import org.geoserver.web.GeoServerApplication;
 
 

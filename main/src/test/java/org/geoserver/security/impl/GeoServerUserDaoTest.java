@@ -19,7 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class GeoServerUserDaoTest extends TestCase {
 
-    static class TestableUserDao extends GeoserverUserDao {
+    static class TestableUserDao extends GeoServerUserDao {
         
         public TestableUserDao(Properties p) throws IOException {
             userMap = loadUsersFromProperties(p);

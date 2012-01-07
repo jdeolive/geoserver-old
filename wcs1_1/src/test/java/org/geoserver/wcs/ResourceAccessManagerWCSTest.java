@@ -18,7 +18,7 @@ import org.geoserver.security.CatalogMode;
 import org.geoserver.security.CoverageAccessLimits;
 import org.geoserver.security.ResourceAccessManager;
 import org.geoserver.security.TestResourceAccessManager;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.util.SecurityUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.DirectPosition2D;
@@ -226,7 +226,7 @@ public class ResourceAccessManagerWCSTest extends AbstractGetCoverageTest {
     @Override
     protected void authenticate(String username, String password) {
         // override as this is not a test going through the servlet filters
-        GrantedAuthority ga = new GeoserverRole("MOCKROLE");
+        GrantedAuthority ga = new GeoServerRole("MOCKROLE");
         UsernamePasswordAuthenticationToken user = new UsernamePasswordAuthenticationToken(
                 username, null, new GrantedAuthority[] { ga });
         SecurityContextHolder.getContext().setAuthentication(user);

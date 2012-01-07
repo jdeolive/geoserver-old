@@ -6,13 +6,13 @@ import java.util.SortedSet;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractTabbedListPageTest;
 import org.geoserver.web.security.config.UserGroupTabbedPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public class UserListPageTest extends AbstractTabbedListPageTest<GeoserverUser> {
+public class UserListPageTest extends AbstractTabbedListPageTest<GeoServerUser> {
     boolean withRoles=false;
     
     protected AbstractSecurityPage listPage(String serviceName ) {
@@ -31,29 +31,29 @@ public class UserListPageTest extends AbstractTabbedListPageTest<GeoserverUser> 
         if (params.length==0) {
             return new  EditUserPage(
                     getUserGroupServiceName(),
-                    new GeoserverUser("dummyuser"),page);            
+                    new GeoServerUser("dummyuser"),page);            
         }
 
         if (params.length==1)
             return new  EditUserPage(
                     getUserGroupServiceName(),
-                    (GeoserverUser) params[0],page);
+                    (GeoServerUser) params[0],page);
         else
             return new  EditUserPage( (String) params[0],
-                    (GeoserverUser) params[1],page);                    
+                    (GeoServerUser) params[1],page);                    
     }
 
 
     @Override
     protected String getSearchString() throws Exception{
-         GeoserverUser u = ugService.getUserByUsername("user1");
+         GeoServerUser u = ugService.getUserByUsername("user1");
          assertNotNull(u);
          return u.getUsername();
     }
 
    
     @Override
-    protected Property<GeoserverUser> getEditProperty() {
+    protected Property<GeoServerUser> getEditProperty() {
         return UserListProvider.USERNAME;
     }
 
@@ -91,7 +91,7 @@ public class UserListPageTest extends AbstractTabbedListPageTest<GeoserverUser> 
         Method m = link.delegate.getClass().getDeclaredMethod("onSubmit", AjaxRequestTarget.class,Component.class);
         m.invoke(link.delegate, null,null);
         
-        SortedSet<GeoserverUser> users = ugService.getUsers();
+        SortedSet<GeoServerUser> users = ugService.getUsers();
         assertTrue(users.size()==0);
         if (withRoles)            
             assertTrue(gaService.getRolesForUser("user1").size()==0);

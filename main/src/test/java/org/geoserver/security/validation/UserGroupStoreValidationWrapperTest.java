@@ -5,12 +5,12 @@ import java.util.logging.Logger;
 
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.impl.MemoryUserGroupService;
-import org.geoserver.security.password.GeoserverUserPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.test.GeoServerTestSupport;
 import org.geotools.util.logging.Logging;
@@ -23,9 +23,9 @@ public class UserGroupStoreValidationWrapperTest extends GeoServerTestSupport {
     protected UserGroupStoreValidationWrapper createStore(String name) throws IOException {
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName(name);        
-        config.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
+        config.setPasswordEncoderName(GeoServerUserPBEPasswordEncoder.PrototypeName);
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        GeoserverUserGroupService service = new MemoryUserGroupService();
+        GeoServerUserGroupService service = new MemoryUserGroupService();
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
         service.initializeFromConfig(config);        
         return new UserGroupStoreValidationWrapper(service.createStore());
@@ -107,8 +107,8 @@ public class UserGroupStoreValidationWrapperTest extends GeoServerTestSupport {
         }
         assertTrue(failed);
 
-        GeoserverUser user1 = store.getUserByUsername("user1");
-        GeoserverUserGroup group1 = store.getGroupByGroupname("group1");
+        GeoServerUser user1 = store.getUserByUsername("user1");
+        GeoServerUserGroup group1 = store.getGroupByGroupname("group1");
         failed=false;
         try { 
             store.associateUserToGroup(

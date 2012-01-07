@@ -8,10 +8,10 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.validation.RoleStoreValidationWrapper;
 import org.geoserver.security.validation.UserGroupStoreValidationWrapper;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -19,7 +19,7 @@ import org.geoserver.web.security.AbstractSecurityPage;
 public class EditGroupPage extends AbstractGroupPage {
 
     
-    public EditGroupPage(String userGroupServiceName,GeoserverUserGroup group,AbstractSecurityPage responsePage) {
+    public EditGroupPage(String userGroupServiceName,GeoServerUserGroup group,AbstractSecurityPage responsePage) {
         super(userGroupServiceName,new GroupUIModel(group.getGroupname(), group.isEnabled()),responsePage);
         groupnameField.setEnabled(false);
     }
@@ -28,9 +28,9 @@ public class EditGroupPage extends AbstractGroupPage {
     protected void onFormSubmit() throws IOException {
         
                     
-        GeoserverUserGroup group = getUserGroupService(userGroupServiceName).getGroupByGroupname(uiGroup.getGroupname());
+        GeoServerUserGroup group = getUserGroupService(userGroupServiceName).getGroupByGroupname(uiGroup.getGroupname());
 
-        GeoserverUserGroupStore store = null;
+        GeoServerUserGroupStore store = null;
         try {
             if (hasUserGroupStore(userGroupServiceName)) {
                 store = new UserGroupStoreValidationWrapper(                     
@@ -44,17 +44,17 @@ public class EditGroupPage extends AbstractGroupPage {
             throw ex;
         }
 
-        GeoserverRoleStore gaStore = null;
+        GeoServerRoleStore gaStore = null;
         try {
             if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
                 gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
                 gaStore = new RoleStoreValidationWrapper(gaStore);                   
-                Set<GeoserverRole> addedRoles = new HashSet<GeoserverRole>();
-                Set<GeoserverRole> removedRoles = new HashSet<GeoserverRole>();
+                Set<GeoServerRole> addedRoles = new HashSet<GeoServerRole>();
+                Set<GeoServerRole> removedRoles = new HashSet<GeoServerRole>();
                 groupRolesFormComponent.calculateAddedRemovedCollections(addedRoles, removedRoles);
-                for (GeoserverRole role : addedRoles)
+                for (GeoServerRole role : addedRoles)
                     gaStore.associateRoleToGroup(role, group.getGroupname());
-                for (GeoserverRole role : removedRoles)
+                for (GeoServerRole role : removedRoles)
                     gaStore.disAssociateRoleFromGroup(role, group.getGroupname());        
                 gaStore.store();
             }        

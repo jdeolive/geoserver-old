@@ -9,13 +9,13 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 
 public abstract class AbstractUserGroupServiceTest extends AbstractSecurityServiceTest {
 
-    protected GeoserverUserGroupService service;
-    protected GeoserverUserGroupStore store;
+    protected GeoServerUserGroupService service;
+    protected GeoServerUserGroupStore store;
     
     @Override
     protected void setUpInternal() throws Exception {
@@ -137,9 +137,9 @@ public abstract class AbstractUserGroupServiceTest extends AbstractSecurityServi
             store.store();
             assertFalse(store.isModified());
             
-            GeoserverUser user = 
+            GeoServerUser user = 
                 store.createUserObject("uuuu", "",true);
-            GeoserverUserGroup group = 
+            GeoServerUserGroup group = 
                 store.createGroupObject("gggg", true);        
 
             

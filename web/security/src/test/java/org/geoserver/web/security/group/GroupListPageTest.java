@@ -6,13 +6,13 @@ import java.util.SortedSet;
 
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractTabbedListPageTest;
 import org.geoserver.web.security.config.UserGroupTabbedPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
-public class GroupListPageTest extends AbstractTabbedListPageTest<GeoserverUserGroup> {
+public class GroupListPageTest extends AbstractTabbedListPageTest<GeoServerUserGroup> {
     boolean withRoles=false;
         
     protected AbstractSecurityPage listPage(String serviceName ) {
@@ -31,28 +31,28 @@ public class GroupListPageTest extends AbstractTabbedListPageTest<GeoserverUserG
         if (params.length==0) {
             return new  EditGroupPage(
                     getUserGroupServiceName(),
-                    new GeoserverUserGroup("dummygroup"),page);            
+                    new GeoServerUserGroup("dummygroup"),page);            
         }
         if (params.length==1)
             return new  EditGroupPage(
                     getUserGroupServiceName(),
-                    (GeoserverUserGroup) params[0],page);
+                    (GeoServerUserGroup) params[0],page);
         else
             return new  EditGroupPage( (String) params[0],
-                    (GeoserverUserGroup) params[1],page);                    
+                    (GeoServerUserGroup) params[1],page);                    
     }
 
 
     @Override
     protected String getSearchString() throws Exception{
-         GeoserverUserGroup g = ugService.getGroupByGroupname("admins");
+         GeoServerUserGroup g = ugService.getGroupByGroupname("admins");
          assertNotNull(g);
          return g.getGroupname();
     }
 
 
     @Override
-    protected Property<GeoserverUserGroup> getEditProperty() {
+    protected Property<GeoServerUserGroup> getEditProperty() {
         return GroupListProvider.GROUPNAME;
     }
 
@@ -90,7 +90,7 @@ public class GroupListPageTest extends AbstractTabbedListPageTest<GeoserverUserG
         Method m = link.delegate.getClass().getDeclaredMethod("onSubmit", AjaxRequestTarget.class,Component.class);
         m.invoke(link.delegate, null,null);
         
-        SortedSet<GeoserverUserGroup> groups = ugService.getUserGroups();
+        SortedSet<GeoServerUserGroup> groups = ugService.getUserGroups();
         assertTrue(groups.size()==0);
         
         if (withRoles)

@@ -6,11 +6,11 @@
 
 package org.geoserver.security.validation;
 
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 
 /**
  * Exception used for validation errors  
- * concerning {@link GeoserverUserGroupService}
+ * concerning {@link GeoServerUserGroupService}
  * 
  * @author christian
  *

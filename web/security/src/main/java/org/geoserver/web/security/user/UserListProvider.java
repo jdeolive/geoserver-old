@@ -13,19 +13,19 @@ import java.util.TreeSet;
 
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 
 /**
  * Page listing the users contained in the users.properties file 
  */
 @SuppressWarnings("serial")
-public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
+public class UserListProvider extends GeoServerDataProvider<GeoServerUser> {
     
-    public static final Property<GeoserverUser> USERNAME = new BeanProperty<GeoserverUser>("username", "username");
-    public static final Property<GeoserverUser> ENABLED = new BeanProperty<GeoserverUser>("enabled", "enabled");
+    public static final Property<GeoServerUser> USERNAME = new BeanProperty<GeoServerUser>("username", "username");
+    public static final Property<GeoServerUser> ENABLED = new BeanProperty<GeoServerUser>("enabled", "enabled");
     protected String userGroupServiceName;
     
     public UserListProvider(String userGroupServiceName) {
@@ -70,7 +70,7 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
     };
     
 */    
-    public static final Property<GeoserverUser> HASATTRIBUTES = new Property<GeoserverUser>() {
+    public static final Property<GeoServerUser> HASATTRIBUTES = new Property<GeoServerUser>() {
 
         @Override
         public String getName() {
@@ -78,7 +78,7 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
         }
 
         @Override
-        public Object getPropertyValue(GeoserverUser item) {
+        public Object getPropertyValue(GeoServerUser item) {
             if (item.getProperties().size()==0)
                 return Boolean.FALSE;
             else
@@ -87,12 +87,12 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
 
         @Override
         public IModel getModel(IModel itemModel) {
-            return new Model((Boolean) getPropertyValue((GeoserverUser) itemModel.getObject()));
+            return new Model((Boolean) getPropertyValue((GeoServerUser) itemModel.getObject()));
         }
 
         @Override
-        public Comparator<GeoserverUser> getComparator() {
-            return new PropertyComparator<GeoserverUser>(this);
+        public Comparator<GeoServerUser> getComparator() {
+            return new PropertyComparator<GeoServerUser>(this);
         }
 
         @Override
@@ -145,30 +145,30 @@ public class UserListProvider extends GeoServerDataProvider<GeoserverUser> {
 //    public static final Property<User> REMOVE = new PropertyPlaceholder<User>("remove");
 
     @Override
-    protected List<GeoserverUser> getItems() {
-        SortedSet<GeoserverUser> users=null;
+    protected List<GeoServerUser> getItems() {
+        SortedSet<GeoServerUser> users=null;
         try {
-            GeoserverUserGroupService service = null;
+            GeoServerUserGroupService service = null;
             if (userGroupServiceName !=null)
                 service = 
                     getApplication().getSecurityManager().loadUserGroupService(userGroupServiceName);
             
             if (service==null)
-                users=new TreeSet<GeoserverUser>();
+                users=new TreeSet<GeoServerUser>();
             else
                 users=service.getUsers();
 
         } catch (IOException e) {
             throw new RuntimeException(e); 
         }
-        List<GeoserverUser> userList = new ArrayList<GeoserverUser>();
+        List<GeoServerUser> userList = new ArrayList<GeoServerUser>();
         userList.addAll(users);
         return userList;
     }
 
     @Override
-    protected List<Property<GeoserverUser>> getProperties() {
-        List<Property<GeoserverUser>> result = new ArrayList<GeoServerDataProvider.Property<GeoserverUser>>();
+    protected List<Property<GeoServerUser>> getProperties() {
+        List<Property<GeoServerUser>> result = new ArrayList<GeoServerDataProvider.Property<GeoServerUser>>();
         result.add(USERNAME);
         result.add(ENABLED);
         result.add(HASATTRIBUTES);

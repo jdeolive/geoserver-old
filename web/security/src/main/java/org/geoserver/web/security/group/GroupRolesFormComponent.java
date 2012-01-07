@@ -10,26 +10,26 @@ import java.util.List;
 
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.form.Form;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.web.security.AbstractRolesFormComponent;
 
 /**
  * A form component that can be used to edit user/rule role lists
  */
 @SuppressWarnings("serial")
-public class GroupRolesFormComponent extends AbstractRolesFormComponent<GeoserverUserGroup> {
+public class GroupRolesFormComponent extends AbstractRolesFormComponent<GeoServerUserGroup> {
 
-    public GroupRolesFormComponent(GeoserverUserGroup group, Form<?> form) {
+    public GroupRolesFormComponent(GeoServerUserGroup group, Form<?> form) {
         this(group,form,null);        
     }
-    public GroupRolesFormComponent(GeoserverUserGroup group, Form<?> form, IBehavior behavior) {
+    public GroupRolesFormComponent(GeoServerUserGroup group, Form<?> form, IBehavior behavior) {
         super("roles", group,  false,form,behavior);        
     }
 
     @Override
-    protected List<GeoserverRole> getStoredGrantedAuthorities(GeoserverUserGroup rootObject) {
-        List<GeoserverRole> result = new ArrayList<GeoserverRole>();
+    protected List<GeoServerRole> getStoredGrantedAuthorities(GeoServerUserGroup rootObject) {
+        List<GeoServerRole> result = new ArrayList<GeoServerRole>();
         try {
             result.addAll(getSecurityManager().getActiveRoleService()
                 .getRolesForGroup(rootObject.getGroupname()));

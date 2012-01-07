@@ -2,24 +2,23 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-
 package org.geoserver.security.password;
 
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.impl.GeoServerUser;
 
 /**
  * Password Encoder using symmetric encryption for
- * {@link GeoserverUser} objects stored in
- * {@link GeoserverUserGroupService} objects
+ * {@link GeoServerUser} objects stored in
+ * {@link GeoServerUserGroupService} objects
  * 
  * 
  * @author christian
  *
  */
-public  class GeoserverUserPBEPasswordEncoder extends GeoserverPBEPasswordEncoder implements GeoserverUserPasswordEncoder {
+public class GeoServerUserPBEPasswordEncoder extends GeoServerPBEPasswordEncoder implements GeoServerUserPasswordEncoder {
 
     protected String keyAliasInKeyStore;
     public final static String PrototypeName = "pbePasswordEncoder";
@@ -30,9 +29,8 @@ public  class GeoserverUserPBEPasswordEncoder extends GeoserverPBEPasswordEncode
         return keyAliasInKeyStore;
     }
 
-
     @Override
-    public void initializeFor(GeoserverUserGroupService service) throws IOException {
+    public void initializeFor(GeoServerUserGroupService service) throws IOException {
         if (KeyStoreProvider.get().hasUserGRoupKey(service.getName())==false) {
             throw new IOException("No key alias: " +
                     KeyStoreProvider.get().aliasForGroupService(service.getName())+
@@ -43,6 +41,5 @@ public  class GeoserverUserPBEPasswordEncoder extends GeoserverPBEPasswordEncode
                 KeyStoreProvider.get().aliasForGroupService(service.getName());
 
     }
-
 
 }

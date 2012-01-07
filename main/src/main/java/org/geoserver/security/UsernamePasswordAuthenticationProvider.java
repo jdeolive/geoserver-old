@@ -11,13 +11,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
-import org.geoserver.security.password.GeoserverUserPasswordEncoder;
+import org.geoserver.security.password.GeoServerUserPasswordEncoder;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
 /**
- * Authentication provider that delegates to a {@link GeoserverUserGroupService}.
+ * Authentication provider that delegates to a {@link GeoServerUserGroupService}.
  * 
  * @author Justin Deoliveira, OpenGeo
  */
@@ -30,7 +30,7 @@ public class UsernamePasswordAuthenticationProvider extends GeoServerAuthenticat
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         UsernamePasswordAuthenticationProviderConfig upAuthConfig = 
                 (UsernamePasswordAuthenticationProviderConfig) config;
-        GeoserverUserGroupService ugService = 
+        GeoServerUserGroupService ugService = 
             getSecurityManager().loadUserGroupService(upAuthConfig.getUserGroupServiceName());
         if (ugService == null) {
             throw new IllegalArgumentException("Unable to load user group service " 
@@ -42,7 +42,7 @@ public class UsernamePasswordAuthenticationProvider extends GeoServerAuthenticat
         authProvider.setUserDetailsService(ugService);
         
         //set up the password encoder
-        GeoserverUserPasswordEncoder encoder = (GeoserverUserPasswordEncoder)
+        GeoServerUserPasswordEncoder encoder = (GeoServerUserPasswordEncoder)
                 GeoServerExtensions.bean(ugService.getPasswordEncoderName());
         encoder.initializeFor(ugService);
         authProvider.setPasswordEncoder(encoder);

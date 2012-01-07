@@ -2,9 +2,7 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-
 package org.geoserver.security.impl;
-
 
 import java.util.Properties;
 
@@ -25,14 +23,14 @@ import org.springframework.security.core.authority.GrantedAuthorityImpl;
  * @author christian
  *
  */
-public class GeoserverRole extends GrantedAuthorityImpl implements Comparable<GeoserverRole>{
+public class GeoServerRole extends GrantedAuthorityImpl implements Comparable<GeoServerRole>{
 
     
     /**
      * Predefined Objects 
      */
-    public final static GeoserverRole ADMIN_ROLE = new GeoserverRole("ROLE_ADMINISTRATOR");
-    public final static GeoserverRole HASANY_ROLE = new GeoserverRole("*");
+    public final static GeoServerRole ADMIN_ROLE = new GeoServerRole("ROLE_ADMINISTRATOR");
+    public final static GeoServerRole HASANY_ROLE = new GeoServerRole("*");
     
     
     /**
@@ -46,11 +44,11 @@ public class GeoserverRole extends GrantedAuthorityImpl implements Comparable<Ge
     protected Properties properties;
 
 
-    public GeoserverRole(String role) {
+    public GeoServerRole(String role) {
         super(role);
         
     }
-    public int compareTo(GeoserverRole o) {
+    public int compareTo(GeoServerRole o) {
         if (o==null) return 1;
         if (getAuthority().equals(o.getAuthority())) {
             if (getUserName()==null && o.getUserName()==null)
@@ -104,8 +102,8 @@ public class GeoserverRole extends GrantedAuthorityImpl implements Comparable<Ge
             return super.equals(obj);
         }
 
-        if (obj instanceof GeoserverRole) {
-            return compareTo((GeoserverRole) obj)==0;
+        if (obj instanceof GeoServerRole) {
+            return compareTo((GeoServerRole) obj)==0;
         }
         return false;
     }
@@ -128,6 +126,4 @@ public class GeoserverRole extends GrantedAuthorityImpl implements Comparable<Ge
           return super.toString();
     }
 
-    
-    
 }

@@ -2,7 +2,6 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-
 package org.geoserver.security.password;
 
 import java.io.IOException;
@@ -23,7 +22,7 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
  * @author christian
  *
  */
-public abstract class GeoserverPBEPasswordEncoder extends AbstractGeoserverPasswordEncoder {
+public abstract class GeoServerPBEPasswordEncoder extends AbstractGeoserverPasswordEncoder {
 
     StandardPBEStringEncryptor encrypter;
     
@@ -50,10 +49,7 @@ public abstract class GeoserverPBEPasswordEncoder extends AbstractGeoserverPassw
         this.algorithm = algorithm;
     }
 
-
-
     public abstract String getKeyAliasInKeyStore();
-
 
     @Override
     protected PasswordEncoder getActualEncoder() {

@@ -28,11 +28,11 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.security.validation.AbstractSecurityException;
 import org.geoserver.web.GeoServerApplication;
@@ -52,7 +52,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     protected UserGroupFormComponent userGroupFormComponent;
     protected UserRolesFormComponent userRolesFormComponent;
     protected PropertyEditorFormComponent userpropertyeditor;
-    protected ListView<GeoserverRole> calculatedRoles;
+    protected ListView<GeoServerRole> calculatedRoles;
     protected UserUIModel uiUser;
     protected Form<Serializable> form;
     protected SubmitLink saveLink;
@@ -115,21 +115,21 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         pw2.setEnabled(hasUserGroupStore);
         
         
-        LoadableDetachableModel<List<GeoserverRole>> caclulatedRolesModel = new 
-                LoadableDetachableModel<List<GeoserverRole>> () {
+        LoadableDetachableModel<List<GeoServerRole>> caclulatedRolesModel = new 
+                LoadableDetachableModel<List<GeoServerRole>> () {
                     private static final long serialVersionUID = 1L;                                       
                     @Override
-                    protected List<GeoserverRole> load() {                        
+                    protected List<GeoServerRole> load() {                        
                             return getCalculatedroles();
                     }            
         };
 
 
                 
-        calculatedRoles = new ListView<GeoserverRole>
+        calculatedRoles = new ListView<GeoServerRole>
         ("calculatedroles", caclulatedRolesModel) {
                 private static final long serialVersionUID = 1L;
-                protected void populateItem(ListItem<GeoserverRole> item) {
+                protected void populateItem(ListItem<GeoServerRole> item) {
                     item.add(editRoleLink("calculatedrole", item.getModel(), RoleListProvider.ROLENAME));
                 }
         };
@@ -142,7 +142,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         form.add(calculatedrolesContainer);
 
                         
-        GeoserverUser tmpUser = uiUser.toGeoserverUser(userGroupServiceName);
+        GeoServerUser tmpUser = uiUser.toGeoserverUser(userGroupServiceName);
         
         form.add(userpropertyeditor=new PropertyEditorFormComponent("userpropertyeditor",properties));        
         userpropertyeditor.setEnabled(hasUserGroupStore);
@@ -201,7 +201,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
     }
     
     
-    Component editRoleLink(String id, IModel<GeoserverRole> itemModel, Property<GeoserverRole> property) {
+    Component editRoleLink(String id, IModel<GeoServerRole> itemModel, Property<GeoServerRole> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
             private static final long serialVersionUID = 1L;
 
@@ -209,7 +209,7 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
             protected void onClick(AjaxRequestTarget target) {                
                 setResponsePage(new EditRolePage(
                         getSecurityManager().getActiveRoleService().getName(),
-                        (GeoserverRole) getDefaultModelObject(), 
+                        (GeoServerRole) getDefaultModelObject(), 
                         (AbstractSecurityPage) this.getPage()));
             }
         };
@@ -226,16 +226,16 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         };
     }
     
-    public List<GeoserverRole> getCalculatedroles() {
-        List<GeoserverRole> tmpList = new ArrayList<GeoserverRole>();
-        List<GeoserverRole> resultList = new ArrayList<GeoserverRole>();
+    public List<GeoServerRole> getCalculatedroles() {
+        List<GeoServerRole> tmpList = new ArrayList<GeoServerRole>();
+        List<GeoServerRole> resultList = new ArrayList<GeoServerRole>();
         try {
-            GeoserverUserGroupService ugService= getSecurityManager().loadUserGroupService(userGroupServiceName);
-            GeoserverRoleService gaService = getSecurityManager().getActiveRoleService();
+            GeoServerUserGroupService ugService= getSecurityManager().loadUserGroupService(userGroupServiceName);
+            GeoServerRoleService gaService = getSecurityManager().getActiveRoleService();
             RoleCalculator calc = new RoleCalculator(ugService, gaService);
             tmpList.addAll(userRolesFormComponent.getSelectedRoles());
             calc.addInheritedRoles(tmpList);
-            for (GeoserverUserGroup group : userGroupFormComponent.getSelectedGroups()) {
+            for (GeoServerUserGroup group : userGroupFormComponent.getSelectedGroups()) {
                 if (group.isEnabled())
                     tmpList.addAll(calc.calculateRoles(group));
             }
@@ -274,11 +274,11 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         private boolean enabled;
 
         /**
-         * Maps a {@link GeoserverUser} into something that maps 1-1 with the UI
+         * Maps a {@link GeoServerUser} into something that maps 1-1 with the UI
          * 
          * @param user
          */
-        public UserUIModel(GeoserverUser user) {
+        public UserUIModel(GeoServerUser user) {
             this.username = user.getUsername();
             this.originalPassword = user.getPassword();
             this.password = this.originalPassword;
@@ -298,12 +298,12 @@ public abstract class AbstractUserPage extends AbstractSecurityPage {
         }
 
         /**
-         * Converts this UI view back into an Spring {@link GeoserverUser} object
+         * Converts this UI view back into an Spring {@link GeoServerUser} object
          * 
          * @return
          */
-        public GeoserverUser toGeoserverUser(String userGroupServiceName) {
-            GeoserverUser user;
+        public GeoServerUser toGeoserverUser(String userGroupServiceName) {
+            GeoServerUser user;
             try {
                 user = GeoServerApplication.get().getSecurityManager()
                     .loadUserGroupService(userGroupServiceName).createUserObject(username, password, enabled);

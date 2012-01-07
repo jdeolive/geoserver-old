@@ -4,17 +4,17 @@ import java.util.SortedSet;
 
 import org.apache.wicket.extensions.markup.html.form.palette.component.Recorder;
 import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
-import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.config.UserGroupTabbedPage;
 
 public class EditUserPageTest extends AbstractUserPageTest {
 
     
-    GeoserverUser current;
+    GeoServerUser current;
 
     public void testFill() throws Exception{
         initializeForXML();
@@ -33,7 +33,7 @@ public class EditUserPageTest extends AbstractUserPageTest {
         assertFalse(tester.getComponentFromLastRenderedPage("userForm:username").isEnabled());
 
         tester.assertModelValue("userForm:username", "user1");
-        GeoserverPasswordEncoder encoder = (GeoserverPasswordEncoder)
+        GeoServerPasswordEncoder encoder = (GeoServerPasswordEncoder)
                 GeoServerExtensions.bean(ugService.getPasswordEncoderName());
         String enc = (String) tester.getComponentFromLastRenderedPage("userForm:password").getDefaultModelObject();
         assertTrue(encoder.isPasswordValid(enc,"11111", null));
@@ -70,17 +70,17 @@ public class EditUserPageTest extends AbstractUserPageTest {
         tester.assertErrorMessages(new String[0]);
         tester.assertRenderedPage(UserGroupTabbedPage.class);
         
-        GeoserverUser user = ugService.getUserByUsername("user1");
+        GeoServerUser user = ugService.getUserByUsername("user1");
         assertNotNull(user);
         assertFalse(user.isEnabled());
         
         assertEquals(1,user.getProperties().size());
         assertEquals("10 10",user.getProperties().get("coord"));
-        SortedSet<GeoserverUserGroup> groupList = ugService.getGroupsForUser(user);
+        SortedSet<GeoServerUserGroup> groupList = ugService.getGroupsForUser(user);
         assertEquals(1,groupList.size());
         assertTrue(groupList.contains(ugService.getGroupByGroupname("testgroup")));
                 
-        SortedSet<GeoserverRole> roleList = gaService.getRolesForUser("user1");
+        SortedSet<GeoServerRole> roleList = gaService.getRolesForUser("user1");
         assertEquals(1,roleList.size());
         assertTrue(roleList.contains(gaService.getRoleByName("ROLE_NEW")));
     }
@@ -108,13 +108,13 @@ public class EditUserPageTest extends AbstractUserPageTest {
         tester.assertVisible("userForm:save");
         
         newFormTester();
-        assignRole(GeoserverRole.ADMIN_ROLE.getAuthority());
+        assignRole(GeoServerRole.ADMIN_ROLE.getAuthority());
         newFormTester();        
         form.submit("save");
         
-        SortedSet<GeoserverRole> roleList = gaService.getRolesForUser("user1");
+        SortedSet<GeoServerRole> roleList = gaService.getRolesForUser("user1");
         assertEquals(1,roleList.size());
-        assertTrue(roleList.contains(gaService.getRoleByName(GeoserverRole.ADMIN_ROLE.getAuthority())));
+        assertTrue(roleList.contains(gaService.getRoleByName(GeoServerRole.ADMIN_ROLE.getAuthority())));
 
     }
     
@@ -144,7 +144,7 @@ public class EditUserPageTest extends AbstractUserPageTest {
         form.setValue("enabled", Boolean.FALSE);
         form.submit("save");
 
-        GeoserverUser user = ugService.getUserByUsername("user1");
+        GeoServerUser user = ugService.getUserByUsername("user1");
         assertNotNull(user);
         assertFalse(user.isEnabled());
 

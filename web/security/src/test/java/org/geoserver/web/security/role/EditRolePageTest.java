@@ -1,7 +1,7 @@
 package org.geoserver.web.security.role;
 
 import org.apache.wicket.util.tester.FormTester;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 import org.geoserver.web.security.config.RoleTabbedPage;
@@ -58,11 +58,11 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
         tester.assertRenderedPage(RoleTabbedPage.class);
         tester.assertErrorMessages(new String[0]);
         
-        GeoserverRole role = gaService.getRoleByName("ROLE_WFS");
+        GeoServerRole role = gaService.getRoleByName("ROLE_WFS");
         assertNotNull(role);
         assertEquals(1,role.getProperties().size());
         assertEquals("10 10 20 20",role.getProperties().get("bbox"));
-        GeoserverRole parentRole = gaService.getParentRole(role);
+        GeoServerRole parentRole = gaService.getParentRole(role);
         assertNull(parentRole);
                 
     }
@@ -88,7 +88,7 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
         form.submit("save");
         tester.assertRenderedPage(RoleTabbedPage.class);
 
-        GeoserverRole role = gaService.getRoleByName("ROLE_AUTHENTICATED");
+        GeoServerRole role = gaService.getRoleByName("ROLE_AUTHENTICATED");
         assertNotNull(role);
         assertEquals(1,role.getProperties().size());
         assertEquals("lookupAtRuntime",role.getProperties().get("bbox"));
@@ -100,7 +100,7 @@ public class EditRolePageTest extends AbstractSecurityWicketTestSupport {
         activateRORoleService();
         
         AbstractSecurityPage returnPage = initializeForRoleServiceNamed(getRORoleServiceName());
-        tester.startPage(page=new EditRolePage(getRORoleServiceName(),GeoserverRole.ADMIN_ROLE,returnPage));
+        tester.startPage(page=new EditRolePage(getRORoleServiceName(),GeoServerRole.ADMIN_ROLE,returnPage));
         tester.assertRenderedPage(EditRolePage.class);
         assertFalse(tester.getComponentFromLastRenderedPage("roleForm:rolename").isEnabled());
         assertFalse(tester.getComponentFromLastRenderedPage("roleForm:roleparameditor").isEnabled());

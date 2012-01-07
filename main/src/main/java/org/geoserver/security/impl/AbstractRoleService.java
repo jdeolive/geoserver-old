@@ -13,23 +13,23 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.event.RoleLoadedEvent;
 import org.geoserver.security.event.RoleLoadedListener;
 
 
 /**
- * Default in memory implementation for {@link GeoserverRoleService}
+ * Default in memory implementation for {@link GeoServerRoleService}
  * 
  * @author Christian
  *
  */
 public abstract class AbstractRoleService extends AbstractGeoServerSecurityService 
-    implements GeoserverRoleService {
+    implements GeoServerRoleService {
     
     
-    protected GeoserverRole adminRole;
+    protected GeoServerRole adminRole;
     protected RoleStoreHelper helper;
     
     
@@ -41,13 +41,13 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     }
 
     @Override
-    public GeoserverRole getAdminRole() {
+    public GeoServerRole getAdminRole() {
         if (adminRole!=null) return adminRole;
-        return GeoserverRole.ADMIN_ROLE;
+        return GeoServerRole.ADMIN_ROLE;
     }
     
     @Override
-    public GeoserverRoleStore createStore() throws IOException {
+    public GeoServerRoleStore createStore() throws IOException {
         //return null, subclasses can override if they support a store along with a service
         return null;
     }
@@ -71,7 +71,7 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleService#getRoles()
      */
-    public SortedSet<GeoserverRole> getRoles()   throws IOException{
+    public SortedSet<GeoServerRole> getRoles()   throws IOException{
         return helper.getRoles();    
     }
             
@@ -101,7 +101,7 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleService#getRolesForUser(java.lang.String)
      */
-    public  SortedSet<GeoserverRole> getRolesForUser(String username)  throws IOException{
+    public  SortedSet<GeoServerRole> getRolesForUser(String username)  throws IOException{
         return helper.getRolesForUser(username);
     }
 
@@ -109,7 +109,7 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleService#getRolesForGroup(java.lang.String)
      */
-    public  SortedSet<GeoserverRole> getRolesForGroup(String groupname)  throws IOException{
+    public  SortedSet<GeoServerRole> getRolesForGroup(String groupname)  throws IOException{
         return helper.getRolesForGroup(groupname);
     }
 
@@ -117,15 +117,15 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleService#createRoleObject(java.lang.String)
      */
-    public GeoserverRole createRoleObject(String role)   throws IOException{
-        return new GeoserverRole(role);
+    public GeoServerRole createRoleObject(String role)   throws IOException{
+        return new GeoServerRole(role);
     }
     
 
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleService#getParentRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public GeoserverRole getParentRole(GeoserverRole role)   throws IOException{
+    public GeoServerRole getParentRole(GeoServerRole role)   throws IOException{
         return helper.getParentRole(role);        
     }
     
@@ -137,7 +137,7 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleService#getRoleByName(java.lang.String)
      */
-    public GeoserverRole getRoleByName(String role) throws  IOException {
+    public GeoServerRole getRoleByName(String role) throws  IOException {
             return helper.getRoleByName(role);
     }
     
@@ -154,7 +154,7 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleService#getGroupNamesForRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public SortedSet<String> getGroupNamesForRole(GeoserverRole role) throws IOException {
+    public SortedSet<String> getGroupNamesForRole(GeoServerRole role) throws IOException {
         return helper.getGroupNamesForRole(role);
     }
 
@@ -162,7 +162,7 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     /* (non-Javadoc)
      * @see org.geoserver.security.GeoserverRoleService#getUserNamesForRole(org.geoserver.security.impl.GeoserverRole)
      */
-    public SortedSet<String> getUserNamesForRole(GeoserverRole role) throws IOException{
+    public SortedSet<String> getUserNamesForRole(GeoServerRole role) throws IOException{
         return helper.getUserNamesForRole(role);
     }
     
@@ -181,7 +181,7 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     }
 
     /** (non-Javadoc)
-     * @see org.geoserver.security.GeoserverRoleService#personalizeRoleParams(java.lang.String, java.util.Properties, java.lang.String, java.util.Properties)
+     * @see org.geoserver.security.GeoServerRoleService#personalizeRoleParams(java.lang.String, java.util.Properties, java.lang.String, java.util.Properties)
      * 
      * Default implementation: if a user property name equals a role property name, 
      * take the value from to user property and use it for the role property. 

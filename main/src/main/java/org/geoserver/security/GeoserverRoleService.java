@@ -11,21 +11,15 @@ import java.util.SortedSet;
 
 import org.geoserver.security.event.RoleLoadedEvent;
 import org.geoserver.security.event.RoleLoadedListener;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 
 /**
  * A class implementing this interface is capable of reading 
  * role assignments from a backend.
  * 
- * 
  * @author christian
- *
  */
-/**
- * @author christian
- *
- */
-public interface GeoserverRoleService extends GeoServerSecurityService {
+public interface GeoServerRoleService extends GeoServerSecurityService {
 
     /**
      * Creates the granted authority store associated with this service, or null if creating a store
@@ -35,7 +29,7 @@ public interface GeoserverRoleService extends GeoServerSecurityService {
      * returns <code>false</code>.
      * </p>
      */
-    GeoserverRoleStore createStore() throws IOException;
+    GeoServerRoleStore createStore() throws IOException;
 
     /**
      * Register for notifications on load
@@ -52,22 +46,22 @@ public interface GeoserverRoleService extends GeoServerSecurityService {
     void unregisterRoleLoadedListener (RoleLoadedListener listener);
 
     /**
-     * Get group names for a {@link GeoserverRole} object
+     * Get group names for a {@link GeoServerRole} object
      * Hierarchical roles are not considered
      * 
      * @param role
      * @return collection which cannot be modified
      */
-    SortedSet<String> getGroupNamesForRole(GeoserverRole role) throws IOException;
+    SortedSet<String> getGroupNamesForRole(GeoServerRole role) throws IOException;
 
     /**
-     * Get user names for a {@link GeoserverRole} object
+     * Get user names for a {@link GeoServerRole} object
      * Hierarchical roles are not considered
      * 
      * @param role
      * @return collection which cannot be modified
      */
-    SortedSet<String> getUserNamesForRole(GeoserverRole role) throws IOException;
+    SortedSet<String> getUserNamesForRole(GeoServerRole role) throws IOException;
 
     
     /**
@@ -77,7 +71,7 @@ public interface GeoserverRoleService extends GeoServerSecurityService {
      * @param username
      * @return a collection which cannot be modified
      */
-    SortedSet<GeoserverRole> getRolesForUser(String username) throws IOException;
+    SortedSet<GeoServerRole> getRolesForUser(String username) throws IOException;
 
     
     /**
@@ -87,7 +81,7 @@ public interface GeoserverRoleService extends GeoServerSecurityService {
      * @param groupname
      * @return a collection which cannot be modified
      */
-    SortedSet<GeoserverRole> getRolesForGroup(String groupname) throws IOException;
+    SortedSet<GeoServerRole> getRolesForGroup(String groupname) throws IOException;
 
 
     /**
@@ -97,12 +91,12 @@ public interface GeoserverRoleService extends GeoServerSecurityService {
      * @return a collection which cannot be modified
      */
     
-    SortedSet<GeoserverRole> getRoles() throws IOException;
+    SortedSet<GeoServerRole> getRoles() throws IOException;
 
     
     /**
      * returns a role name -> parent role name mapping for the all
-     * {@link GeoserverRole} objects.
+     * {@link GeoServerRole} objects.
      * 
      * This method should be used by clients if they have to build
      * a tree structure
@@ -113,29 +107,29 @@ public interface GeoserverRoleService extends GeoServerSecurityService {
     Map<String,String> getParentMappings() throws IOException;
         
     /**
-     * Creates a {@link GeoserverRole} object . Implementations
-     * can use their special classes derived from {@link GeoserverRole}
+     * Creates a {@link GeoServerRole} object . Implementations
+     * can use their special classes derived from {@link GeoServerRole}
      * 
      * @param role
      * @return
      */
-    GeoserverRole createRoleObject(String role) throws IOException;
+    GeoServerRole createRoleObject(String role) throws IOException;
     
     
     /**
-     * Get the parent {@link GeoserverRole} object
+     * Get the parent {@link GeoServerRole} object
      * @param role
      * @return the parent role or null
      */
-    GeoserverRole getParentRole(GeoserverRole role)  throws IOException;
+    GeoServerRole getParentRole(GeoServerRole role)  throws IOException;
     
     /**
-     * Loads a {@link GeoserverRole} by name
+     * Loads a {@link GeoServerRole} by name
      * @param role
      * @return
      * @throws null if the role is not found
      */
-    GeoserverRole getRoleByName(String role) throws  IOException;
+    GeoServerRole getRoleByName(String role) throws  IOException;
 
     /**
      * load from backend store. On success,
@@ -164,11 +158,11 @@ public interface GeoserverRoleService extends GeoServerSecurityService {
      * @param roleName, the name of the role
      * 
      * @param roleParams, the params for the role from
-     * {@link GeoserverRoleService}
+     * {@link GeoServerRoleService}
      * 
      * @param userName, the user name
      * @param userProps. the properties of the user from
-     * {@link GeoserverUserGroupService}
+     * {@link GeoServerUserGroupService}
      * 
      * @return null for no personalization, the personalized
      * properties otherwise 
@@ -181,6 +175,6 @@ public interface GeoserverRoleService extends GeoServerSecurityService {
      * @return the admin role, default is
      * {@link GeoserverRole#ADMIN_ROLE#getAuthority()}
      */
-    public GeoserverRole getAdminRole();
+    GeoServerRole getAdminRole();
 
 }

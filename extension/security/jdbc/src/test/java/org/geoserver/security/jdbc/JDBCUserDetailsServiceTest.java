@@ -11,10 +11,10 @@ import java.sql.SQLException;
 import junit.framework.Assert;
 
 import org.geoserver.data.test.TestData;
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.impl.AbstractUserDetailsServiceTest;
 
 public abstract class JDBCUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
@@ -22,20 +22,20 @@ public abstract class JDBCUserDetailsServiceTest extends AbstractUserDetailsServ
     protected abstract String getFixtureId();
         
     @Override
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws Exception {
+    public GeoServerUserGroupService createUserGroupService(String serviceName) throws Exception {
         
         return JDBCTestSupport.createUserGroupService(getFixtureId(), 
             (LiveDbmsDataSecurity)getTestData(), getSecurityManager());
     }
 
     @Override
-    public GeoserverRoleService createRoleService(String serviceName) throws Exception {    
+    public GeoServerRoleService createRoleService(String serviceName) throws Exception {    
         return JDBCTestSupport.createRoleService(getFixtureId(),
             (LiveDbmsDataSecurity)getTestData(), getSecurityManager());
     }
 
     @Override
-    public GeoserverRoleStore createStore(GeoserverRoleService service) throws IOException {
+    public GeoServerRoleStore createStore(GeoServerRoleService service) throws IOException {
         JDBCRoleStore store = 
             (JDBCRoleStore) super.createStore(service);
         try {
@@ -50,7 +50,7 @@ public abstract class JDBCUserDetailsServiceTest extends AbstractUserDetailsServ
     }
 
     @Override
-    public GeoserverUserGroupStore createStore(GeoserverUserGroupService service) throws IOException {
+    public GeoServerUserGroupStore createStore(GeoServerUserGroupService service) throws IOException {
         JDBCUserGroupStore store = 
             (JDBCUserGroupStore) super.createStore(service);
         try {

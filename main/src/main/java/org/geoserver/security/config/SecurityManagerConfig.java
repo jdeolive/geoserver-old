@@ -10,7 +10,7 @@ import java.util.List;
 
 import org.geoserver.security.GeoServerSecurityFilterChain;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverRoleService;
+import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.rememberme.RememberMeServicesConfig;
 
 
@@ -56,7 +56,7 @@ public class SecurityManagerConfig implements SecurityConfig {
     }
 
     /**
-     * Name of {@link GeoserverRoleService} object.
+     * Name of {@link GeoServerRoleService} object.
      */
     public String getRoleServiceName() {
         return roleServiceName;

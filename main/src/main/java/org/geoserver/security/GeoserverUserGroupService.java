@@ -9,10 +9,10 @@ import java.util.SortedSet;
 
 import org.geoserver.security.event.UserGroupLoadedEvent;
 import org.geoserver.security.event.UserGroupLoadedListener;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
-import org.geoserver.security.password.GeoserverDigestPasswordEncoder;
-import org.geoserver.security.password.GeoserverPasswordEncoder;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
+import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,7 +26,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
  * @author christian
  *
  */
-public interface GeoserverUserGroupService extends GeoServerSecurityService,UserDetailsService {
+public interface GeoServerUserGroupService extends GeoServerSecurityService,UserDetailsService {
 
     /**
      * Creates the user group store that corresponds to this service, or null if creating a store
@@ -36,7 +36,7 @@ public interface GeoserverUserGroupService extends GeoServerSecurityService,User
      * returns <code>false</code>.
      * </p>
      */
-    GeoserverUserGroupStore createStore() throws IOException;
+    GeoServerUserGroupStore createStore() throws IOException;
 
     /**
      * Register for notifications on load
@@ -60,7 +60,7 @@ public interface GeoserverUserGroupService extends GeoServerSecurityService,User
      * @return null if group not found
      * @throws DataAccessException
      */
-    GeoserverUserGroup getGroupByGroupname(String groupname) throws IOException;
+    GeoServerUserGroup getGroupByGroupname(String groupname) throws IOException;
     
     /**
      * Returns the the user object, null if not found
@@ -69,43 +69,43 @@ public interface GeoserverUserGroupService extends GeoServerSecurityService,User
      * @return null if user not found
      * @throws DataAccessException
      */
-    GeoserverUser getUserByUsername(String username) throws IOException;
+    GeoServerUser getUserByUsername(String username) throws IOException;
 
    
 
     /**
-     * Create a user object. Implementations can use subclasses of {@link GeoserverUser}
+     * Create a user object. Implementations can use subclasses of {@link GeoServerUser}
      * 
      * @param username
      * @param password
      * @param isEnabled
      * @return
      */
-    GeoserverUser createUserObject(String username,String password, boolean isEnabled)  throws IOException;
+    GeoServerUser createUserObject(String username,String password, boolean isEnabled)  throws IOException;
     
     /**
-     * Create a user object. Implementations can use classes implementing  {@link GeoserverUserGroup}
+     * Create a user object. Implementations can use classes implementing  {@link GeoServerUserGroup}
      * 
      * @param groupname
      * @param password
      * @param isEnabled
      * @return
      */
-    GeoserverUserGroup createGroupObject(String groupname, boolean isEnabled)  throws IOException;
+    GeoServerUserGroup createGroupObject(String groupname, boolean isEnabled)  throws IOException;
     
     /**
      * Returns the list of users. 
      * 
      * @return a collection which cannot be modified
      */
-    SortedSet<GeoserverUser> getUsers()  throws IOException;
+    SortedSet<GeoServerUser> getUsers()  throws IOException;
     
     /**
      * Returns the list of GeoserverUserGroups. 
      * 
      * @return a collection which cannot be modified
      */
-    SortedSet<GeoserverUserGroup> getUserGroups()  throws IOException;
+    SortedSet<GeoServerUserGroup> getUserGroups()  throws IOException;
 
           
     
@@ -115,7 +115,7 @@ public interface GeoserverUserGroupService extends GeoServerSecurityService,User
      * @param group
      * @return a collection which cannot be modified
      */
-    SortedSet<GeoserverUser> getUsersForGroup (GeoserverUserGroup group)  throws IOException;
+    SortedSet<GeoServerUser> getUsersForGroup (GeoServerUserGroup group)  throws IOException;
     
     /**
      * get the groups for a user, an implementation not 
@@ -124,7 +124,7 @@ public interface GeoserverUserGroupService extends GeoServerSecurityService,User
      * @param user
      * @return a collection which cannot be modified
      */
-    SortedSet<GeoserverUserGroup> getGroupsForUser (GeoserverUser user)  throws IOException;
+    SortedSet<GeoServerUserGroup> getGroupsForUser (GeoServerUser user)  throws IOException;
 
                 
     /**
@@ -135,9 +135,9 @@ public interface GeoserverUserGroupService extends GeoServerSecurityService,User
 
     
     /**
-     * @return the Spring name of the {@link GeoserverPasswordEncoder} object.
+     * @return the Spring name of the {@link GeoServerPasswordEncoder} object.
      * mandatory, default is 
-     * {@link GeoserverDigestPasswordEncoder#BeanName}.
+     * {@link GeoServerDigestPasswordEncoder#BeanName}.
      *     
      */
     String getPasswordEncoderName();

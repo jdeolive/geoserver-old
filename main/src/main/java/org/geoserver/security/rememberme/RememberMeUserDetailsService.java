@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.GeoserverUserGroupService;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,7 +19,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  * User details implementation for remember me services that handles usernames of the form 
  * &lt;actualUserName>@&lt;userGroupServiceName>.
  * <p>
- * The user group component is used to load the appropriate {@link GeoserverUserGroupService}
+ * The user group component is used to load the appropriate {@link GeoServerUserGroupService}
  * to look up the user name against.  
  * </p>
  * @author Justin Deoliveira, OpenGeo
@@ -48,7 +48,7 @@ public class RememberMeUserDetailsService implements UserDetailsService {
         String service = m.group(2);
 
         try {
-            GeoserverUserGroupService ugService = securityManager.loadUserGroupService(service);
+            GeoServerUserGroupService ugService = securityManager.loadUserGroupService(service);
             return ugService.loadUserByUsername(user);
         } catch (IOException e) {
             throw new DataAccessException("Error loading user group service " + service, e) {};

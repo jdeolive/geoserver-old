@@ -6,40 +6,38 @@ package org.geoserver.security;
 
 import java.io.IOException;
 
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.validation.PasswordValidationException;
 
 /**
  * A class implementing this interface implements a backend for
  * user and group management. The store always operates on a
- * {@link GeoserverUserGroupService} object.
+ * {@link GeoServerUserGroupService} object.
  * 
  * @author christian
  *
  */
-public interface GeoserverUserGroupStore extends GeoserverUserGroupService {
+public interface GeoServerUserGroupStore extends GeoServerUserGroupService {
 
-
-    
     /**
      * Initializes itself from a service for future 
      * store modifications concerning this service 
      * 
      * @param service
      */
-    public void initializeFromService(GeoserverUserGroupService service) throws IOException;
+    void initializeFromService(GeoServerUserGroupService service) throws IOException;
 
     /**
      * discards all entries
      * 
      * @throws IOException
      */
-    public abstract void clear() throws IOException;
+    void clear() throws IOException;
 
     
     /**
-     * Adds a user, the {@link GeoserverUser#getPassword()
+     * Adds a user, the {@link GeoServerUser#getPassword()
      * returns the raw password
      * 
      * The method must use #getPasswordValidatorName() to
@@ -52,13 +50,13 @@ public interface GeoserverUserGroupStore extends GeoserverUserGroupService {
      * 
      * @param user
      */
-    public abstract void addUser(GeoserverUser user) throws  IOException;
+    void addUser(GeoServerUser user) throws  IOException;
 
     /**
      * Updates a user
      * 
      * The method must be able to determine if
-     * {@link GeoserverUser#getPassword() has changed
+     * {@link GeoServerUser#getPassword() has changed
      * (reread from backend, check for a prefix, ...)
      * 
      * if the password has changed, it is a raw password
@@ -72,26 +70,26 @@ public interface GeoserverUserGroupStore extends GeoserverUserGroupService {
      *  
      * @param user
      */
-    public abstract void updateUser(GeoserverUser user)  throws IOException;
+    void updateUser(GeoServerUser user)  throws IOException;
 
     /**
      * Removes the specified user 
      * @param user
      * @return
      */
-    public abstract boolean removeUser(GeoserverUser user)  throws IOException;
+    boolean removeUser(GeoServerUser user)  throws IOException;
     
     /**
      * Adds a group 
      * @param group
      */
-    public abstract void addGroup(GeoserverUserGroup group)  throws IOException;
+    void addGroup(GeoServerUserGroup group)  throws IOException;
 
     /**
      * Updates a group 
      * @param group
      */
-    public abstract void updateGroup(GeoserverUserGroup group)  throws IOException;
+    void updateGroup(GeoServerUserGroup group)  throws IOException;
 
     /**
      * Removes the specified group. 
@@ -99,15 +97,15 @@ public interface GeoserverUserGroupStore extends GeoserverUserGroupService {
      * @param group
      * @return
      */
-    public abstract boolean removeGroup(GeoserverUserGroup group)  throws IOException;
+    boolean removeGroup(GeoServerUserGroup group)  throws IOException;
 
 
     /**
      * Synchronizes all changes with the backend store.On success, 
-     * the associated {@link GeoserverUserGroupService} object should
+     * the associated {@link GeoServerUserGroupService} object should
      * be loaded
      */
-    public abstract void store() throws IOException;
+    void store() throws IOException;
 
     /**
      * Associates a user with a group, on success
@@ -115,7 +113,7 @@ public interface GeoserverUserGroupStore extends GeoserverUserGroupService {
      * @param user
      * @param group
      */
-    public void associateUserToGroup(GeoserverUser user, GeoserverUserGroup group)  throws IOException;
+    void associateUserToGroup(GeoServerUser user, GeoServerUserGroup group)  throws IOException;
     
     /**
      * Disassociates a user from a group, on success
@@ -124,15 +122,14 @@ public interface GeoserverUserGroupStore extends GeoserverUserGroupService {
      * @param user
      * @param group
      */
-    public void disAssociateUserFromGroup(GeoserverUser user, GeoserverUserGroup group)  throws IOException;
+    void disAssociateUserFromGroup(GeoServerUser user, GeoServerUserGroup group)  throws IOException;
 
-                            
     /**
      * returns true if there are pending modifications
      * not written to the backend store
      * 
      * @return true/false
      */
-    public boolean isModified();
+    boolean isModified();
  
 }

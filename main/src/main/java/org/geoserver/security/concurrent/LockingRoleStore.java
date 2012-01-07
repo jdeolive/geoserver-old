@@ -7,41 +7,41 @@ package org.geoserver.security.concurrent;
 
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.impl.GeoServerRole;
 
 /**
- * This is a wrapper class for a {@link GeoserverRoleStore}
+ * This is a wrapper class for a {@link GeoServerRoleStore}
  * Thsi wrapper protects internal data structures using read/write locks
  * 
  * @author christian
  *
  */
-public class LockingRoleStore extends LockingRoleService implements GeoserverRoleStore{
+public class LockingRoleStore extends LockingRoleService implements GeoServerRoleStore{
 
     /**
      * Constructor for the locking wrapper
      * 
      * @param store
      */
-    public LockingRoleStore(GeoserverRoleStore store) {
+    public LockingRoleStore(GeoServerRoleStore store) {
         super(store);
     }
     
     /**
      * @return the wrapped store
      */
-    public GeoserverRoleStore getStore() {
-        return (GeoserverRoleStore) super.getService();
+    public GeoServerRoleStore getStore() {
+        return (GeoServerRoleStore) super.getService();
     }
 
     
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#addRole(org.geoserver.security.impl.GeoserverRole)
+     * @see org.geoserver.security.GeoServerRoleStore#addRole(org.geoserver.security.impl.GeoServerRole)
      */
-    public void addRole(GeoserverRole role) throws IOException{
+    public void addRole(GeoServerRole role) throws IOException{
         writeLock();
         try {
             getStore().addRole(role);
@@ -52,9 +52,9 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#updateRole(org.geoserver.security.impl.GeoserverRole)
+     * @see org.geoserver.security.GeoServerRoleStore#updateRole(org.geoserver.security.impl.GeoServerRole)
      */
-    public void updateRole(GeoserverRole role) throws IOException{
+    public void updateRole(GeoServerRole role) throws IOException{
         writeLock();
         try {
             getStore().updateRole(role);
@@ -65,9 +65,9 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#removeRole(org.geoserver.security.impl.GeoserverRole)
+     * @see org.geoserver.security.GeoServerRoleStore#removeRole(org.geoserver.security.impl.GeoServerRole)
      */
-    public boolean removeRole(GeoserverRole role) throws IOException{
+    public boolean removeRole(GeoServerRole role) throws IOException{
         writeLock();
         try {
             return getStore().removeRole(role);
@@ -78,9 +78,9 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#associateRoleToGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
+     * @see org.geoserver.security.GeoServerRoleStore#associateRoleToGroup(org.geoserver.security.impl.GeoServerRole, java.lang.String)
      */
-    public void associateRoleToGroup(GeoserverRole role, String groupname) throws IOException{
+    public void associateRoleToGroup(GeoServerRole role, String groupname) throws IOException{
         writeLock();
         try {
             getStore().associateRoleToGroup(role,groupname);
@@ -91,9 +91,9 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromGroup(org.geoserver.security.impl.GeoserverRole, java.lang.String)
+     * @see org.geoserver.security.GeoServerRoleStore#disAssociateRoleFromGroup(org.geoserver.security.impl.GeoServerRole, java.lang.String)
      */
-    public void disAssociateRoleFromGroup(GeoserverRole role, String groupname) throws IOException{
+    public void disAssociateRoleFromGroup(GeoServerRole role, String groupname) throws IOException{
         writeLock();
         try {
             getStore().disAssociateRoleFromGroup(role, groupname);
@@ -104,9 +104,9 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#associateRoleToUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
+     * @see org.geoserver.security.GeoServerRoleStore#associateRoleToUser(org.geoserver.security.impl.GeoServerRole, java.lang.String)
      */
-    public void associateRoleToUser(GeoserverRole role, String username) throws IOException{
+    public void associateRoleToUser(GeoServerRole role, String username) throws IOException{
         writeLock();
         try {
             getStore().associateRoleToUser(role, username);
@@ -117,9 +117,9 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#disAssociateRoleFromUser(org.geoserver.security.impl.GeoserverRole, java.lang.String)
+     * @see org.geoserver.security.GeoServerRoleStore#disAssociateRoleFromUser(org.geoserver.security.impl.GeoServerRole, java.lang.String)
      */
-    public void disAssociateRoleFromUser(GeoserverRole role, String username) throws IOException{
+    public void disAssociateRoleFromUser(GeoServerRole role, String username) throws IOException{
         writeLock();
         try {
             getStore().disAssociateRoleFromUser(role, username);
@@ -130,7 +130,7 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#store()
+     * @see org.geoserver.security.GeoServerRoleStore#store()
      */
     public void store() throws IOException {
         writeLock();
@@ -143,7 +143,7 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * READ_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#isModified()
+     * @see org.geoserver.security.GeoServerRoleStore#isModified()
      */
     public boolean isModified() {
         readLock();
@@ -156,9 +156,9 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#setParentRole(org.geoserver.security.impl.GeoserverRole, org.geoserver.security.impl.GeoserverRole)
+     * @see org.geoserver.security.GeoServerRoleStore#setParentRole(org.geoserver.security.impl.GeoServerRole, org.geoserver.security.impl.GeoServerRole)
      */
-    public void setParentRole(GeoserverRole role, GeoserverRole parentRole) throws IOException{
+    public void setParentRole(GeoServerRole role, GeoServerRole parentRole) throws IOException{
         writeLock();
         try {
             getStore().setParentRole(role, parentRole);
@@ -169,7 +169,7 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#clear()
+     * @see org.geoserver.security.GeoServerRoleStore#clear()
      */
     public void clear() throws IOException {
         writeLock();
@@ -182,9 +182,9 @@ public class LockingRoleStore extends LockingRoleService implements GeoserverRol
 
     /**
      * WRITE_LOCK
-     * @see org.geoserver.security.GeoserverRoleStore#initializeFromService(org.geoserver.security.GeoserverRoleService)
+     * @see org.geoserver.security.GeoServerRoleStore#initializeFromService(org.geoserver.security.GeoServerRoleService)
      */
-    public void initializeFromService(GeoserverRoleService service) throws IOException{
+    public void initializeFromService(GeoServerRoleService service) throws IOException{
         writeLock();
         try {
             getStore().initializeFromService(service);

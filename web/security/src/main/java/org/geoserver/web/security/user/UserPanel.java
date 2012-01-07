@@ -12,8 +12,8 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.web.CatalogIconFactory;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -29,13 +29,13 @@ import org.geoserver.web.wicket.SimpleAjaxLink;
 @SuppressWarnings("serial")
 public class UserPanel extends Panel {
 
-    protected GeoServerTablePanel<GeoserverUser> users;
+    protected GeoServerTablePanel<GeoServerUser> users;
     protected GeoServerDialog dialog;
     protected SelectionUserRemovalLink removal,removalWithRoles;
     protected Link<NewUserPage> add;
     protected String serviceName;
 
-    protected GeoserverUserGroupService getService() {
+    protected GeoServerUserGroupService getService() {
         try {
             return GeoServerApplication.get().getSecurityManager().
                     loadUserGroupService(serviceName);
@@ -49,12 +49,12 @@ public class UserPanel extends Panel {
         
         this.serviceName=serviceName;
         UserListProvider provider = new UserListProvider(this.serviceName);
-        add(users = new GeoServerTablePanel<GeoserverUser>("table", provider, true) {
+        add(users = new GeoServerTablePanel<GeoServerUser>("table", provider, true) {
 
             @SuppressWarnings("rawtypes")
             @Override
             protected Component getComponentForProperty(String id, IModel itemModel,
-                    Property<GeoserverUser> property) {
+                    Property<GeoServerUser> property) {
                 if (property == UserListProvider.USERNAME) {
                     return editUserLink(id, itemModel, property);
                 } else if (property == UserListProvider.ENABLED) {
@@ -133,12 +133,12 @@ public class UserPanel extends Panel {
 //        };
 //    }
 
-    Component editUserLink(String id, IModel itemModel, Property<GeoserverUser> property) {
+    Component editUserLink(String id, IModel itemModel, Property<GeoServerUser> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
 
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                setResponsePage(new EditUserPage(serviceName,(GeoserverUser) getDefaultModelObject(),
+                setResponsePage(new EditUserPage(serviceName,(GeoServerUser) getDefaultModelObject(),
                         (AbstractSecurityPage) getPage()));
             }
 

@@ -7,16 +7,16 @@ package org.geoserver.security.validation;
 
 import java.io.IOException;
 
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 
 
 
 /**
  * 
- * This class is a validation wrapper for {@link GeoserverUserGroupStore}
+ * This class is a validation wrapper for {@link GeoServerUserGroupStore}
  * 
  * Usage:
  * <code>
@@ -25,7 +25,7 @@ import org.geoserver.security.impl.GeoserverUserGroup;
  * valStore.store()
  * </code>
  * 
- * Since the {@link GeoserverUserGroupStore} interface does not allow to 
+ * Since the {@link GeoServerUserGroupStore} interface does not allow to 
  * throw {@link UserGroupServiceException} objects directly, these objects
  * a wrapped into an IOException. Use {@link IOException#getCause()} to
  * get the proper exception.
@@ -36,7 +36,7 @@ import org.geoserver.security.impl.GeoserverUserGroup;
  */
 
 
-public class UserGroupStoreValidationWrapper extends UserGroupServiceValidationWrapper implements GeoserverUserGroupStore{
+public class UserGroupStoreValidationWrapper extends UserGroupServiceValidationWrapper implements GeoServerUserGroupStore{
 
    
 
@@ -46,15 +46,15 @@ public class UserGroupStoreValidationWrapper extends UserGroupServiceValidationW
      * @param store
      * 
      */    
-    public UserGroupStoreValidationWrapper(GeoserverUserGroupStore store) {
+    public UserGroupStoreValidationWrapper(GeoServerUserGroupStore store) {
         super(store);
     }
 
-    GeoserverUserGroupStore getStore() {
-        return (GeoserverUserGroupStore) service;
+    GeoServerUserGroupStore getStore() {
+        return (GeoServerUserGroupStore) service;
     }
     
-    public void initializeFromService(GeoserverUserGroupService service) throws IOException {
+    public void initializeFromService(GeoServerUserGroupService service) throws IOException {
         getStore().initializeFromService(service);
     }
 
@@ -64,33 +64,33 @@ public class UserGroupStoreValidationWrapper extends UserGroupServiceValidationW
 
 
 
-    public void addUser(GeoserverUser user) throws IOException {
+    public void addUser(GeoServerUser user) throws IOException {
         checkNotExistingUserName(user.getUsername());
         getStore().addUser(user);
     }
      
-    public void updateUser(GeoserverUser user) throws IOException {
+    public void updateUser(GeoServerUser user) throws IOException {
         checkExistingUserName(user.getUsername());
         getStore().updateUser(user);
     }
 
-    public boolean removeUser(GeoserverUser user) throws IOException {
+    public boolean removeUser(GeoServerUser user) throws IOException {
         return getStore().removeUser(user);
     }
 
-    public void addGroup(GeoserverUserGroup group) throws IOException {
+    public void addGroup(GeoServerUserGroup group) throws IOException {
         checkNotExistingGroupName(group.getGroupname());
         getStore().addGroup(group);
     }
 
 
-    public void updateGroup(GeoserverUserGroup group) throws IOException {
+    public void updateGroup(GeoServerUserGroup group) throws IOException {
         checkExistingGroupName(group.getGroupname());
         getStore().updateGroup(group);
     }
 
 
-    public boolean removeGroup(GeoserverUserGroup group) throws IOException {
+    public boolean removeGroup(GeoServerUserGroup group) throws IOException {
         return getStore().removeGroup(group);
     }
 
@@ -100,14 +100,14 @@ public class UserGroupStoreValidationWrapper extends UserGroupServiceValidationW
 
 
 
-    public void associateUserToGroup(GeoserverUser user, GeoserverUserGroup group)
+    public void associateUserToGroup(GeoServerUser user, GeoServerUserGroup group)
             throws IOException {
         checkExistingUserName(user.getUsername());
         checkExistingGroupName(group.getGroupname());
         getStore().associateUserToGroup(user, group);
     }
 
-    public void disAssociateUserFromGroup(GeoserverUser user, GeoserverUserGroup group)
+    public void disAssociateUserFromGroup(GeoServerUser user, GeoServerUserGroup group)
             throws IOException {
         checkExistingUserName(user.getUsername());
         checkExistingGroupName(group.getGroupname());

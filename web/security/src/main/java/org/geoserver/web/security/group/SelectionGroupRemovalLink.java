@@ -9,11 +9,11 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.validation.RoleStoreValidationWrapper;
 import org.geoserver.security.validation.UserGroupStoreValidationWrapper;
 import org.geoserver.web.GeoServerApplication;
@@ -28,7 +28,7 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
      */
     private static final long serialVersionUID = 1L;
 
-    GeoServerTablePanel<GeoserverUserGroup> groups;
+    GeoServerTablePanel<GeoServerUserGroup> groups;
 
     GeoServerDialog dialog;
     boolean disassociateRoles =false;
@@ -36,7 +36,7 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
     GeoServerDialog.DialogDelegate delegate;
     String userGroupsServiceName;
 
-    public SelectionGroupRemovalLink(String userGroupServiceName,String id, GeoServerTablePanel<GeoserverUserGroup> groups,
+    public SelectionGroupRemovalLink(String userGroupServiceName,String id, GeoServerTablePanel<GeoServerUserGroup> groups,
             GeoServerDialog dialog,boolean disassociateRoles) {
         super(id);
         this.groups = groups;
@@ -47,7 +47,7 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
 
     @Override
     public void onClick(AjaxRequestTarget target) {
-        final List<GeoserverUserGroup> selection = groups.getSelection();
+        final List<GeoServerUserGroup> selection = groups.getSelection();
         if (selection.size() == 0)
             return;
 
@@ -61,7 +61,7 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
                 Model<Boolean> model = new Model<Boolean>(SelectionGroupRemovalLink.this.disassociateRoles); 
                 return removePanel=new ConfirmRemovalGroupPanel(id,model,  selection) {
                     @Override
-                    protected StringResourceModel canRemove(GeoserverUserGroup group) {
+                    protected StringResourceModel canRemove(GeoServerUserGroup group) {
                         return SelectionGroupRemovalLink.this.canRemove(group);
                     }
                 };
@@ -69,13 +69,13 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
 
             protected boolean onSubmit(AjaxRequestTarget target, Component contents) {
 
-                GeoserverUserGroupStore ugStore=null;
+                GeoServerUserGroupStore ugStore=null;
                 try {
-                    GeoserverUserGroupService ugService =
+                    GeoServerUserGroupService ugService =
                             GeoServerApplication.get().getSecurityManager()
                             .loadUserGroupService(userGroupsServiceName);
                     ugStore = new UserGroupStoreValidationWrapper(ugService.createStore());
-                    for (GeoserverUserGroup group : removePanel.getRoots()) {                     
+                    for (GeoServerUserGroup group : removePanel.getRoots()) {                     
                          ugStore.removeGroup(group);
                     }
                     ugStore.store();
@@ -84,16 +84,16 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
                     throw new RuntimeException(ex);
                 }
                 
-                GeoserverRoleStore gaStore = null;
+                GeoServerRoleStore gaStore = null;
                 if (disassociateRoles) {
                     try {
                         gaStore =
                                 GeoServerApplication.get().getSecurityManager().getActiveRoleService().createStore();
                         gaStore = new RoleStoreValidationWrapper(gaStore);
-                        for (GeoserverUserGroup group : removePanel.getRoots()) {                                              
-                                 List<GeoserverRole> list= new ArrayList<GeoserverRole>();
+                        for (GeoServerUserGroup group : removePanel.getRoots()) {                                              
+                                 List<GeoServerRole> list= new ArrayList<GeoServerRole>();
                                  list.addAll(gaStore.getRolesForGroup(group.getGroupname()));
-                                 for (GeoserverRole role: list)
+                                 for (GeoServerRole role: list)
                                      gaStore.disAssociateRoleFromGroup(role, group.getGroupname());
                         }
                         gaStore.store();
@@ -125,7 +125,7 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
 
     }
 
-    protected StringResourceModel canRemove(GeoserverUserGroup group) {
+    protected StringResourceModel canRemove(GeoServerUserGroup group) {
         return null;
     }
 

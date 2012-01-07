@@ -23,14 +23,14 @@ import java.util.Map.Entry;
  *
  */
 public class RoleStoreHelper{
-    public TreeMap<String,GeoserverRole> roleMap =
-            new TreeMap<String,GeoserverRole>();    
-    public TreeMap<String, SortedSet<GeoserverRole>>group_roleMap =
-            new TreeMap<String, SortedSet<GeoserverRole>>();
-    public TreeMap<String, SortedSet<GeoserverRole>> user_roleMap =
-            new TreeMap<String, SortedSet<GeoserverRole>>();
-    public HashMap<GeoserverRole, GeoserverRole> role_parentMap =
-            new HashMap<GeoserverRole, GeoserverRole>();
+    public TreeMap<String,GeoServerRole> roleMap =
+            new TreeMap<String,GeoServerRole>();    
+    public TreeMap<String, SortedSet<GeoServerRole>>group_roleMap =
+            new TreeMap<String, SortedSet<GeoServerRole>>();
+    public TreeMap<String, SortedSet<GeoServerRole>> user_roleMap =
+            new TreeMap<String, SortedSet<GeoServerRole>>();
+    public HashMap<GeoServerRole, GeoServerRole> role_parentMap =
+            new HashMap<GeoServerRole, GeoServerRole>();
    
    
    public void clearMaps() {
@@ -42,8 +42,8 @@ public class RoleStoreHelper{
    
    public  Map<String,String> getParentMappings() throws IOException {
        Map<String,String> parentMap = new HashMap<String,String>();
-       for (GeoserverRole role: roleMap.values()) {
-           GeoserverRole parentRole = role_parentMap.get(role); 
+       for (GeoServerRole role: roleMap.values()) {
+           GeoServerRole parentRole = role_parentMap.get(role); 
            parentMap.put(role.getAuthority(), 
                    parentRole == null ? null : parentRole.getAuthority());
        }
@@ -51,44 +51,44 @@ public class RoleStoreHelper{
    }
       
    
-   public SortedSet<GeoserverRole> getRoles()   throws IOException{              
-       SortedSet<GeoserverRole> result = new TreeSet<GeoserverRole>();
+   public SortedSet<GeoServerRole> getRoles()   throws IOException{              
+       SortedSet<GeoServerRole> result = new TreeSet<GeoServerRole>();
        result.addAll(roleMap.values());
        return Collections.unmodifiableSortedSet(result);
    }
 
-   public  SortedSet<GeoserverRole> getRolesForUser(String username)  throws IOException{
-       SortedSet<GeoserverRole> roles = user_roleMap.get(username);
+   public  SortedSet<GeoServerRole> getRolesForUser(String username)  throws IOException{
+       SortedSet<GeoServerRole> roles = user_roleMap.get(username);
        if (roles==null)
-           roles=new TreeSet<GeoserverRole>();
+           roles=new TreeSet<GeoServerRole>();
        return Collections.unmodifiableSortedSet(roles);
    }
 
-   public  SortedSet<GeoserverRole> getRolesForGroup(String groupname)  throws IOException{
-       SortedSet<GeoserverRole> roles = group_roleMap.get(groupname);
+   public  SortedSet<GeoServerRole> getRolesForGroup(String groupname)  throws IOException{
+       SortedSet<GeoServerRole> roles = group_roleMap.get(groupname);
        if (roles==null)
-           roles=new TreeSet<GeoserverRole>();
+           roles=new TreeSet<GeoServerRole>();
        return Collections.unmodifiableSortedSet(roles);
    }
 
-   public GeoserverRole getParentRole(GeoserverRole role)   throws IOException{
+   public GeoServerRole getParentRole(GeoServerRole role)   throws IOException{
        return role_parentMap.get(role);        
    }
-   public GeoserverRole getRoleByName(String role) throws  IOException {
+   public GeoServerRole getRoleByName(String role) throws  IOException {
        return roleMap.get(role);       
    }
-   public SortedSet<String> getGroupNamesForRole(GeoserverRole role) throws IOException {
+   public SortedSet<String> getGroupNamesForRole(GeoServerRole role) throws IOException {
        SortedSet<String> result = new TreeSet<String>();
-       for (Entry<String,SortedSet<GeoserverRole>> entry : group_roleMap.entrySet()) {
+       for (Entry<String,SortedSet<GeoServerRole>> entry : group_roleMap.entrySet()) {
            if (entry.getValue().contains(role))
                result.add(entry.getKey());
        }
        return Collections.unmodifiableSortedSet(result);
    }
 
-   public SortedSet<String> getUserNamesForRole(GeoserverRole role) throws IOException{
+   public SortedSet<String> getUserNamesForRole(GeoServerRole role) throws IOException{
        SortedSet<String> result = new TreeSet<String>();
-       for (Entry<String,SortedSet<GeoserverRole>> entry : user_roleMap.entrySet()) {
+       for (Entry<String,SortedSet<GeoServerRole>> entry : user_roleMap.entrySet()) {
            if (entry.getValue().contains(role))
                result.add(entry.getKey());
        }

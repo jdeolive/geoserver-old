@@ -21,12 +21,12 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.apache.commons.io.FileUtils;
-import org.geoserver.security.GeoserverRoleStore;
+import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.impl.AbstractRoleService;
-import org.geoserver.security.impl.GeoserverRole;
+import org.geoserver.security.impl.GeoServerRole;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -64,7 +64,7 @@ public class XMLRoleService extends AbstractRoleService {
         this.name=config.getName();
         validatingXMLSchema=false;
         if (((SecurityRoleServiceConfig)config).getAdminRoleName()!=null) {
-            adminRole = createRoleObject(GeoserverRole.ADMIN_ROLE.getAuthority());
+            adminRole = createRoleObject(GeoServerRole.ADMIN_ROLE.getAuthority());
         }
 
         if (config instanceof XMLSecurityServiceConfig) {
@@ -98,7 +98,7 @@ public class XMLRoleService extends AbstractRoleService {
     }
 
     @Override
-    public GeoserverRoleStore createStore() throws IOException {
+    public GeoServerRoleStore createStore() throws IOException {
         XMLRoleStore store = new XMLRoleStore();
         store.initializeFromService(this);
         return store;
@@ -148,7 +148,7 @@ public class XMLRoleService extends AbstractRoleService {
                     String propertyValue = xmlXPath.getPropertyValueExpression().evaluate(propertyNode);
                     roleProps.put(propertyName, propertyValue);
                 }
-                GeoserverRole role =createRoleObject(roleName);                                
+                GeoServerRole role =createRoleObject(roleName);                                
          
                 role.getProperties().clear();       // set properties
                 for (Object key: roleProps.keySet()) {
@@ -172,7 +172,7 @@ public class XMLRoleService extends AbstractRoleService {
             for ( int i=0 ; i <userRolesNodes.getLength();i++) {
                 Node userRolesNode = userRolesNodes.item(i);
                 String userName = xmlXPath.getUserNameExpression().evaluate(userRolesNode);
-                SortedSet<GeoserverRole> roleSet = new TreeSet<GeoserverRole>();
+                SortedSet<GeoServerRole> roleSet = new TreeSet<GeoServerRole>();
                 helper.user_roleMap.put(userName,roleSet);
                 NodeList userRolesRefNodes = (NodeList) xmlXPath.getUserRolRefsExpression().evaluate(userRolesNode,XPathConstants.NODESET);
                 for ( int j=0 ; j <userRolesRefNodes.getLength();j++) {
@@ -187,7 +187,7 @@ public class XMLRoleService extends AbstractRoleService {
             for ( int i=0 ; i <groupRolesNodes.getLength();i++) {
                 Node groupRolesNode = groupRolesNodes.item(i);
                 String groupName = xmlXPath.getGroupNameExpression().evaluate(groupRolesNode);
-                SortedSet<GeoserverRole> roleSet = new TreeSet<GeoserverRole>();
+                SortedSet<GeoServerRole> roleSet = new TreeSet<GeoServerRole>();
                 helper.group_roleMap.put(groupName,roleSet);
                 NodeList groupRolesRefNodes = (NodeList) xmlXPath.getGroupRolRefsExpression().evaluate(groupRolesNode,XPathConstants.NODESET);
                 for ( int j=0 ; j <groupRolesRefNodes.getLength();j++) {

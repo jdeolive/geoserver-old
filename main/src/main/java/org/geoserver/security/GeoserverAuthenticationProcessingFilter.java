@@ -17,7 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * @author Andrea Aime - TOPP
  *
  */
-public class GeoserverAuthenticationProcessingFilter extends UsernamePasswordAuthenticationFilter {
+public class GeoServerAuthenticationProcessingFilter extends UsernamePasswordAuthenticationFilter {
     protected String obtainPassword(HttpServletRequest request) {
         return request.getParameter("password");
     }

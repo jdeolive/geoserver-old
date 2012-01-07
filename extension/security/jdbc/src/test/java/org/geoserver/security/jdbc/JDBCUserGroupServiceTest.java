@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 import junit.framework.Assert;
 
 import org.geoserver.data.test.TestData;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.GeoserverUserGroupStore;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.impl.AbstractUserGroupServiceTest;
 
 
@@ -42,14 +42,14 @@ public abstract class JDBCUserGroupServiceTest extends AbstractUserGroupServiceT
     }
 
         
-    public GeoserverUserGroupService createUserGroupService(String serviceName) throws Exception {
+    public GeoServerUserGroupService createUserGroupService(String serviceName) throws Exception {
         
         return JDBCTestSupport.createUserGroupService(getFixtureId(), 
             (LiveDbmsDataSecurity)getTestData(), getSecurityManager());
     }
         
     @Override
-    public GeoserverUserGroupStore createStore(GeoserverUserGroupService service) throws IOException {
+    public GeoServerUserGroupStore createStore(GeoServerUserGroupService service) throws IOException {
         JDBCUserGroupStore store = 
             (JDBCUserGroupStore) super.createStore(service);
         try {

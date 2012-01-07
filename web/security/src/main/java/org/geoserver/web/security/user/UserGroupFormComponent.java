@@ -23,8 +23,8 @@ import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.model.LoadableDetachableModel;
 import org.apache.wicket.model.PropertyModel;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.group.NewGroupPage;
@@ -36,45 +36,45 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
     private static final long serialVersionUID = 1L;
 
 
-    Palette<GeoserverUserGroup> groupPalette;
-    GeoserverUser user;
+    Palette<GeoServerUserGroup> groupPalette;
+    GeoServerUser user;
     Form<?> form;
-    List<GeoserverUserGroup> selectedGroups;
+    List<GeoServerUserGroup> selectedGroups;
     String userGroupServiceName;
 
-    public List<GeoserverUserGroup> getSelectedGroups() {
+    public List<GeoServerUserGroup> getSelectedGroups() {
         return selectedGroups;
     }
 
-    public UserGroupFormComponent(String userGroupServiceName,GeoserverUser user, final Form<?> form ) {
+    public UserGroupFormComponent(String userGroupServiceName,GeoServerUser user, final Form<?> form ) {
         this(userGroupServiceName,user,form,null);
     }
-    public UserGroupFormComponent(final String userGroupServiceName,GeoserverUser user, final Form<?> form, final IBehavior behavior ) {        
+    public UserGroupFormComponent(final String userGroupServiceName,GeoServerUser user, final Form<?> form, final IBehavior behavior ) {        
         super("groups");
         this.userGroupServiceName=userGroupServiceName;
         this.user=user;
         this.form=form;
                                                         
         try {
-            selectedGroups=new ArrayList<GeoserverUserGroup>();
+            selectedGroups=new ArrayList<GeoServerUserGroup>();
             selectedGroups.addAll(getSecurityManager().
                     loadUserGroupService(userGroupServiceName).getGroupsForUser(user));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        PropertyModel<List<GeoserverUserGroup>> model = new 
-                PropertyModel<List<GeoserverUserGroup>> (this,"selectedGroups");
+        PropertyModel<List<GeoServerUserGroup>> model = new 
+                PropertyModel<List<GeoServerUserGroup>> (this,"selectedGroups");
 
         
         
-        LoadableDetachableModel<SortedSet<GeoserverUserGroup>> choicesModel = new 
-                LoadableDetachableModel<SortedSet<GeoserverUserGroup>> () {
+        LoadableDetachableModel<SortedSet<GeoServerUserGroup>> choicesModel = new 
+                LoadableDetachableModel<SortedSet<GeoServerUserGroup>> () {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    protected SortedSet<GeoserverUserGroup> load() {                        
+                    protected SortedSet<GeoServerUserGroup> load() {                        
                         try {
-                            SortedSet<GeoserverUserGroup> result=new TreeSet<GeoserverUserGroup>();
+                            SortedSet<GeoServerUserGroup> result=new TreeSet<GeoServerUserGroup>();
                             result.addAll(
                                 getSecurityManager().loadUserGroupService(userGroupServiceName).getUserGroups());
                             
@@ -86,18 +86,18 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
         };
 
         if (behavior==null) {
-            groupPalette = new Palette<GeoserverUserGroup>(
+            groupPalette = new Palette<GeoServerUserGroup>(
                 "groups", model,choicesModel,
-                new ChoiceRenderer<GeoserverUserGroup>("groupname","groupname"), 10, false);
+                new ChoiceRenderer<GeoServerUserGroup>("groupname","groupname"), 10, false);
         } else {
-            groupPalette = new Palette<GeoserverUserGroup>(
+            groupPalette = new Palette<GeoServerUserGroup>(
                     "groups", model,choicesModel,
-                    new ChoiceRenderer<GeoserverUserGroup>("groupname","groupname"), 10, false) {
+                    new ChoiceRenderer<GeoServerUserGroup>("groupname","groupname"), 10, false) {
                         private static final long serialVersionUID = 1L;
 
                         @Override
-                        protected Recorder<GeoserverUserGroup> newRecorderComponent() {                            
-                            Recorder<GeoserverUserGroup> r= super.newRecorderComponent();
+                        protected Recorder<GeoServerUserGroup> newRecorderComponent() {                            
+                            Recorder<GeoServerUserGroup> r= super.newRecorderComponent();
                             r.add(behavior);
                             return r;
                         }                                        
@@ -126,18 +126,18 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
         return GeoServerApplication.get().getSecurityManager();
     }
 
-    protected void calculateAddedRemovedCollections(Collection<GeoserverUserGroup> added, Collection<GeoserverUserGroup> removed) {
-        SortedSet<GeoserverUserGroup> oldgroups;
+    protected void calculateAddedRemovedCollections(Collection<GeoServerUserGroup> added, Collection<GeoServerUserGroup> removed) {
+        SortedSet<GeoServerUserGroup> oldgroups;
         try {
             oldgroups = getSecurityManager().loadUserGroupService(userGroupServiceName).getGroupsForUser(user);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        Iterator<GeoserverUserGroup> it = groupPalette.getSelectedChoices();
+        Iterator<GeoServerUserGroup> it = groupPalette.getSelectedChoices();
         
         removed.addAll(oldgroups);
         while (it.hasNext()) {
-            GeoserverUserGroup group = it.next();
+            GeoServerUserGroup group = it.next();
             if (oldgroups.contains(group)==false)
                 added.add(group);
             else
@@ -150,7 +150,7 @@ public class UserGroupFormComponent extends FormComponentPanel<Serializable> {
         groupPalette.getRecorderComponent().updateModel();
     }
     
-    public Palette<GeoserverUserGroup> getGroupPalette() {
+    public Palette<GeoServerUserGroup> getGroupPalette() {
         return groupPalette;
     }
 }

@@ -13,26 +13,26 @@ import java.util.List;
 import org.apache.wicket.Component;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.web.ComponentBuilder;
 import org.geoserver.web.FormTestPage;
 import org.geoserver.web.security.AbstractConfirmRemovalPanelTest;
 
-public class ConfirmRemovalUserPanelTest extends AbstractConfirmRemovalPanelTest<GeoserverUser> {
+public class ConfirmRemovalUserPanelTest extends AbstractConfirmRemovalPanelTest<GeoServerUser> {
     private static final long serialVersionUID = 1L;
 
     boolean disassociateRoles = false;
     
-    protected void setupPanel(final List<GeoserverUser> roots) {
+    protected void setupPanel(final List<GeoServerUser> roots) {
         tester.startPage(new FormTestPage(new ComponentBuilder() {
             private static final long serialVersionUID = 1L;
 
             public Component buildComponent(String id) {
                 Model<Boolean> model = new Model<Boolean>(disassociateRoles);
-                return new ConfirmRemovalUserPanel(id, model,roots.toArray(new GeoserverUser[roots.size()])) {
+                return new ConfirmRemovalUserPanel(id, model,roots.toArray(new GeoServerUser[roots.size()])) {
                     @Override
-                    protected StringResourceModel canRemove(GeoserverUser data) {
+                    protected StringResourceModel canRemove(GeoServerUser data) {
                         SelectionUserRemovalLink link = new SelectionUserRemovalLink(getUserGroupServiceName(),"XXX",null,null,disassociateRoles);
                         return link.canRemove(data);
                     }
@@ -56,12 +56,12 @@ public class ConfirmRemovalUserPanelTest extends AbstractConfirmRemovalPanelTest
     }
 
     @Override
-    protected GeoserverUser getRemoveableObject() throws Exception{
+    protected GeoServerUser getRemoveableObject() throws Exception{
             return ugService.getUserByUsername("admin");
     }
 
     @Override
-    protected GeoserverUser getProblematicObject() throws Exception {
+    protected GeoServerUser getProblematicObject() throws Exception {
         return null;
     }
 
@@ -74,7 +74,7 @@ public class ConfirmRemovalUserPanelTest extends AbstractConfirmRemovalPanelTest
     protected String getRemoveableObjectRegExp() throws Exception{
         if (disassociateRoles)
             return ".*"+getRemoveableObject().getUsername()+".*" +
-            		GeoserverRole.ADMIN_ROLE +".*";
+            		GeoServerRole.ADMIN_ROLE +".*";
         else    
             return ".*"+getRemoveableObject().getUsername()+".*";
     }    

@@ -10,13 +10,13 @@ import java.io.IOException;
 
 import junit.framework.Assert;
 
-import org.geoserver.security.GeoserverRoleService;
-import org.geoserver.security.GeoserverRoleStore;
+import org.geoserver.security.GeoServerRoleService;
+import org.geoserver.security.GeoServerRoleStore;
 
 public abstract class AbstractRoleServiceTest extends AbstractSecurityServiceTest {
     
-    protected GeoserverRoleService service; 
-    protected GeoserverRoleStore store; 
+    protected GeoServerRoleService service; 
+    protected GeoServerRoleStore store; 
 
 
     @Override
@@ -43,9 +43,9 @@ public abstract class AbstractRoleServiceTest extends AbstractSecurityServiceTes
             store.store();
             assertFalse(store.isModified());
             
-            GeoserverRole role = 
+            GeoServerRole role = 
                 store.createRoleObject("ROLE_DUMMY");
-            GeoserverRole role_parent = 
+            GeoServerRole role_parent = 
                 store.createRoleObject("ROLE_PARENT");        
 
             

@@ -2,13 +2,9 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-
 package org.geoserver.security.impl;
 
-
-
 import java.io.Serializable;
-
 
 /**
  * Implementation of {@link UserGroup}
@@ -16,22 +12,17 @@ import java.io.Serializable;
  * @author christian
  *
  */
-public class GeoserverUserGroup implements Comparable<GeoserverUserGroup>,Serializable{
-    
-    
-    /**
-     * 
-     */
+public class GeoServerUserGroup implements Comparable<GeoServerUserGroup>,Serializable{
+
     private static final long serialVersionUID = 1L;
+
     private final String groupname;
     private boolean enabled;
 
-
-    public GeoserverUserGroup(String name) {
+    public GeoServerUserGroup(String name) {
         groupname=name;
         enabled=true;
     }
-
 
     public boolean isEnabled() {
         return enabled;
@@ -41,12 +32,10 @@ public class GeoserverUserGroup implements Comparable<GeoserverUserGroup>,Serial
         this.enabled = enabled;
     }
 
-
-    
     @Override
     public boolean equals(Object rhs) {
-        if (rhs instanceof GeoserverUserGroup) {
-            return getGroupname().equals(((GeoserverUserGroup) rhs).getGroupname());
+        if (rhs instanceof GeoServerUserGroup) {
+            return getGroupname().equals(((GeoServerUserGroup) rhs).getGroupname());
         }
         return false;
     }
@@ -56,7 +45,7 @@ public class GeoserverUserGroup implements Comparable<GeoserverUserGroup>,Serial
         return getGroupname().hashCode();
     }
     
-    public int compareTo(GeoserverUserGroup o) {
+    public int compareTo(GeoServerUserGroup o) {
         if (o==null) return 1;
         return getGroupname().compareTo(o.getGroupname());
     }

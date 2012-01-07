@@ -41,7 +41,7 @@ import org.vfny.geoserver.global.GeoserverDataDirectory;
  * @author Andrea Aime - OpenGeo
  * 
  */
-public class GeoserverUserDao implements UserDetailsService {
+public class GeoServerUserDao implements UserDetailsService {
     /** logger */
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security");
 
@@ -52,10 +52,10 @@ public class GeoserverUserDao implements UserDetailsService {
     File securityDir;
     
     /**
-     * Returns the {@link GeoserverUserDao} instance registered in the GeoServer Spring context
+     * Returns the {@link GeoServerUserDao} instance registered in the GeoServer Spring context
      */
-    public static GeoserverUserDao get() {
-        return GeoServerExtensions.bean(GeoserverUserDao.class);
+    public static GeoServerUserDao get() {
+        return GeoServerExtensions.bean(GeoServerUserDao.class);
     }
     
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException,
@@ -105,7 +105,7 @@ public class GeoserverUserDao implements UserDetailsService {
                         // setup a sample service.properties
                         File serviceFile = new File(securityDir, "service.properties");
                         os = new FileOutputStream(serviceFile);
-                        is = GeoserverUserDao.class
+                        is = GeoServerUserDao.class
                                 .getResourceAsStream("serviceTemplate.properties");
                         byte[] buffer = new byte[1024];
                         int count = 0;

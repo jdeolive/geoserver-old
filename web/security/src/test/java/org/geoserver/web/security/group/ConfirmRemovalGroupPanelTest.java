@@ -13,25 +13,25 @@ import java.util.List;
 import org.apache.wicket.Component;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.web.ComponentBuilder;
 import org.geoserver.web.FormTestPage;
 import org.geoserver.web.security.AbstractConfirmRemovalPanelTest;
 
-public class ConfirmRemovalGroupPanelTest extends AbstractConfirmRemovalPanelTest<GeoserverUserGroup> {
+public class ConfirmRemovalGroupPanelTest extends AbstractConfirmRemovalPanelTest<GeoServerUserGroup> {
     private static final long serialVersionUID = 1L;
 
     boolean disassociateRoles = false;
     
-    protected void setupPanel(final List<GeoserverUserGroup> roots) {
+    protected void setupPanel(final List<GeoServerUserGroup> roots) {
         tester.startPage(new FormTestPage(new ComponentBuilder() {
             private static final long serialVersionUID = 1L;
 
             public Component buildComponent(String id) {
                 Model<Boolean> model = new Model<Boolean>(disassociateRoles);
-                return new ConfirmRemovalGroupPanel(id, model,roots.toArray(new GeoserverUserGroup[roots.size()])) {
+                return new ConfirmRemovalGroupPanel(id, model,roots.toArray(new GeoServerUserGroup[roots.size()])) {
                     @Override
-                    protected StringResourceModel canRemove(GeoserverUserGroup data) {
+                    protected StringResourceModel canRemove(GeoServerUserGroup data) {
                         SelectionGroupRemovalLink link = new SelectionGroupRemovalLink(getUserGroupServiceName(),"XXX",null,null,disassociateRoles);
                         return link.canRemove(data);
                     }
@@ -57,7 +57,7 @@ public class ConfirmRemovalGroupPanelTest extends AbstractConfirmRemovalPanelTes
     
 
     @Override
-    protected GeoserverUserGroup getRemoveableObject() throws Exception{
+    protected GeoServerUserGroup getRemoveableObject() throws Exception{
         if (disassociateRoles)
             return ugService.createGroupObject("g_all", true);
         else
@@ -65,7 +65,7 @@ public class ConfirmRemovalGroupPanelTest extends AbstractConfirmRemovalPanelTes
     }
 
     @Override
-    protected GeoserverUserGroup getProblematicObject() throws Exception {
+    protected GeoServerUserGroup getProblematicObject() throws Exception {
         return null;
     }
 

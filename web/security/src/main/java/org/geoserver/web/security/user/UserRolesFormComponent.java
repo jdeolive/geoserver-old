@@ -10,27 +10,27 @@ import java.util.List;
 
 import org.apache.wicket.behavior.IBehavior;
 import org.apache.wicket.markup.html.form.Form;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.web.security.AbstractRolesFormComponent;
 
 /**
  * A form component that can be used to edit user/rule role lists
  */
 @SuppressWarnings("serial")
-public class UserRolesFormComponent extends AbstractRolesFormComponent<GeoserverUser> {
+public class UserRolesFormComponent extends AbstractRolesFormComponent<GeoServerUser> {
 
-    public UserRolesFormComponent(GeoserverUser user, Form<?> form) {
+    public UserRolesFormComponent(GeoServerUser user, Form<?> form) {
         this(user,form,null);        
     }
     
-    public UserRolesFormComponent(GeoserverUser user, Form<?> form,IBehavior behavior) {
+    public UserRolesFormComponent(GeoServerUser user, Form<?> form,IBehavior behavior) {
         super("roles", user, false,form,behavior);        
     }
 
     @Override
-    protected  List<GeoserverRole> getStoredGrantedAuthorities(GeoserverUser rootObject) {
-        List<GeoserverRole> result = new ArrayList<GeoserverRole>();
+    protected  List<GeoServerRole> getStoredGrantedAuthorities(GeoServerUser rootObject) {
+        List<GeoServerRole> result = new ArrayList<GeoServerRole>();
         try {
             result.addAll(
                 getSecurityManager().getActiveRoleService().getRolesForUser(rootObject.getUsername())

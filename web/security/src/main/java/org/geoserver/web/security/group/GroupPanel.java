@@ -14,8 +14,8 @@ import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.web.CatalogIconFactory;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -31,14 +31,14 @@ import org.geoserver.web.wicket.SimpleAjaxLink;
 @SuppressWarnings("serial")
 public class GroupPanel extends Panel {
 
-    protected GeoServerTablePanel<GeoserverUserGroup> groups;
+    protected GeoServerTablePanel<GeoServerUserGroup> groups;
     protected GeoServerDialog dialog;
     protected SelectionGroupRemovalLink removal, removalWithRoles;
     protected Link<?> add;
     protected String serviceName;
 
     
-    protected GeoserverUserGroupService getService() {
+    protected GeoServerUserGroupService getService() {
         try {
             return GeoServerApplication.get().getSecurityManager().
                     loadUserGroupService(serviceName);
@@ -51,11 +51,11 @@ public class GroupPanel extends Panel {
         
         this.serviceName=serviceName;
         GroupListProvider provider = new GroupListProvider(serviceName);
-        add(groups = new GeoServerTablePanel<GeoserverUserGroup>("table", provider, true) {
+        add(groups = new GeoServerTablePanel<GeoServerUserGroup>("table", provider, true) {
 
             @Override
             protected Component getComponentForProperty(String id, IModel itemModel,
-                    Property<GeoserverUserGroup> property) {
+                    Property<GeoServerUserGroup> property) {
                 if (property == GroupListProvider.GROUPNAME) {
                     return editGroupLink(id, itemModel, property);
                 } else if (property == GroupListProvider.ENABLED) {
@@ -112,11 +112,11 @@ public class GroupPanel extends Panel {
     }
 
 
-    Component editGroupLink(String id, IModel itemModel, Property<GeoserverUserGroup> property) {
+    Component editGroupLink(String id, IModel itemModel, Property<GeoServerUserGroup> property) {
         return new SimpleAjaxLink(id, itemModel, property.getModel(itemModel)) {
             @Override
             protected void onClick(AjaxRequestTarget target) {
-                setResponsePage(new EditGroupPage(serviceName,(GeoserverUserGroup) getDefaultModelObject(),
+                setResponsePage(new EditGroupPage(serviceName,(GeoServerUserGroup) getDefaultModelObject(),
                         (AbstractSecurityPage)getPage()));
             }
         };

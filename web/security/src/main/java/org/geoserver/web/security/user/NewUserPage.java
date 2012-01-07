@@ -9,11 +9,11 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.geoserver.security.GeoserverRoleStore;
-import org.geoserver.security.GeoserverUserGroupStore;
-import org.geoserver.security.impl.GeoserverRole;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.validation.RoleStoreValidationWrapper;
 import org.geoserver.security.validation.UserGroupStoreValidationWrapper;
 import org.geoserver.web.security.AbstractSecurityPage;
@@ -34,9 +34,9 @@ public class NewUserPage extends AbstractUserPage {
     
     @Override
     protected void onFormSubmit() throws IOException {
-        GeoserverUserGroupStore ugStore = new UserGroupStoreValidationWrapper(
+        GeoServerUserGroupStore ugStore = new UserGroupStoreValidationWrapper(
                 getUserGroupStore(userGroupServiceName));
-        GeoserverUser user =uiUser.toGeoserverUser(userGroupServiceName);
+        GeoServerUser user =uiUser.toGeoserverUser(userGroupServiceName);
         try {
             user.getProperties().clear();
             for (Entry<Object,Object> entry : userpropertyeditor.getProperties().entrySet())
@@ -44,7 +44,7 @@ public class NewUserPage extends AbstractUserPage {
     
             ugStore.addUser(user);
                     
-            Iterator<GeoserverUserGroup> it =userGroupFormComponent.groupPalette.getSelectedChoices();
+            Iterator<GeoServerUserGroup> it =userGroupFormComponent.groupPalette.getSelectedChoices();
             while (it.hasNext()) {
                 ugStore.associateUserToGroup(user, it.next());
             }
@@ -54,12 +54,12 @@ public class NewUserPage extends AbstractUserPage {
             throw ex;
         }
 
-        GeoserverRoleStore gaStore = null;
+        GeoServerRoleStore gaStore = null;
         try {
             if (hasRoleStore(getSecurityManager().getActiveRoleService().getName())) {
                 gaStore = getRoleStore(getSecurityManager().getActiveRoleService().getName());
                 gaStore = new RoleStoreValidationWrapper(gaStore);
-                Iterator<GeoserverRole> roleIt =userRolesFormComponent.
+                Iterator<GeoServerRole> roleIt =userRolesFormComponent.
                         getRolePalette().getSelectedChoices();
                 while (roleIt.hasNext()) {
                     gaStore.associateRoleToUser(roleIt.next(), user.getUsername());

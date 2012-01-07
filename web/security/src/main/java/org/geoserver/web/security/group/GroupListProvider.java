@@ -10,23 +10,23 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.geoserver.security.GeoserverUserGroupService;
-import org.geoserver.security.impl.GeoserverUser;
-import org.geoserver.security.impl.GeoserverUserGroup;
+import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.web.GeoServerApplication;
 import org.geoserver.web.wicket.GeoServerDataProvider;
 
 /**
- * Page listing for {@link GeoserverUserGroup} objects
+ * Page listing for {@link GeoServerUserGroup} objects
  * 
  * @author christian
  *
  */
 @SuppressWarnings("serial")
-public class GroupListProvider extends GeoServerDataProvider<GeoserverUserGroup> {
+public class GroupListProvider extends GeoServerDataProvider<GeoServerUserGroup> {
     
-    public static final Property<GeoserverUserGroup> GROUPNAME = new BeanProperty<GeoserverUserGroup>("groupname", "groupname");
-    public static final Property<GeoserverUserGroup> ENABLED = new BeanProperty<GeoserverUserGroup>("enabled", "enabled");
+    public static final Property<GeoServerUserGroup> GROUPNAME = new BeanProperty<GeoServerUserGroup>("groupname", "groupname");
+    public static final Property<GeoServerUserGroup> ENABLED = new BeanProperty<GeoServerUserGroup>("enabled", "enabled");
     protected String userGroupServiceName;
     
     public GroupListProvider(String userGroupServiceName) {
@@ -34,28 +34,28 @@ public class GroupListProvider extends GeoServerDataProvider<GeoserverUserGroup>
     }
 
     @Override
-    protected List<GeoserverUserGroup> getItems() {
-        SortedSet<GeoserverUserGroup> groups=null;
+    protected List<GeoServerUserGroup> getItems() {
+        SortedSet<GeoServerUserGroup> groups=null;
         try {
-            GeoserverUserGroupService service = null;
+            GeoServerUserGroupService service = null;
             if (userGroupServiceName!=null) service = 
                     getApplication().getSecurityManager().loadUserGroupService(userGroupServiceName);
             
             if (service==null)
-                groups=new TreeSet<GeoserverUserGroup>();
+                groups=new TreeSet<GeoServerUserGroup>();
             else
                 groups=service.getUserGroups();
         } catch (IOException e) {
             throw new RuntimeException(e); 
         }
-        List<GeoserverUserGroup> groupList = new ArrayList<GeoserverUserGroup>();
+        List<GeoServerUserGroup> groupList = new ArrayList<GeoServerUserGroup>();
         groupList.addAll(groups);
         return groupList;
     }
 
     @Override
-    protected List<Property<GeoserverUserGroup>> getProperties() {
-        List<Property<GeoserverUserGroup>> result = new ArrayList<GeoServerDataProvider.Property<GeoserverUserGroup>>();
+    protected List<Property<GeoServerUserGroup>> getProperties() {
+        List<Property<GeoServerUserGroup>> result = new ArrayList<GeoServerDataProvider.Property<GeoServerUserGroup>>();
         result.add(GROUPNAME);
         result.add(ENABLED);
         return result;

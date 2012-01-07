@@ -2,8 +2,6 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-
-
 package org.geoserver.security.password;
 
 import org.springframework.beans.factory.BeanNameAware;
@@ -15,23 +13,23 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
  * @author christian
  *
  */
-public interface GeoserverPasswordEncoder extends PasswordEncoder,BeanNameAware {
+public interface GeoServerPasswordEncoder extends PasswordEncoder,BeanNameAware {
 
     public final static String PREFIX_DELIMTER=":";
     
     /**
      * @return the {@link PasswordEncodingType} 
      */
-    public PasswordEncodingType getEncodingType();
+    PasswordEncodingType getEncodingType();
     
     
-    public String getBeanName();
+    String getBeanName();
     
     /**
      * @param encPass
      * @return true if this encoder has encoded encPass
      */
-    public boolean isResponsibleForEncoding(String encPass);
+    boolean isResponsibleForEncoding(String encPass);
 
     /**
      * decodes an encoded password. Only supported for
@@ -42,12 +40,12 @@ public interface GeoserverPasswordEncoder extends PasswordEncoder,BeanNameAware 
      * @return
      * @throws UnsupportedOperationException
      */
-    public String decode(String encPass) throws UnsupportedOperationException;
+    String decode(String encPass) throws UnsupportedOperationException;
     
     
     /**
      * @return a prefix which is stored with the password.
-     * This prefix must be unique within all {@link GeoserverPasswordEncoder}
+     * This prefix must be unique within all {@link GeoServerPasswordEncoder}
      * implementations.
      * 
      * Reserved:
@@ -60,7 +58,7 @@ public interface GeoserverPasswordEncoder extends PasswordEncoder,BeanNameAware 
      * 
      * plain:password
      */
-    public String getPrefix();
+    String getPrefix();
     
     /**
      * Is this encoder available without installing
@@ -69,6 +67,6 @@ public interface GeoserverPasswordEncoder extends PasswordEncoder,BeanNameAware 
      * 
      * @return
      */
-    public boolean isAvailableWithoutStrongCryptogaphy();
+    boolean isAvailableWithoutStrongCryptogaphy();
 
 }
