@@ -5,14 +5,16 @@
 package org.geoserver.security.ldap;
 
 import org.geoserver.security.config.BaseSecurityNamedServiceConfig;
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 
-public class LDAPSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
+public class LDAPSecurityServiceConfig extends BaseSecurityNamedServiceConfig 
+    implements SecurityAuthProviderConfig {
 
     String serverURL;
     String userDnPattern;
     String groupSearchBase;
     String groupSearchFilter;
-    String userGroupService;
+    String userGroupServiceName;
     Boolean useTLS;
 
     public String getServerURL() {
@@ -49,10 +51,13 @@ public class LDAPSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
         return useTLS;
     }
 
-    public String getUserGroupService() {
-        return userGroupService;
+    @Override
+    public String getUserGroupServiceName() {
+        return userGroupServiceName;
     }
-    public void setUserGroupService(String userGroupService) {
-        this.userGroupService = userGroupService;
+
+    @Override
+    public void setUserGroupServiceName(String userGroupServiceName) {
+        this.userGroupServiceName = userGroupServiceName;
     }
 }

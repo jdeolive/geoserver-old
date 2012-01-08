@@ -77,7 +77,7 @@ public class LDAPSecurityProvider extends GeoServerSecurityProvider {
         authenticator.setUserDnPatterns(new String[]{ldapConfig.getUserDnPattern()});
 
         LdapAuthoritiesPopulator authPopulator = null;
-        String ugServiceName = ldapConfig.getUserGroupService();
+        String ugServiceName = ldapConfig.getUserGroupServiceName();
         if (ugServiceName != null) {
             //use local user group service for loading authorities 
             GeoServerUserGroupService ugService;
