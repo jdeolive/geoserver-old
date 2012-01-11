@@ -13,7 +13,6 @@ import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
-import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 
 public class MemoryUserGroupServiceTest extends AbstractUserGroupServiceTest {
@@ -23,7 +22,7 @@ public class MemoryUserGroupServiceTest extends AbstractUserGroupServiceTest {
     public GeoServerUserGroupService createUserGroupService(String name) throws IOException {
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName(name);        
-        config.setPasswordEncoderName(GeoServerUserPBEPasswordEncoder.PrototypeName);
+        config.setPasswordEncoderName(getPBEPasswordEncoder().getName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         GeoServerUserGroupService service = new MemoryUserGroupService();
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));

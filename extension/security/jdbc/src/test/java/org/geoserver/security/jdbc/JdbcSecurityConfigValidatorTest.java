@@ -142,7 +142,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
         JDBCUserGroupServiceConfig  config = 
                 (JDBCUserGroupServiceConfig)getUGConfig("jdbc", JDBCUserGroupService.class,
-                getPlainTextPasswordEncoder().getBeanName() ,PasswordValidator.DEFAULT_NAME);
+                getPlainTextPasswordEncoder().getName() ,PasswordValidator.DEFAULT_NAME);
 
         config.setDriverClassName("a.b.c");
         config.setUserName("user");
@@ -150,7 +150,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
 
         JDBCUserGroupServiceConfig  configJNDI = (JDBCUserGroupServiceConfig) 
                 getUGConfig("jdbc", JDBCUserGroupService.class, 
-                getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME);
+                getPlainTextPasswordEncoder().getName(),PasswordValidator.DEFAULT_NAME);
         configJNDI.setJndi(true);                        
         configJNDI.setJndiName("jndi:connect");
         

@@ -46,7 +46,7 @@ public class GeoServerCustomAuthTest extends GeoServerSecurityTestSupport {
 
         SecurityManagerConfig mgrConfig = secMgr.getSecurityConfig();
         mgrConfig.getAuthProviderNames().add("custom");
-        mgrConfig.setConfigPasswordEncrypterName(getPlainTextPasswordEncoder().getBeanName());
+        mgrConfig.setConfigPasswordEncrypterName(getPlainTextPasswordEncoder().getName());
         secMgr.saveSecurityConfig(mgrConfig);
 
         Authentication auth = new UsernamePasswordAuthenticationToken("foo", "bar");

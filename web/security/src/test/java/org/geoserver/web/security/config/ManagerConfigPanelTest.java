@@ -44,7 +44,7 @@ public  class ManagerConfigPanelTest extends AbstractSecurityWicketTestSupport {
         tester.assertModelValue(formComponentId+":config.encryptingUrlParams",false);
         tester.assertModelValue(formComponentId+":config.roleServiceName","default");
         tester.assertModelValue(formComponentId+":config.configPasswordEncrypterName",
-            getPBEPasswordEncoder().getBeanName());
+            getPBEPasswordEncoder().getName());
 
         List<String> selected = (List<String>)(page.get(formComponentId+":config.authProviderNames")).getDefaultModelObject();
         assertEquals(1, selected.size());
@@ -55,7 +55,7 @@ public  class ManagerConfigPanelTest extends AbstractSecurityWicketTestSupport {
         form.setValue("config.anonymousAuth", false);
         form.setValue("config.encryptingUrlParams", true);
         form.setValue("config.roleServiceName",getRORoleServiceName());
-        form.setValue("config.configPasswordEncrypterName", getPlainTextPasswordEncoder().getBeanName());
+        form.setValue("config.configPasswordEncrypterName", getPlainTextPasswordEncoder().getName());
         form.setValue("config.authProviderNames:recorder", "default2");
         
 
@@ -63,7 +63,7 @@ public  class ManagerConfigPanelTest extends AbstractSecurityWicketTestSupport {
         
         assertEquals(false,hasAuthProviderImpl(AnonymousAuthenticationProvider.class));
         assertEquals(true,manager.isEncryptingUrlParams());
-        assertEquals(getPlainTextPasswordEncoder().getBeanName(),manager.getConfigPasswordEncrypterName());
+        assertEquals(getPlainTextPasswordEncoder().getName(),manager.getConfigPasswordEncrypterName());
         assertEquals(getRORoleServiceName(),manager.getActiveRoleService().getName());
         
         boolean authProvFound = false;

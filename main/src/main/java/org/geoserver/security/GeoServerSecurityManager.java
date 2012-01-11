@@ -524,7 +524,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     /**
-     * Loads all the password encodesr that match the specified criteria.
+     * Loads all the password encoders that match the specified criteria.
      * 
      * @param filter Class used to filter password encoders.
      * @param config Flag indicating if a reversible encoder is required, true forces reversible, 
@@ -947,7 +947,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             ugConfig.setValidating(true);
             // start with weak encryption, plain passwords can be restored
             ugConfig.setPasswordEncoderName(
-                loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, null, false).getBeanName());
+                loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, null, false).getName());
             ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
             saveUserGroupService(ugConfig, true);
             userGroupService = loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
@@ -993,7 +993,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         // start with weak encryption
         config.setConfigPasswordEncrypterName(
-            loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, true, false).getBeanName());
+            loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, true, false).getName());
 
         // setup the default remember me service
         RememberMeServicesConfig rememberMeConfig = new RememberMeServicesConfig();

@@ -40,7 +40,7 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoServerPassw
     private boolean reversible = true;
     private String prefix;
 
-    public String getBeanName() {
+    public String getName() {
         return beanName;
     }
 

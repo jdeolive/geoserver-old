@@ -8,6 +8,7 @@ import org.geoserver.security.AccessMode;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.GeoServerRoleStore;
+import org.geoserver.security.GeoServerSecurityTestSupport;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
@@ -17,12 +18,11 @@ import org.geoserver.security.impl.DataAccessRuleDAO;
 import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.MemoryRoleService;
 import org.geoserver.security.impl.MemoryUserGroupService;
-import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.test.GeoServerTestSupport;
 import org.geotools.util.logging.Logging;
 
-public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
+public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport {
 
     static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
 
@@ -42,7 +42,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerTestSupport {
     protected GeoServerUserGroupStore createUGStore(String name) throws IOException {
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();
         config.setName(name);
-        config.setPasswordEncoderName(GeoServerUserPBEPasswordEncoder.PrototypeName);
+        config.setPasswordEncoderName(getPBEPasswordEncoder().getName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         GeoServerUserGroupService service = new MemoryUserGroupService();
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));

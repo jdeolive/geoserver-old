@@ -17,7 +17,6 @@ import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
-import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 
 public class MemoryRoleServiceTest extends AbstractRoleServiceTest {
@@ -78,7 +77,7 @@ public class MemoryRoleServiceTest extends AbstractRoleServiceTest {
         MemoryUserGroupServiceConfigImpl ugconfig = new MemoryUserGroupServiceConfigImpl();         
         ugconfig.setName("testAdminRole");        
         ugconfig.setClassName(MemoryUserGroupService.class.getName());
-        ugconfig.setPasswordEncoderName(GeoServerUserPBEPasswordEncoder.PrototypeName);
+        ugconfig.setPasswordEncoderName(getPBEPasswordEncoder().getName());
         ugconfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         GeoServerUserGroupService ugService = new MemoryUserGroupService();
         ugService.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));

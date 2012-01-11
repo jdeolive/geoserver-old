@@ -11,12 +11,11 @@ import java.io.ObjectInputStream;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
-import org.geoserver.security.password.GeoServerUserPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
 import org.geoserver.security.password.PasswordEncodingType;
 import org.geoserver.security.password.RandomPasswordProvider;
@@ -92,8 +91,8 @@ public class MemoryUserGroupService extends AbstractUserGroupService {
         this.name=config.getName();
         SecurityUserGroupServiceConfig ugConfig =(SecurityUserGroupServiceConfig) config;        
         passwordEncoderName=ugConfig.getPasswordEncoderName();
-        GeoServerUserPasswordEncoder enc = (GeoServerUserPasswordEncoder) 
-                GeoServerExtensions.bean(passwordEncoderName);
+        GeoServerPasswordEncoder enc = getSecurityManager().loadPasswordEncoder(passwordEncoderName);
+
         if (enc.getEncodingType()==PasswordEncodingType.ENCRYPT) {
             KeyStoreProvider prov = KeyStoreProvider.get();
             String alias = prov.aliasForGroupService(name);

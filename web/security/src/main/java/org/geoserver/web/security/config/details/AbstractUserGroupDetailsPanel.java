@@ -54,17 +54,17 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         encoderList = new ArrayList<String>();
         disabledEncoders = new ArrayList<String>();
         for (GeoServerPasswordEncoder encoder : encoders) {
-            encoderList.add(encoder.getBeanName());
+            encoderList.add(encoder.getName());
             if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false
                    && encoder.isAvailableWithoutStrongCryptogaphy()==false) {
-                disabledEncoders.add(encoder.getBeanName());
+                disabledEncoders.add(encoder.getName());
             }
         }
         
         // set defaults for a new service
         if (configHelper.isNew()) {
             config.setPasswordEncoderName(getSecurityManager()
-                .loadPasswordEncoder(GeoServerDigestPasswordEncoder.class, null, null).getBeanName());
+                .loadPasswordEncoder(GeoServerDigestPasswordEncoder.class, null, null).getName());
             config.setPasswordPolicyName(PasswordValidatorImpl.DEFAULT_NAME);
         }
         

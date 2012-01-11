@@ -35,7 +35,7 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         ugConfig.setFileName(XMLConstants.FILE_UR);        
         ugConfig.setValidating(true);
 //        ugConfig.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
-        ugConfig.setPasswordEncoderName(getDigestPasswordEncoder().getBeanName());
+        ugConfig.setPasswordEncoderName(getDigestPasswordEncoder().getName());
         ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         getSecurityManager().saveUserGroupService(ugConfig,true);
 

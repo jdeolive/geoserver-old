@@ -29,9 +29,11 @@ public interface GeoServerPasswordEncoder extends PasswordEncoder,BeanNameAware 
      * @return the {@link PasswordEncodingType} 
      */
     PasswordEncodingType getEncodingType();
-    
-    
-    String getBeanName();
+
+    /**
+     * The name of the password encoder.
+     */
+    String getName();
     
     /**
      * @param encPass
@@ -77,5 +79,9 @@ public interface GeoServerPasswordEncoder extends PasswordEncoder,BeanNameAware 
      */
     boolean isAvailableWithoutStrongCryptogaphy();
 
+    /**
+     * Flag indicating if the encoder can decode an encrypted password back into its original 
+     * plain text form.
+     */
     boolean isReversible();
 }

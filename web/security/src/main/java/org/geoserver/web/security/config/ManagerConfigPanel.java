@@ -100,10 +100,10 @@ public class ManagerConfigPanel extends Panel {
         encoderList = new ArrayList<String>();
         disabledEncoders = new ArrayList<String>();
         for (GeoServerPasswordEncoder encoder : encoders) {
-            encoderList.add(encoder.getBeanName());
+            encoderList.add(encoder.getName());
             if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false
                    && encoder.isAvailableWithoutStrongCryptogaphy()==false) {
-                disabledEncoders.add(encoder.getBeanName());
+                disabledEncoders.add(encoder.getName());
             }
         }
         

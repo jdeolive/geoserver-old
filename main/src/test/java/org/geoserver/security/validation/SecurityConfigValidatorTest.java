@@ -65,7 +65,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
     public void testMasterConfigValidation() throws Exception{
         SecurityManagerConfig config = new SecurityManagerConfig();
         config.setRoleServiceName(XMLRoleService.DEFAULT_NAME);
-        config.setConfigPasswordEncrypterName(getPBEPasswordEncoder().getBeanName());
+        config.setConfigPasswordEncrypterName(getPBEPasswordEncoder().getName());
         config.getAuthProviderNames().add(GeoServerAuthenticationProvider.DEFAULT_NAME);
         
         getSecurityManager().saveSecurityConfig(config);
@@ -95,7 +95,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
 
         
         if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false) {
-            config.setConfigPasswordEncrypterName(getStrongPBEPasswordEncoder().getBeanName());
+            config.setConfigPasswordEncrypterName(getStrongPBEPasswordEncoder().getName());
             failed = false;
             try {
                 getSecurityManager().saveSecurityConfig(config);
@@ -108,7 +108,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
         }
 
                 
-        config.setConfigPasswordEncrypterName(getPBEPasswordEncoder().getBeanName());
+        config.setConfigPasswordEncrypterName(getPBEPasswordEncoder().getName());
         config.setRoleServiceName("XX");
         
         failed = false;
@@ -240,7 +240,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
         try {
             validator.validateAddUserGroupService(
                 getUGConfig(XMLUserGroupService.DEFAULT_NAME, GeoServerUserGroupService.class, 
-                    getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME));
+                    getPlainTextPasswordEncoder().getName(),PasswordValidator.DEFAULT_NAME));
         } catch (SecurityConfigException ex) {
             assertEquals(ex.getErrorId(), SEC_ERR_23d);
             assertEquals(ex.getArgs()[0],XMLUserGroupService.DEFAULT_NAME);
@@ -251,7 +251,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
         
         SecurityUserGroupServiceConfig ugConfig =  
                 getUGConfig("default2", GeoServerUserGroupService.class, 
-                getPlainTextPasswordEncoder().getBeanName(), PasswordValidator.DEFAULT_NAME); 
+                getPlainTextPasswordEncoder().getName(), PasswordValidator.DEFAULT_NAME); 
         fail=false;
         try {
             validator.validateModifiedUserGroupService(ugConfig,ugConfig);
@@ -587,7 +587,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
     public void testUserGroupConfig() throws IOException {
         
         SecurityUserGroupServiceConfig config = getUGConfig(XMLUserGroupService.DEFAULT_NAME, MemoryUserGroupService.class, 
-            getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME);
+            getPlainTextPasswordEncoder().getName(),PasswordValidator.DEFAULT_NAME);
         boolean fail;
         
         fail=false;
@@ -604,7 +604,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
         assertTrue(fail);
         
         if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false) {
-            config.setPasswordEncoderName(getStrongPBEPasswordEncoder().getBeanName());
+            config.setPasswordEncoderName(getStrongPBEPasswordEncoder().getName());
             fail = false;
             try {
                 getSecurityManager().saveUserGroupService(config, true);
@@ -658,7 +658,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
 
         
 
-        config.setPasswordEncoderName(getPlainTextPasswordEncoder().getBeanName());
+        config.setPasswordEncoderName(getPlainTextPasswordEncoder().getName());
         
         fail=false;
         try {

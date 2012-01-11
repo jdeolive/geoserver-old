@@ -174,7 +174,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName(getROUserGroupServiceName());        
         config.setClassName(ReadOnlyUGService.class.getName());
-        config.setPasswordEncoderName(getDigestPasswordEncoder().getBeanName());
+        config.setPasswordEncoderName(getDigestPasswordEncoder().getName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         getSecurityManager().saveUserGroupService(config,
                 !(getSecurityManager().listUserGroupServices().contains(getROUserGroupServiceName())));

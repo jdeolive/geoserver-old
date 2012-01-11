@@ -3,19 +3,16 @@ package org.geoserver.security.validation;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoServerSecurityManager;
+import org.geoserver.security.GeoServerSecurityTestSupport;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
 import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.impl.MemoryUserGroupService;
-import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
-import org.geoserver.test.GeoServerTestSupport;
 import org.geotools.util.logging.Logging;
 
-public class UserGroupStoreValidationWrapperTest extends GeoServerTestSupport {
+public class UserGroupStoreValidationWrapperTest extends GeoServerSecurityTestSupport {
 
     
     static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
@@ -23,10 +20,10 @@ public class UserGroupStoreValidationWrapperTest extends GeoServerTestSupport {
     protected UserGroupStoreValidationWrapper createStore(String name) throws IOException {
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName(name);        
-        config.setPasswordEncoderName(GeoServerUserPBEPasswordEncoder.PrototypeName);
+        config.setPasswordEncoderName(getPBEPasswordEncoder().getName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         GeoServerUserGroupService service = new MemoryUserGroupService();
-        service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
+        service.setSecurityManager(getSecurityManager());
         service.initializeFromConfig(config);        
         return new UserGroupStoreValidationWrapper(service.createStore());
     }

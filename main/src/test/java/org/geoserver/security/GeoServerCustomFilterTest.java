@@ -49,7 +49,7 @@ public class GeoServerCustomFilterTest extends GeoServerSecurityTestSupport {
         secMgr.saveFilter(config,true);
 
         SecurityManagerConfig mgrConfig = secMgr.getSecurityConfig();
-        mgrConfig.setConfigPasswordEncrypterName(getPlainTextPasswordEncoder().getBeanName());
+        mgrConfig.setConfigPasswordEncrypterName(getPlainTextPasswordEncoder().getName());
 
         List<FilterChainEntry> filterEntries = new ArrayList<FilterChainEntry>();
         filterEntries.add(new FilterChainEntry("custom", pos, relativeTo));

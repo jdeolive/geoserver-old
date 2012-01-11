@@ -96,7 +96,7 @@ public class GeoServerAnonymousAuthTest extends GeoServerSecurityTestSupport {
         GeoServerSecurityManager secMgr = getSecurityManager();
         SecurityManagerConfig cfg = secMgr.getSecurityConfig();
         cfg.setAnonymousAuth(false);
-        cfg.setConfigPasswordEncrypterName(getPlainTextPasswordEncoder().getBeanName());
+        cfg.setConfigPasswordEncrypterName(getPlainTextPasswordEncoder().getName());
         secMgr.saveSecurityConfig(cfg);
     }
 

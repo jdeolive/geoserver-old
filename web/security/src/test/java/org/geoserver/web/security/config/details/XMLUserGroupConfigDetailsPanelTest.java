@@ -148,7 +148,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         assertNotNull(xmlConfig);
         assertEquals("default2",xmlConfig.getName());
         assertEquals(XMLUserGroupService.class.getName(),xmlConfig.getClassName());
-        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
+        assertEquals(getDigestPasswordEncoder().getName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.DEFAULT_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("abc.xml",xmlConfig.getFileName());
         assertEquals(5000,xmlConfig.getCheckInterval());
@@ -160,7 +160,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
                 getSecurityManager().loadUserGroupServiceConfig("default2");
         assertNotNull(xmlConfig);
         assertEquals("default2",xmlConfig.getName());
-        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
+        assertEquals(getDigestPasswordEncoder().getName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.DEFAULT_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("abc.xml",xmlConfig.getFileName());
         assertEquals(5000,xmlConfig.getCheckInterval());
@@ -186,8 +186,8 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         detailsPage = (UserGroupTabbedPage) tester.getLastRenderedPage();
         newFormTester();
         setPasswordPolicy(PasswordValidatorImpl.MASTERPASSWORD_NAME);
-        setPasswordEncoderName(getPlainTextPasswordEncoder().getBeanName());
-        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
+        setPasswordEncoderName(getPlainTextPasswordEncoder().getName());
+        assertEquals(getDigestPasswordEncoder().getName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.DEFAULT_NAME,xmlConfig.getPasswordPolicyName());
 
         setCheckInterval(5001);
@@ -198,7 +198,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         xmlConfig=
                 (XMLUserGroupServiceConfig)
                 getSecurityNamedServiceConfig("default");        
-        assertEquals(getPBEPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
+        assertEquals(getPBEPasswordEncoder().getName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.DEFAULT_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("users.xml",xmlConfig.getFileName());
         assertEquals(10000,xmlConfig.getCheckInterval());
@@ -218,7 +218,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         xmlConfig=
                 (XMLUserGroupServiceConfig)
                 getSecurityNamedServiceConfig("default2");
-        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
+        assertEquals(getDigestPasswordEncoder().getName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.MASTERPASSWORD_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("abc.xml",xmlConfig.getFileName());
         assertEquals(5001,xmlConfig.getCheckInterval());
@@ -227,7 +227,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         // reload from manager
         xmlConfig=(XMLUserGroupServiceConfig)
                 getSecurityManager().loadUserGroupServiceConfig("default2");
-        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
+        assertEquals(getDigestPasswordEncoder().getName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.MASTERPASSWORD_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("abc.xml",xmlConfig.getFileName());
         assertEquals(5001,xmlConfig.getCheckInterval());
