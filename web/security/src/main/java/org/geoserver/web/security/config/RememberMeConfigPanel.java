@@ -5,25 +5,11 @@
 
 package org.geoserver.web.security.config;
    
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
-import org.apache.wicket.markup.html.form.CheckBox;
-import org.apache.wicket.markup.html.form.ChoiceRenderer;
-import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.panel.Panel;
-import org.apache.wicket.model.CompoundPropertyModel;
-import org.apache.wicket.model.ResourceModel;
-import org.apache.wicket.model.util.ListModel;
-import org.apache.wicket.model.util.SetModel;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.config.SecurityManagerConfig;
-import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
 import org.geoserver.web.GeoServerApplication;
 
 

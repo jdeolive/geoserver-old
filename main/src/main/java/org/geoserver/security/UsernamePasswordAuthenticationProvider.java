@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
-import org.geoserver.security.password.GeoServerUserPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -43,7 +43,7 @@ public class UsernamePasswordAuthenticationProvider extends GeoServerAuthenticat
         authProvider.setUserDetailsService(ugService);
         
         //set up the password encoder
-        GeoServerUserPasswordEncoder encoder = (GeoServerUserPasswordEncoder)
+        GeoServerPasswordEncoder encoder = 
             getSecurityManager().loadPasswordEncoder(ugService.getPasswordEncoderName());
 
         encoder.initializeFor(ugService);

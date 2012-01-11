@@ -13,7 +13,6 @@ import javax.servlet.ServletResponse;
 
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.SecurityManagerConfig;
-import org.geoserver.security.password.GeoServerConfigPlainTextPasswordEncoder;
 import org.geoserver.test.GeoServerTestSupport;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.ProviderNotFoundException;
@@ -25,7 +24,7 @@ import com.mockrunner.mock.web.MockFilterChain;
 import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
 
-public class GeoServerAnonymousAuthTest extends GeoServerTestSupport {
+public class GeoServerAnonymousAuthTest extends GeoServerSecurityTestSupport {
 
     public void testFilterChainWithEnabled() throws Exception {
         MockHttpServletRequest request = createRequest("/foo");
@@ -97,7 +96,7 @@ public class GeoServerAnonymousAuthTest extends GeoServerTestSupport {
         GeoServerSecurityManager secMgr = getSecurityManager();
         SecurityManagerConfig cfg = secMgr.getSecurityConfig();
         cfg.setAnonymousAuth(false);
-        cfg.setConfigPasswordEncrypterName(GeoServerConfigPlainTextPasswordEncoder.BeanName);
+        cfg.setConfigPasswordEncrypterName(getPlainTextPasswordEncoder().getBeanName());
         secMgr.saveSecurityConfig(cfg);
     }
 

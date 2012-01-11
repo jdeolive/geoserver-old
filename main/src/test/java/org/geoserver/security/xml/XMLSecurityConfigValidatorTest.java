@@ -14,7 +14,6 @@ import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.GeoServerUserGroup;
-import org.geoserver.security.password.GeoServerPlainTextPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidatorTest;
@@ -183,7 +182,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         super.testUserGroupConfig();
         XMLUserGroupServiceConfig config = (XMLUserGroupServiceConfig) 
                 getUGConfig(XMLUserGroupService.DEFAULT_NAME, XMLUserGroupService.class, 
-                GeoServerPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,XMLConstants.FILE_UR);
+                getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME,XMLConstants.FILE_UR);
         boolean fail;
         
         fail=false;
@@ -216,7 +215,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
 
         XMLUserGroupServiceConfig xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("test1", XMLUserGroupService.class, 
-                GeoServerPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,"test1.xml");
+                getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME,"test1.xml");
 
         GeoServerUserGroup group=new GeoServerUserGroup("testgroup");
         
@@ -232,7 +231,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         fail=false;
         xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("test2", XMLUserGroupService.class, 
-                GeoServerPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,"test2.xml");
+                getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME,"test2.xml");
         try {
             getSecurityManager().saveUserGroupService(xmlConfig, true);
             GeoServerUserGroupStore store = getSecurityManager().loadUserGroupService("test2").createStore();
@@ -248,7 +247,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
 
         xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("test3", XMLUserGroupService.class, 
-                GeoServerPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,
+                getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME,
                 new File(getSecurityManager().getUserGroupRoot(),"test3.xml").getAbsolutePath());
 
         try {
@@ -266,7 +265,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
             String invalidPath="abc"+File.separator+"def.xml";
             xmlConfig = (XMLUserGroupServiceConfig) 
                     getUGConfig("test4", XMLUserGroupService.class, 
-                    GeoServerPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,
+                    getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME,
                     invalidPath);
             
             fail=false;
@@ -283,7 +282,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         
         xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("test5", XMLUserGroupService.class, 
-                GeoServerPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,
+                getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME,
                 "abc.xml");
         try {
             getSecurityManager().saveUserGroupService(xmlConfig, true);
@@ -306,7 +305,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         /////////////// test modify
         xmlConfig = (XMLUserGroupServiceConfig) 
                 getUGConfig("testModify", XMLUserGroupService.class, 
-                GeoServerPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME,"testModify.xml");
+                getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME,"testModify.xml");
         try {
             getSecurityManager().saveUserGroupService(xmlConfig, true);
             xmlConfig.setValidating(true);

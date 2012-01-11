@@ -2,13 +2,10 @@
  * This code is licensed under the GPL 2.0 license, availible at the root
  * application directory.
  */
-
-
 package org.geoserver.security.password;
 
 import java.io.IOException;
 
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.impl.GeoServerUser;
 import org.springframework.dao.DataAccessException;
@@ -33,7 +30,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 public class DecodingUserDetailsService implements UserDetailsService {
 
     protected GeoServerUserGroupService service;
-    protected GeoServerUserPasswordEncoder encoder;
+    protected GeoServerPasswordEncoder encoder;
     /**
      * True if passwords can be decoded
      * 
@@ -41,8 +38,8 @@ public class DecodingUserDetailsService implements UserDetailsService {
      * @return
      */
     public static boolean canBeUsedFor(GeoServerUserGroupService service) {
-        GeoServerUserPasswordEncoder enc = (GeoServerUserPasswordEncoder)
-                GeoServerExtensions.bean(service.getPasswordEncoderName());
+        GeoServerPasswordEncoder enc = 
+            service.getSecurityManager().loadPasswordEncoder(service.getPasswordEncoderName());
         return enc.getEncodingType()==PasswordEncodingType.PLAIN ||
                enc.getEncodingType()==PasswordEncodingType.ENCRYPT;
     }
@@ -77,8 +74,7 @@ public class DecodingUserDetailsService implements UserDetailsService {
      */
     public void setGeoserverUserGroupService(GeoServerUserGroupService service) throws IOException {
         this.service=service;
-        encoder = (GeoServerUserPasswordEncoder)
-                GeoServerExtensions.bean(service.getPasswordEncoderName());
+        encoder = service.getSecurityManager().loadPasswordEncoder(service.getPasswordEncoderName());
         encoder.initializeFor(service);
     }
     

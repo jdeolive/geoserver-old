@@ -13,13 +13,14 @@ import java.net.URL;
 import org.apache.commons.io.FileUtils;
 import org.geoserver.data.test.LiveData;
 import org.geoserver.data.test.TestData;
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
+import org.geoserver.security.password.GeoServerPBEPasswordEncoder;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
-import org.geoserver.security.password.GeoServerUserPasswordEncoder;
+import org.geoserver.security.password.GeoServerPlainTextPasswordEncoder;
 import org.geoserver.test.GeoServerAbstractTestSupport;
 import org.geotools.data.DataUtilities;
 
@@ -514,9 +515,37 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     }
 
     protected GeoServerPasswordEncoder getEncoder(GeoServerUserGroupService ugService) throws IOException {
-        GeoServerUserPasswordEncoder enc = (GeoServerUserPasswordEncoder)
-                GeoServerExtensions.bean(ugService.getPasswordEncoderName());
+        GeoServerPasswordEncoder enc = 
+            getSecurityManager().loadPasswordEncoder(ugService.getPasswordEncoderName());
         enc.initializeFor(ugService);
         return enc;
+    }
+
+    /**
+     * Accessor for plain text password encoder.
+     */
+    protected GeoServerPlainTextPasswordEncoder getPlainTextPasswordEncoder() {
+        return getSecurityManager().loadPasswordEncoder(GeoServerPlainTextPasswordEncoder.class);
+    }
+
+    /**
+     * Accessor for digest password encoder.
+     */
+    protected GeoServerDigestPasswordEncoder getDigestPasswordEncoder() {
+        return getSecurityManager().loadPasswordEncoder(GeoServerDigestPasswordEncoder.class);
+    }
+
+    /**
+     * Accessor for regular (weak encryption) pbe password encoder.
+     */
+    protected GeoServerPBEPasswordEncoder getPBEPasswordEncoder() {
+        return getSecurityManager().loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, null, false);
+    }
+
+    /**
+     * Accessor for strong encryption pbe password encoder.
+     */
+    protected GeoServerPBEPasswordEncoder getStrongPBEPasswordEncoder() {
+        return getSecurityManager().loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, null, true);
     }
 }

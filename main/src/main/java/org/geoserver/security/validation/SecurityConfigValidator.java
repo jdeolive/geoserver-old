@@ -22,10 +22,8 @@ import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoServerConfigPasswordEncoder;
-import org.geoserver.security.password.GeoServerUserPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
@@ -56,22 +54,24 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     public void validateManagerConfig(SecurityManagerConfig config) throws SecurityConfigException{
         
         String encrypterName =config.getConfigPasswordEncrypterName();
-        GeoServerConfigPasswordEncoder encoder = null;
         if (isNotEmpty(encrypterName)==false) {
             throw createSecurityException(SEC_ERR_07);
         }
-        
-        Object o=null;
+
+        GeoServerPasswordEncoder encoder = null;
         try {
-            o = manager.loadPasswordEncoder(config.getConfigPasswordEncrypterName());
+            encoder = manager.loadPasswordEncoder(config.getConfigPasswordEncrypterName());
         } catch (NoSuchBeanDefinitionException ex) {
             throw createSecurityException(SEC_ERR_01, encrypterName);
         }
-        if (o instanceof GeoServerConfigPasswordEncoder == false) {
+        if (encoder == null) {
             throw createSecurityException(SEC_ERR_01, encrypterName);
         }
-        encoder = (GeoServerConfigPasswordEncoder) o;
-        
+
+        if (!encoder.isReversible()) {
+            throw createSecurityException(SEC_ERR_01, encrypterName);
+        }
+
         if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false) {
             if (encoder!=null && encoder.isAvailableWithoutStrongCryptogaphy()==false)                
                 throw createSecurityException(SEC_ERR_05);
@@ -287,17 +287,16 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
 
     public void validate(SecurityUserGroupServiceConfig config) throws SecurityConfigException {
         String encoderName =config.getPasswordEncoderName();
-        GeoServerUserPasswordEncoder encoder = null;
+        GeoServerPasswordEncoder encoder = null;
         if (isNotEmpty(encoderName)) {
-            Object o=null;
             try {
-                o = manager.loadPasswordEncoder(encoderName);
+                encoder = manager.loadPasswordEncoder(encoderName);
             } catch (NoSuchBeanDefinitionException ex) {
                 throw createSecurityException(SEC_ERR_04, encoderName);
             }
-            if (o instanceof GeoServerUserPasswordEncoder == false)
+            if (encoder == null) {
                 throw createSecurityException(SEC_ERR_04, encoderName);
-            encoder = (GeoServerUserPasswordEncoder) o;
+            }
         } else {
             throw createSecurityException(SEC_ERR_32, config.getName());
         }

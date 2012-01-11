@@ -6,12 +6,12 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoServerSecurityTestSupport;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.xml.XMLUserGroupService;
-import org.geoserver.test.GeoServerTestSupport;
 import org.geotools.util.logging.Logging;
 
-public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
+public class GeoserverPasswordEncoderTest extends GeoServerSecurityTestSupport {
 
     
     protected String testPassword="geoserver";
@@ -33,8 +33,7 @@ public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
 
         
     public void testPlainTextEncoder() {
-        GeoServerPasswordEncoder encoder = 
-                GeoServerPlainTextPasswordEncoder.get();
+        GeoServerPasswordEncoder encoder = getPlainTextPasswordEncoder();
 
         assertEquals(PasswordEncodingType.PLAIN,encoder.getEncodingType());
         assertEquals("plain:"+testPassword,encoder.encodePassword(testPassword, null));
@@ -53,9 +52,8 @@ public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
     }
     
     public void testConfigPlainTextEncoder() {
-        GeoServerConfigPasswordEncoder encoder = 
-                GeoServerConfigPlainTextPasswordEncoder.get();
-
+        GeoServerPasswordEncoder encoder = getPlainTextPasswordEncoder();
+        
         assertEquals(PasswordEncodingType.PLAIN,encoder.getEncodingType());
         assertEquals("plain2:"+testPassword,encoder.encodePassword(testPassword, null));
         assertTrue(encoder.isResponsibleForEncoding("plain2:123"));
@@ -74,10 +72,7 @@ public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
 
     
     public void testDigestEncoder() {
-        
-        
-        GeoServerPasswordEncoder encoder = 
-                GeoServerDigestPasswordEncoder.get();
+        GeoServerPasswordEncoder encoder = getDigestPasswordEncoder();
 
         assertEquals(PasswordEncodingType.DIGEST,encoder.getEncodingType());
         assertTrue(encoder.encodePassword(testPassword, null).startsWith("digest1:"));
@@ -109,9 +104,9 @@ public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
 
     protected List<String> getConfigPBEEncoderNames() {
         List<String> result = new ArrayList<String>();
-        result.add(GeoServerConfigPBEPasswordEncoder.BeanName);
+        result.add(getPBEPasswordEncoder().getBeanName());
         if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()) {
-            result.add(GeoServerConfigPBEPasswordEncoder.StrongBeanName);
+            result.add(getStrongPBEPasswordEncoder().getBeanName());
         } else {
             LOGGER.warning("Skipping strong encryption tests for configuration passwords");
         }
@@ -151,11 +146,11 @@ public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
         
     }
     
-    protected List<String> getUserPBEEncoderNames() {
-        List<String> result = new ArrayList<String>();
-        result.add(GeoServerUserPBEPasswordEncoder.PrototypeName);
+    protected List<GeoServerPBEPasswordEncoder> getPBEEncoders() {
+        List<GeoServerPBEPasswordEncoder> result = new ArrayList<GeoServerPBEPasswordEncoder>();
+        result.add(getPBEPasswordEncoder());
         if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()) {
-            result.add(GeoServerUserPBEPasswordEncoder.StrongPrototypeName);
+            result.add(getStrongPBEPasswordEncoder());
         } else {
             LOGGER.warning("Skipping strong encryption tests for user passwords");
         }
@@ -168,10 +163,8 @@ public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
         GeoServerUserGroupService service = getSecurityManager().
                 loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
         
-        GeoServerUserPasswordEncoder encoder = (GeoServerUserPasswordEncoder) 
-                GeoServerExtensions.bean(GeoServerUserPBEPasswordEncoder.PrototypeName);
-        
-        
+        getPBEPasswordEncoder();
+
 //        boolean fail = true;
 //        try {
 //            encoder.initializeFor(service);
@@ -183,18 +176,16 @@ public class GeoserverPasswordEncoderTest extends GeoServerTestSupport {
         String password = "testpassword";
         KeyStoreProvider.get().setUserGroupKey(service.getName(), password);
         
-        for (String encoderName: getUserPBEEncoderNames()) {
-            encoder = (GeoServerUserPasswordEncoder) 
-                    GeoServerExtensions.bean(encoderName);
+        for (GeoServerPBEPasswordEncoder encoder: getPBEEncoders()) {
             encoder.initializeFor(service);
                          
             assertEquals(PasswordEncodingType.ENCRYPT,encoder.getEncodingType());
-            assertEquals(((GeoServerUserPBEPasswordEncoder)encoder).getKeyAliasInKeyStore(),
+            assertEquals(encoder.getKeyAliasInKeyStore(),
                 KeyStoreProvider.get().aliasForGroupService(service.getName()));
             
         
-            GeoServerUserPasswordEncoder encoder2 = (GeoServerUserPasswordEncoder) 
-                GeoServerExtensions.bean(encoderName);
+            GeoServerPBEPasswordEncoder encoder2 = (GeoServerPBEPasswordEncoder) 
+                getSecurityManager().loadPasswordEncoder(encoder.getBeanName());
             encoder2.initializeFor(service);
         
             assertFalse(encoder==encoder2);        

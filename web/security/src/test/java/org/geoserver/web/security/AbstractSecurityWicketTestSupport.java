@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.wicket.Page;
-import org.apache.wicket.PageParameters;
 import org.apache.wicket.ajax.AbstractDefaultAjaxBehavior;
 import org.apache.wicket.behavior.AbstractAjaxBehavior;
 import org.apache.wicket.behavior.IBehavior;
@@ -46,6 +45,8 @@ import org.geoserver.security.impl.ReadOnlyUGService;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
 import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
+import org.geoserver.security.password.GeoServerPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerPlainTextPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.xml.XMLRoleServiceTest;
 import org.geoserver.security.xml.XMLUserGroupServiceTest;
@@ -157,12 +158,23 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         getSecurityManager().setActiveRoleService(gaService);        
         gaStore=null;
     }
-    
+
+    protected GeoServerDigestPasswordEncoder getDigestPasswordEncoder() {
+        return getSecurityManager().loadPasswordEncoder(GeoServerDigestPasswordEncoder.class);
+    }
+
+    protected GeoServerPBEPasswordEncoder getPBEPasswordEncoder() {
+        return getSecurityManager().loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, null, false);
+    }
+
+    protected GeoServerPlainTextPasswordEncoder getPlainTextPasswordEncoder() {
+        return getSecurityManager().loadPasswordEncoder(GeoServerPlainTextPasswordEncoder.class);
+    }
     protected void activateROUGService() throws Exception{
         MemoryUserGroupServiceConfigImpl config = new MemoryUserGroupServiceConfigImpl();         
         config.setName(getROUserGroupServiceName());        
         config.setClassName(ReadOnlyUGService.class.getName());
-        config.setPasswordEncoderName(GeoServerDigestPasswordEncoder.BeanName);
+        config.setPasswordEncoderName(getDigestPasswordEncoder().getBeanName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         getSecurityManager().saveUserGroupService(config,
                 !(getSecurityManager().listUserGroupServices().contains(getROUserGroupServiceName())));

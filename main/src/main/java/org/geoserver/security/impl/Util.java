@@ -24,7 +24,6 @@ import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
-import org.geoserver.security.password.GeoServerUserPasswordEncoder;
 import org.geoserver.security.password.PasswordEncodingType;
 
 
@@ -84,19 +83,18 @@ public class Util {
         if (copyPossible(service, store)==false)
             throw new IOException("Cannot copy user/group data, passwords encoders are not compatible");
         
-        GeoServerUserPasswordEncoder storeEncoder = null;
-        GeoServerUserPasswordEncoder serviceEncoder = (GeoServerUserPasswordEncoder)
+        GeoServerPasswordEncoder storeEncoder = null;
+        GeoServerPasswordEncoder serviceEncoder = 
             service.getSecurityManager().loadPasswordEncoder(service.getPasswordEncoderName());
 
         serviceEncoder.initializeFor(service);
         if (serviceEncoder.getEncodingType()==PasswordEncodingType.PLAIN || 
                 serviceEncoder.getEncodingType()==PasswordEncodingType.ENCRYPT) {
-            storeEncoder = (GeoServerUserPasswordEncoder)
+            storeEncoder = 
                 service.getSecurityManager().loadPasswordEncoder(store.getPasswordEncoderName());
             storeEncoder.initializeFor(store);
         }
-        
-        
+
         store.clear();
         Map<String,GeoServerUser> newUserDict = new HashMap<String,GeoServerUser>();
         Map<String,GeoServerUserGroup> newGroupDict = new HashMap<String,GeoServerUserGroup>();

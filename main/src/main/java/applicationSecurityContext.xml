@@ -305,35 +305,20 @@
   </bean>
   <alias name="authenticationManager" alias="geoServerSecurityManager"/>
 
- <!-- password encoders for passwords in configuration files  -->
-   <bean id="configPasswordEncoder"    
-    class="org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder" scope="prototype">
+ 
+  <!-- password encoders -->
+  <bean id="plainTextConfigPasswordEncoder"        
+    class="org.geoserver.security.password.GeoServerPlainTextPasswordEncoder">
+    <property name="prefix" value="plain" />
+  </bean>
+  <bean id="pbePasswordEncoder"    
+    class="org.geoserver.security.password.GeoServerPBEPasswordEncoder" scope="prototype">
     <property name="prefix" value="crypt1" />
     <property name="algorithm" value="PBEWITHMD5ANDDES" />
   </bean>
-  <bean id="strongConfigPasswordEncoder"    
-    class="org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder" scope="prototype">
-    <property name="prefix" value="crypt2" />
-    <property name="providerName" value="BC" />
-    <property name="algorithm" value="PBEWITHSHA256AND256BITAES-CBC-BC" />
-    <property name="availableWithoutStrongCryptogaphy" value="false" />
-  </bean>
-  <bean id="plainTextConfigPasswordEncoder"        
-    class="org.geoserver.security.password.GeoServerConfigPlainTextPasswordEncoder">
-    <property name="prefix" value="plain2" />
-  </bean>
-    
- 
-  
-  <!-- password encoders for user passwords-->
-  <bean id="pbePasswordEncoder"    
-    class="org.geoserver.security.password.GeoServerUserPBEPasswordEncoder" scope="prototype">
-    <property name="prefix" value="crypt3" />
-    <property name="algorithm" value="PBEWITHMD5ANDDES" />
-  </bean>
   <bean id="strongPbePasswordEncoder"    
-    class="org.geoserver.security.password.GeoServerUserPBEPasswordEncoder" scope="prototype">
-    <property name="prefix" value="crypt4" />
+    class="org.geoserver.security.password.GeoServerPBEPasswordEncoder" scope="prototype">
+    <property name="prefix" value="crypt2" />
     <property name="providerName" value="BC" />
     <property name="algorithm" value="PBEWITHSHA256AND256BITAES-CBC-BC" />
     <property name="availableWithoutStrongCryptogaphy" value="false" />
@@ -341,10 +326,6 @@
   <bean id="digestPasswordEncoder"    
     class="org.geoserver.security.password.GeoServerDigestPasswordEncoder">
     <property name="prefix" value="digest1" />    
-  </bean>
-  <bean id="plainTextPasswordEncoder"        
-    class="org.geoserver.security.password.GeoServerPlainTextPasswordEncoder">
-    <property name="prefix" value="plain" />
   </bean>
   
     

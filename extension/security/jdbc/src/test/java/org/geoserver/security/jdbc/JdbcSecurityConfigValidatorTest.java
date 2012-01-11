@@ -14,7 +14,6 @@ import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.jdbc.config.JDBCRoleServiceConfig;
 import org.geoserver.security.jdbc.config.JDBCUserGroupServiceConfig;
-import org.geoserver.security.password.GeoServerPlainTextPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidatorTest;
@@ -142,8 +141,8 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         super.testUserGroupConfig();
         
         JDBCUserGroupServiceConfig  config = 
-                (JDBCUserGroupServiceConfig)getUGConfig("jdbc", JDBCUserGroupService.class, 
-                GeoServerPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME);
+                (JDBCUserGroupServiceConfig)getUGConfig("jdbc", JDBCUserGroupService.class,
+                getPlainTextPasswordEncoder().getBeanName() ,PasswordValidator.DEFAULT_NAME);
 
         config.setDriverClassName("a.b.c");
         config.setUserName("user");
@@ -151,7 +150,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
 
         JDBCUserGroupServiceConfig  configJNDI = (JDBCUserGroupServiceConfig) 
                 getUGConfig("jdbc", JDBCUserGroupService.class, 
-                GeoServerPlainTextPasswordEncoder.BeanName,PasswordValidator.DEFAULT_NAME);
+                getPlainTextPasswordEncoder().getBeanName(),PasswordValidator.DEFAULT_NAME);
         configJNDI.setJndi(true);                        
         configJNDI.setJndiName("jndi:connect");
         

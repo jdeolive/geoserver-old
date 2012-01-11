@@ -6,6 +6,7 @@ package org.geoserver.security.password;
 
 import java.io.IOException;
 
+import org.geoserver.security.GeoServerUserGroupService;
 import org.jasypt.encryption.pbe.StandardPBEStringEncryptor;
 import org.jasypt.spring.security3.PBEPasswordEncoder;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
@@ -22,18 +23,29 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
  * @author christian
  *
  */
-public abstract class GeoServerPBEPasswordEncoder extends AbstractGeoserverPasswordEncoder {
+public class GeoServerPBEPasswordEncoder extends AbstractGeoserverPasswordEncoder {
 
     StandardPBEStringEncryptor encrypter;
-    
+
     private String providerName,algorithm;
+    private String keyAliasInKeyStore = KeyStoreProvider.CONFIGPASSWORDKEY;
 
+    @Override
+    public void initializeFor(GeoServerUserGroupService service) throws IOException {
+        if (KeyStoreProvider.get().hasUserGRoupKey(service.getName())==false) {
+            throw new IOException("No key alias: " +
+                    KeyStoreProvider.get().aliasForGroupService(service.getName())+
+                    "\nin key store: " + KeyStoreProvider.get().getKeyStoreProvderFile().getAbsolutePath());
+        }
+        
+        keyAliasInKeyStore=
+                KeyStoreProvider.get().aliasForGroupService(service.getName());
 
-    
+    }
+
     public String getProviderName() {
         return providerName;
     }
-
 
     public void setProviderName(String providerName) {
         this.providerName = providerName;
@@ -49,7 +61,9 @@ public abstract class GeoServerPBEPasswordEncoder extends AbstractGeoserverPassw
         this.algorithm = algorithm;
     }
 
-    public abstract String getKeyAliasInKeyStore();
+    public String getKeyAliasInKeyStore() {
+        return keyAliasInKeyStore;
+    }
 
     @Override
     protected PasswordEncoder getActualEncoder() {

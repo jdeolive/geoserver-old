@@ -13,7 +13,6 @@ import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
 import org.geoserver.security.password.GeoServerPlainTextPasswordEncoder;
-import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.validation.PasswordValidatorImpl;
 import org.geoserver.security.xml.XMLUserGroupService;
 import org.geoserver.security.xml.XMLUserGroupServiceConfig;
@@ -149,7 +148,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         assertNotNull(xmlConfig);
         assertEquals("default2",xmlConfig.getName());
         assertEquals(XMLUserGroupService.class.getName(),xmlConfig.getClassName());
-        assertEquals(GeoServerDigestPasswordEncoder.BeanName,xmlConfig.getPasswordEncoderName());
+        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.DEFAULT_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("abc.xml",xmlConfig.getFileName());
         assertEquals(5000,xmlConfig.getCheckInterval());
@@ -161,7 +160,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
                 getSecurityManager().loadUserGroupServiceConfig("default2");
         assertNotNull(xmlConfig);
         assertEquals("default2",xmlConfig.getName());
-        assertEquals(GeoServerDigestPasswordEncoder.BeanName,xmlConfig.getPasswordEncoderName());
+        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.DEFAULT_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("abc.xml",xmlConfig.getFileName());
         assertEquals(5000,xmlConfig.getCheckInterval());
@@ -187,8 +186,8 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         detailsPage = (UserGroupTabbedPage) tester.getLastRenderedPage();
         newFormTester();
         setPasswordPolicy(PasswordValidatorImpl.MASTERPASSWORD_NAME);
-        setPasswordEncoderName(GeoServerPlainTextPasswordEncoder.BeanName);
-        assertEquals(GeoServerDigestPasswordEncoder.BeanName,xmlConfig.getPasswordEncoderName());
+        setPasswordEncoderName(getPlainTextPasswordEncoder().getBeanName());
+        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.DEFAULT_NAME,xmlConfig.getPasswordPolicyName());
 
         setCheckInterval(5001);
@@ -199,7 +198,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         xmlConfig=
                 (XMLUserGroupServiceConfig)
                 getSecurityNamedServiceConfig("default");        
-        assertEquals(GeoServerUserPBEPasswordEncoder.PrototypeName,xmlConfig.getPasswordEncoderName());
+        assertEquals(getPBEPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.DEFAULT_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("users.xml",xmlConfig.getFileName());
         assertEquals(10000,xmlConfig.getCheckInterval());
@@ -219,7 +218,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         xmlConfig=
                 (XMLUserGroupServiceConfig)
                 getSecurityNamedServiceConfig("default2");
-        assertEquals(GeoServerDigestPasswordEncoder.BeanName,xmlConfig.getPasswordEncoderName());
+        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.MASTERPASSWORD_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("abc.xml",xmlConfig.getFileName());
         assertEquals(5001,xmlConfig.getCheckInterval());
@@ -228,7 +227,7 @@ public  class XMLUserGroupConfigDetailsPanelTest extends AbstractNamedConfigDeta
         // reload from manager
         xmlConfig=(XMLUserGroupServiceConfig)
                 getSecurityManager().loadUserGroupServiceConfig("default2");
-        assertEquals(GeoServerDigestPasswordEncoder.BeanName,xmlConfig.getPasswordEncoderName());
+        assertEquals(getDigestPasswordEncoder().getBeanName(),xmlConfig.getPasswordEncoderName());
         assertEquals(PasswordValidatorImpl.MASTERPASSWORD_NAME,xmlConfig.getPasswordPolicyName());
         assertEquals("abc.xml",xmlConfig.getFileName());
         assertEquals(5001,xmlConfig.getCheckInterval());

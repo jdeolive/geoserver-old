@@ -12,8 +12,6 @@ import org.apache.wicket.util.tester.FormTester;
 import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
-import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
-import org.geoserver.security.password.GeoServerConfigPlainTextPasswordEncoder;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 import org.springframework.security.authentication.AnonymousAuthenticationProvider;
@@ -46,7 +44,8 @@ public  class ManagerConfigPanelTest extends AbstractSecurityWicketTestSupport {
         tester.assertModelValue(formComponentId+":config.encryptingUrlParams",false);
         tester.assertModelValue(formComponentId+":config.roleServiceName","default");
         tester.assertModelValue(formComponentId+":config.configPasswordEncrypterName",
-                GeoServerConfigPBEPasswordEncoder.BeanName);
+            getPBEPasswordEncoder().getBeanName());
+
         List<String> selected = (List<String>)(page.get(formComponentId+":config.authProviderNames")).getDefaultModelObject();
         assertEquals(1, selected.size());
         assertTrue(selected.contains("default"));
@@ -56,7 +55,7 @@ public  class ManagerConfigPanelTest extends AbstractSecurityWicketTestSupport {
         form.setValue("config.anonymousAuth", false);
         form.setValue("config.encryptingUrlParams", true);
         form.setValue("config.roleServiceName",getRORoleServiceName());
-        form.setValue("config.configPasswordEncrypterName", GeoServerConfigPlainTextPasswordEncoder.BeanName);
+        form.setValue("config.configPasswordEncrypterName", getPlainTextPasswordEncoder().getBeanName());
         form.setValue("config.authProviderNames:recorder", "default2");
         
 
@@ -64,7 +63,7 @@ public  class ManagerConfigPanelTest extends AbstractSecurityWicketTestSupport {
         
         assertEquals(false,hasAuthProviderImpl(AnonymousAuthenticationProvider.class));
         assertEquals(true,manager.isEncryptingUrlParams());
-        assertEquals(GeoServerConfigPlainTextPasswordEncoder.BeanName,manager.getConfigPasswordEncrypterName());
+        assertEquals(getPlainTextPasswordEncoder().getBeanName(),manager.getConfigPasswordEncrypterName());
         assertEquals(getRORoleServiceName(),manager.getActiveRoleService().getName());
         
         boolean authProvFound = false;

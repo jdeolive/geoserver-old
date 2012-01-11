@@ -23,7 +23,7 @@ import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.event.UserGroupLoadedListener;
-import org.geoserver.security.password.GeoServerUserPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -161,9 +161,9 @@ public abstract class AbstractUserGroupStore  implements GeoServerUserGroupStore
      */
     protected void preparePassword(GeoServerUser user) throws IOException {
         
-        GeoServerUserPasswordEncoder enc  = (GeoServerUserPasswordEncoder) 
-                GeoServerExtensions.bean(getPasswordEncoderName());
-        
+        GeoServerPasswordEncoder enc = 
+            getSecurityManager().loadPasswordEncoder(getPasswordEncoderName());
+
         if (enc.isResponsibleForEncoding(user.getPassword()))
             return; // do nothing, already encoded
             

@@ -4,10 +4,6 @@
  */
 package org.geoserver.security.password;
 
-import java.io.IOException;
-
-import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoServerUserGroupService;
 import org.jasypt.spring.security3.PasswordEncoder;
 import org.jasypt.util.password.StrongPasswordEncryptor;
 
@@ -27,15 +23,12 @@ import org.jasypt.util.password.StrongPasswordEncryptor;
  * @author christian
  *
  */
-public class GeoServerDigestPasswordEncoder extends AbstractGeoserverPasswordEncoder implements GeoServerUserPasswordEncoder {
+public class GeoServerDigestPasswordEncoder extends AbstractGeoserverPasswordEncoder {
 
-    public final static String BeanName="digestPasswordEncoder";
-
-    public static GeoServerDigestPasswordEncoder get() {
-        return (GeoServerDigestPasswordEncoder)
-                GeoServerExtensions.bean(BeanName);        
+    public GeoServerDigestPasswordEncoder() {
+        setReversible(false);
     }
-    
+
     @Override
     protected PasswordEncoder getActualEncoder() {
         PasswordEncoder encoder = new PasswordEncoder();
@@ -46,10 +39,5 @@ public class GeoServerDigestPasswordEncoder extends AbstractGeoserverPasswordEnc
     @Override
     public PasswordEncodingType getEncodingType() {
         return PasswordEncodingType.DIGEST;
-    }
-
-    @Override
-    public void initializeFor(GeoServerUserGroupService service) throws IOException {
-        return;
     }
 }

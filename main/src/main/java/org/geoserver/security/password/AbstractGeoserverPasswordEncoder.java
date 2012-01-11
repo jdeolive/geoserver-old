@@ -5,6 +5,7 @@
 
 package org.geoserver.security.password;
 
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.Security;
 import java.util.logging.Logger;
@@ -15,6 +16,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.geoserver.security.GeoServerUserGroupService;
 import org.geotools.util.logging.Logging;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
@@ -28,30 +30,30 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
  */
 public abstract class AbstractGeoserverPasswordEncoder implements GeoServerPasswordEncoder {
 
+    static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
+    static protected Boolean StrongCryptographyAvailable = null;
+
     protected PasswordEncoder delegate = null;
     protected Object lock = new Object();
     protected String beanName;
-    private String prefix;    
+    private boolean availableWithoutStrongCryptogaphy;
+    private boolean reversible = true;
+    private String prefix;
+
     public String getBeanName() {
         return beanName;
     }
-
 
     public void setBeanName(String beanName) {
         this.beanName = beanName;
     }
 
+    /**
+     * Does nothing, subclases may override.
+     */
+    public void initializeFor(GeoServerUserGroupService service) throws IOException {
+    }
 
-    private boolean availableWithoutStrongCryptogaphy;
-    
-
-
-    static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
-    static protected Boolean StrongCryptographyAvailable = null;
-    
-    
-
-    
     /**
      * Checks if strong encryption is available 
      * by trying to encrypt with AES 256 Bit
@@ -166,4 +168,11 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoServerPassw
         this.availableWithoutStrongCryptogaphy = availableWithoutStrongCryptogaphy;
     }
 
+    public boolean isReversible() {
+        return reversible;
+    }
+
+    public void setReversible(boolean reversible) {
+        this.reversible = reversible;
+    }
 }

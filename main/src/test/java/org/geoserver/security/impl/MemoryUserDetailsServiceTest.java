@@ -29,10 +29,6 @@ import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
 import org.geoserver.security.config.impl.MemoryUserGroupServiceConfigImpl;
 import org.geoserver.security.password.DecodingUserDetailsService;
-import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
-import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
-import org.geoserver.security.password.GeoServerPlainTextPasswordEncoder;
-import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
@@ -68,7 +64,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
     }
     @Override
     public GeoServerUserGroupService createUserGroupService(String name) throws Exception {
-        return createUserGroupService(name, GeoServerUserPBEPasswordEncoder.PrototypeName);
+        return createUserGroupService(name, getPBEPasswordEncoder().getBeanName());
 
     }
     
@@ -117,24 +113,24 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
             copyFrom(service1,service2);
             
             // from plain to plain
-            service1 = createUserGroupService("copyFrom",GeoServerPlainTextPasswordEncoder.BeanName);
-            service2 = createUserGroupService("copyTo",GeoServerPlainTextPasswordEncoder.BeanName);            
+            service1 = createUserGroupService("copyFrom",getPlainTextPasswordEncoder().getBeanName());
+            service2 = createUserGroupService("copyTo",getPlainTextPasswordEncoder().getBeanName());            
             copyFrom(service1,service2);
             
             // cypt to digest
             service1 = createUserGroupService("copyFrom");
-            service2 = createUserGroupService("copyTo",GeoServerDigestPasswordEncoder.BeanName);            
+            service2 = createUserGroupService("copyTo",getDigestPasswordEncoder().getBeanName());            
             copyFrom(service1,service2);
 
             // digest to digest
-            service1 = createUserGroupService("copyFrom",GeoServerDigestPasswordEncoder.BeanName);
-            service2 = createUserGroupService("copyTo",GeoServerDigestPasswordEncoder.BeanName);            
+            service1 = createUserGroupService("copyFrom",getDigestPasswordEncoder().getBeanName());
+            service2 = createUserGroupService("copyTo",getDigestPasswordEncoder().getBeanName());            
             copyFrom(service1,service2);
             
             // digest to crypt
             boolean fail = false;
             try {
-                service1 = createUserGroupService("copyFrom",GeoServerDigestPasswordEncoder.BeanName);
+                service1 = createUserGroupService("copyFrom",getDigestPasswordEncoder().getBeanName());
                 service2 = createUserGroupService("copyTo");            
                 copyFrom(service1,service2);
             } catch (IOException ex) {
@@ -167,14 +163,11 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
     public void testEncryption() throws Exception {
         getSecurityManager().setConfigPasswordEncrypterName(null);
         String serviceName = "testEncrypt";
-        String prefix =
-                ((GeoServerConfigPBEPasswordEncoder)
-                GeoServerExtensions.bean(GeoServerConfigPBEPasswordEncoder.BeanName)).getPrefix();
-                
+        String prefix = getPBEPasswordEncoder().getPrefix();
         
         MemoryRoleServiceConfigImpl roleConfig = getRoleConfig(serviceName);
         MemoryUserGroupServiceConfigImpl ugConfig = getUserGroupConfg(serviceName,
-                GeoServerPlainTextPasswordEncoder.BeanName);
+            getPlainTextPasswordEncoder().getBeanName());
         
         getSecurityManager().saveRoleService(roleConfig,true);        
         getSecurityManager().saveUserGroupService(ugConfig,true);
@@ -203,7 +196,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
         assertEquals(plainTextUserGroup, ugService.getToBeEncrypted());
         
         // SWITCH TO ENCRYPTION
-        getSecurityManager().setConfigPasswordEncrypterName(GeoServerConfigPBEPasswordEncoder.BeanName);
+        getSecurityManager().setConfigPasswordEncrypterName(getPBEPasswordEncoder().getBeanName());
         getSecurityManager().updateConfigurationFilesWithEncryptedFields();
         
         ugDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(ugFile);
@@ -222,16 +215,13 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
     }
     
     public void testEncryption2() throws Exception {
-        getSecurityManager().setConfigPasswordEncrypterName(GeoServerConfigPBEPasswordEncoder.BeanName);
+        getSecurityManager().setConfigPasswordEncrypterName(getPBEPasswordEncoder().getBeanName());
         String serviceName = "testEncrypt2";
-        String prefix =
-                ((GeoServerConfigPBEPasswordEncoder)
-                GeoServerExtensions.bean(GeoServerConfigPBEPasswordEncoder.BeanName)).getPrefix();
-
+        String prefix =getPBEPasswordEncoder().getPrefix();
         
         MemoryRoleServiceConfigImpl roleConfig = getRoleConfig(serviceName);
         MemoryUserGroupServiceConfigImpl ugConfig = getUserGroupConfg(serviceName,
-                GeoServerPlainTextPasswordEncoder.BeanName);
+            getPlainTextPasswordEncoder().getBeanName());
         
         getSecurityManager().saveRoleService(roleConfig,true);        
         getSecurityManager().saveUserGroupService(ugConfig,true);
@@ -318,7 +308,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
         assertEquals("secret",load.getConnectionParameters().get("passwd"));
         
         // now encrypt
-        getSecurityManager().setConfigPasswordEncrypterName(GeoServerConfigPBEPasswordEncoder.BeanName);;
+        getSecurityManager().setConfigPasswordEncrypterName(getPBEPasswordEncoder().getBeanName());;
         getSecurityManager().updateConfigurationFilesWithEncryptedFields();
         
 //        FileInputStream fi = new FileInputStream(store);

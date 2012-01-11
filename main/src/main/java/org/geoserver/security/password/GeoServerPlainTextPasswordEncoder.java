@@ -4,10 +4,6 @@
  */
 package org.geoserver.security.password;
 
-import java.io.IOException;
-
-import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoServerUserGroupService;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
 import org.springframework.security.authentication.encoding.PlaintextPasswordEncoder;
 
@@ -17,14 +13,7 @@ import org.springframework.security.authentication.encoding.PlaintextPasswordEnc
  * @author christian
  *
  */
-public class GeoServerPlainTextPasswordEncoder extends AbstractGeoserverPasswordEncoder implements GeoServerUserPasswordEncoder {
-    
-    public final static String BeanName="plainTextPasswordEncoder";
-    
-    public static GeoServerPlainTextPasswordEncoder get() {
-          return (GeoServerPlainTextPasswordEncoder)
-                    GeoServerExtensions.bean(BeanName);        
-    }
+public class GeoServerPlainTextPasswordEncoder extends AbstractGeoserverPasswordEncoder {
 
     @Override
     protected PasswordEncoder getActualEncoder() {
@@ -38,10 +27,5 @@ public class GeoServerPlainTextPasswordEncoder extends AbstractGeoserverPassword
     
     public String decode(String encPass) throws UnsupportedOperationException {
         return removePrefix(encPass);
-    }
-
-    @Override
-    public void initializeFor(GeoServerUserGroupService service) throws IOException {
-        // do nothing
     }
 }

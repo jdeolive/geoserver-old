@@ -78,7 +78,8 @@ public class JDBCTestSupport {
         config.setClassName(JDBCUserGroupService.class.getName());
         config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
-        config.setPasswordEncoderName(GeoServerDigestPasswordEncoder.BeanName);
+        config.setPasswordEncoderName(
+            securityManager.loadPasswordEncoder(GeoServerDigestPasswordEncoder.class).getBeanName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
 
         securityManager.saveUserGroupService(config,
@@ -148,7 +149,8 @@ public class JDBCTestSupport {
         config.setUserName(props.getProperty("user")== null ? props.getProperty("username"): props.getProperty("user"));
         config.setPassword(props.getProperty("password"));                       
         config.setClassName(JDBCUserGroupService.class.getName());
-        config.setPasswordEncoderName(GeoServerDigestPasswordEncoder.BeanName);
+        config.setPasswordEncoderName(
+            securityManager.loadPasswordEncoder(GeoServerDigestPasswordEncoder.class).getBeanName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("usersddl.mysql.xml");            

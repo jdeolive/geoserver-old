@@ -52,9 +52,8 @@ import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.Util;
 import org.geoserver.security.password.ConfigurationPasswordEncryptionHelper;
-import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerPBEPasswordEncoder;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
-import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.password.RandomPasswordProvider;
@@ -473,6 +472,37 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     /**
+     * Loads the first password encoder that matches the specified class filter.
+     * <p>
+     * This method is shorthand for:
+     * <pre>
+     *   loadPasswordEncoder(filter, null, null);
+     * </pre>
+     * </p> 
+     *
+     */
+    public <T extends GeoServerPasswordEncoder> T loadPasswordEncoder(Class<T> filter) {
+        return loadPasswordEncoder(filter, null, null);
+    }
+
+    /**
+     * Loads the first password encoder that matches the specified criteria.
+     * 
+     * @param filter Class used to filter password encoders.
+     * @param config Flag indicating if a reversible encoder is required, true forces reversible, 
+     *  false forces irreversible, null means either.
+     * @param strong Flag indicating if an encoder that supports strong encryption is required, true 
+     *  forces strong encryption, false forces weak encryption, null means either.
+     *  
+     * @return The first encoder matching, or null if none was found.
+     */
+    public <T extends GeoServerPasswordEncoder> T loadPasswordEncoder(Class<T> filter, 
+        Boolean reversible, Boolean strong) {
+        List<T> pw = loadPasswordEncoders(filter, reversible, strong);
+        return pw.isEmpty() ? null : pw.get(0);
+    }
+
+    /**
      * Looks up all available password encoders.
      */
     public List<GeoServerPasswordEncoder> loadPasswordEncoders() {
@@ -482,15 +512,45 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Looks up all available password encoders filtering out only those that are instances of the
      * specified class.
+     * <p>
+     * This method is convenience for:
+     * <pre>
+     * loadPasswordEncoders(filter, null, null)
+     * </pre> 
+     * </p>
      */
     public <T extends GeoServerPasswordEncoder> List<T> loadPasswordEncoders(Class<T> filter) {
-        List list = GeoServerExtensions.extensions(GeoServerPasswordEncoder.class);
-        if (filter == null) {
-            return list;
-        }
+        return loadPasswordEncoders(filter, null, null);
+    }
 
+    /**
+     * Loads all the password encodesr that match the specified criteria.
+     * 
+     * @param filter Class used to filter password encoders.
+     * @param config Flag indicating if a reversible encoder is required, true forces reversible, 
+     *  false forces irreversible, null means either.
+     * @param strong Flag indicating if an encoder that supports strong encryption is required, true 
+     *  forces strong encryption, false forces weak encryption, null means either.
+     *  
+     * @return All matching encoders, or an empty list.
+     */
+    public <T extends GeoServerPasswordEncoder> List<T> loadPasswordEncoders(Class<T> filter, 
+        Boolean reversible, Boolean strong) {
+        
+        filter = (Class<T>) (filter != null ? filter : GeoServerPasswordEncoder.class);
+
+        List list = GeoServerExtensions.extensions(filter); 
         for (Iterator it = list.iterator(); it.hasNext(); ) {
-            if (!(filter.isInstance(it.next()))) {
+            boolean remove = false;
+            T pw = (T) it.next();
+            if (reversible != null && !reversible.equals(pw.isReversible())) {
+                remove = true;
+            }
+            if (!remove && strong != null && strong.equals(pw.isAvailableWithoutStrongCryptogaphy())) {
+                remove = true;
+            }
+            
+            if (remove) {
                 it.remove();
             }
         }
@@ -886,7 +946,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             ugConfig.setFileName(XMLConstants.FILE_UR);            
             ugConfig.setValidating(true);
             // start with weak encryption, plain passwords can be restored
-            ugConfig.setPasswordEncoderName(GeoServerUserPBEPasswordEncoder.PrototypeName);
+            ugConfig.setPasswordEncoderName(
+                loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, null, false).getBeanName());
             ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
             saveUserGroupService(ugConfig, true);
             userGroupService = loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
@@ -931,7 +992,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         config.setEncryptingUrlParams(false);
 
         // start with weak encryption
-        config.setConfigPasswordEncrypterName(GeoServerConfigPBEPasswordEncoder.BeanName);
+        config.setConfigPasswordEncrypterName(
+            loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, true, false).getBeanName());
 
         // setup the default remember me service
         RememberMeServicesConfig rememberMeConfig = new RememberMeServicesConfig();

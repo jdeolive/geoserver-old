@@ -10,14 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
-import org.geoserver.security.password.GeoServerConfigPlainTextPasswordEncoder;
 import org.geoserver.test.GeoServerTestSupport;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
-public class GeoServerCustomAuthTest extends GeoServerTestSupport {
+public class GeoServerCustomAuthTest extends GeoServerSecurityTestSupport {
 
     @Override
     protected String[] getSpringContextLocations() {
@@ -47,7 +46,7 @@ public class GeoServerCustomAuthTest extends GeoServerTestSupport {
 
         SecurityManagerConfig mgrConfig = secMgr.getSecurityConfig();
         mgrConfig.getAuthProviderNames().add("custom");
-        mgrConfig.setConfigPasswordEncrypterName(GeoServerConfigPlainTextPasswordEncoder.BeanName);
+        mgrConfig.setConfigPasswordEncrypterName(getPlainTextPasswordEncoder().getBeanName());
         secMgr.saveSecurityConfig(mgrConfig);
 
         Authentication auth = new UsernamePasswordAuthenticationToken("foo", "bar");

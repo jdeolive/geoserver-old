@@ -10,10 +10,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.batik.bridge.UpdateManager;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.markup.html.form.CheckBox;
-import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
@@ -23,11 +21,10 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.ResourceModel;
 import org.apache.wicket.model.util.ListModel;
 import org.apache.wicket.model.util.SetModel;
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoServerConfigPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.web.GeoServerApplication;
 
 
@@ -97,12 +94,12 @@ public class ManagerConfigPanel extends Panel {
         roleServices.setNullValid(false);
         form.add(roleServices);
 
-        List<GeoServerConfigPasswordEncoder> encoders = 
-            getSecurityManager().loadPasswordEncoders(GeoServerConfigPasswordEncoder.class);
+        List<GeoServerPasswordEncoder> encoders = 
+            getSecurityManager().loadPasswordEncoders(null, true, null);
         
         encoderList = new ArrayList<String>();
         disabledEncoders = new ArrayList<String>();
-        for (GeoServerConfigPasswordEncoder encoder : encoders) {
+        for (GeoServerPasswordEncoder encoder : encoders) {
             encoderList.add(encoder.getBeanName());
             if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false
                    && encoder.isAvailableWithoutStrongCryptogaphy()==false) {

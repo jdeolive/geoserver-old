@@ -4,11 +4,14 @@
  */
 package org.geoserver.security.password;
 
+import java.io.IOException;
+
+import org.geoserver.security.GeoServerUserGroupService;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.security.authentication.encoding.PasswordEncoder;
 
 /**
- * General  Geoserver password encoding interface
+ * General Geoserver password encoding interface
  * 
  * @author christian
  *
@@ -17,6 +20,11 @@ public interface GeoServerPasswordEncoder extends PasswordEncoder,BeanNameAware 
 
     public final static String PREFIX_DELIMTER=":";
     
+    /**
+     * Initialize this encoder for a {@link GeoServerUserGroupService} object.
+     */
+    void initializeFor(GeoServerUserGroupService service) throws IOException;
+
     /**
      * @return the {@link PasswordEncodingType} 
      */
@@ -69,4 +77,5 @@ public interface GeoServerPasswordEncoder extends PasswordEncoder,BeanNameAware 
      */
     boolean isAvailableWithoutStrongCryptogaphy();
 
+    boolean isReversible();
 }
