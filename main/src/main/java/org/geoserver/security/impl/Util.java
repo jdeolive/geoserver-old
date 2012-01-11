@@ -19,7 +19,6 @@ import java.util.Properties;
 import java.util.SortedSet;
 import java.util.logging.Logger;
 
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.GeoServerUserGroupService;
@@ -27,7 +26,6 @@ import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.GeoServerUserPasswordEncoder;
 import org.geoserver.security.password.PasswordEncodingType;
-import org.geoserver.security.validation.PasswordValidationException;
 
 
 /**
@@ -63,8 +61,9 @@ public class Util {
      * @return
      */
     static public boolean copyPossible(GeoServerUserGroupService service, GeoServerUserGroupStore store) {
-        GeoServerPasswordEncoder from = (GeoServerPasswordEncoder) 
-                 GeoServerExtensions.bean(service.getPasswordEncoderName());
+        
+        GeoServerPasswordEncoder from = (GeoServerPasswordEncoder)
+            service.getSecurityManager().loadPasswordEncoder(service.getPasswordEncoderName());
         if (from.getEncodingType()==PasswordEncodingType.PLAIN || 
                 from.getEncodingType()==PasswordEncodingType.ENCRYPT)
             return true;
@@ -86,13 +85,14 @@ public class Util {
             throw new IOException("Cannot copy user/group data, passwords encoders are not compatible");
         
         GeoServerUserPasswordEncoder storeEncoder = null;
-        GeoServerUserPasswordEncoder serviceEncoder = (GeoServerUserPasswordEncoder) 
-                GeoServerExtensions.bean(service.getPasswordEncoderName());
+        GeoServerUserPasswordEncoder serviceEncoder = (GeoServerUserPasswordEncoder)
+            service.getSecurityManager().loadPasswordEncoder(service.getPasswordEncoderName());
+
         serviceEncoder.initializeFor(service);
         if (serviceEncoder.getEncodingType()==PasswordEncodingType.PLAIN || 
                 serviceEncoder.getEncodingType()==PasswordEncodingType.ENCRYPT) {
-            storeEncoder = (GeoServerUserPasswordEncoder) 
-                    GeoServerExtensions.bean(store.getPasswordEncoderName());
+            storeEncoder = (GeoServerUserPasswordEncoder)
+                service.getSecurityManager().loadPasswordEncoder(store.getPasswordEncoderName());
             storeEncoder.initializeFor(store);
         }
         

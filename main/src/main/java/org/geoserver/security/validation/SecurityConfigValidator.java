@@ -11,7 +11,6 @@ import static org.geoserver.security.validation.SecurityConfigValidationErrors.*
 import java.io.IOException;
 import java.util.SortedSet;
 
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoServerAuthenticationProcessingFilter;
@@ -64,7 +63,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
         
         Object o=null;
         try {
-            o = GeoServerExtensions.bean(config.getConfigPasswordEncrypterName());
+            o = manager.loadPasswordEncoder(config.getConfigPasswordEncrypterName());
         } catch (NoSuchBeanDefinitionException ex) {
             throw createSecurityException(SEC_ERR_01, encrypterName);
         }
@@ -292,7 +291,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
         if (isNotEmpty(encoderName)) {
             Object o=null;
             try {
-                o = GeoServerExtensions.bean(encoderName);
+                o = manager.loadPasswordEncoder(encoderName);
             } catch (NoSuchBeanDefinitionException ex) {
                 throw createSecurityException(SEC_ERR_04, encoderName);
             }

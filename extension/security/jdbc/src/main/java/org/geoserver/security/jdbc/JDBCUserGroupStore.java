@@ -10,7 +10,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.impl.GeoServerUser;
@@ -146,9 +145,8 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements GeoServe
      */
     protected void preparePassword(GeoServerUser user) throws IOException {
         
-        GeoServerUserPasswordEncoder enc  = (GeoServerUserPasswordEncoder) 
-                GeoServerExtensions.bean(getPasswordEncoderName());
-        
+        GeoServerUserPasswordEncoder enc  = 
+            (GeoServerUserPasswordEncoder)getSecurityManager().loadPasswordEncoder(getPasswordEncoderName());
         if (enc.isResponsibleForEncoding(user.getPassword()))
             return; // do nothing, already encoded
             

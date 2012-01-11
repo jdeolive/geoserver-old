@@ -6,7 +6,6 @@ package org.geoserver.security;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -15,8 +14,6 @@ import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
-import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.validation.SecurityConfigValidator;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -77,15 +74,15 @@ public abstract class GeoServerSecurityProvider {
     }
     
     /**
-     * An implementation of {@link SingleValueConverter} for enryption and
-     * decryption of configuation passwords.
+     * An implementation of {@link SingleValueConverter} for encryption and
+     * decryption of configuration passwords.
      * 
      * Register the fields in {@link #configure(XStreamPersister)}
      * 
      * <code>
      * xp.getXStream().registerLocalConverter(class, fieldName, encrypter);
      * </code>
-     * 
+     * TODO: remove the GeoServerExtensions looksups in this class
      */
     public SingleValueConverter encrypter = new SingleValueConverter() {
 
@@ -99,30 +96,15 @@ public abstract class GeoServerSecurityProvider {
             String source = obj == null ? "" : (String) obj;
             GeoServerSecurityManager manager = 
                     GeoServerExtensions.bean(GeoServerSecurityManager.class);
-            if (manager.getConfigPasswordEncrypterName()==null ||
-                    manager.getConfigPasswordEncrypterName().isEmpty())
-                    return source; //end
-            
-            GeoServerConfigPBEPasswordEncoder enc = (GeoServerConfigPBEPasswordEncoder)
-                    GeoServerExtensions.bean(manager.getConfigPasswordEncrypterName());
-            
-            if (source.startsWith(enc.getPrefix()+GeoServerPasswordEncoder.PREFIX_DELIMTER))
-                throw new RuntimeException("Cannot encode a password with prefix: "+
-                        enc.getPrefix()+GeoServerPasswordEncoder.PREFIX_DELIMTER);
-            
-            return enc.encodePassword(source, null);    
+            return manager.getConfigPasswordEncryptionHelper().encode(source);
         };
 
         @Override
         public Object fromString(String str) {
-            List<GeoServerConfigPBEPasswordEncoder> encoders = 
-                    GeoServerExtensions.extensions(GeoServerConfigPBEPasswordEncoder.class);
-            for (GeoServerConfigPBEPasswordEncoder enc : encoders) {                    
-                if (enc.isResponsibleForEncoding(str))
-                    return enc.decode(str);
-            }    
-            return str;                        
-        }        
+            GeoServerSecurityManager manager = 
+                    GeoServerExtensions.bean(GeoServerSecurityManager.class);
+            return manager.getConfigPasswordEncryptionHelper().decode(str);
+        }
     };
 
     /**

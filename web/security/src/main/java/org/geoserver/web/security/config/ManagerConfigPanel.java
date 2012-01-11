@@ -97,9 +97,8 @@ public class ManagerConfigPanel extends Panel {
         roleServices.setNullValid(false);
         form.add(roleServices);
 
-        
         List<GeoServerConfigPasswordEncoder> encoders = 
-                GeoServerExtensions.extensions(GeoServerConfigPasswordEncoder.class);
+            getSecurityManager().loadPasswordEncoders(GeoServerConfigPasswordEncoder.class);
         
         encoderList = new ArrayList<String>();
         disabledEncoders = new ArrayList<String>();

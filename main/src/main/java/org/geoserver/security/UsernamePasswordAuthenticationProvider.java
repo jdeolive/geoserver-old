@@ -30,6 +30,7 @@ public class UsernamePasswordAuthenticationProvider extends GeoServerAuthenticat
     public void initializeFromConfig(SecurityNamedServiceConfig config) throws IOException {
         UsernamePasswordAuthenticationProviderConfig upAuthConfig = 
                 (UsernamePasswordAuthenticationProviderConfig) config;
+
         GeoServerUserGroupService ugService = 
             getSecurityManager().loadUserGroupService(upAuthConfig.getUserGroupServiceName());
         if (ugService == null) {
@@ -43,7 +44,8 @@ public class UsernamePasswordAuthenticationProvider extends GeoServerAuthenticat
         
         //set up the password encoder
         GeoServerUserPasswordEncoder encoder = (GeoServerUserPasswordEncoder)
-                GeoServerExtensions.bean(ugService.getPasswordEncoderName());
+            getSecurityManager().loadPasswordEncoder(ugService.getPasswordEncoderName());
+
         encoder.initializeFor(ugService);
         authProvider.setPasswordEncoder(encoder);
         try {

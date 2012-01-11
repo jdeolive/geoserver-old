@@ -51,7 +51,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         
         
         List<GeoServerUserPasswordEncoder> encoders = 
-                GeoServerExtensions.extensions(GeoServerUserPasswordEncoder.class);
+            getSecurityManager().loadPasswordEncoders(GeoServerUserPasswordEncoder.class);
         
         encoderList = new ArrayList<String>();
         disabledEncoders = new ArrayList<String>();

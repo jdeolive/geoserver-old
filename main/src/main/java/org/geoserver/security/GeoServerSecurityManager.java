@@ -51,8 +51,9 @@ import org.geoserver.security.file.UserGroupFileWatcher;
 import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.Util;
-import org.geoserver.security.password.ConfigurationPasswordHelper;
+import org.geoserver.security.password.ConfigurationPasswordEncryptionHelper;
 import org.geoserver.security.password.GeoServerConfigPBEPasswordEncoder;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.GeoServerUserPBEPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
 import org.geoserver.security.password.PasswordValidator;
@@ -118,7 +119,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
     static Logger LOGGER = Logging.getLogger("org.geoserver.security");
     public static final String CONFIG_FILE_NAME = "config.xml";
-    
 
     /** data directory file system access */
     GeoServerDataDirectory dataDir;
@@ -156,19 +156,31 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     UserGroupServiceHelper userGroupServiceHelper = new UserGroupServiceHelper();
     AuthProviderHelper authProviderHelper = new AuthProviderHelper();
     FilterHelper filterHelper = new FilterHelper();
+    PasswordValidatorHelper  passwordValidatorHelper = new PasswordValidatorHelper();
+    
+    /** helper for encrypting store configuration parameters */
+    ConfigurationPasswordEncryptionHelper configPasswordEncryptionHelper;
 
     /**
      * listeners
      */
     List<SecurityManagerListener> listeners = new ArrayList<SecurityManagerListener>();
-    PasswordValidatorHelper  passwordValidatorHelper = new PasswordValidatorHelper();
+    
     //AuthProviderHelper authProviderHelper = new AuthProviderHelper();
 
-    public GeoServerSecurityManager( 
-        GeoServerDataDirectory dataDir) throws Exception {
-        
+    public GeoServerSecurityManager(GeoServerDataDirectory dataDir) throws Exception {
         this.dataDir = dataDir;
+        configPasswordEncryptionHelper = new ConfigurationPasswordEncryptionHelper(this);
+    }
 
+    public Catalog getCatalog() {
+        //have to look this up dynamically on demand on avoid circular dependency on application
+        // context startup
+        return (Catalog) GeoServerExtensions.bean("catalog");
+    }
+
+    public ConfigurationPasswordEncryptionHelper getConfigPasswordEncryptionHelper() {
+        return configPasswordEncryptionHelper;
     }
 
     @Override
@@ -451,6 +463,39 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         return  passwordValidatorHelper.loadConfig(name);
     }
 
+    /**
+     * Loads a password encoder with the specified name.
+     * 
+     * @return The password encoder, or <code>null</code> if non found matching the name.
+     */
+    public GeoServerPasswordEncoder loadPasswordEncoder(String name) {
+        return (GeoServerPasswordEncoder) GeoServerExtensions.bean(name);
+    }
+
+    /**
+     * Looks up all available password encoders.
+     */
+    public List<GeoServerPasswordEncoder> loadPasswordEncoders() {
+        return loadPasswordEncoders(null);
+    }
+
+    /**
+     * Looks up all available password encoders filtering out only those that are instances of the
+     * specified class.
+     */
+    public <T extends GeoServerPasswordEncoder> List<T> loadPasswordEncoders(Class<T> filter) {
+        List list = GeoServerExtensions.extensions(GeoServerPasswordEncoder.class);
+        if (filter == null) {
+            return list;
+        }
+
+        for (Iterator it = list.iterator(); it.hasNext(); ) {
+            if (!(filter.isInstance(it.next()))) {
+                it.remove();
+            }
+        }
+        return list;
+    }
 
     /**
      * Saves/persists a role service configuration.
@@ -1363,17 +1408,18 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      * {@link SecurityNamedServiceConfig} objects from the security directory
      * @param catalog
      */
-    public  void updateConfigurationFilesWithEncryptedFields() throws IOException{
+    public void updateConfigurationFilesWithEncryptedFields() throws IOException{
         // rewrite stores in catalog
         LOGGER.info("Start encrypting configuration passwords using "+getConfigPasswordEncrypterName());
-        Catalog catalog = (Catalog)
-                GeoServerExtensions.bean("catalog");
+
+        Catalog catalog = getCatalog();
         List<StoreInfo> stores = catalog.getStores(StoreInfo.class);
         for (StoreInfo info : stores) {
-            if (ConfigurationPasswordHelper.getEncryptionFields(info).isEmpty()==false)
+            if (!configPasswordEncryptionHelper.getEncryptedFields(info).isEmpty()) {
                 catalog.save(info);
-        }        
-        
+            }
+        }
+
         Set<Class<?>> configClasses = new HashSet<Class<?>>();
         
         // filter the interesting classes ones
