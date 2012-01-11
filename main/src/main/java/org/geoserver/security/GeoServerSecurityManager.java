@@ -1016,7 +1016,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         File[] dirs = dir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                return pathname.isDirectory();
+                return pathname.isDirectory() && new File(pathname, CONFIG_FILE_NAME).exists();
             }
         });
         for (File d : dirs) {
