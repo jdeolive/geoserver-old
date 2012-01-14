@@ -34,6 +34,7 @@ import org.geoserver.config.util.XStreamPersisterFactory;
 import org.geoserver.platform.ContextLoadedEvent;
 import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.FilterChainEntry.Position;
+import org.geoserver.security.auth.GeoServerRootAuthenticationProvider;
 import org.geoserver.security.concurrent.LockingRoleService;
 import org.geoserver.security.concurrent.LockingUserGroupService;
 import org.geoserver.security.config.FileBasedSecurityServiceConfig;
@@ -306,6 +307,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         //set up authentication providers
         this.authProviders = new ArrayList<GeoServerAuthenticationProvider>();
+        // first provider is for the root user
+        this.authProviders.add(new GeoServerRootAuthenticationProvider());
 
         //add the custom/configured ones
         if(!config.getAuthProviderNames().isEmpty()) {
