@@ -28,7 +28,11 @@ import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.security.impl.Util;
-import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
+import org.geoserver.security.jdbc.config.JDBCUserGroupServiceConfig;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
+import org.geoserver.security.password.KeyStoreProvider;
+import org.geoserver.security.password.PasswordEncodingType;
+import org.geoserver.security.password.RandomPasswordProvider;
 import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -89,9 +93,9 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements GeoSer
         passwordValidatorName=((SecurityUserGroupServiceConfig)config).getPasswordPolicyName();
         initializeDSFromConfig(config);
 
-        if (config instanceof JDBCSecurityServiceConfig) {
-            JDBCSecurityServiceConfig jdbcConfig =
-                (JDBCSecurityServiceConfig) config;
+        if (config instanceof JDBCUserGroupServiceConfig) {
+            JDBCUserGroupServiceConfig jdbcConfig =
+                (JDBCUserGroupServiceConfig) config;
             
             String fileNameDML =jdbcConfig.getPropertyFileNameDML();
             File file = checkORCreateJDBCPropertyFile(fileNameDML, getConfigRoot(), DEFAULT_DML_FILE);
@@ -100,7 +104,20 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements GeoSer
             String fileNameDDL =jdbcConfig.getPropertyFileNameDDL();
             file = checkORCreateJDBCPropertyFile(fileNameDDL, getConfigRoot(), DEFAULT_DDL_FILE);
 
-            ddlProps = Util.loadUniversal(new FileInputStream(file));                        
+            ddlProps = Util.loadUniversal(new FileInputStream(file));
+            
+            GeoServerPasswordEncoder enc = getSecurityManager().loadPasswordEncoder(passwordEncoderName);
+            if (enc.getEncodingType()==PasswordEncodingType.ENCRYPT) {
+                KeyStoreProvider prov = KeyStoreProvider.get();
+                String alias = prov.aliasForGroupService(name);
+                if (prov.containsAlias(alias)==false) {
+                    prov.setUserGroupKey(name, RandomPasswordProvider.get().getRandomPassword(32));
+                    prov.storeKeyStore();
+                }
+            }
+            enc.initializeFor(this);
+            passwordValidatorName=jdbcConfig.getPasswordPolicyName();
+
         }        
     }
 

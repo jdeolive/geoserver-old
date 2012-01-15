@@ -8,8 +8,11 @@ import java.util.logging.Logger;
 
 import junit.framework.Assert;
 
+import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.GeoServerUserGroupStore;
+import org.geoserver.security.UsernamePasswordAuthenticationProvider;
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.impl.GeoServerRole;
@@ -327,5 +330,23 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         assertTrue(fail);
     }
 
+    @Override
+    public void testAuthenticationProvider() throws IOException {
+        super.testAuthenticationProvider();
+        
+        SecurityAuthProviderConfig config = getAuthConfig(GeoServerAuthenticationProvider.DEFAULT_NAME, 
+                UsernamePasswordAuthenticationProvider.class, null);
+        
+        boolean fail=false;
+        try {
+            getSecurityManager().saveAuthenticationProvider(config, false);
+        } catch (SecurityConfigException ex) {
+            assertEquals(SEC_ERR_106, ex.getErrorId());
+            assertEquals(0, ex.getArgs().length);
+            fail=true;
+        }
+        assertTrue(fail);
+
+    }
 
 }

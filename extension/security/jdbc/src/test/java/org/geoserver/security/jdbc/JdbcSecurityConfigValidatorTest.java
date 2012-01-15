@@ -9,9 +9,11 @@ import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.jdbc.config.JDBCConnectAuthProviderConfig;
 import org.geoserver.security.jdbc.config.JDBCRoleServiceConfig;
 import org.geoserver.security.jdbc.config.JDBCUserGroupServiceConfig;
 import org.geoserver.security.password.PasswordValidator;
@@ -25,10 +27,6 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
     
     
     @Override
-    protected void setUpInternal() throws Exception {
-        super.setUpInternal();
-    }
-        
     protected SecurityUserGroupServiceConfig getUGConfig(String name, Class<?> aClass,
             String encoder, String policyName) {
         JDBCUserGroupServiceConfig config = new JDBCUserGroupServiceConfig();
@@ -39,7 +37,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         return config;
     }
     
-    
+    @Override
     protected SecurityRoleServiceConfig getRoleConfig(String name, Class<?> aClass,String adminRole) {
         JDBCRoleServiceConfig config = new JDBCRoleServiceConfig();
         config.setName(name);
@@ -48,8 +46,16 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         return config;
     }
     
+    @Override
+    protected SecurityAuthProviderConfig getAuthConfig(String name, Class<?> aClass,String userGroupServiceName) {
+        JDBCConnectAuthProviderConfig config = new JDBCConnectAuthProviderConfig();
+        config.setName(name);
+        config.setClassName(aClass.getName());
+        config.setUserGroupServiceName(userGroupServiceName);        
+        return config;
+    }
 
-
+    @Override
     public void testRoleConfig() throws IOException {
         
         super.testRoleConfig();
@@ -135,7 +141,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
     }
 
-    
+    @Override
     public void testUserGroupConfig() throws IOException {
 
         super.testUserGroupConfig();
@@ -220,6 +226,52 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
 
         
         
+    }
+
+    @Override
+    public void testAuthenticationProvider() throws IOException {
+        super.testAuthenticationProvider();
+        JDBCConnectAuthProviderConfig config = 
+                (JDBCConnectAuthProviderConfig) getAuthConfig("jdbcprov", JDBCConnectAuthProvider.class, "default");
+        
+        config.setConnectURL("jdbc:connect");
+        
+        boolean fail=false;
+        try {            
+            config.setDriverClassName("");
+            getSecurityManager().saveAuthenticationProvider(config, true);                         
+        } catch (SecurityConfigException ex) {
+            assertEquals( SEC_ERR_200,ex.getErrorId());
+            assertEquals(0,ex.getArgs().length);
+            LOGGER.info(ex.getMessage());
+            fail=true;
+        }
+        assertTrue(fail);
+
+        config.setDriverClassName("a.b.c");
+        fail=false;
+        try {            
+            getSecurityManager().saveAuthenticationProvider(config, true);                         
+        } catch (SecurityConfigException ex) {
+            assertEquals( SEC_ERR_203,ex.getErrorId());
+            assertEquals("a.b.c",ex.getArgs()[0]);
+            LOGGER.info(ex.getMessage());
+            fail=true;
+        }
+        assertTrue(fail);
+        
+        fail=false;
+        try {            
+            config.setConnectURL(null);
+            getSecurityManager().saveAuthenticationProvider(config, true);                         
+        } catch (SecurityConfigException ex) {
+            assertEquals( SEC_ERR_202,ex.getErrorId());
+            assertEquals(0,ex.getArgs().length);
+            LOGGER.info(ex.getMessage());
+            fail=true;
+        }
+        assertTrue(fail);
+
     }
 
 }

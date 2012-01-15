@@ -29,6 +29,10 @@ import org.geoserver.security.impl.AbstractUserGroupService;
 import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.impl.Util;
+import org.geoserver.security.password.GeoServerPasswordEncoder;
+import org.geoserver.security.password.KeyStoreProvider;
+import org.geoserver.security.password.PasswordEncodingType;
+import org.geoserver.security.password.RandomPasswordProvider;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -68,7 +72,18 @@ public class XMLUserGroupService extends AbstractUserGroupService {
         validatingXMLSchema=false;
         passwordEncoderName=((SecurityUserGroupServiceConfig)config).getPasswordEncoderName();
         passwordValidatorName=((SecurityUserGroupServiceConfig)config).getPasswordPolicyName();
-
+        
+        GeoServerPasswordEncoder enc = getSecurityManager().loadPasswordEncoder(passwordEncoderName);
+        if (enc.getEncodingType()==PasswordEncodingType.ENCRYPT) {
+            KeyStoreProvider prov = KeyStoreProvider.get();
+            String alias = prov.aliasForGroupService(name);
+            if (prov.containsAlias(alias)==false) {
+                prov.setUserGroupKey(name, RandomPasswordProvider.get().getRandomPassword(32));
+                prov.storeKeyStore();
+            }
+        }
+        enc.initializeFor(this);
+        
         if (config instanceof XMLSecurityServiceConfig) {
             validatingXMLSchema =((XMLSecurityServiceConfig) config).isValidating();
             // copy schema file 

@@ -18,6 +18,7 @@ public class XMLSecurityConfigValidationErrors extends SecurityConfigValidationE
     public final static String SEC_ERR_103 = "SEC_ERR_103";
     public final static String SEC_ERR_104 = "SEC_ERR_104";
     public final static String SEC_ERR_105 = "SEC_ERR_105";
+    public final static String SEC_ERR_106 = "SEC_ERR_106";
     
     @Override
     public String formatErrorMsg(String id, Object... args) {
@@ -33,7 +34,11 @@ public class XMLSecurityConfigValidationErrors extends SecurityConfigValidationE
         if (SEC_ERR_104.equals(id))
             return MessageFormat.format("File name required",args);        
         if (SEC_ERR_105.equals(id))
-            return MessageFormat.format("Cannot change file name from {0} to {1}",args);        
+            return MessageFormat.format("Cannot change file name from {0} to {1}",args);
+        if (SEC_ERR_106.equals(id))
+            return MessageFormat.format("User/group service is required",args);        
+
+        
 
 
         return super.formatErrorMsg(id, args);

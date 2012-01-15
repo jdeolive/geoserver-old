@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.geoserver.security.GeoServerUserGroupService;
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.validation.SecurityConfigException;
@@ -203,5 +204,14 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
                 throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_105,
                         old.getFileName(),modified.getFileName());
 
+    }
+    
+    @Override
+    public void validate(SecurityAuthProviderConfig config) throws SecurityConfigException{
+        
+        if (isNotEmpty(config.getUserGroupServiceName())==false) {
+            throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_106);
+        }
+        super.validate(config);
     }
 }

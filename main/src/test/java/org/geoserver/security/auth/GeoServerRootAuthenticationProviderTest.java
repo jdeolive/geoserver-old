@@ -6,6 +6,7 @@
 
 package org.geoserver.security.auth;
 
+import org.geoserver.security.password.MasterPasswordProviderImpl;
 import org.geoserver.test.GeoServerTestSupport;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.RememberMeAuthenticationToken;
@@ -36,7 +37,8 @@ public class GeoServerRootAuthenticationProviderTest extends GeoServerTestSuppor
         token = new UsernamePasswordAuthenticationToken(GeoServerRootAuthenticationProvider.ROOTUSERNAME, "abc");
         assertNull(provider.authenticate(token));
 
-        token = new UsernamePasswordAuthenticationToken(GeoServerRootAuthenticationProvider.ROOTUSERNAME, "geoserver");
+        String masterPassword = MasterPasswordProviderImpl.get().getMasterPassword();
+        token = new UsernamePasswordAuthenticationToken(GeoServerRootAuthenticationProvider.ROOTUSERNAME, masterPassword);
         token.setDetails("hallo");
         UsernamePasswordAuthenticationToken result = (UsernamePasswordAuthenticationToken)
                 provider.authenticate(token);

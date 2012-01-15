@@ -5,8 +5,10 @@
 
 package org.geoserver.security.jdbc;
 
+import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
+import org.geoserver.security.jdbc.config.JDBCConnectAuthProviderConfig;
 import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidationErrors;
@@ -64,10 +66,31 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
         }
 
     }
-   
+
+    @Override
+    public void validate(SecurityAuthProviderConfig config) throws SecurityConfigException {
+        super.validate(config);
+        JDBCConnectAuthProviderConfig jdbcConfig = (JDBCConnectAuthProviderConfig) config;
+        if (isNotEmpty(jdbcConfig.getDriverClassName())==false)
+            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_200);
+        if (isNotEmpty(jdbcConfig.getConnectURL())==false)
+            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_202);
+
+        try {
+            Class.forName(jdbcConfig.getDriverClassName());
+        } catch (ClassNotFoundException e) {
+            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_203,
+                    jdbcConfig.getDriverClassName());
+        }
+
+        
+    }
+
+    
     @Override
     protected SecurityConfigValidationErrors getSecurityErrors() {
         return new JdbcSecurityConfigValidationErrors();
     }
+
 
 }

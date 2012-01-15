@@ -18,6 +18,7 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.jdbc.config.JDBCRoleServiceConfig;
 import org.geoserver.security.jdbc.config.JDBCUserGroupServiceConfig;
 import org.geoserver.security.validation.SecurityConfigValidator;
+import org.springframework.security.authentication.AuthenticationProvider;
 
 /**
  * Provider for JDBC based security services.
@@ -71,5 +72,15 @@ public class JDBCSecurityProvider extends GeoServerSecurityProvider {
     public SecurityConfigValidator getConfigurationValidator() {
         return new JdbcSecurityConfigValidator(); 
      }
+
+    @Override
+    public Class<? extends AuthenticationProvider> getAuthenticationProviderClass() {
+        return JDBCConnectAuthProvider.class;
+    }
+
+    @Override
+    public AuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
+        return new JDBCConnectAuthProvider();
+    }
 
 }

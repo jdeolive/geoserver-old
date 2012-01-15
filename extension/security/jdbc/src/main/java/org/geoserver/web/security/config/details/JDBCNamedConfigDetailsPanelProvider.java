@@ -6,6 +6,7 @@
 package org.geoserver.web.security.config.details;
 
 import org.apache.wicket.model.CompoundPropertyModel;
+import org.geoserver.security.jdbc.JDBCConnectAuthProvider;
 import org.geoserver.security.jdbc.JDBCRoleService;
 import org.geoserver.security.jdbc.JDBCUserGroupService;
 import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
@@ -27,7 +28,9 @@ public class JDBCNamedConfigDetailsPanelProvider implements NamedConfigDetailsPa
             return new JDBCUserGroupConfigDetailsPanel(id,model);
         if (JDBCRoleService.class.getName().equals(className))
             return new JDBCRoleConfigDetailsPanel(id, model);
-     
+        if (JDBCConnectAuthProvider.class.getName().equals(className))
+            return new JDBCAuthProviderConfigDetailsPanel(id, model);
+             
         return null;
     }
 
