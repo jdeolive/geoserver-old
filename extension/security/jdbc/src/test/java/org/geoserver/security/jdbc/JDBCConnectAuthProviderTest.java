@@ -120,6 +120,51 @@ public class JDBCConnectAuthProviderTest extends AbstractAuthenticationProviderT
         assertTrue(fail);
                 
     }
+    
+    public void testAuthentificationWithRoleAssociation() throws Exception {
+        GeoServerRoleService roleService = createRoleService("jdbc2");
+        JDBCConnectAuthProviderConfig config = createAuthConfg("jdbc2", null);
+        getSecurityManager().saveAuthenticationProvider(config, true);
+        GeoServerAuthenticationProvider provider = getSecurityManager().loadAuthenticationProvider("jdbc2");
+        
+        
+        GeoServerRoleStore roleStore =  roleService.createStore();
+        roleStore.addRole(GeoServerRole.ADMIN_ROLE);
+        roleStore.associateRoleToUser(GeoServerRole.ADMIN_ROLE, "sa");
+        roleStore.store();
+        getSecurityManager().setActiveRoleService(roleService);
+        
+        
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken("sa","");
+        token.setDetails("details");
+        assertTrue(provider.supports(token.getClass()));
+        assertFalse(provider.supports(RememberMeAuthenticationToken.class));
+        
+        Authentication auth = provider.authenticate(token);
+        assertNotNull(auth);
+        assertEquals("sa", auth.getPrincipal());
+        assertNull(auth.getCredentials());
+        assertEquals("details", auth.getDetails());
+        assertEquals(2,auth.getAuthorities().size());
+        assertTrue(auth.getAuthorities().contains(GeoServerRole.AUTHENTICATED_ROLE));
+        assertTrue(auth.getAuthorities().contains(GeoServerRole.ADMIN_ROLE));
+                
+        
+        // test invalid user
+        token = new UsernamePasswordAuthenticationToken("abc","def");
+        boolean fail = false;
+        try {
+            provider.authenticate(token);
+        } catch (BadCredentialsException ex) {
+            fail=true;
+        } catch (UsernameNotFoundException ex) {
+            fail=true;
+        }        
+
+        assertTrue(fail);
+                
+    }
+
 
 
 }

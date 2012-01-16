@@ -12,8 +12,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.geoserver.platform.GeoServerExtensions;
-import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.GeoServerUserGroupService;
 
@@ -32,18 +30,28 @@ public class RoleCalculator  {
     /**
      * Constructor
      * 
+     * @param roleService
+     */
+    public RoleCalculator (GeoServerRoleService roleService) {        
+        this(null,roleService);        
+    }
+
+    
+    /**
+     * Constructor
+     * 
      * @param userGroupService
      * @param roleService
      */
     public RoleCalculator (GeoServerUserGroupService userGroupService,GeoServerRoleService roleService) {
         this.userGroupService=userGroupService;
         this.roleService=roleService;
-        assertServicesNotNull();
+        assertRoleServiceNotNull();
     }
         
     public void setRoleService(GeoServerRoleService service) {
         roleService=service;
-        assertServicesNotNull();
+        assertRoleServiceNotNull();
 
     }
 
@@ -53,8 +61,7 @@ public class RoleCalculator  {
 
 
     public void setUserGroupService(GeoServerUserGroupService service) {
-        userGroupService=service;
-        assertServicesNotNull();
+        userGroupService=service;        
    }
 
     public GeoServerUserGroupService getUserGroupService() {
@@ -63,13 +70,10 @@ public class RoleCalculator  {
 
 
     /**
-     * Check if the services are not null
+     * Check if the role service is not null
      * 
      */
-    protected void assertServicesNotNull() {
-        if (userGroupService==null ) {
-            throw new RuntimeException("User/Group service is null");
-        }
+    protected void assertRoleServiceNotNull() {
         if (roleService==null) {
             throw new RuntimeException("role service Service is null");
         }
@@ -82,9 +86,11 @@ public class RoleCalculator  {
      * The algorithm
      * 
      * get the roles directly assigned to the user
-     * get the groups of the user
-     * for each "enabled" group, add the roles of the group
-     * for all roles so far, search for ancestor roles and
+     * get the groups of the user if a {@link GeoServerUserGroupService} service
+     * is given, for each "enabled" group, add the roles of the group
+     * 
+     * 
+     * for earch role search for ancestor roles and
      * add them to the set
      * 
      * After role calculation has finished, personalize each
@@ -107,10 +113,12 @@ public class RoleCalculator  {
         addInheritedRoles(set1);
         
         // add all roles for enabled groups
-        for (GeoServerUserGroup group : 
-            getUserGroupService().getGroupsForUser(user)) {
-            if (group.isEnabled())
-                set1.addAll(calculateRoles(group));
+        if (getUserGroupService()!=null) {
+            for (GeoServerUserGroup group : 
+                getUserGroupService().getGroupsForUser(user)) {
+                if (group.isEnabled())
+                    set1.addAll(calculateRoles(group));
+            }
         }
         
        // personalize roles
@@ -119,7 +127,7 @@ public class RoleCalculator  {
         
         // if the user has the admin role of the role service the 
         // GeoserverRole.ADMIN_ROLE must also be in the set
-        GeoServerRole adminRole = GeoServerExtensions.bean(GeoServerSecurityManager.class).getActiveRoleService().getAdminRole();
+        GeoServerRole adminRole = roleService.getAdminRole();
         if (adminRole!=null) {
             String adminRoleName = adminRole.getAuthority();
             if (adminRoleName != null && adminRoleName.length()> 0 
