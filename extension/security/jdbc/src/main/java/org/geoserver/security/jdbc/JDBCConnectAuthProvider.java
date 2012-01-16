@@ -20,6 +20,8 @@ import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.impl.GeoServerRole;
+import org.geoserver.security.impl.GeoServerUser;
+import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.security.jdbc.config.JDBCConnectAuthProviderConfig;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -89,15 +91,19 @@ public class JDBCConnectAuthProvider extends GeoServerAuthenticationProvider {
                 
         }
         UsernamePasswordAuthenticationToken result = null;
-        if (details!=null) {
-            Set<GrantedAuthority> roles = new HashSet<GrantedAuthority>();
-            roles.addAll(details.getAuthorities());
-            roles.add(GeoServerRole.AUTHENTICATED_ROLE);
-            result = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(),null,roles);
+        Set<GrantedAuthority> roles = new HashSet<GrantedAuthority>();
+        if (details!=null) {            
+            roles.addAll(details.getAuthorities());                        
         } else {        
-            result = new UsernamePasswordAuthenticationToken(
-                    authentication.getPrincipal(),null,Collections.singletonList(GeoServerRole.AUTHENTICATED_ROLE));
-        }    
+            RoleCalculator calc = new RoleCalculator(getSecurityManager().getActiveRoleService());
+            try {
+                roles.addAll(calc.calculateRoles(new GeoServerUser(user)));
+            } catch (IOException e) {
+                throw new AuthenticationServiceException(e.getLocalizedMessage(),e);
+            }                        
+        }   
+        roles.add(GeoServerRole.AUTHENTICATED_ROLE);
+        result = new UsernamePasswordAuthenticationToken(authentication.getPrincipal(),null,roles);
         result.setDetails(authentication.getDetails());
         return result;                        
     }
