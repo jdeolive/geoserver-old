@@ -65,7 +65,7 @@ public class GeoserverWicketEncrypterFactory implements ICryptFactory {
             enc = new StandardPBEByteEncryptor();            
             enc.setPassword(password);
             
-            if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()) {
+            if (GeoServerApplication.get().getSecurityManager().isStrongEncryptionAvailable()) {
                 enc.setProvider(new BouncyCastleProvider());
                 enc.setAlgorithm("PBEWITHSHA256AND128BITAES-CBC-BC");
             }

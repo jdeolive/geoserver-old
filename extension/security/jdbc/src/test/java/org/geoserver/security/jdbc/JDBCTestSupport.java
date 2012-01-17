@@ -82,8 +82,7 @@ public class JDBCTestSupport {
             securityManager.loadPasswordEncoder(GeoServerDigestPasswordEncoder.class).getName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
 
-        securityManager.saveUserGroupService(config,
-                !(securityManager.listUserGroupServices().contains(serviceName)));
+        securityManager.saveUserGroupService(config);
 
         return securityManager.loadUserGroupService(serviceName);
     }
@@ -102,8 +101,7 @@ public class JDBCTestSupport {
         config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
         config.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
-        securityManager.saveRoleService(config,
-                !(securityManager.listRoleServices().contains(serviceName)));
+        securityManager.saveRoleService(config);
         return securityManager.loadRoleService(serviceName);
     }
 
@@ -130,8 +128,7 @@ public class JDBCTestSupport {
         }
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
 
-        securityManager.saveRoleService(config,
-                !(securityManager.listRoleServices().contains(fixtureId)));
+        securityManager.saveRoleService(config);
         return securityManager.loadRoleService(fixtureId);
     }
     
@@ -158,8 +155,7 @@ public class JDBCTestSupport {
             config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         }
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
-        securityManager.saveUserGroupService(config,
-                !(securityManager.listUserGroupServices().contains(fixtureId)));
+        securityManager.saveUserGroupService(config);
         return securityManager.loadUserGroupService(fixtureId);
     }
 

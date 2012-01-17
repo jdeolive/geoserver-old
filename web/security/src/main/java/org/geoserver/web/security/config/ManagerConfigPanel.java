@@ -60,7 +60,7 @@ public class ManagerConfigPanel extends Panel {
                 CompoundPropertyModel<SecurityConfigModelHelper>(helper);
         
         
-        if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false)
+        if (getSecurityManager().isStrongEncryptionAvailable()==false)
             warn(new ResourceModel("security.noStrongEncryption").getObject());
         else 
             info(new ResourceModel("security.strongEncryption").getObject());
@@ -101,7 +101,7 @@ public class ManagerConfigPanel extends Panel {
         disabledEncoders = new ArrayList<String>();
         for (GeoServerPasswordEncoder encoder : encoders) {
             encoderList.add(encoder.getName());
-            if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false
+            if (getSecurityManager().isStrongEncryptionAvailable()==false
                    && encoder.isAvailableWithoutStrongCryptogaphy()==false) {
                 disabledEncoders.add(encoder.getName());
             }

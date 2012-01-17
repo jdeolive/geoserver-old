@@ -55,7 +55,7 @@ public abstract class AbstractUserGroupDetailsPanel extends AbstractNamedConfigD
         disabledEncoders = new ArrayList<String>();
         for (GeoServerPasswordEncoder encoder : encoders) {
             encoderList.add(encoder.getName());
-            if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false
+            if (getSecurityManager().isStrongEncryptionAvailable()==false
                    && encoder.isAvailableWithoutStrongCryptogaphy()==false) {
                 disabledEncoders.add(encoder.getName());
             }

@@ -14,7 +14,9 @@ import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.web.GeoServerApplication;
+import org.geoserver.web.GeoServerHomePage;
 import org.geoserver.web.GeoServerSecuredPage;
+import org.geoserver.web.wicket.GeoServerDialog;
 
 /**
  * Allows creation of a new user in users.properties
@@ -27,14 +29,48 @@ public abstract class AbstractSecurityPage extends GeoServerSecuredPage {
      * Indicates if model data has changed
      */
     boolean dirty = false;
-    
-        
+
+    /**
+     * page for this page to return to when the page is finished, could be null.
+     */
+    protected Page returnPage;
+
+    /** 
+     * page class for this page to return to when the page is finished, could be null. 
+     */
+    protected Class<? extends Page> returnPageClass = GeoServerHomePage.class;
+
+    protected GeoServerDialog dialog;
+
+    public AbstractSecurityPage() {
+        add(dialog = new GeoServerDialog("dialog"));
+    }
+
     public boolean isDirty() {
         return dirty;
     }
 
     public void setDirty(boolean dirty) {
         this.dirty = dirty;
+    }
+
+    public void setReturnPage(Page returnPage) {
+        this.returnPage = returnPage;
+    }
+
+    public void setReturnPage(Class<Page> returnPageClass) {
+        this.returnPageClass = returnPageClass;
+    }
+    
+    protected void doReturn() {
+        if (returnPage != null) {
+            setResponsePage(returnPage);
+            return;
+        }
+        if (returnPageClass != null) {
+            setResponsePage(returnPageClass);
+            return;
+        }
     }
 
     public Link<Page> getCancelLink(final AbstractSecurityPage returnPage) {

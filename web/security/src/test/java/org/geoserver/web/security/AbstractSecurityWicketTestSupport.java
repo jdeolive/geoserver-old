@@ -29,6 +29,7 @@ import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
+import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.UsernamePasswordAuthenticationProviderConfig;
 import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
@@ -73,14 +74,15 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
     protected GeoServerRoleService gaService;
     protected GeoServerRoleStore gaStore;
     protected GeoServerUserGroupStore ugStore;
-    
-    
+
     @Override
     protected void setUpInternal() throws Exception {
         login();        
         Locale.setDefault(Locale.ENGLISH);
         // run all tests with url param encryption
-        getSecurityManager().setEncryptingUrlParams(true); 
+        SecurityManagerConfig config = getSecurityManager().getSecurityConfig();
+        config.setEncryptingUrlParams(true);
+        getSecurityManager().saveSecurityConfig(config);
     }
 
     protected void initialize(AbstractUserGroupServiceTest ugTest, AbstractRoleServiceTest gaTest) 
@@ -145,8 +147,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         config.setName(getRORoleServiceName());
         config.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
         config.setClassName(ReadOnlyRoleService.class.getName());
-        getSecurityManager().saveRoleService(config,
-                !(getSecurityManager().listRoleServices().contains(getRORoleServiceName())));
+        getSecurityManager().saveRoleService(config);
         gaService = getSecurityManager().loadRoleService(getRORoleServiceName());
         gaService.initializeFromConfig(config);
         gaService.setSecurityManager(GeoServerApplication.get().getSecurityManager());
@@ -176,8 +177,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
         config.setClassName(ReadOnlyUGService.class.getName());
         config.setPasswordEncoderName(getDigestPasswordEncoder().getName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        getSecurityManager().saveUserGroupService(config,
-                !(getSecurityManager().listUserGroupServices().contains(getROUserGroupServiceName())));
+        getSecurityManager().saveUserGroupService(config);
         ugService = getSecurityManager().loadUserGroupService(getROUserGroupServiceName());
         ugService.initializeFromConfig(config);
         ugService.setSecurityManager(GeoServerApplication.get().getSecurityManager());
@@ -294,8 +294,7 @@ public class AbstractSecurityWicketTestSupport extends GeoServerWicketTestSuppor
           config.setName(name);
           config.setClassName(UsernamePasswordAuthenticationProvider.class.getName());
           config.setUserGroupServiceName(ugName);
-          getSecurityManager().saveAuthenticationProvider(config,
-                  !getSecurityManager().listAuthenticationProviders().contains(name));
+          getSecurityManager().saveAuthenticationProvider(config);
       }
       
       protected AbstractSecurityPage initializeForRoleServiceNamed(String name) {

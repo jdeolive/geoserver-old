@@ -5,6 +5,7 @@
 
 package org.geoserver.security.jdbc;
 
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
@@ -13,6 +14,10 @@ import org.geoserver.security.validation.SecurityConfigValidationErrors;
 import org.geoserver.security.validation.SecurityConfigValidator;
 
 public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
+
+    public JdbcSecurityConfigValidator(GeoServerSecurityManager securityManager) {
+        super(securityManager);
+    }
 
     @Override
     public void validate(SecurityRoleServiceConfig config) throws SecurityConfigException {

@@ -253,24 +253,24 @@ public class NamedConfigPanel extends Panel {
         GeoServerSecurityManager manager = GeoServerApplication.get().getSecurityManager();
         SecurityNamedConfigModelHelper helper = model.getObject();        
         if (helper.isNew()) {
-            SecurityConfigValidator val = new SecurityConfigValidator();
+            SecurityConfigValidator val = new SecurityConfigValidator(manager);
             val.validateAddNamedService(extensionPoint, helper.getConfig());
         }
         
         if (GeoServerAuthenticationProvider.class.isAssignableFrom(extensionPoint)) {
-            manager.saveAuthenticationProvider((SecurityAuthProviderConfig) helper.getConfig(),helper.isNew());
+            manager.saveAuthenticationProvider((SecurityAuthProviderConfig) helper.getConfig());
         }
         if (GeoServerUserGroupService.class.isAssignableFrom(extensionPoint)) {
-            manager.saveUserGroupService((SecurityUserGroupServiceConfig)helper.getConfig(),helper.isNew());
+            manager.saveUserGroupService((SecurityUserGroupServiceConfig)helper.getConfig());
         }
         if (GeoServerRoleService.class.isAssignableFrom(extensionPoint)) {
-            manager.saveRoleService((SecurityRoleServiceConfig) helper.getConfig(),helper.isNew());
+            manager.saveRoleService((SecurityRoleServiceConfig) helper.getConfig());
         }
         if (PasswordValidator.class.isAssignableFrom(extensionPoint)) {
-            manager.savePasswordPolicy((PasswordPolicyConfig) helper.getConfig(),helper.isNew());
+            manager.savePasswordPolicy((PasswordPolicyConfig) helper.getConfig());
         }
         if (GeoServerSecurityFilter.class.isAssignableFrom(extensionPoint)) {
-            manager.saveFilter(helper.getConfig(),helper.isNew());
+            manager.saveFilter(helper.getConfig());
         }
     }
 
