@@ -37,7 +37,7 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
 //        ugConfig.setPasswordEncoderName(GeoserverUserPBEPasswordEncoder.PrototypeName);
         ugConfig.setPasswordEncoderName(getDigestPasswordEncoder().getName());
         ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        getSecurityManager().saveUserGroupService(ugConfig,true);
+        getSecurityManager().saveUserGroupService(ugConfig);
 
         GeoServerUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
         service.initializeFromConfig(ugConfig);
@@ -53,7 +53,7 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         gaConfig.setFileName(XMLConstants.FILE_RR);
         gaConfig.setValidating(true);
         gaConfig.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
-        getSecurityManager().saveRoleService(gaConfig,isNewRoleService(serviceName));
+        getSecurityManager().saveRoleService(gaConfig/*,isNewRoleService(serviceName)*/);
 
         GeoServerRoleService service = 
             getSecurityManager().loadRoleService(serviceName);

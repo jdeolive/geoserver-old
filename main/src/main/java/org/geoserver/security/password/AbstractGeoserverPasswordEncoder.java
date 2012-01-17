@@ -6,14 +6,8 @@
 package org.geoserver.security.password;
 
 import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.Security;
 import java.util.logging.Logger;
-
-import javax.crypto.Cipher;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.geoserver.security.GeoServerUserGroupService;
@@ -31,7 +25,6 @@ import org.springframework.security.authentication.encoding.PasswordEncoder;
 public abstract class AbstractGeoserverPasswordEncoder implements GeoServerPasswordEncoder {
 
     static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
-    static protected Boolean StrongCryptographyAvailable = null;
 
     protected PasswordEncoder delegate = null;
     protected Object lock = new Object();
@@ -54,43 +47,7 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoServerPassw
     public void initializeFor(GeoServerUserGroupService service) throws IOException {
     }
 
-    /**
-     * Checks if strong encryption is available 
-     * by trying to encrypt with AES 256 Bit
-     * 
-     * @return
-     */
-    public static boolean isStrongCryptographyAvailable() {
-        if (StrongCryptographyAvailable!=null)
-            return StrongCryptographyAvailable;
-        
-        KeyGenerator kgen;
-        try {
-            kgen = KeyGenerator.getInstance("AES");
-            kgen.init(256);
-            SecretKey skey = kgen.generateKey();
-            byte[] raw = skey.getEncoded();
-            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
-            Cipher cipher = Cipher.getInstance("AES");
-
-            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-            cipher.doFinal("This is just an example".getBytes());            
-            StrongCryptographyAvailable = true;
-            LOGGER.info("Strong cryptograhpy is available");
-        } catch (InvalidKeyException e) {
-            StrongCryptographyAvailable = false; 
-            LOGGER.warning("Strong cryptograhpy is NOT available"+
-            "\nDownload and install of policy files recommended"+
-            "\nfrom http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html");
-        } catch (Exception ex) {
-            LOGGER.warning("Strong cryptograhpy is NOT available"+            
-            "\nUnexpected error: "+ex.getMessage());
-            StrongCryptographyAvailable =false; //should not happen
-        }
-        return StrongCryptographyAvailable;
-    }
-    
-    
+   
     public AbstractGeoserverPasswordEncoder() {
         setAvailableWithoutStrongCryptogaphy(true);
         Security.addProvider(new BouncyCastleProvider());

@@ -51,7 +51,7 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
         gaConfig.setFileName(xmlFileName);
         gaConfig.setValidating(true);
         gaConfig.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
-        getSecurityManager().saveRoleService(gaConfig,isNewRoleService(serviceName));
+        getSecurityManager().saveRoleService(gaConfig/*,isNewRoleService(serviceName)*/);
         return getSecurityManager().loadRoleService(serviceName);
     }
 

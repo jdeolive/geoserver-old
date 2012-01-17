@@ -13,8 +13,17 @@ package org.geoserver.security.config;
 public class BaseSecurityNamedServiceConfig implements SecurityNamedServiceConfig {
 
     private static final long serialVersionUID = 1L;
+    private String id;
     private String name;
     private String className;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     /**
      * @return the name of the service

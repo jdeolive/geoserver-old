@@ -65,6 +65,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
      */    
     public RoleServiceValidationWrapper(GeoServerRoleService service, boolean checkAgainstRules,
             GeoServerUserGroupService ...services) {
+        super(service.getSecurityManager());
         this.service=service;
         this.services=services;
         this.checkAgainstRules=checkAgainstRules;

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.security.GeoServerAuthenticationProvider;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.GeoServerUserGroupService;
@@ -60,8 +61,9 @@ public class XMLSecurityProvider extends GeoServerSecurityProvider {
      * @param config
      * @return
      */
-    public PasswordValidator createPasswordValidator(PasswordPolicyConfig config) {
-        return new PasswordValidatorImpl();
+    public PasswordValidator createPasswordValidator(PasswordPolicyConfig config, 
+        GeoServerSecurityManager securityManager) {
+        return new PasswordValidatorImpl(securityManager);
     }
 
     /**
@@ -110,8 +112,8 @@ public class XMLSecurityProvider extends GeoServerSecurityProvider {
     }
 
     @Override
-    public SecurityConfigValidator getConfigurationValidator() {
-        return new XMLSecurityConfigValidator(); 
+    public SecurityConfigValidator createConfigurationValidator(GeoServerSecurityManager securityManager) {
+        return new XMLSecurityConfigValidator(securityManager); 
      }
 
 }

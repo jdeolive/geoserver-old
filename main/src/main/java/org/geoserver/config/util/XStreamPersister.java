@@ -1301,7 +1301,7 @@ public class XStreamPersister {
         protected void doMarshal(Object source, HierarchicalStreamWriter writer,
                 MarshallingContext context) {
             GeoServerSecurityManager secMgr = getSecurityManager();
-            if (secMgr != null && secMgr.getConfigPasswordEncrypterName() != null) {
+            if (secMgr != null) {
                 //set the hint for the map converter as to which fields to encode in the connection
                 // parameter of this store
                 context.put(BreifMapConverter.ENCRYPTED_FIELDS_KEY, 

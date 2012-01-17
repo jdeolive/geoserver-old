@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.rmi.server.UID;
+import java.security.InvalidKeyException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,6 +26,11 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.io.FileUtils;
 import org.geoserver.catalog.Catalog;
@@ -127,9 +134,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
     /** the active role service */
     GeoServerRoleService activeRoleService;
-    
-    private boolean encryptingUrlParams;
-    private String configPasswordEncrypterName;
 
     /** configured authentication providers */
     List<GeoServerAuthenticationProvider> authProviders;
@@ -165,6 +169,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      */
     List<SecurityManagerListener> listeners = new ArrayList<SecurityManagerListener>();
     
+    /** cached flag determining is strong cryptography is available */
+    Boolean strongEncryptionAvaialble;
+
     //AuthProviderHelper authProviderHelper = new AuthProviderHelper();
 
     public GeoServerSecurityManager(GeoServerDataDirectory dataDir) throws Exception {
@@ -271,10 +278,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         
         // first, prepare the keystore providing needed key material
         KeyStoreProvider.get().reloadKeyStore();
-        
-        setConfigPasswordEncrypterName(config.getConfigPasswordEncrypterName());
-        setEncryptingUrlParams(config.isEncryptingUrlParams());
-
 
         //load the role authority and ensure it is properly configured
         String roleServiceName = config.getRoleServiceName();
@@ -558,16 +561,53 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     /**
+     * Determines if strong encryption is available.
+     * <p>
+     * This method does the determination by trying to encrypt a value with AES 256 Bit encryption.
+     * </p>
+     * 
+     * @return True if strong encryption avaialble, otherwise false.
+     */
+    public boolean isStrongEncryptionAvailable() {
+        if (strongEncryptionAvaialble!=null)
+            return strongEncryptionAvaialble;
+        
+        KeyGenerator kgen;
+        try {
+            kgen = KeyGenerator.getInstance("AES");
+            kgen.init(256);
+            SecretKey skey = kgen.generateKey();
+            byte[] raw = skey.getEncoded();
+            SecretKeySpec skeySpec = new SecretKeySpec(raw, "AES");
+            Cipher cipher = Cipher.getInstance("AES");
+
+            cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+            cipher.doFinal("This is just an example".getBytes());            
+            strongEncryptionAvaialble = true;
+            LOGGER.info("Strong cryptograhpy is available");
+        } catch (InvalidKeyException e) {
+            strongEncryptionAvaialble = false; 
+            LOGGER.warning("Strong cryptograhpy is NOT available"+
+            "\nDownload and install of policy files recommended"+
+            "\nfrom http://www.oracle.com/technetwork/java/javase/downloads/jce-6-download-429243.html");
+        } catch (Exception ex) {
+            LOGGER.log(Level.WARNING, "Strong cryptograhpy is NOT available, unexpected error", ex);
+            strongEncryptionAvaialble =false; //should not happen
+        }
+        return strongEncryptionAvaialble;
+    }
+
+    /**
      * Saves/persists a role service configuration.
      */
-    public void saveRoleService(SecurityRoleServiceConfig config, boolean isNew) 
+    public void saveRoleService(SecurityRoleServiceConfig config) 
             throws IOException,SecurityConfigException {
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
                         GeoServerRoleService.class,
                         config.getClassName());
 
-        if (isNew)
+        if (config.getId() == null)
             validator.validateAddRoleService(config);
         else
             validator.validateModifiedRoleService(config,
@@ -579,14 +619,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Saves/persists a password policy configuration.
      */
-    public void savePasswordPolicy(PasswordPolicyConfig config, boolean isNew) 
+    public void savePasswordPolicy(PasswordPolicyConfig config) 
             throws IOException,SecurityConfigException {
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
                         PasswordValidator.class,
                         config.getClassName());
 
-        if (isNew)
+        if (config.getId() == null)
             validator.validateAddPasswordPolicy(config);
         else 
             validator.validateModifiedPasswordPolicy(config,
@@ -683,13 +723,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     /**
      * Saves/persists a user group service configuration.
      */
-    public void saveUserGroupService(SecurityUserGroupServiceConfig config, boolean isNew) 
+    public void saveUserGroupService(SecurityUserGroupServiceConfig config) 
             throws IOException,SecurityConfigException {
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(
                         GeoServerUserGroupService.class,
                         config.getClassName());
-        if (isNew)
+
+        if (config.getId() == null)
             validator.validateAddUserGroupService(config);
         else 
             validator.validateModifiedUserGroupService(config,
@@ -743,12 +784,13 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     
-    public void saveAuthenticationProvider(SecurityAuthProviderConfig config, boolean isNew) 
+    public void saveAuthenticationProvider(SecurityAuthProviderConfig config) 
             throws IOException,SecurityConfigException {
         SecurityConfigValidator validator = 
                 SecurityConfigValidator.getConfigurationValiator(GeoServerAuthenticationProvider.class,
                         config.getClassName());
-        if (isNew)
+
+        if (config.getId() == null)
             validator.validateAddAuthProvider(config);
         else 
             validator.validateModifiedAuthProvider(config,
@@ -783,7 +825,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     }
 
     
-    public void saveFilter(SecurityNamedServiceConfig config, boolean isNew) 
+    public void saveFilter(SecurityNamedServiceConfig config) 
             throws IOException,SecurityConfigException {
         // TODO
 //        SecurityConfigValidator validator = 
@@ -842,7 +884,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      */
     public synchronized void saveSecurityConfig(SecurityManagerConfig config) throws Exception {
         
-        SecurityConfigValidator validator = new SecurityConfigValidator();
+        SecurityConfigValidator validator = new SecurityConfigValidator(this);
         validator.validateManagerConfig(config);
         //save the current config to fall back to                
         SecurityManagerConfig oldConfig = new SecurityManagerConfig(this.securityConfig);
@@ -923,7 +965,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             pwpconfig.setName(PasswordValidator.DEFAULT_NAME);
             pwpconfig.setClassName(PasswordValidatorImpl.class.getName());
             pwpconfig.setMinLength(0);
-            savePasswordPolicy(pwpconfig,true);
+            savePasswordPolicy(pwpconfig);
             validator = loadPasswordValidator(PasswordValidator.DEFAULT_NAME);    
         }
 
@@ -934,7 +976,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             pwpconfig.setName(PasswordValidator.MASTERPASSWORD_NAME);
             pwpconfig.setClassName(PasswordValidatorImpl.class.getName());
             pwpconfig.setMinLength(8);
-            savePasswordPolicy(pwpconfig,true);
+            savePasswordPolicy(pwpconfig);
             validator = loadPasswordValidator(PasswordValidator.MASTERPASSWORD_NAME);    
         }
                 
@@ -949,7 +991,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             ugConfig.setPasswordEncoderName(
                 loadPasswordEncoder(GeoServerPBEPasswordEncoder.class, null, false).getName());
             ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-            saveUserGroupService(ugConfig, true);
+            saveUserGroupService(ugConfig);
             userGroupService = loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
         }
 
@@ -965,7 +1007,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             gaConfig.setFileName(XMLConstants.FILE_RR);
             gaConfig.setValidating(true);
             gaConfig.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
-            saveRoleService(gaConfig,true);
+            saveRoleService(gaConfig);
             roleService = loadRoleService(XMLRoleService.DEFAULT_NAME);
         }
         
@@ -980,7 +1022,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             upAuthConfig.setClassName(UsernamePasswordAuthenticationProvider.class.getName());
             upAuthConfig.setUserGroupServiceName(userGroupService.getName());
 
-            saveAuthenticationProvider(upAuthConfig,true);
+            saveAuthenticationProvider(upAuthConfig);
             authProvider = loadAuthenticationProvider(GeoServerAuthenticationProvider.DEFAULT_NAME);
 
         }
@@ -1218,7 +1260,27 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             File dir = new File(getRoot(), config.getName());
             dir.mkdir();
 
-            saveConfigFile(config, dir, persister());
+            boolean isNew = config.getId() == null;
+            if (isNew) {
+                config.setId(newId());
+            }
+            try {
+                saveConfigFile(config, dir, persister());
+            }
+            catch(Exception e) {
+                //catch exception, if the config was new, clear out the id since it was not added
+                if (isNew) {
+                    config.setId(null);
+                }
+                if (e instanceof IOException) {
+                    throw (IOException)e;
+                }
+                throw new IOException(e);
+            }
+        }
+
+        String newId() {
+            return new UID().toString();
         }
 
         /**
@@ -1401,7 +1463,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                    continue;
                }
                if (p.getPasswordValidatorClass().getName().equals(config.getClassName())) {
-                   validator = p.createPasswordValidator(config);
+                   validator = p.createPasswordValidator(config, GeoServerSecurityManager.this);
                    break;
                }    
            }
@@ -1448,21 +1510,6 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         throw new RuntimeException("Should not reach thsi point");
     }
 
-    public boolean isEncryptingUrlParams() {
-        return encryptingUrlParams;
-    }
-
-    public void setEncryptingUrlParams(boolean encryptingUrlParams) {
-        this.encryptingUrlParams = encryptingUrlParams;
-    }
-
-    public String getConfigPasswordEncrypterName() {
-        return configPasswordEncrypterName;
-    }
-    public void setConfigPasswordEncrypterName(String configPasswordEncrypterName) {
-        this.configPasswordEncrypterName = configPasswordEncrypterName;
-    }
-
     /**
      * rewrites configuration files with encrypted fields. 
      * Candidates:
@@ -1472,7 +1519,8 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
      */
     public void updateConfigurationFilesWithEncryptedFields() throws IOException{
         // rewrite stores in catalog
-        LOGGER.info("Start encrypting configuration passwords using "+getConfigPasswordEncrypterName());
+        LOGGER.info("Start encrypting configuration passwords using " + 
+            getSecurityConfig().getConfigPasswordEncrypterName());
 
         Catalog catalog = getCatalog();
         List<StoreInfo> stores = catalog.getStores(StoreInfo.class);

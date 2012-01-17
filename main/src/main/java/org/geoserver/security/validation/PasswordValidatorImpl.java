@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.geoserver.platform.GeoServerExtensions;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
@@ -30,7 +31,8 @@ public class PasswordValidatorImpl extends AbstractSecurityValidator implements 
     /**
      * Calculates not allowed prefixes
      */
-    public PasswordValidatorImpl() {
+    public PasswordValidatorImpl(GeoServerSecurityManager securityManager) {
+        super(securityManager);
         notAllowedPrefixes = new HashSet<String>();
         for (GeoServerPasswordEncoder enc : GeoServerExtensions.extensions(
                 GeoServerPasswordEncoder.class)) {
