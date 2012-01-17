@@ -232,7 +232,7 @@ public class GeoServerDialog extends Panel {
             add(new ListView<IModel>("messages", Arrays.asList(messages)) {
                 @Override
                 protected void populateItem(ListItem<IModel> item) {
-                    item.add(new Label("message", item.getModelObject()));
+                    item.add(new Label("message", item.getModelObject()).setEscapeModelStrings(false));
                 }
             });
         }

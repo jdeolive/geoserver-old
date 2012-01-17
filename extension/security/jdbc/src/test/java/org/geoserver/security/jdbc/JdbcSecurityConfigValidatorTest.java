@@ -93,7 +93,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             configJNDI.setJndiName("");
-            getSecurityManager().saveRoleService(configJNDI, true);
+            getSecurityManager().saveRoleService(configJNDI);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_210,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -105,7 +105,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setDriverClassName("");
-            getSecurityManager().saveRoleService(config, true);
+            getSecurityManager().saveRoleService(config);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_200,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -118,7 +118,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setUserName("");
-            getSecurityManager().saveRoleService(config, true);                         
+            getSecurityManager().saveRoleService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_201,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -131,7 +131,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setConnectURL(null);
-            getSecurityManager().saveRoleService(config, true);                         
+            getSecurityManager().saveRoleService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_202,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -142,7 +142,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
         config.setConnectURL("jdbc:connect");
         try {            
-            getSecurityManager().saveRoleService(config, true);                         
+            getSecurityManager().saveRoleService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_203,ex.getErrorId());
             assertEquals("a.b.c",ex.getArgs()[0]);
@@ -253,7 +253,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             configJNDI.setJndiName("");
-            getSecurityManager().saveUserGroupService(configJNDI, true);                                     
+            getSecurityManager().saveUserGroupService(configJNDI);                                     
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_210,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -265,7 +265,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setDriverClassName("");
-            getSecurityManager().saveUserGroupService(config, true);                         
+            getSecurityManager().saveUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_200,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -278,7 +278,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setUserName("");
-            getSecurityManager().saveUserGroupService(config, true);                         
+            getSecurityManager().saveUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_201,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -291,7 +291,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setConnectURL(null);
-            getSecurityManager().saveUserGroupService(config, true);                         
+            getSecurityManager().saveUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_202,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -302,7 +302,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
         config.setConnectURL("jdbc:connect");
         try {            
-            getSecurityManager().saveUserGroupService(config, true);                         
+            getSecurityManager().saveUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_203,ex.getErrorId());
             assertEquals("a.b.c",ex.getArgs()[0]);

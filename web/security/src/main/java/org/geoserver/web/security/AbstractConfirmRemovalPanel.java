@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
-import org.apache.wicket.markup.html.basic.MultiLineLabel;
+import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.list.ListItem;
+import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
@@ -50,10 +52,15 @@ public abstract class AbstractConfirmRemovalPanel<T> extends Panel {
         removed.add(rulesRemoved);        
         if (roots.size() == 0)
             removed.setVisible(false);
-        else
-            rulesRemoved.add(new MultiLineLabel("rules", names(roots)));
+        else {
+            rulesRemoved.add(new ListView<String>("rules", names(roots)) {
+                @Override
+                protected void populateItem(ListItem<String> item) {
+                    item.add(new Label("name", item.getModelObject()));
+                }
+            });
+        }
 
-        
         WebMarkupContainer problematic = new WebMarkupContainer("problematicObjects");
         add(problematic);
 
@@ -61,8 +68,14 @@ public abstract class AbstractConfirmRemovalPanel<T> extends Panel {
         problematic.add(rulesNotRemoved);
         if (problems.size()==0)
             problematic.setVisible(false);
-        else
-            rulesNotRemoved.add(new MultiLineLabel("problems", problemsString(problems)));
+        else {
+            rulesNotRemoved.add(new ListView<String>("problems", problems(problems)) {
+                @Override
+                protected void populateItem(ListItem<String> item) {
+                    item.add(new Label("name", item.getModelObject()));
+                }
+            });
+        }
     }
 
     void setRootObjectsAndProblems(List<T> rootObjects) {
@@ -78,26 +91,20 @@ public abstract class AbstractConfirmRemovalPanel<T> extends Panel {
                 
     }
 
-    String problemsString(List<StringResourceModel> objects) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < objects.size(); i++) {            
-            sb.append(objects.get(i).getObject());
-            if (i < (objects.size() - 1))
-                sb.append("\n");
+    List<String> problems(List<StringResourceModel> objects) {
+        List<String> l = new ArrayList<String>();
+        for (StringResourceModel m : objects) {
+            l.add(m.getObject());
         }
-        return sb.toString();
+        return l;
     }
 
-    
-    String names(List<T> objects) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < objects.size(); i++) {
-            sb.append(name(objects.get(i)));
-            if (i < (objects.size() - 1))
-                //sb.append(", ");
-                sb.append("\n");
+    List<String> names(List<T> objects) {
+        List<String> l = new ArrayList<String>();
+        for (T obj : objects) {
+            l.add(name(obj));
         }
-        return sb.toString();
+        return l;
     }
 
     String name(T object) {

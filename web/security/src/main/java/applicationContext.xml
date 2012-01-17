@@ -15,6 +15,15 @@
 	<bean id="defaultDetailsPanelProvider" class="org.geoserver.web.security.config.details.NamedConfigDetailsPanelProviderImpl">
 	</bean>
 	
+	<bean id="securitySettingsPage" class="org.geoserver.web.MenuPageInfo">
+        <property name="id" value="security.settings" />
+        <property name="titleKey" value="security.settings.title" />
+        <property name="descriptionKey" value="security.settings.description" />
+        <property name="componentClass" value="org.geoserver.security.web.SecuritySettingsPage" />
+        <property name="icon" value="../../web/img/icons/silk/wrench.png" />
+        <property name="category" ref="securityCategory" />
+        <property name="order" value="90" />
+    </bean>
 
 	<bean id="globalSecurityPage" class="org.geoserver.web.MenuPageInfo">
 		<property name="id" value="security.global" />
@@ -23,17 +32,37 @@
 		<property name="componentClass" value="org.geoserver.web.security.config.GlobalTabbedPage" />
 		<property name="icon" value="../../img/icons/silk/server.png" />
 		<property name="category" ref="securityCategory" />
-		<property name="order" value="90" />
+		<property name="order" value="900" />
 	</bean>
 	
-	<bean id="userGroupRolePage" class="org.geoserver.web.MenuPageInfo">
+	<bean id="authPage" class="org.geoserver.web.MenuPageInfo">
+        <property name="id" value="security.auth" />
+        <property name="titleKey" value="security.auth.title" />
+        <property name="descriptionKey" value="security.auth.description" />
+        <property name="componentClass" value="org.geoserver.security.web.auth.AuthenticationPage" />
+        <property name="icon" value="../../../web/img/icons/silk/lock.png" />
+        <property name="category" ref="securityCategory" />
+        <property name="order" value="100" />
+	</bean>
+
+    <bean id="userGroupRolePage" class="org.geoserver.web.MenuPageInfo">
+        <property name="id" value="security.userGroupRole" />
+        <property name="titleKey" value="security.userGroupRole.title" />
+        <property name="descriptionKey" value="security.userGroupRole.description" />
+        <property name="componentClass" value="org.geoserver.security.web.UserGroupRoleServicesPage" />
+        <property name="icon" value="../../web/img/icons/silk/group.png" />
+        <property name="category" ref="securityCategory"/>
+        <property name="order" value="110" />
+    </bean>
+    
+    <bean id="securityServicesTabbedPage" class="org.geoserver.web.MenuPageInfo">
 		<property name="id" value="security.ugservices" />
 		<property name="titleKey" value="security.ugservices.title" />
 		<property name="descriptionKey" value="security.ugservices.description" />
 		<property name="componentClass" value="org.geoserver.web.security.config.SecurityServicesTabbedPage" />
 		<property name="icon" value="../../img/icons/silk/group.png" />
 		<property name="category" ref="securityCategory"/>
-		<property name="order" value="95" />
+		<property name="order" value="910" />
 	</bean>
 	
 	
@@ -65,5 +94,36 @@
 		<property name="category" ref="securityCategory" />
 		<property name="order" value="300" />
 	</bean>
-	
+
+    <!-- password policy panel infos -->
+    <bean id="passwordPolicyPanelInfo" class="org.geoserver.security.web.passwd.PasswordPolicyPanelInfo">
+        <property name="id" value="security.passwordPolicy" />
+        <property name="shortTitleKey" value="PasswordPolicyPanel.short"/>
+        <property name="titleKey" value="PasswordPolicyPanel.title"/>
+        <property name="descriptionKey" value="PasswordPolicyPanel.description"/>
+    </bean>
+    
+    <!-- auth provider panel infos -->
+    <bean id="usernamePasswordAuthPanelInfo" class="org.geoserver.security.web.auth.UsernamePasswordAuthProviderPanelInfo">
+        <property name="id" value="security.usernamePasswordAuthProvider" />
+        <property name="shortTitleKey" value="UsernamePasswordAuthProviderPanel.short"/>
+        <property name="titleKey" value="UsernamePasswordAuthProviderPanel.title"/>
+        <property name="descriptionKey" value="UsernamePasswordAuthProviderPanel.description"/>
+    </bean>
+
+    <!-- user group service panel infos -->
+    <bean id="xmlUserGroupServicePanelInfo" class="org.geoserver.security.web.usergroup.XMLUserGroupServicePanelInfo">
+        <property name="id" value="security.xmlUserGroupService" />
+        <property name="shortTitleKey" value="XMLUserGroupServicePanel.short"/>
+        <property name="titleKey" value="XMLUserGroupServicePanel.title"/>
+        <property name="descriptionKey" value="XMLUserGroupServicePanel.description"/>
+    </bean>
+
+    <!-- role service panel infos -->
+    <bean id="xmlRoleServicePanelInfo" class="org.geoserver.security.web.role.XMLRoleServicePanelInfo">
+        <property name="id" value="security.xmlRoleService" />
+        <property name="shortTitleKey" value="XMLRoleServicePanel.short"/>
+        <property name="titleKey" value="XMLRoleServicePanel.title"/>
+        <property name="descriptionKey" value="XMLRoleServicePanel.description"/>
+    </bean>
 </beans> 

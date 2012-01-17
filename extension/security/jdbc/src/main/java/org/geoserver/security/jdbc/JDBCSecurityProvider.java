@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.GeoServerUserGroupService;
@@ -69,8 +70,8 @@ public class JDBCSecurityProvider extends GeoServerSecurityProvider {
     }
 
     @Override
-    public SecurityConfigValidator getConfigurationValidator() {
-        return new JdbcSecurityConfigValidator(); 
+    public SecurityConfigValidator createConfigurationValidator(GeoServerSecurityManager securityManager) {
+        return new JdbcSecurityConfigValidator(securityManager); 
      }
 
     @Override

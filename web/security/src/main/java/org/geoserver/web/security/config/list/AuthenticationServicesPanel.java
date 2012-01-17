@@ -39,8 +39,8 @@ public class AuthenticationServicesPanel extends NamedServicesPanel {
             Component comp = super.getComponentForProperty(id, itemModel, property);
             if (comp!=null) return comp;
             if (property == AuthProviderListProvider.USERGROUPSERVICENAME) {
-                Object ug = property.getModel(itemModel).getObject();
-                return new Label(id,ug==null ? "" : ug.toString());
+                Object obj = property.getModel(itemModel).getObject();
+                return new Label(id, obj != null ? obj.toString() : null);
             }
 
             throw new RuntimeException("Unknow propterty: "+property.getName());
