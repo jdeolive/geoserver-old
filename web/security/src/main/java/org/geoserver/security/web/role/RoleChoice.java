@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.role;
 
 import java.io.IOException;
@@ -12,6 +16,12 @@ import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.web.GeoServerApplication;
 
+/**
+ * Choice widget for roles from a specific role service configuration.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ *
+ */
 public class RoleChoice extends DropDownChoice<String> {
 
     public RoleChoice(String id, IModel<? extends SecurityRoleServiceConfig> configModel) {

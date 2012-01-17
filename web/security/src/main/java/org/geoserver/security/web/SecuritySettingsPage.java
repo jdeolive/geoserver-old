@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -20,6 +24,11 @@ import org.geoserver.web.GeoServerHomePage;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.HelpLink;
 
+/**
+ * Main menu page for global security settings page.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ */
 public class SecuritySettingsPage extends AbstractSecurityPage {
 
     public SecuritySettingsPage() {

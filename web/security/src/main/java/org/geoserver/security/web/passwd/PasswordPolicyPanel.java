@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.passwd;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
@@ -10,6 +14,12 @@ import org.apache.wicket.model.Model;
 import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.web.SecurityNamedServicePanel;
 
+/**
+ * Configuration panel for {@link PasswordPolicy}.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ *
+ */
 public class PasswordPolicyPanel extends SecurityNamedServicePanel<PasswordPolicyConfig> {
 
     MaxLengthPanel maxLengthPanel;

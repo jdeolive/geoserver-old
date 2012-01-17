@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.role;
 
 import java.io.IOException;
@@ -5,11 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.geoserver.security.config.SecurityRoleServiceConfig;
-import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.web.SecurityNamedServiceProvider;
-import org.geoserver.web.wicket.GeoServerDataProvider.BeanProperty;
-import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 
+/**
+ * Data provider for role service configurations.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ *
+ */
 public class RoleServiceProvider extends SecurityNamedServiceProvider<SecurityRoleServiceConfig> {
 
     public static final Property<SecurityRoleServiceConfig> ADMIN_ROLE = 

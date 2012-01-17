@@ -26,6 +26,16 @@ import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.GeoServerApplication;
 
+/**
+ * Edit page for specific class of named security service.
+ * <p>
+ *  Most of the work is delegated to {@link SecurityNamedServicePanelInfo} and 
+ *   {@link SecurityNamedServicePanel}. 
+ * </p>
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ * 
+ */
 public class SecurityNamedServiceEditPage<T extends SecurityNamedServiceConfig> 
     extends SecurityNamedServicePage<T> {
 

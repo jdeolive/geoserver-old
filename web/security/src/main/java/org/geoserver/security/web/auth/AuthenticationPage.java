@@ -1,22 +1,26 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.auth;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
 import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
-import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.PropertyModel;
 import org.geoserver.security.config.SecurityManagerConfig;
-import org.geoserver.security.web.SecurityManagerConfigModel;
-import org.geoserver.web.GeoServerHomePage;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.HelpLink;
 
+/**
+ * Main menu page for authentication.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ */
 public class AuthenticationPage extends AbstractSecurityPage {
 
     public AuthenticationPage() {

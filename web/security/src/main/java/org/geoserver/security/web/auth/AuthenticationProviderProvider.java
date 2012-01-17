@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.auth;
 
 import java.io.IOException;
@@ -7,6 +11,12 @@ import java.util.List;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.web.SecurityNamedServiceProvider;
 
+/**
+ * Data provider for authentication provider configurations.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ *
+ */
 public class AuthenticationProviderProvider 
     extends SecurityNamedServiceProvider<SecurityAuthProviderConfig> {
 

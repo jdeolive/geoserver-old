@@ -1,10 +1,12 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.role;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
 import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.markup.html.panel.Panel;
@@ -13,9 +15,7 @@ import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.web.SecurityNamedServicePanel;
 import org.geoserver.security.web.SecurityNamedServiceTabbedPanel;
-import org.geoserver.web.security.group.GroupPanel;
 import org.geoserver.web.security.role.RolePanel;
-import org.geoserver.web.security.user.UserPanel;
 
 /**
  * Base class for role service panels.

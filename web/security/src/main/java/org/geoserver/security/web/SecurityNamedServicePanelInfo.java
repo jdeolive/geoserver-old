@@ -1,8 +1,20 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web;
 
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.ComponentInfo;
 
+/**
+ * Extension point for configuration panels for named security service classes.
+ *  
+ * @author Justin Deoliveira, OpenGeo
+ *
+ * @param <C> The configuration class.
+ * @param <T> The configuration panel class.
+ */
 public class SecurityNamedServicePanelInfo
     <C extends SecurityNamedServiceConfig, T extends SecurityNamedServicePanel<C>> 
     extends ComponentInfo<T> {

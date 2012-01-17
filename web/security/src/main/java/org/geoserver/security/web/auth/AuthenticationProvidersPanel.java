@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.auth;
 
 import org.geoserver.security.GeoServerAuthenticationProvider;
@@ -7,6 +11,11 @@ import org.geoserver.security.validation.SecurityConfigValidator;
 import org.geoserver.security.web.SecurityNamedServicesPanel;
 import org.springframework.security.authentication.AuthenticationProvider;
 
+/**
+ * Panel for providing list of authentication provider configurations.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ */
 public class AuthenticationProvidersPanel extends SecurityNamedServicesPanel<SecurityAuthProviderConfig> {
 
     public AuthenticationProvidersPanel(String id) {
