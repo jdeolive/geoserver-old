@@ -105,7 +105,7 @@ public class GeoserverPasswordEncoderTest extends GeoServerSecurityTestSupport {
     protected List<String> getConfigPBEEncoderNames() {
         List<String> result = new ArrayList<String>();
         result.add(getPBEPasswordEncoder().getName());
-        if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()) {
+        if (getSecurityManager().isStrongEncryptionAvailable()) {
             result.add(getStrongPBEPasswordEncoder().getName());
         } else {
             LOGGER.warning("Skipping strong encryption tests for configuration passwords");
@@ -119,7 +119,7 @@ public class GeoserverPasswordEncoderTest extends GeoServerSecurityTestSupport {
         //assertTrue("masterpw".equals(MasterPasswordProviderImpl.get().getMasterPassword()));
         
         System.out.println("Strong cryptography enabled: " +
-                AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable());
+            getSecurityManager().isStrongEncryptionAvailable());
 
         
 
@@ -149,7 +149,7 @@ public class GeoserverPasswordEncoderTest extends GeoServerSecurityTestSupport {
     protected List<GeoServerPBEPasswordEncoder> getPBEEncoders() {
         List<GeoServerPBEPasswordEncoder> result = new ArrayList<GeoServerPBEPasswordEncoder>();
         result.add(getPBEPasswordEncoder());
-        if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()) {
+        if (getSecurityManager().isStrongEncryptionAvailable()) {
             result.add(getStrongPBEPasswordEncoder());
         } else {
             LOGGER.warning("Skipping strong encryption tests for user passwords");

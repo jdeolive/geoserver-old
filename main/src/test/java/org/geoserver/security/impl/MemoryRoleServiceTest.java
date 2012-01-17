@@ -61,7 +61,7 @@ public class MemoryRoleServiceTest extends AbstractRoleServiceTest {
         GeoServerSecurityManager manager = GeoServerExtensions.bean(GeoServerSecurityManager.class);
         service.setSecurityManager(manager);
         manager.setActiveRoleService(service);
-        manager.saveRoleService(config, true);
+        manager.saveRoleService(config);
         GeoServerRoleStore store = service.createStore();
         GeoServerRole adminRole = store.createRoleObject("adminRole");
         GeoServerRole role1 = store.createRoleObject("role1");

@@ -14,7 +14,7 @@ public class PasswordValidatorTest extends AbstractSecurityServiceTest {
     protected void setUpInternal() throws Exception {
         super.setUpInternal();
         config = new PasswordPolicyConfig();
-        validator = new PasswordValidatorImpl();
+        validator = new PasswordValidatorImpl(getSecurityManager());
         validator.setConfig(config);
         
     }

@@ -46,7 +46,7 @@ public class GeoServerCustomFilterTest extends GeoServerSecurityTestSupport {
         config.setName("custom");
         config.setClassName(Filter.class.getName());
         config.setAssertAuth(assertSecurityContext);        
-        secMgr.saveFilter(config,true);
+        secMgr.saveFilter(config);
 
         SecurityManagerConfig mgrConfig = secMgr.getSecurityConfig();
         mgrConfig.setConfigPasswordEncrypterName(getPlainTextPasswordEncoder().getName());

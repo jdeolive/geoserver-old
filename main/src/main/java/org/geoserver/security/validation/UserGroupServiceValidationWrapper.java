@@ -51,6 +51,7 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
      * @param service
      */    
     public UserGroupServiceValidationWrapper(GeoServerUserGroupService service) {
+        super(service.getSecurityManager());
         this.service=service;
     }
 

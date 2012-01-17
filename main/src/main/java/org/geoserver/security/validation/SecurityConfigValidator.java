@@ -11,7 +11,9 @@ import static org.geoserver.security.validation.SecurityConfigValidationErrors.*
 import java.io.IOException;
 import java.util.SortedSet;
 
+import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerAuthenticationProvider;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoServerAuthenticationProcessingFilter;
 import org.geoserver.security.GeoServerRoleService;
@@ -26,12 +28,15 @@ import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.security.authentication.AuthenticationProvider;
 
 
 public class SecurityConfigValidator extends AbstractSecurityValidator{
 
+    public SecurityConfigValidator(GeoServerSecurityManager securityManager) {
+        super(securityManager);
+    }
 
-    
     /**
      * Get the proper {@link SecurityConfigValidator} object
      * 
@@ -41,7 +46,8 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
      */
     static public SecurityConfigValidator getConfigurationValiator(Class <?> serviceClass, String className) {
         GeoServerSecurityProvider prov = GeoServerSecurityProvider.getProvider(serviceClass, className);
-        return prov.getConfigurationValidator();
+        //TODO: remove the call to extensions, have teh security manager be passed in
+        return prov.createConfigurationValidator(GeoServerExtensions.bean(GeoServerSecurityManager.class));
     }
     
     
@@ -72,9 +78,10 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
             throw createSecurityException(SEC_ERR_01, encrypterName);
         }
 
-        if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false) {
-            if (encoder!=null && encoder.isAvailableWithoutStrongCryptogaphy()==false)                
+        if (!manager.isStrongEncryptionAvailable()) {
+            if (encoder!=null && encoder.isAvailableWithoutStrongCryptogaphy()==false) {
                 throw createSecurityException(SEC_ERR_05);
+            }
         }
         
         String roleServiceName = config.getRoleServiceName();
@@ -131,6 +138,8 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
                 return manager.listRoleServices();
             if (extensionPoint==GeoServerAuthenticationProvider.class)
                 return manager.listAuthenticationProviders();
+            if (extensionPoint==AuthenticationProvider.class)
+                return manager.listAuthenticationProviders();
             if (extensionPoint==GeoServerAuthenticationProcessingFilter.class)
                 return manager.listFilters();
             if (extensionPoint==PasswordValidator.class)
@@ -181,7 +190,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     
     
     public void validateAddAuthProvider(SecurityAuthProviderConfig config) throws SecurityConfigException{
-        validateAddNamedService(GeoServerAuthenticationProvider.class, config);
+        validateAddNamedService(AuthenticationProvider.class, config);
         validate(config);
     }
 
@@ -301,9 +310,10 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
             throw createSecurityException(SEC_ERR_32, config.getName());
         }
         
-        if (AbstractGeoserverPasswordEncoder.isStrongCryptographyAvailable()==false) {
-            if (encoder!=null && encoder.isAvailableWithoutStrongCryptogaphy()==false)
+        if (!manager.isStrongEncryptionAvailable()) {
+            if (encoder!=null && encoder.isAvailableWithoutStrongCryptogaphy()==false) {
                 throw createSecurityException(SEC_ERR_06);
+            }
         }
         
         String policyName= config.getPasswordPolicyName();

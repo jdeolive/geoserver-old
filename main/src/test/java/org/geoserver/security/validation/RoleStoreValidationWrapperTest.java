@@ -35,7 +35,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         GeoServerRoleService service = new MemoryRoleService();
         service.initializeFromConfig(config);
         service.setSecurityManager(GeoServerExtensions.bean(GeoServerSecurityManager.class));
-        getSecurityManager().saveRoleService(config, true);
+        getSecurityManager().saveRoleService(config);
         return new RoleStoreValidationWrapper(service.createStore(), services);
     }
 

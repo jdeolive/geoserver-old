@@ -13,6 +13,19 @@ package org.geoserver.security.config;
 public interface SecurityNamedServiceConfig extends SecurityConfig {
 
     /**
+     * Internal id of the config object. 
+     * <p>
+     * This method should be used by client code.
+     * </p>
+     */
+    String getId();
+
+    /**
+     * Sets internal id of the config object.
+     */
+    void setId(String newId);
+
+    /**
      * The name of the service.
      */
     String getName();
@@ -31,4 +44,5 @@ public interface SecurityNamedServiceConfig extends SecurityConfig {
      * Sets name of class for implementation of the service.
      */
     void setClassName(String className);
+
 }

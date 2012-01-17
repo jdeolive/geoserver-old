@@ -2,9 +2,7 @@
  * This code is licensed under the GPL 2.0 license, available at the root
  * application directory.
  */
-
 package org.geoserver.security.validation;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -17,24 +15,20 @@ public abstract class AbstractSecurityValidator {
 
     protected GeoServerSecurityManager manager;
 
-        
-    public AbstractSecurityValidator() {
-        manager=GeoServerExtensions.bean(GeoServerSecurityManager.class);
+    public AbstractSecurityValidator(GeoServerSecurityManager securityManager) {
+        this.manager = securityManager;
     }
-    
-       
+
     protected boolean isNotEmpty(String aString) {
         return aString !=null && aString.length()> 0;
     }
 
-    
     /**
      * Subclasses must override  
      * 
      * @return
      */
     protected abstract AbstractSecurityValidationErrors getSecurityErrors();
-
 
     /**
      * Gets the temp directory, null if not found or not
@@ -87,6 +81,5 @@ public abstract class AbstractSecurityValidator {
             return false;
         }
     }
-    
     
 }

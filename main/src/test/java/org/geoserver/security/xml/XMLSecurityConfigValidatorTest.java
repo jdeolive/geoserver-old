@@ -69,7 +69,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         try {
             config.setName("default2");
             config.setCheckInterval(-1l);
-            getSecurityManager().saveRoleService(config, true);                                     
+            getSecurityManager().saveRoleService(config);                                     
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_100,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -84,7 +84,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         try {
             config.setName(XMLRoleService.DEFAULT_NAME);
             config.setCheckInterval(999l);
-            getSecurityManager().saveRoleService(config, false);                         
+            getSecurityManager().saveRoleService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_100,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -99,7 +99,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
                 getRoleConfig("test1",XMLRoleService.class,GeoServerRole.ADMIN_ROLE.getAuthority(),"test1.xml");
         
         try {
-            getSecurityManager().saveRoleService(xmlConfig, true);
+            getSecurityManager().saveRoleService(xmlConfig);
             getSecurityManager().removeRoleService(xmlConfig);
         } catch (SecurityConfigException ex) {
             Assert.fail("Should work");
@@ -109,7 +109,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         xmlConfig = (XMLRoleServiceConfig) 
                 getRoleConfig("test2",XMLRoleService.class,GeoServerRole.ADMIN_ROLE.getAuthority(),"test2.xml");
         try {
-            getSecurityManager().saveRoleService(xmlConfig, true);
+            getSecurityManager().saveRoleService(xmlConfig);
             GeoServerRoleStore store = getSecurityManager().loadRoleService("test2").createStore();
             store.addRole(GeoServerRole.ADMIN_ROLE);
             store.store();
@@ -125,7 +125,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
                 getRoleConfig("test3",XMLRoleService.class,GeoServerRole.ADMIN_ROLE.getAuthority(),                        
                         new File(getSecurityManager().getRoleRoot(),"test3.xml").getAbsolutePath());
         try {
-            getSecurityManager().saveRoleService(xmlConfig, true);
+            getSecurityManager().saveRoleService(xmlConfig);
             GeoServerRoleStore store = getSecurityManager().loadRoleService("test3").createStore();
             store.addRole(GeoServerRole.ADMIN_ROLE);
             store.store();
@@ -135,7 +135,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         }
 
         // run only if a temp dir is availbale
-        if (new XMLSecurityConfigValidator().getTempDir()!=null) {
+        if (new XMLSecurityConfigValidator(getSecurityManager()).getTempDir()!=null) {
             String invalidPath="abc"+File.separator+"def.xml";
             xmlConfig = (XMLRoleServiceConfig) 
                     getRoleConfig("test4",XMLRoleService.class,GeoServerRole.ADMIN_ROLE.getAuthority(),                        
@@ -143,7 +143,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
             
             fail=false;
             try {
-                getSecurityManager().saveRoleService(xmlConfig, true);
+                getSecurityManager().saveRoleService(xmlConfig);
             } catch (SecurityConfigException ex) {
                 assertEquals(SEC_ERR_101, ex.getErrorId());
                 assertEquals(invalidPath, ex.getArgs()[0]);
@@ -157,9 +157,9 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
                         "testModify.xml");
 
         try {
-            getSecurityManager().saveRoleService(xmlConfig, true);
+            getSecurityManager().saveRoleService(xmlConfig);
             xmlConfig.setValidating(true);
-            getSecurityManager().saveRoleService(xmlConfig, false);
+            getSecurityManager().saveRoleService(xmlConfig);
         } catch (SecurityConfigException ex) {
             Assert.fail("Should work");
         }
@@ -167,7 +167,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         fail=false;
         try {
             xmlConfig.setFileName("xyz.xml");
-            getSecurityManager().saveRoleService(xmlConfig, false);
+            getSecurityManager().saveRoleService(xmlConfig);
         } catch (SecurityConfigException ex) {
             assertEquals(SEC_ERR_105, ex.getErrorId());
             assertEquals("testModify.xml", ex.getArgs()[0]);
@@ -192,7 +192,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         try {
             config.setName("default2");
             config.setCheckInterval(-1l);
-            getSecurityManager().saveUserGroupService(config, true);                         
+            getSecurityManager().saveUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_100,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -205,7 +205,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         try {
             config.setName(XMLUserGroupService.DEFAULT_NAME);
             config.setCheckInterval(999l);
-            getSecurityManager().saveUserGroupService(config, false);                         
+            getSecurityManager().saveUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_100,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -223,7 +223,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         GeoServerUserGroup group=new GeoServerUserGroup("testgroup");
         
         try {
-            getSecurityManager().saveUserGroupService(xmlConfig, true);
+            getSecurityManager().saveUserGroupService(xmlConfig);
             getSecurityManager().removeUserGroupService(xmlConfig);
         } catch (SecurityConfigException ex) {
             Assert.fail("Should work");
@@ -236,7 +236,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
                 getUGConfig("test2", XMLUserGroupService.class, 
                 getPlainTextPasswordEncoder().getName(),PasswordValidator.DEFAULT_NAME,"test2.xml");
         try {
-            getSecurityManager().saveUserGroupService(xmlConfig, true);
+            getSecurityManager().saveUserGroupService(xmlConfig);
             GeoServerUserGroupStore store = getSecurityManager().loadUserGroupService("test2").createStore();
             store.addGroup(group);
             store.store();
@@ -254,7 +254,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
                 new File(getSecurityManager().getUserGroupRoot(),"test3.xml").getAbsolutePath());
 
         try {
-            getSecurityManager().saveUserGroupService(xmlConfig, true);
+            getSecurityManager().saveUserGroupService(xmlConfig);
             GeoServerUserGroupStore store = getSecurityManager().loadUserGroupService("test3").createStore();
             store.addGroup(group);
             store.store();
@@ -264,7 +264,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         }
 
         // run only if a temp dir is availbale
-        if (new XMLSecurityConfigValidator().getTempDir()!=null) {
+        if (new XMLSecurityConfigValidator(getSecurityManager()).getTempDir()!=null) {
             String invalidPath="abc"+File.separator+"def.xml";
             xmlConfig = (XMLUserGroupServiceConfig) 
                     getUGConfig("test4", XMLUserGroupService.class, 
@@ -273,7 +273,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
             
             fail=false;
             try {
-                getSecurityManager().saveUserGroupService(xmlConfig, true);
+                getSecurityManager().saveUserGroupService(xmlConfig);
             } catch (SecurityConfigException ex) {
                 assertEquals(SEC_ERR_101, ex.getErrorId());
                 assertEquals(invalidPath, ex.getArgs()[0]);
@@ -288,7 +288,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
                 getPlainTextPasswordEncoder().getName(),PasswordValidator.DEFAULT_NAME,
                 "abc.xml");
         try {
-            getSecurityManager().saveUserGroupService(xmlConfig, true);
+            getSecurityManager().saveUserGroupService(xmlConfig);
         } catch (SecurityConfigException ex) {
             Assert.fail("Should work");
         }
@@ -297,7 +297,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         fail=false;
         try {
             xmlConfig.setFileName("");
-            getSecurityManager().saveUserGroupService(xmlConfig, false);
+            getSecurityManager().saveUserGroupService(xmlConfig);
         } catch (SecurityConfigException ex) {
             assertEquals(SEC_ERR_104, ex.getErrorId());
             assertEquals(0, ex.getArgs().length);
@@ -310,9 +310,9 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
                 getUGConfig("testModify", XMLUserGroupService.class, 
                 getPlainTextPasswordEncoder().getName(),PasswordValidator.DEFAULT_NAME,"testModify.xml");
         try {
-            getSecurityManager().saveUserGroupService(xmlConfig, true);
+            getSecurityManager().saveUserGroupService(xmlConfig);
             xmlConfig.setValidating(true);
-            getSecurityManager().saveUserGroupService(xmlConfig, false);
+            getSecurityManager().saveUserGroupService(xmlConfig);
         } catch (SecurityConfigException ex) {
             Assert.fail("Should work");
         }
@@ -320,7 +320,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         fail=false;
         try {
             xmlConfig.setFileName("xyz.xml");
-            getSecurityManager().saveUserGroupService(xmlConfig, false);
+            getSecurityManager().saveUserGroupService(xmlConfig);
         } catch (SecurityConfigException ex) {
             assertEquals(SEC_ERR_105, ex.getErrorId());
             assertEquals("testModify.xml", ex.getArgs()[0]);

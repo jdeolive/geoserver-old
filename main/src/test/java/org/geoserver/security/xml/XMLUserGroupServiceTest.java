@@ -54,7 +54,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
         ugConfig.setValidating(true);
         ugConfig.setPasswordEncoderName(getDigestPasswordEncoder().getName());
         ugConfig.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
-        getSecurityManager().saveUserGroupService(ugConfig,isNewUGService(serviceName));
+        getSecurityManager().saveUserGroupService(ugConfig/*,isNewUGService(serviceName)*/);
         
         GeoServerUserGroupService service = getSecurityManager().loadUserGroupService(serviceName);
         service.initializeFromConfig(ugConfig); // create files

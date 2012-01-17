@@ -41,7 +41,7 @@ public class GeoServerCustomAuthTest extends GeoServerSecurityTestSupport {
                 new UsernamePasswordAuthenticationProviderConfig();
         config.setName("custom");
         config.setClassName(AuthProvider.class.getName());
-        secMgr.saveAuthenticationProvider(config,true);
+        secMgr.saveAuthenticationProvider(config);
         
 
         SecurityManagerConfig mgrConfig = secMgr.getSecurityConfig();

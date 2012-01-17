@@ -244,7 +244,8 @@ public abstract class GeoServerSecurityProvider {
      * @param config
      * @return
      */
-    public PasswordValidator createPasswordValidator(PasswordPolicyConfig config) {
+    public PasswordValidator createPasswordValidator(PasswordPolicyConfig config, 
+            GeoServerSecurityManager securityManager) {
         return null;
     }
     
@@ -284,7 +285,7 @@ public abstract class GeoServerSecurityProvider {
      * subclass of {@link SecurityConfigValidator}
      * @return
      */
-    public SecurityConfigValidator getConfigurationValidator() {
-       return new SecurityConfigValidator(); 
+    public SecurityConfigValidator createConfigurationValidator(GeoServerSecurityManager securityManager) {
+       return new SecurityConfigValidator(securityManager); 
     }
 }

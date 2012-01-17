@@ -8,6 +8,7 @@ package org.geoserver.security.xml;
 import java.io.File;
 import java.io.IOException;
 
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
@@ -24,6 +25,10 @@ import org.geoserver.security.validation.SecurityConfigValidator;
  *
  */
 public class XMLSecurityConfigValidator extends SecurityConfigValidator {
+
+    public XMLSecurityConfigValidator(GeoServerSecurityManager securityManager) {
+        super(securityManager);
+    }
 
     @Override
     public void validate(SecurityRoleServiceConfig config) throws SecurityConfigException {

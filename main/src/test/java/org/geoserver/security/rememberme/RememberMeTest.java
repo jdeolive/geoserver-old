@@ -42,7 +42,7 @@ public class RememberMeTest extends GeoServerTestSupport {
         filterCfg.setClassName(AuthCapturingFilter.class.getName());
 
         GeoServerSecurityManager secMgr = getSecurityManager();
-        secMgr.saveFilter(filterCfg, true);
+        secMgr.saveFilter(filterCfg);
 
         SecurityManagerConfig cfg = secMgr.getSecurityConfig();
         cfg.getFilterChain().put("/web/**", Arrays.asList(

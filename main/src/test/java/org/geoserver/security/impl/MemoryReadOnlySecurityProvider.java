@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.geoserver.config.util.XStreamPersister;
 import org.geoserver.security.GeoServerAuthenticationProvider;
+import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.GeoServerUserGroupService;
@@ -66,8 +67,8 @@ public class MemoryReadOnlySecurityProvider extends GeoServerSecurityProvider {
     }
     
     @Override
-    public SecurityConfigValidator getConfigurationValidator() {
-        return new MemorySecurityConfigValidator(); 
+    public SecurityConfigValidator createConfigurationValidator(GeoServerSecurityManager securityManager) {
+        return new MemorySecurityConfigValidator(securityManager); 
      }
 
 }

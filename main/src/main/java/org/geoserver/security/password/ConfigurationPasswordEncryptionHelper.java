@@ -103,7 +103,7 @@ public class ConfigurationPasswordEncryptionHelper {
      * </p>
      */
     public String encode(String value) {
-        String encoderName = securityManager.getConfigPasswordEncrypterName();
+        String encoderName = securityManager.getSecurityConfig().getConfigPasswordEncrypterName();
         if (encoderName != null) {
             GeoServerPasswordEncoder pwEncoder = securityManager.loadPasswordEncoder(encoderName);
             if (pwEncoder != null) {
@@ -114,6 +114,9 @@ public class ConfigurationPasswordEncryptionHelper {
                 }
                 value = pwEncoder.encodePassword(value, null);
             }
+        }
+        else {
+            LOGGER.warning("Encryption disabled, no password encoder set");
         }
         return value;
     }
