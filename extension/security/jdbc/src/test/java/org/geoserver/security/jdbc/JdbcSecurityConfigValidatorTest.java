@@ -391,7 +391,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         boolean fail=false;
         try {            
             config.setDriverClassName("");
-            getSecurityManager().saveAuthenticationProvider(config, true);                         
+            getSecurityManager().saveAuthenticationProvider(config);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_200,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -403,7 +403,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setDriverClassName("a.b.c");
         fail=false;
         try {            
-            getSecurityManager().saveAuthenticationProvider(config, true);                         
+            getSecurityManager().saveAuthenticationProvider(config);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_203,ex.getErrorId());
             assertEquals("a.b.c",ex.getArgs()[0]);
@@ -415,7 +415,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         fail=false;
         try {            
             config.setConnectURL(null);
-            getSecurityManager().saveAuthenticationProvider(config, true);                         
+            getSecurityManager().saveAuthenticationProvider(config);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_202,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);

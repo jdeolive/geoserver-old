@@ -23,7 +23,7 @@ public abstract class AbstractAuthenticationProviderTest extends AbstractSecurit
     @Override
     public GeoServerRoleService createRoleService(String name) throws Exception {
         SecurityRoleServiceConfig config = getRoleConfig(name);
-        getSecurityManager().saveRoleService(config,isNewRoleService(name));
+        getSecurityManager().saveRoleService(config/*,isNewRoleService(name)*/);
         return getSecurityManager().loadRoleService(name);        
     }
     
@@ -46,7 +46,7 @@ public abstract class AbstractAuthenticationProviderTest extends AbstractSecurit
     
     public GeoServerUserGroupService createUserGroupService(String name,String passwordEncoderName) throws Exception {
         SecurityUserGroupServiceConfig config =  getUserGroupConfg(name, passwordEncoderName);                 
-        getSecurityManager().saveUserGroupService(config,isNewUGService(name));
+        getSecurityManager().saveUserGroupService(config/*,isNewUGService(name)*/);
         return getSecurityManager().loadUserGroupService(name);
 
     }

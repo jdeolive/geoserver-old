@@ -37,7 +37,7 @@ public class JDBCConnectAuthProviderTest extends AbstractAuthenticationProviderT
     
     public void testAuthentificationWithoutUserGroupService() throws Exception {
         JDBCConnectAuthProviderConfig config = createAuthConfg("jdbc1", null);
-        getSecurityManager().saveAuthenticationProvider(config, true);
+        getSecurityManager().saveAuthenticationProvider(config);
         GeoServerAuthenticationProvider provider = getSecurityManager().loadAuthenticationProvider("jdbc1");
         
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken("sa","");
@@ -68,7 +68,7 @@ public class JDBCConnectAuthProviderTest extends AbstractAuthenticationProviderT
         GeoServerRoleService roleService = createRoleService("jdbc2");
         GeoServerUserGroupService ugService = createUserGroupService("jdbc2");
         JDBCConnectAuthProviderConfig config = createAuthConfg("jdbc2", ugService.getName());
-        getSecurityManager().saveAuthenticationProvider(config, true);
+        getSecurityManager().saveAuthenticationProvider(config);
         GeoServerAuthenticationProvider provider = getSecurityManager().loadAuthenticationProvider("jdbc2");
         
         GeoServerUserGroupStore ugStore =  ugService.createStore();
@@ -124,7 +124,7 @@ public class JDBCConnectAuthProviderTest extends AbstractAuthenticationProviderT
     public void testAuthentificationWithRoleAssociation() throws Exception {
         GeoServerRoleService roleService = createRoleService("jdbc2");
         JDBCConnectAuthProviderConfig config = createAuthConfg("jdbc2", null);
-        getSecurityManager().saveAuthenticationProvider(config, true);
+        getSecurityManager().saveAuthenticationProvider(config);
         GeoServerAuthenticationProvider provider = getSecurityManager().loadAuthenticationProvider("jdbc2");
         
         

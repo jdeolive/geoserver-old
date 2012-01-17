@@ -339,7 +339,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
         
         boolean fail=false;
         try {
-            getSecurityManager().saveAuthenticationProvider(config, false);
+            getSecurityManager().saveAuthenticationProvider(config/*, false*/);
         } catch (SecurityConfigException ex) {
             assertEquals(SEC_ERR_106, ex.getErrorId());
             assertEquals(0, ex.getArgs().length);
