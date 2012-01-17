@@ -15,7 +15,10 @@ import org.geoserver.web.wicket.GeoServerDataProvider;
 
 /**
  * Base class for {@link SecurityNamedServiceConfig} providers.
- * 
+ * <p>
+ * This class is responsible for loading all configuration objects for a certain class of named
+ * security service.
+ * </p>
  * @author Christian Mueller
  * @author Justin Deoliveira, OpenGeo
  */

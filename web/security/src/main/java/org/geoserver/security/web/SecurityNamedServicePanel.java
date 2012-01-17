@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web;
 
 import java.util.logging.Logger;
@@ -12,6 +16,12 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.GeoServerApplication;
 import org.geotools.util.logging.Logging;
 
+/**
+ * Base class for configuration panels of a specific class of named security service.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ *
+ */
 public abstract class SecurityNamedServicePanel<T extends SecurityNamedServiceConfig> 
     extends FormComponentPanel {
 

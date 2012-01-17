@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web;
 
 import java.util.ArrayList;
@@ -29,6 +33,16 @@ import org.geoserver.security.GeoServerSecurityService;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.GeoServerApplication;
 
+/**
+ * New page for specific class of named security service.
+ * <p>
+ *  Most of the work is delegated to {@link SecurityNamedServicePanelInfo} and 
+ *   {@link SecurityNamedServicePanel}. 
+ * </p>
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ * 
+ */
 public class SecurityNamedServiceNewPage
     <S extends GeoServerSecurityService, T extends SecurityNamedServiceConfig>  
     extends SecurityNamedServicePage<T> {

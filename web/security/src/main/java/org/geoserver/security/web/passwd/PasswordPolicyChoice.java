@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.passwd;
 
 import java.io.IOException;
@@ -10,6 +14,12 @@ import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.model.IModel;
 import org.geoserver.web.GeoServerApplication;
 
+/**
+ * Drop down choice widget for {@link PasswordPolicy} configurations.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ *
+ */
 public class PasswordPolicyChoice extends DropDownChoice<String> {
 
     public PasswordPolicyChoice(String id) {

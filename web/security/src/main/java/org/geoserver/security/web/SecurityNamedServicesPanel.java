@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web;
 
 import static org.geoserver.security.web.SecurityNamedServiceProvider.NAME;
@@ -28,6 +32,17 @@ import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;
 import org.geoserver.web.wicket.SimpleAjaxLink;
 
+/**
+ * Base class for listing all instances of a class of named security service type.
+ * <p>
+ * This base panel provides a table of the configuration instances, along with "add new" and 
+ * "remove selected" functionality. Subclasses need to provide the specific type of 
+ * {@link SecurityNamedServiceProvider} for the service class, as well as implement some additional
+ * methods for validating the removal of configuration instances.
+ * </p> 
+ * @author Justin Deoliveira, OpenGeo
+ *
+ */
 public abstract class SecurityNamedServicesPanel<T extends SecurityNamedServiceConfig> 
     extends Panel{
 

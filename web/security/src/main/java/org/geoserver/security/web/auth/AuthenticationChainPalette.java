@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.auth;
 
 import java.io.IOException;
@@ -8,10 +12,15 @@ import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.extensions.markup.html.form.palette.Palette;
 import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.util.ListModel;
-import org.geoserver.security.web.SecurityManagerConfigModel;
 import org.geoserver.web.GeoServerApplication;
 
+/**
+ * Palette widget for the authentication chain, allowing for setting active providers and defining
+ * chain order.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ *
+ */
 public class AuthenticationChainPalette extends Palette<String> {
 
     public AuthenticationChainPalette(String id) {

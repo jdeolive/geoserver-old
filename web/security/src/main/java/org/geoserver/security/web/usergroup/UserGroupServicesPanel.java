@@ -1,16 +1,20 @@
+/* Copyright (c) 2001 - 2012 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web.usergroup;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidator;
-import org.geoserver.security.web.SecurityNamedServiceTabbedPanel;
 import org.geoserver.security.web.SecurityNamedServicesPanel;
 
+/**
+ * Panel for providing list of user group service configurations.
+ * 
+ * @author Justin Deoliveira, OpenGeo
+ */
 public class UserGroupServicesPanel extends SecurityNamedServicesPanel<SecurityUserGroupServiceConfig> {
 
     public UserGroupServicesPanel(String id) {
