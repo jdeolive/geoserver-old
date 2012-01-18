@@ -25,22 +25,22 @@
   
 
   <entry key="userprops.all">
-	select username,propname,propvalue from  userprops 
+	select username,propname,propvalue from  user_props 
   </entry>
   <entry key="userprops.selectForUser">
-	select propname,propvalue from  userprops where username = ?
+	select propname,propvalue from  user_props where username = ?
   </entry>
   <entry key="userprops.userPropsForGroup">
-		select p.username,p.propname,propvalue from  userprops p, groupmembers m where m.groupname= ? and m.username = p.username
+		select p.username,p.propname,propvalue from  userprops p, group_members m where m.groupname= ? and m.username = p.username
   </entry>  
   <entry key="userprops.deleteForUser">
-	delete from userprops where username=?
+	delete from user_props where username=?
   </entry>
   <entry key="userprops.insert">
-	insert into userprops(username,propname,propvalue) values (?,?,?)
+	insert into user_props(username,propname,propvalue) values (?,?,?)
   </entry>
   <entry key="userprops.deleteAll">
-	delete from userprops 
+	delete from user_props 
   </entry>
   
 
@@ -66,25 +66,25 @@
   
 
   <entry key="groupmembers.groupsForUser">
-	select m.groupname,g.enabled from groupmembers m, groups g where m.username = ? and m.groupname=g.name
+	select m.groupname,g.enabled from group_members m, groups g where m.username = ? and m.groupname=g.name
   </entry>
   <entry key="groupmembers.usersForGroup">
-	select m.username,u.password,u.enabled from groupmembers m, users u where m.groupname = ? and m.username = u.name
+	select m.username,u.password,u.enabled from group_members m, users u where m.groupname = ? and m.username = u.name
   </entry>
   <entry key="groupmembers.insert">
-	insert into groupmembers(groupname,username) values (?,?)
+	insert into group_members(groupname,username) values (?,?)
   </entry>
   <entry key="groupmembers.delete">
-	delete from groupmembers where groupname=? and username = ?
+	delete from group_members where groupname=? and username = ?
   </entry>
   <entry key="groupmembers.deleteGroup">
-	delete from groupmembers where groupname=? 
+	delete from group_members where groupname=? 
   </entry>
   <entry key="groupmembers.deleteUser">
-	delete from groupmembers where username = ?
+	delete from group_members where username = ?
   </entry>
   <entry key="groupmembers.deleteAll">
-	delete from groupmembers 
+	delete from group_members 
   </entry>
 	  
 </properties>

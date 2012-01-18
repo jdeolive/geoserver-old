@@ -20,5 +20,6 @@ public class PasswordPolicyPanelInfo
         setComponentClass(PasswordPolicyPanel.class);
         setServiceClass(PasswordValidatorImpl.class);
         setServiceConfigClass(PasswordPolicyConfig.class);
+        setPriority(0);
     }
 }

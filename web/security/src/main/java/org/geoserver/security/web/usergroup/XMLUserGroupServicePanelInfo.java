@@ -19,5 +19,6 @@ public class XMLUserGroupServicePanelInfo
         setComponentClass(XMLUserGroupServicePanel.class);
         setServiceClass(XMLUserGroupService.class);
         setServiceConfigClass(XMLUserGroupServiceConfig.class);
+        setPriority(0);
     }
 }

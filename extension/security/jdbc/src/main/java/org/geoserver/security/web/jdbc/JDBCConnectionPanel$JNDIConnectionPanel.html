@@ -4,15 +4,11 @@
     xmlns:wicket="http://wicket.apache.org/">
 <body>
 <wicket:panel>
-  <div wicket:id="feedback"></div>
   <ul>
-    <li>
-      <label for="name"><wicket:message key="name"></wicket:message></label>
-      <input type="text" wicket:id="name" class="text" class="text"/>
-    </li>
-    <li>
-      <wicket:child></wicket:child>
-    </li>
+      <li>
+        <label for="jndiName"><wicket:message key="jndiName""></wicket:message></label>
+        <input id="jndiName" wicket:id="jndiName" type="text" class="text"></input>
+      </li>
   </ul>
 </wicket:panel>
 </body>

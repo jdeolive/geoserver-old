@@ -31,72 +31,72 @@
   
 
   <entry key="roleprops.all">
-	select rolename,propname,propvalue from  roleprops
+	select rolename,propname,propvalue from  role_props
   </entry>
   <entry key="roleprops.selectForRole">
-	select propname,propvalue from  roleprops where rolename = ?
+	select propname,propvalue from  role_props where rolename = ?
   </entry>
   <entry key="roleprops.selectForUser">
-	select p.rolename,p.propname,p.propvalue from  roleprops p,userroles u where u.rolename = p.rolename and u.username = ?
+	select p.rolename,p.propname,p.propvalue from  role_props p,user_roles u where u.rolename = p.rolename and u.username = ?
   </entry>
   <entry key="roleprops.selectForGroup">
-	select p.rolename,p.propname,p.propvalue from  roleprops p,grouproles g where g.rolename = p.rolename and g.groupname = ?
+	select p.rolename,p.propname,p.propvalue from  role_props p,group_roles g where g.rolename = p.rolename and g.groupname = ?
   </entry>    
   <entry key="roleprops.deleteForRole">
-	delete from roleprops where rolename=?
+	delete from role_props where rolename=?
   </entry>
   <entry key="roleprops.insert">
-	insert into roleprops(rolename,propname,propvalue) values (?,?,?)
+	insert into role_props(rolename,propname,propvalue) values (?,?,?)
   </entry>
   <entry key="roleprops.deleteAll">
-	delete from roleprops 
+	delete from role_props 
   </entry>
 
 
   <entry key="userroles.rolesForUser">
-	select u.rolename,r.parent from userroles u ,roles r where r.name=u.rolename and u.username = ?
+	select u.rolename,r.parent from user_roles u ,roles r where r.name=u.rolename and u.username = ?
   </entry>
   <entry key="userroles.usersForRole">
 	select username from userroles where rolename = ?
   </entry>
   <entry key="userroles.insert">
-	insert into userroles(rolename,username) values (?,?)
+	insert into user_roles(rolename,username) values (?,?)
   </entry>
   <entry key="userroles.delete">
-	delete from userroles where rolename=? and username = ?
+	delete from user_roles where rolename=? and username = ?
   </entry>
   <entry key="userroles.deleteRole">
-	delete from userroles where rolename=? 
+	delete from user_roles where rolename=? 
   </entry>
   <entry key="userroles.deleteUser">
-	delete from userroles where username = ?
+	delete from user_roles where username = ?
   </entry>
   <entry key="userroles.deleteAll">
-	delete from userroles  
+	delete from user_roles  
   </entry>
 
 
 
   <entry key="grouproles.rolesForGroup">
-	select g.rolename,r.parent from grouproles g,roles r  where g.rolename = r.name and g.groupname = ?
+	select g.rolename,r.parent from group_roles g,roles r  where g.rolename = r.name and g.groupname = ?
   </entry>
   <entry key="grouproles.groupsForRole">
-	select groupname from grouproles where rolename = ?
+	select groupname from group_roles where rolename = ?
   </entry>
   <entry key="grouproles.insert">
-	insert into grouproles(rolename,groupname) values (?,?)
+	insert into group_roles(rolename,groupname) values (?,?)
   </entry>
   <entry key="grouproles.delete">
-	delete from grouproles where rolename=? and groupname = ?
+	delete from group_roles where rolename=? and groupname = ?
   </entry>
   <entry key="grouproles.deleteRole">
-	delete from grouproles where rolename=? 
+	delete from group_roles where rolename=? 
   </entry>
   <entry key="grouproles.deleteGroup">
-	delete from grouproles where groupname = ?
+	delete from group_roles where groupname = ?
   </entry>
     <entry key="grouproles.deleteAll">
-	delete from grouproles  
+	delete from group_roles  
   </entry>
   
 	  

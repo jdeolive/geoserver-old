@@ -8,4 +8,27 @@
   <bean id="jdbcDetailsPanelProvider" 
   	class="org.geoserver.web.security.config.details.JDBCNamedConfigDetailsPanelProvider"/>
   
+  <!-- ui user group service panel info-->
+  <bean id="jdbcUserGroupPanelInfo" class="org.geoserver.security.web.jdbc.JDBCUserGroupServicePanelInfo">
+    <property name="id" value="security.jdbcUserGroupService" />
+    <property name="shortTitleKey" value="JDBCUserGroupServicePanel.short"/>
+    <property name="titleKey" value="JDBCUserGroupServicePanel.title"/>
+    <property name="descriptionKey" value="JDBCUserGroupServicePanel.description"/>
+  </bean>
+
+  <!-- ui role service panel info-->
+  <bean id="jdbcRolePanelInfo" class="org.geoserver.security.web.jdbc.JDBCRoleServicePanelInfo">
+    <property name="id" value="security.jdbcRoleService" />
+    <property name="shortTitleKey" value="JDBCRoleServicePanel.short"/>
+    <property name="titleKey" value="JDBCRoleServicePanel.title"/>
+    <property name="descriptionKey" value="JDBCRoleServicePanel.description"/>
+  </bean>
+
+  <!-- ui auth provider panel info-->
+  <bean id="jdbcAuthProviderPanelInfo" class="org.geoserver.security.web.jdbc.JDBCAuthProviderPanelInfo">
+    <property name="id" value="security.jdbcAuthProvider" />
+    <property name="shortTitleKey" value="JDBCAuthProviderPanel.short"/>
+    <property name="titleKey" value="JDBCAuthProviderPanel.title"/>
+    <property name="descriptionKey" value="JDBCAuthProviderPanel.description"/>
+  </bean>
 </beans>

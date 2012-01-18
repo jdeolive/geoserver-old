@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.geoserver.security.GeoServerUserGroupService;
@@ -121,7 +122,9 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements GeoSer
             enc.initializeFor(this);
             passwordValidatorName=jdbcConfig.getPasswordPolicyName();
 
-        }        
+            //create underlying tables if necessary
+            createTablesSafe();
+        }
     }
 
     

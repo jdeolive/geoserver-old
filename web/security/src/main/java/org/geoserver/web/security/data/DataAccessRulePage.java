@@ -49,8 +49,6 @@ public class DataAccessRulePage extends AbstractSecurityPage {
 
     private RadioChoice catalogModeChoice;
 
-    GeoServerDialog dialog;
-
     public DataAccessRulePage() {
         DataAccessRuleProvider provider = new DataAccessRuleProvider();
         add(rules = new GeoServerTablePanel<DataAccessRule>("table", provider, true) {
@@ -75,8 +73,7 @@ public class DataAccessRulePage extends AbstractSecurityPage {
         });
 
         rules.setOutputMarkupId(true);
-        // the confirm dialog
-        add(dialog = new GeoServerDialog("dialog"));
+
         setHeaderPanel(headerPanel());
 
         Form form = new Form("catalogModeForm", new CompoundPropertyModel(new CatalogModeModel(DataAccessRuleDAO.get().getMode())));

@@ -47,7 +47,7 @@ public abstract class SecurityNamedServicePanel<T extends SecurityNamedServiceCo
         setOutputMarkupId(true);
         add(new TextField("name").setRequired(true).setEnabled(model.getObject().getId() == null));
 
-        add(new FeedbackPanel("feedback").setOutputMarkupId(true));
+        add(feedbackPanel = (FeedbackPanel) new FeedbackPanel("feedback").setOutputMarkupId(true));
     }
 
     protected GeoServerSecurityManager getSecurityManager() {

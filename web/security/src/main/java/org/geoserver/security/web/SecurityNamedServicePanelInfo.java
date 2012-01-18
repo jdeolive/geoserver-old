@@ -4,6 +4,7 @@
  */
 package org.geoserver.security.web;
 
+import org.geoserver.platform.ExtensionPriority;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.web.ComponentInfo;
 
@@ -17,12 +18,13 @@ import org.geoserver.web.ComponentInfo;
  */
 public class SecurityNamedServicePanelInfo
     <C extends SecurityNamedServiceConfig, T extends SecurityNamedServicePanel<C>> 
-    extends ComponentInfo<T> {
+    extends ComponentInfo<T> implements ExtensionPriority {
 
     String shortTitleKey;
     Class serviceClass;
     Class<C> serviceConfigClass;
-
+    int priority = 10;
+    
     public String getShortTitleKey() {
         return shortTitleKey;
     }
@@ -45,5 +47,14 @@ public class SecurityNamedServicePanelInfo
 
     public void setServiceConfigClass(Class<C> serviceConfigClass) {
         this.serviceConfigClass = serviceConfigClass;
+    }
+
+    @Override
+    public int getPriority() {
+        return priority;
+    }
+    
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 }

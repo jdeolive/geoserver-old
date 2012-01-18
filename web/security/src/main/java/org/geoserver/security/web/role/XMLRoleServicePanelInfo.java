@@ -19,5 +19,6 @@ public class XMLRoleServicePanelInfo
         setComponentClass(XMLRoleServicePanel.class);
         setServiceClass(XMLRoleService.class);
         setServiceConfigClass(XMLRoleServiceConfig.class);
+        setPriority(0);
     }
 }

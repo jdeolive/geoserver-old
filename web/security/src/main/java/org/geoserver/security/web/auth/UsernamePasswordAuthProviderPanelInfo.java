@@ -19,5 +19,6 @@ public class UsernamePasswordAuthProviderPanelInfo extends AuthenticationProvide
         setComponentClass(UsernamePasswordAuthProviderPanel.class);
         setServiceClass(UsernamePasswordAuthenticationProvider.class);
         setServiceConfigClass(UsernamePasswordAuthenticationProviderConfig.class);
+        setPriority(0);
     }
 }

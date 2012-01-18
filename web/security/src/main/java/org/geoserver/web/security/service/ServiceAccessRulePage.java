@@ -27,8 +27,6 @@ public class ServiceAccessRulePage extends AbstractSecurityPage {
     
     private SelectionServiceRemovalLink removal;
 
-    GeoServerDialog dialog;
-
     public ServiceAccessRulePage() {
                 
         ServiceAccessRuleProvider provider = new ServiceAccessRuleProvider();
@@ -54,7 +52,6 @@ public class ServiceAccessRulePage extends AbstractSecurityPage {
         });
         rules.setOutputMarkupId(true);
         
-        add(dialog = new GeoServerDialog("dialog"));
         setHeaderPanel(headerPanel());
 
     }
