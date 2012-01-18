@@ -131,7 +131,10 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
         super.validateAddRoleService(config);
         XMLRoleServiceConfig xmlConfig = (XMLRoleServiceConfig) config;
         File file  = new File(xmlConfig.getFileName());
-        checkFile(file);        
+        if (checkFile(file)==false)
+            throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_101,
+                file.getPath());
+
     }
  
     /** 
@@ -145,41 +148,12 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
         XMLUserGroupServiceConfig xmlConfig = 
                 (XMLUserGroupServiceConfig) config;
         File file  = new File(xmlConfig.getFileName());
-        checkFile(file);        
-    }
-
-    protected File getTempDir() {
-        String tempPath = System.getProperty("java.io.tmpdir");
-        if (tempPath==null)
-            return null;
-        File tempDir = new File(tempPath);
-        if (tempDir.exists()==false) return null;
-        if (tempDir.isDirectory()==false) return null;
-        if (tempDir.canWrite()==false) return null;
-        return tempDir;
-    }
-    
-    protected void checkFile(File file) throws SecurityConfigException {
-        File testFile = null;
-        try {            
-            if (file.isAbsolute()) {
-                testFile=file;
-            } else {
-                File tempDir = getTempDir();
-                if (tempDir==null) return; // cannot check relative file name
-                testFile=new File(tempDir,file.getPath());
-            }
-         
-            if (testFile.exists()==false) {
-                testFile.createNewFile();
-                testFile.delete();
-            }
-        } catch (IOException ex) {
+        if (checkFile(file)==false)
             throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_101,
                     file.getPath());
-        }
+
     }
-    
+
     @Override
     public void validateModifiedRoleService(SecurityRoleServiceConfig config,
             SecurityRoleServiceConfig oldConfig) throws SecurityConfigException {

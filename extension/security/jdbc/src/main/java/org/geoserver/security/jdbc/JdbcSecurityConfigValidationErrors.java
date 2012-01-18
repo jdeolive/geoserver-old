@@ -16,6 +16,9 @@ public class JdbcSecurityConfigValidationErrors extends SecurityConfigValidation
     public final static String SEC_ERR_202 = "SEC_ERR_202";
     public final static String SEC_ERR_203 = "SEC_ERR_203";
     public final static String SEC_ERR_210 = "SEC_ERR_210";
+    public final static String SEC_ERR_211 = "SEC_ERR_211";
+    public final static String SEC_ERR_212 = "SEC_ERR_212";
+    public final static String SEC_ERR_213 = "SEC_ERR_213";
     
     @Override
     public String formatErrorMsg(String id, Object... args) {
@@ -30,6 +33,12 @@ public class JdbcSecurityConfigValidationErrors extends SecurityConfigValidation
             return MessageFormat.format("Driver named {0} is not in class path",args);        
         if (SEC_ERR_210.equals(id))
             return MessageFormat.format("JNDI name is mandatory",args);
+        if (SEC_ERR_211.equals(id))
+            return MessageFormat.format("Cannot open DDL file {0}",args);
+        if (SEC_ERR_212.equals(id))
+            return MessageFormat.format("DML file is required",args);
+        if (SEC_ERR_213.equals(id))
+            return MessageFormat.format("Cannot open DML file {0}",args);
 
 
         return super.formatErrorMsg(id, args);
