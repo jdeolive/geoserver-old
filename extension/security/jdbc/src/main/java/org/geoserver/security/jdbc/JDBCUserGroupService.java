@@ -102,9 +102,10 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements GeoSer
             dmlProps = Util.loadUniversal(new FileInputStream(file));
             
             String fileNameDDL =jdbcConfig.getPropertyFileNameDDL();
-            file = checkORCreateJDBCPropertyFile(fileNameDDL, getConfigRoot(), DEFAULT_DDL_FILE);
-
-            ddlProps = Util.loadUniversal(new FileInputStream(file));
+            if (fileNameDDL!=null && fileNameDDL.length()> 0 ) {
+                file = checkORCreateJDBCPropertyFile(fileNameDDL, getConfigRoot(), DEFAULT_DDL_FILE);
+                ddlProps = Util.loadUniversal(new FileInputStream(file));
+            }
             
             GeoServerPasswordEncoder enc = getSecurityManager().loadPasswordEncoder(passwordEncoderName);
             if (enc.getEncodingType()==PasswordEncodingType.ENCRYPT) {
