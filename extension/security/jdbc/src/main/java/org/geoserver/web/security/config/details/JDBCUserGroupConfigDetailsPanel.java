@@ -4,6 +4,7 @@
  */
 package org.geoserver.web.security.config.details;
 
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
@@ -19,6 +20,9 @@ import org.geoserver.web.security.config.SecurityNamedConfigModelHelper;
 public class JDBCUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPanel{
     private static final long serialVersionUID = 1L;
     JDBCConnectFormComponent comp;
+    TextField<String> propertyFileNameDDLComponent;
+    TextField<String> propertyFileNameDMLComponent;
+
     
     public JDBCUserGroupConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
         super(id,model);
@@ -36,9 +40,16 @@ public class JDBCUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPan
                    config.getUserName(),config.getPassword()
                    );
        }
-        addOrReplace(comp);        
+        addOrReplace(comp);
+
+        propertyFileNameDDLComponent = new TextField<String>("config.propertyFileNameDDL");
+        add(propertyFileNameDDLComponent);
+        propertyFileNameDMLComponent = new TextField<String>("config.propertyFileNameDML");
+        add(propertyFileNameDMLComponent);        
+
     };
-        
+    
+    
     
     @Override
     protected SecurityNamedServiceConfig createNewConfigObject() {
@@ -49,6 +60,8 @@ public class JDBCUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPan
     public void updateModel() {
         super.updateModel();
         comp.updateModel();
+        propertyFileNameDDLComponent.updateModel();
+        propertyFileNameDMLComponent.updateModel();
         JDBCSecurityServiceConfig config = (JDBCSecurityServiceConfig) configHelper.getConfig();
         JDBCConnectConfig c = comp.getModelObject();
         config.setJndiName(null);

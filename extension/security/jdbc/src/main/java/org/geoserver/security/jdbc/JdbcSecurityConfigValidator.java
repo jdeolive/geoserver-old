@@ -5,6 +5,8 @@
 
 package org.geoserver.security.jdbc;
 
+import java.io.File;
+
 import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
@@ -21,7 +23,7 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
         super.validate(config);
         JDBCSecurityServiceConfig jdbcConfig = (JDBCSecurityServiceConfig) config;
         
-        validateFileNames(jdbcConfig);
+        validateFileNames(jdbcConfig,JDBCRoleService.DEFAULT_DDL_FILE,JDBCRoleService.DEFAULT_DML_FILE);
         
         if (jdbcConfig.isJndi())
             validateJNDI(jdbcConfig);
@@ -33,16 +35,45 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
     public void validate(SecurityUserGroupServiceConfig config)
             throws SecurityConfigException {
         super.validate(config);
+                        
         JDBCSecurityServiceConfig jdbcConfig = (JDBCSecurityServiceConfig) config;
+        
+        validateFileNames(jdbcConfig,JDBCUserGroupService.DEFAULT_DDL_FILE,JDBCUserGroupService.DEFAULT_DML_FILE);
+        
         if (jdbcConfig.isJndi())
             validateJNDI(jdbcConfig);
         else
             validateJDBC(jdbcConfig);
     }
     
-    protected void validateFileNames(JDBCSecurityServiceConfig config) throws SecurityConfigException
+    protected void validateFileNames(JDBCSecurityServiceConfig config, String defaultDDL, String defaultDML) throws SecurityConfigException    
     {
         
+        String fileName = config.getPropertyFileNameDDL();        
+        // ddl may be null
+        if (isNotEmpty(fileName)) {
+            if (defaultDDL.equals(fileName)==false) {
+                // not the default property file
+                File file = new File(fileName);
+                if (checkFile(file)==false) {
+                    throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_211, fileName);
+                }
+            }
+        }
+        
+        fileName = config.getPropertyFileNameDML();
+        if (isNotEmpty(fileName)==false) {
+            // dml file is required
+            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_212);
+        }
+        
+        if (defaultDML.equals(fileName)==false) {
+            // not the default property file
+            File file = new File(fileName);
+            if (checkFile(file)==false) {
+                throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_213, fileName);
+            }
+        }
     }
     
     protected void validateJNDI(JDBCSecurityServiceConfig config) throws SecurityConfigException {

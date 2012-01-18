@@ -5,7 +5,11 @@ import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_202;
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_203;
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_210;
+import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_211;
+import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_212;
+import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_213;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -21,7 +25,7 @@ import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidatorTest;
 import org.geotools.util.logging.Logging;
 
-public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest {
+public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest  {
 
     static protected Logger LOGGER = Logging.getLogger("org.geoserver.security");
     
@@ -67,12 +71,17 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setDriverClassName("a.b.c");
         config.setUserName("user");
         config.setConnectURL("jdbc:connect");
+        config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
+        config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
         
         JDBCRoleServiceConfig  configJNDI = (JDBCRoleServiceConfig) 
                 getRoleConfig("jndi", JDBCRoleService.class, 
                 GeoServerRole.ADMIN_ROLE.getAuthority());
         configJNDI.setJndi(true);
         configJNDI.setJndiName("jndi:connect");
+        configJNDI.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
+        configJNDI.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
+
         
         boolean fail;
 
@@ -137,7 +146,62 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
             LOGGER.info(ex.getMessage());
             fail=true;
         }
+        assertTrue(fail);
+        
+        config.setDriverClassName("java.lang.String");
+                
+        config.setPropertyFileNameDDL(null);
+        try {
+            getSecurityManager().saveRoleService(config, true);
+        } catch (SecurityConfigException ex) {
+            throw new IOException(ex);
+        }
+        config.setPropertyFileNameDML(null);
+        try {            
+            getSecurityManager().saveRoleService(config, false);                         
+        } catch (SecurityConfigException ex) {
+            assertEquals( SEC_ERR_212,ex.getErrorId());
+            assertEquals(0,ex.getArgs().length);
+            LOGGER.info(ex.getMessage());
+            fail=true;
+        }
+        assertTrue(fail);
 
+        config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
+        config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
+        
+        // run only if a temp dir is availbale
+        if (new JdbcSecurityConfigValidator().getTempDir()!=null) {
+            String invalidPath="abc"+File.separator+"def.properties";
+            config.setPropertyFileNameDDL(invalidPath);
+            fail=false;
+            try {
+                getSecurityManager().saveRoleService(config, false);
+            } catch (SecurityConfigException ex) {
+                assertEquals(SEC_ERR_211, ex.getErrorId());
+                assertEquals(invalidPath, ex.getArgs()[0]);
+                fail=true;
+            }
+            assertTrue(fail);
+        }
+ 
+        config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
+        config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
+ 
+        // run only if a temp dir is availbale
+        if (new JdbcSecurityConfigValidator().getTempDir()!=null) {
+            String invalidPath="abc"+File.separator+"def.properties";
+            config.setPropertyFileNameDML(invalidPath);
+            fail=false;
+            try {
+                getSecurityManager().saveRoleService(config, false);
+            } catch (SecurityConfigException ex) {
+                assertEquals(SEC_ERR_213, ex.getErrorId());
+                assertEquals(invalidPath, ex.getArgs()[0]);
+                fail=true;
+            }
+            assertTrue(fail);
+        }
         
     }
 
@@ -153,12 +217,17 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setDriverClassName("a.b.c");
         config.setUserName("user");
         config.setConnectURL("jdbc:connect");
+        config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
+        config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
+
 
         JDBCUserGroupServiceConfig  configJNDI = (JDBCUserGroupServiceConfig) 
                 getUGConfig("jdbc", JDBCUserGroupService.class, 
                 getPlainTextPasswordEncoder().getName(),PasswordValidator.DEFAULT_NAME);
         configJNDI.setJndi(true);                        
         configJNDI.setJndiName("jndi:connect");
+        configJNDI.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
+        configJNDI.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
         
         boolean fail;
 
@@ -224,8 +293,61 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
             fail=true;
         }
 
+        config.setDriverClassName("java.lang.String");
         
+        config.setPropertyFileNameDDL(null);
+        try {
+            getSecurityManager().saveUserGroupService(config, true);
+        } catch (SecurityConfigException ex) {
+            throw new IOException(ex);
+        }
+        config.setPropertyFileNameDML(null);
+        try {            
+            getSecurityManager().saveUserGroupService(config, false);                         
+        } catch (SecurityConfigException ex) {
+            assertEquals( SEC_ERR_212,ex.getErrorId());
+            assertEquals(0,ex.getArgs().length);
+            LOGGER.info(ex.getMessage());
+            fail=true;
+        }
+        assertTrue(fail);
+
+        config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
+        config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
         
+        // run only if a temp dir is availbale
+        if (new JdbcSecurityConfigValidator().getTempDir()!=null) {
+            String invalidPath="abc"+File.separator+"def.properties";
+            config.setPropertyFileNameDDL(invalidPath);
+            fail=false;
+            try {
+                getSecurityManager().saveUserGroupService(config, false);
+            } catch (SecurityConfigException ex) {
+                assertEquals(SEC_ERR_211, ex.getErrorId());
+                assertEquals(invalidPath, ex.getArgs()[0]);
+                fail=true;
+            }
+            assertTrue(fail);
+        }
+ 
+        config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
+        config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
+ 
+        // run only if a temp dir is availbale
+        if (new JdbcSecurityConfigValidator().getTempDir()!=null) {
+            String invalidPath="abc"+File.separator+"def.properties";
+            config.setPropertyFileNameDML(invalidPath);
+            fail=false;
+            try {
+                getSecurityManager().saveUserGroupService(config, false);
+            } catch (SecurityConfigException ex) {
+                assertEquals(SEC_ERR_213, ex.getErrorId());
+                assertEquals(invalidPath, ex.getArgs()[0]);
+                fail=true;
+            }
+            assertTrue(fail);
+        }
+                
     }
 
     @Override

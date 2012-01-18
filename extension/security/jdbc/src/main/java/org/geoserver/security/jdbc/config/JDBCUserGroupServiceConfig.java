@@ -6,6 +6,7 @@
 package org.geoserver.security.jdbc.config;
 
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
+import org.geoserver.security.jdbc.JDBCUserGroupService;
 
 public class JDBCUserGroupServiceConfig extends JDBCSecurityServiceConfig 
     implements SecurityUserGroupServiceConfig {
@@ -14,6 +15,13 @@ public class JDBCUserGroupServiceConfig extends JDBCSecurityServiceConfig
     protected String passwordEncoderName;
     protected String passwordPolicyName;
 
+    
+    public JDBCUserGroupServiceConfig() {
+        super();
+        setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
+        setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
+    }
+    
     public String getPasswordPolicyName() {
         return passwordPolicyName;
     }
