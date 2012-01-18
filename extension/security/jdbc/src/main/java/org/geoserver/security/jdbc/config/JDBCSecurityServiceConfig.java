@@ -27,6 +27,21 @@ public class JDBCSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
     private String password;
     private boolean creatingTables;
 
+    public JDBCSecurityServiceConfig() {
+    }
+
+    public JDBCSecurityServiceConfig(JDBCSecurityServiceConfig other) {
+        super(other);
+        propertyFileNameDDL = other.getPropertyFileNameDDL();
+        propertyFileNameDML = other.getPropertyFileNameDML();
+        jndiName = other.getJndiName();
+        jndi = other.isJndi();
+        driverClassName = other.getClassName();
+        connectURL = other.getConnectURL();
+        userName = other.getUserName();
+        password = other.getPassword();
+    }
+
     /**
      * Flag controlling whether to connect through JNDI or through creation of a direct connection. 
      * <p>

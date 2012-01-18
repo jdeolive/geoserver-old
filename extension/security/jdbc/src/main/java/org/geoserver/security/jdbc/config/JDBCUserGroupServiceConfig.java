@@ -15,13 +15,18 @@ public class JDBCUserGroupServiceConfig extends JDBCSecurityServiceConfig
     protected String passwordEncoderName;
     protected String passwordPolicyName;
 
-    
     public JDBCUserGroupServiceConfig() {
         super();
         setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);     
     }
     
+    public JDBCUserGroupServiceConfig(JDBCUserGroupServiceConfig other) {
+        super(other);
+        passwordEncoderName = other.getPasswordEncoderName();
+        passwordPolicyName = other.getPasswordPolicyName();
+    }
+
     public String getPasswordPolicyName() {
         return passwordPolicyName;
     }

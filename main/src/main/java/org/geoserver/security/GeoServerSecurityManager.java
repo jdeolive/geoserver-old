@@ -172,8 +172,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
     
     /** cached flag determining is strong cryptography is available */
     Boolean strongEncryptionAvaialble;
-
-    //AuthProviderHelper authProviderHelper = new AuthProviderHelper();
+    
+    /** flag set once the security manager has been fully initialized */
+    boolean initialized = false;
 
     public GeoServerSecurityManager(GeoServerDataDirectory dataDir) throws Exception {
         this.dataDir = dataDir;
@@ -344,6 +345,19 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
         setProviders(allAuthProviders);
 
         this.securityConfig = new SecurityManagerConfig(config);
+        this.initialized = true;
+    }
+
+    /**
+     * Determines if the security manager has been initialized yet. 
+     * <p>
+     * TODO: this is a temporary hack, perhaps we should think about initializing the security 
+     * subsystem as the very first thing on startup... but now we have dependencies on the catalog
+     * so we cant. 
+     * </p>
+     */
+    public boolean isInitialized() {
+        return initialized;
     }
 
     /**
@@ -1610,7 +1624,7 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
             }
 
             //look up the service for this config
-            AuthenticationProvider authProvider = null;
+            GeoServerAuthenticationProvider authProvider = null;
 
             for (GeoServerSecurityProvider p  : lookupSecurityProviders()) {
                 if (p.getAuthenticationProviderClass() == null) {
@@ -1626,16 +1640,11 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 throw new IOException("No authentication provider matching config: " + config);
             }
 
-            GeoServerAuthenticationProvider gsAuthProvider = 
-                authProvider instanceof GeoServerAuthenticationProvider ? 
-                    (GeoServerAuthenticationProvider) authProvider : 
-                    new DelegatingAuthenticationProvider(authProvider);
-                    
-            gsAuthProvider.setName(name);
-            gsAuthProvider.setSecurityManager(GeoServerSecurityManager.this);
-            gsAuthProvider.initializeFromConfig(config);
+            authProvider.setName(name);
+            authProvider.setSecurityManager(GeoServerSecurityManager.this);
+            authProvider.initializeFromConfig(config);
 
-            return gsAuthProvider;
+            return authProvider;
         }
 
         @Override

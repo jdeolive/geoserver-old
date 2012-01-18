@@ -18,6 +18,15 @@ public class FileBasedSecurityServiceConfig  extends BaseSecurityNamedServiceCon
     private String fileName;
     private long checkInterval;
 
+    public FileBasedSecurityServiceConfig() {
+    }
+
+    public FileBasedSecurityServiceConfig(FileBasedSecurityServiceConfig other) {
+        super(other);
+        fileName = other.getFileName();
+        checkInterval = other.getCheckInterval();
+    }
+
     /**
      * @return The name of file to persist configuration in. 
      */

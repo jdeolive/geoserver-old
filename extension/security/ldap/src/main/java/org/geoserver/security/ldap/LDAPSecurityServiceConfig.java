@@ -17,6 +17,19 @@ public class LDAPSecurityServiceConfig extends BaseSecurityNamedServiceConfig
     String userGroupServiceName;
     Boolean useTLS;
 
+    public LDAPSecurityServiceConfig() {
+    }
+
+    public LDAPSecurityServiceConfig(LDAPSecurityServiceConfig other) {
+        super(other);
+        serverURL = other.getServerURL();
+        userDnPattern = other.getUserDnPattern();
+        groupSearchBase = other.getGroupSearchBase();
+        groupSearchFilter= other.getGroupSearchFilter();
+        userGroupServiceName = other.getUserGroupServiceName();
+        useTLS = other.isUseTLS();
+    }
+
     public String getServerURL() {
         return serverURL;
     }

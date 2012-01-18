@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoServerRoleService;
@@ -80,7 +81,7 @@ public class JDBCSecurityProvider extends GeoServerSecurityProvider {
     }
 
     @Override
-    public AuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
+    public GeoServerAuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
         return new JDBCConnectAuthProvider();
     }
 

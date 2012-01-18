@@ -18,6 +18,7 @@ import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.password.GeoServerDigestPasswordEncoder;
+import org.geoserver.security.password.GeoServerNullPasswordEncoder;
 import org.geoserver.security.password.GeoServerPBEPasswordEncoder;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.GeoServerPlainTextPasswordEncoder;
@@ -519,6 +520,13 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
             getSecurityManager().loadPasswordEncoder(ugService.getPasswordEncoderName());
         enc.initializeFor(ugService);
         return enc;
+    }
+
+    /**
+     * Accessor for null password encoder.
+     */
+    protected GeoServerNullPasswordEncoder getNullPasswordEncoder() {
+        return getSecurityManager().loadPasswordEncoder(GeoServerNullPasswordEncoder.class);
     }
 
     /**

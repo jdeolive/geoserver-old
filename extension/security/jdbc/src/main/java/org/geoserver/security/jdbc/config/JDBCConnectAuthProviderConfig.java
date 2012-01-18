@@ -24,6 +24,15 @@ public class JDBCConnectAuthProviderConfig extends BaseSecurityNamedServiceConfi
     private String userGroupServiceName;
 
 
+    public JDBCConnectAuthProviderConfig() {
+    }
+
+    public JDBCConnectAuthProviderConfig(JDBCConnectAuthProviderConfig other) {
+        super(other);
+        driverClassName = other.getDriverClassName();
+        connectURL = other.getConnectURL();
+        userGroupServiceName = other.getUserGroupServiceName();
+    }
 
     /**
      * The JDBC driver class name.

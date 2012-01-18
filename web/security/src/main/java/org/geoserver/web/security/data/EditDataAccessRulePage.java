@@ -51,7 +51,7 @@ public class EditDataAccessRulePage extends AbstractDataAccessRulePage {
             storedRule.getRoles().addAll(rolesFormComponent.getRolesNamesForStoring());
             dao.storeRules();
             
-            setResponsePage(DataAccessRulePage.class);
+            setResponsePage(DataSecurityPage.class);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error occurred while saving rule ", e);
             error(new ParamResourceModel("saveError", getPage(), e.getMessage()));

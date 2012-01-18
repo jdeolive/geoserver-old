@@ -12,6 +12,7 @@ import org.apache.wicket.util.tester.FormTester;
 import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;
+import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.security.AbstractSecurityWicketTestSupport;
 import org.springframework.security.authentication.AnonymousAuthenticationProvider;
@@ -39,9 +40,10 @@ public  class ManagerConfigPanelTest extends AbstractSecurityWicketTestSupport {
         tester.clickLink(AbstractSecurityPage.TabbedPanelId+":tabs-container:tabs:0:link",true);
         tester.assertComponent(AbstractSecurityPage.TabbedPanelId+":panel", ManagerConfigPanel.class);
         tester.assertComponent(formComponentId+":config.authProviderNames:recorder", Recorder.class);
-        
-        tester.assertModelValue(formComponentId+":config.anonymousAuth",true);
-        tester.assertModelValue(formComponentId+":config.encryptingUrlParams",false);
+
+        SecurityManagerConfig config = manager.getSecurityConfig();
+        tester.assertModelValue(formComponentId+":config.anonymousAuth",config.isAnonymousAuth());
+        tester.assertModelValue(formComponentId+":config.encryptingUrlParams",config.isEncryptingUrlParams());
         tester.assertModelValue(formComponentId+":config.roleServiceName","default");
         tester.assertModelValue(formComponentId+":config.configPasswordEncrypterName",
             getPBEPasswordEncoder().getName());

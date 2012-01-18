@@ -74,7 +74,7 @@
 		<property name="titleKey" value="security.data.title" />
 		<property name="descriptionKey" value="security.data.description" />
 		<property name="componentClass"
-			value="org.geoserver.web.security.data.DataAccessRulePage" />
+			value="org.geoserver.web.security.data.DataSecurityPage" />
 		<property name="icon" value="../../img/icons/silk/database_key.png" />
 		<property name="category" ref="securityCategory" />
 		<property name="order" value="200" />

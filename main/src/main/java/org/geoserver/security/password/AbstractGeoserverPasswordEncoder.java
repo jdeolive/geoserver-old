@@ -73,7 +73,11 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoServerPassw
     
     @Override
     public String encodePassword(String rawPass, Object salt) throws DataAccessException {
-        StringBuffer buff = new StringBuffer(getPrefix()).append(GeoServerPasswordEncoder.PREFIX_DELIMTER); 
+        StringBuffer buff = new StringBuffer();
+        if (getPrefix() != null) {
+            buff.append(getPrefix()).append(GeoServerPasswordEncoder.PREFIX_DELIMTER);
+        }
+        
         buff.append(getDelegate().encodePassword(rawPass, salt));
         return buff.toString();
     }
@@ -81,7 +85,7 @@ public abstract class AbstractGeoserverPasswordEncoder implements GeoServerPassw
     @Override
     public boolean isPasswordValid(String encPass, String rawPass, Object salt)
             throws DataAccessException {
-        String encPass2 = removePrefix(encPass);
+        String encPass2 = getPrefix() != null ? removePrefix(encPass) : encPass;
         return getDelegate().isPasswordValid(encPass2, rawPass, salt);
     }
 

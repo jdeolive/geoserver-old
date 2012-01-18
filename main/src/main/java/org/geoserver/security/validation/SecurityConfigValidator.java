@@ -25,6 +25,7 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
+import org.geoserver.security.password.GeoServerNullPasswordEncoder;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -190,7 +191,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
     
     
     public void validateAddAuthProvider(SecurityAuthProviderConfig config) throws SecurityConfigException{
-        validateAddNamedService(AuthenticationProvider.class, config);
+        validateAddNamedService(GeoServerAuthenticationProvider.class, config);
         validate(config);
     }
 

@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
+import org.apache.wicket.markup.html.list.ListView;
 import org.geoserver.web.FormTestPage;
 
 public abstract class AbstractConfirmRemovalPanelTest<T> extends AbstractSecurityWicketTestSupport implements Serializable{
@@ -76,15 +77,16 @@ public abstract class AbstractConfirmRemovalPanelTest<T> extends AbstractSecurit
     }
     
     protected String labelTextForRemovedObjects() {
-        MultiLineLabel label = (MultiLineLabel) tester.getComponentFromLastRenderedPage(
-            "form:panel:removedObjects:rulesRemoved:rules");
-        return label.getDefaultModelObjectAsString();
+        ListView list = (ListView) tester.getComponentFromLastRenderedPage(
+                "form:panel:removedObjects:rulesRemoved:rules");
+ 
+        return list.getDefaultModelObjectAsString();
     }
     
     protected String labelTextForProblematicObjects() {
-        MultiLineLabel label = (MultiLineLabel) tester.getComponentFromLastRenderedPage(
+        ListView list = (ListView) tester.getComponentFromLastRenderedPage(
             "form:panel:problematicObjects:rulesNotRemoved:problems");
-        return label.getDefaultModelObjectAsString();
+        return list.getDefaultModelObjectAsString();
     }    
 
 

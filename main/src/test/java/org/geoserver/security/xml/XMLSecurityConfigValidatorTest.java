@@ -82,7 +82,6 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
                 
         fail=false;
         try {
-            config.setName(XMLRoleService.DEFAULT_NAME);
             config.setCheckInterval(999l);
             getSecurityManager().saveRoleService(config);                         
         } catch (SecurityConfigException ex) {
@@ -203,7 +202,6 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
 
         fail=false;
         try {
-            config.setName(XMLUserGroupService.DEFAULT_NAME);
             config.setCheckInterval(999l);
             getSecurityManager().saveUserGroupService(config);                         
         } catch (SecurityConfigException ex) {
@@ -334,7 +332,7 @@ public class XMLSecurityConfigValidatorTest extends SecurityConfigValidatorTest 
     public void testAuthenticationProvider() throws IOException {
         super.testAuthenticationProvider();
         
-        SecurityAuthProviderConfig config = getAuthConfig(GeoServerAuthenticationProvider.DEFAULT_NAME, 
+        SecurityAuthProviderConfig config = getAuthConfig("default2", 
                 UsernamePasswordAuthenticationProvider.class, null);
         
         boolean fail=false;

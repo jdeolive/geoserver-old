@@ -46,8 +46,14 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
 
     
     protected GeoServerUserGroupService createUserGroupService(String serviceName,String xmlFileName) throws Exception {
-        XMLUserGroupServiceConfig ugConfig = new XMLUserGroupServiceConfig();                 
-        ugConfig.setName(serviceName);
+        XMLUserGroupServiceConfig ugConfig =
+            (XMLUserGroupServiceConfig) getSecurityManager().loadUserGroupServiceConfig(serviceName);
+
+        if (ugConfig == null) {
+            ugConfig = new XMLUserGroupServiceConfig();
+            ugConfig.setName(serviceName);
+        }
+        
         ugConfig.setClassName(XMLUserGroupService.class.getName());
         ugConfig.setCheckInterval(1000); 
         ugConfig.setFileName(xmlFileName);        

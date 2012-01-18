@@ -13,7 +13,16 @@ public class MemoryRoleServiceConfigImpl extends BaseSecurityNamedServiceConfig
     private static final long serialVersionUID = 1L;
     protected String adminRoleName;
     protected String toBeEncrypted;
-    
+
+    public MemoryRoleServiceConfigImpl() {
+    }
+
+    public MemoryRoleServiceConfigImpl(MemoryRoleServiceConfigImpl other) {
+        super(other);
+        adminRoleName = other.getAdminRoleName();
+        toBeEncrypted = other.getToBeEncrypted();
+    }
+
     public String getToBeEncrypted() {
         return toBeEncrypted;
     }

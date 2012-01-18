@@ -52,7 +52,7 @@ public class EditDataAccessRulePageTest extends AbstractSecurityWicketTestSuppor
         form.submit("save");
         
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(DataAccessRulePage.class);
+        tester.assertRenderedPage(DataSecurityPage.class);
 
         DataAccessRule rule = getRule(ruleName);
         assertNotNull(rule);

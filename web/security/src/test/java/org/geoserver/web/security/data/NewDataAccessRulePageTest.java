@@ -60,7 +60,7 @@ public class NewDataAccessRulePageTest extends AbstractSecurityWicketTestSupport
         form.submit("save");
         
         tester.assertErrorMessages(new String[0]);
-        tester.assertRenderedPage(DataAccessRulePage.class);
+        tester.assertRenderedPage(DataSecurityPage.class);
 
         DataAccessRule foundRule=null;
         for (DataAccessRule rule : DataAccessRuleDAO.get().getRules()) {

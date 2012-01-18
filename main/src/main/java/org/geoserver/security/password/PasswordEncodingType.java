@@ -6,15 +6,18 @@
 package org.geoserver.security.password;
 
 /**
- * Enumeration for password encoding type
- * {@link #PLAIN}       plain text
- * {@link #ENCRYPT}     symmetric encryption 
- * {@link #DIGEST}        password hashing (recommended)
- * 
+ * Enumeration for password encoding type.
+ * <p>
+ * <ul>
+ * <li>{@link #NULL} - null, raw password maintained</li>
+ * <li>{@link #PLAIN} -  plain text</li>
+ * <li>{@link #ENCRYPT} - symmetric encryption</li>
+ * <li>{@link #DIGEST} - password hashing (recommended)</li>
+ *</p>
  * @author christian
  *
  */
 public enum PasswordEncodingType {
-    PLAIN,ENCRYPT,DIGEST;
+    NULL,PLAIN,ENCRYPT,DIGEST;
 
 }

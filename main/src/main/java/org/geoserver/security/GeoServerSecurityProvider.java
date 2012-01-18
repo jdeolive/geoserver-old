@@ -151,7 +151,7 @@ public abstract class GeoServerSecurityProvider {
      * <code>null</code>.
      * </p> 
      */
-    public AuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
+    public GeoServerAuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
         return null;
     }
 

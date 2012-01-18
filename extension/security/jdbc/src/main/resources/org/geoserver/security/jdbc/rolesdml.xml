@@ -57,7 +57,7 @@
 	select u.rolename,r.parent from user_roles u ,roles r where r.name=u.rolename and u.username = ?
   </entry>
   <entry key="userroles.usersForRole">
-	select username from userroles where rolename = ?
+	select username from user_roles where rolename = ?
   </entry>
   <entry key="userroles.insert">
 	insert into user_roles(rolename,username) values (?,?)

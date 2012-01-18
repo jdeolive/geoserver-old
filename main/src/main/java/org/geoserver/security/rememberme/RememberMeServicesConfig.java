@@ -22,8 +22,7 @@ public class RememberMeServicesConfig extends BaseSecurityNamedServiceConfig {
     }
 
     public RememberMeServicesConfig(RememberMeServicesConfig other) {
-        setName(other.getName());
-        setClassName(other.getClassName());
+        super(other);
         setUserGroupService(other.getUserGroupService());
         setKey(other.getKey());
     }

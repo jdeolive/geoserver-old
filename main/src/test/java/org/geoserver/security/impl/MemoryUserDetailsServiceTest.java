@@ -114,25 +114,25 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
             copyFrom(service1,service2);
             
             // from plain to plain
-            service1 = createUserGroupService("copyFrom",getPlainTextPasswordEncoder().getName());
-            service2 = createUserGroupService("copyTo",getPlainTextPasswordEncoder().getName());            
+            service1 = createUserGroupService("copyFrom1",getPlainTextPasswordEncoder().getName());
+            service2 = createUserGroupService("copyTo1",getPlainTextPasswordEncoder().getName());            
             copyFrom(service1,service2);
             
             // cypt to digest
-            service1 = createUserGroupService("copyFrom");
-            service2 = createUserGroupService("copyTo",getDigestPasswordEncoder().getName());            
+            service1 = createUserGroupService("copyFrom2");
+            service2 = createUserGroupService("copyTo2",getDigestPasswordEncoder().getName());            
             copyFrom(service1,service2);
 
             // digest to digest
-            service1 = createUserGroupService("copyFrom",getDigestPasswordEncoder().getName());
-            service2 = createUserGroupService("copyTo",getDigestPasswordEncoder().getName());            
+            service1 = createUserGroupService("copyFrom3",getDigestPasswordEncoder().getName());
+            service2 = createUserGroupService("copyTo3",getDigestPasswordEncoder().getName());            
             copyFrom(service1,service2);
             
             // digest to crypt
             boolean fail = false;
             try {
-                service1 = createUserGroupService("copyFrom",getDigestPasswordEncoder().getName());
-                service2 = createUserGroupService("copyTo");            
+                service1 = createUserGroupService("copyFrom4",getDigestPasswordEncoder().getName());
+                service2 = createUserGroupService("copyTo4");            
                 copyFrom(service1,service2);
             } catch (IOException ex) {
                 fail=true;
@@ -140,6 +140,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
             assertTrue("copy from digest to crypt must fail",fail);
             
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }
 
@@ -162,7 +163,10 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
     }
 
     public void testEncryption() throws Exception {
-        getSecurityManager().getSecurityConfig().setConfigPasswordEncrypterName(null);
+        SecurityManagerConfig config = getSecurityManager().getSecurityConfig();
+        config.setConfigPasswordEncrypterName(getNullPasswordEncoder().getName());
+        getSecurityManager().saveSecurityConfig(config);
+
         String serviceName = "testEncrypt";
         String prefix = getPBEPasswordEncoder().getPrefix();
         
@@ -197,7 +201,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
         assertEquals(plainTextUserGroup, ugService.getToBeEncrypted());
         
         // SWITCH TO ENCRYPTION
-        SecurityManagerConfig config = getSecurityManager().getSecurityConfig();
+        config = getSecurityManager().getSecurityConfig();
         config.setConfigPasswordEncrypterName(getPBEPasswordEncoder().getName());
         getSecurityManager().saveSecurityConfig(config);
         getSecurityManager().updateConfigurationFilesWithEncryptedFields();
@@ -256,7 +260,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
         assertEquals(plainTextUserGroup, ugService.getToBeEncrypted());
         
         // SWITCH TO PLAINTEXT
-        config.setConfigPasswordEncrypterName(null);
+        config.setConfigPasswordEncrypterName(getNullPasswordEncoder().getName());
         getSecurityManager().saveSecurityConfig(config);
         getSecurityManager().updateConfigurationFilesWithEncryptedFields();
         
@@ -281,7 +285,7 @@ public class MemoryUserDetailsServiceTest extends AbstractUserDetailsServiceTest
     public void testPasswordPersistence() throws Exception {
         Catalog cat = getCatalog();
         SecurityManagerConfig config = getSecurityManager().getSecurityConfig();
-        config.setConfigPasswordEncrypterName(null);
+        config.setConfigPasswordEncrypterName(getNullPasswordEncoder().getName());
         getSecurityManager().saveSecurityConfig(config);
 
         GeoServerPersister p = 

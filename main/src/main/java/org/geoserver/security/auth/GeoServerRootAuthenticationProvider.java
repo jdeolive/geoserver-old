@@ -43,7 +43,7 @@ public class GeoServerRootAuthenticationProvider extends GeoServerAuthentication
     
     public GeoServerRootAuthenticationProvider() {
         super();
-        setName("RootAuthenticationProvider");
+        setName("root");
     }
 
     

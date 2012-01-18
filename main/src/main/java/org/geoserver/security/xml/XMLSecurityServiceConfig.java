@@ -16,6 +16,14 @@ public class XMLSecurityServiceConfig  extends FileBasedSecurityServiceConfig {
     private static final long serialVersionUID = 1L;
     private boolean validating;
 
+    public XMLSecurityServiceConfig() {
+    }
+
+    public XMLSecurityServiceConfig(XMLSecurityServiceConfig other) {
+        super(other);
+        validating = other.isValidating();
+    }
+
     /**
      * Flag activating/deactivating xml schema validation.
      */

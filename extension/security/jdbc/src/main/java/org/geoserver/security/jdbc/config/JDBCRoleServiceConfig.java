@@ -20,6 +20,14 @@ public class JDBCRoleServiceConfig extends JDBCSecurityServiceConfig
 
     protected String adminRoleName;
 
+    public JDBCRoleServiceConfig() {
+    }
+
+    public JDBCRoleServiceConfig(JDBCRoleServiceConfig other) {
+        super(other);
+        adminRoleName = other.getAdminRoleName();
+    }
+
     @Override
     public String getAdminRoleName() {
         return adminRoleName;

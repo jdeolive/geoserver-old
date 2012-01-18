@@ -17,6 +17,14 @@ public class BaseSecurityNamedServiceConfig implements SecurityNamedServiceConfi
     private String name;
     private String className;
 
+    public BaseSecurityNamedServiceConfig() {
+    }
+
+    public BaseSecurityNamedServiceConfig(BaseSecurityNamedServiceConfig other) {
+        name = other.getName();
+        className = other.getClassName();
+    }
+
     public String getId() {
         return id;
     }

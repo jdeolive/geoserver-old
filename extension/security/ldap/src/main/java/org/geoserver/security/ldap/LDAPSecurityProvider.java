@@ -13,6 +13,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 
 import org.geoserver.config.util.XStreamPersister;
+import org.geoserver.security.DelegatingAuthenticationProvider;
+import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerSecurityManager;
 import org.geoserver.security.GeoServerSecurityProvider;
 import org.geoserver.security.GeoServerUserGroupService;
@@ -49,7 +51,7 @@ public class LDAPSecurityProvider extends GeoServerSecurityProvider {
     }
     
     @Override
-    public AuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
+    public GeoServerAuthenticationProvider createAuthenticationProvider(SecurityNamedServiceConfig config) {
         LDAPSecurityServiceConfig ldapConfig = (LDAPSecurityServiceConfig) config;
         
         DefaultSpringSecurityContextSource ldapContext = 
@@ -99,6 +101,6 @@ public class LDAPSecurityProvider extends GeoServerSecurityProvider {
             }
         }
 
-        return new LdapAuthenticationProvider(authenticator, authPopulator);
+        return new DelegatingAuthenticationProvider(new LdapAuthenticationProvider(authenticator, authPopulator));
     }
 }

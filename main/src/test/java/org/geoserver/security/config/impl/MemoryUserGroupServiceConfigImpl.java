@@ -14,7 +14,17 @@ public class MemoryUserGroupServiceConfigImpl extends BaseSecurityNamedServiceCo
     protected String passwordEncoderName;
     protected String passwordPolicyName;
     protected String toBeEncrypted;
-    
+
+    public MemoryUserGroupServiceConfigImpl() {
+    }
+
+    public MemoryUserGroupServiceConfigImpl(MemoryUserGroupServiceConfigImpl other) {
+        super(other);
+        passwordEncoderName = other.getPasswordEncoderName(); 
+        passwordPolicyName = other.getPasswordPolicyName();
+        toBeEncrypted = other.getToBeEncrypted();
+    }
+
     public String getToBeEncrypted() {
         return toBeEncrypted;
     }

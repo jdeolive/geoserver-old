@@ -67,7 +67,7 @@ public abstract class AbstractDataAccessRulePage extends AbstractSecurityPage {
         form.add(rolesFormComponent = new DataRolesFormComponent(rule,form));
 
         // build the submit/cancel
-        form.add(new BookmarkablePageLink<DataAccessRule>("cancel", DataAccessRulePage.class));
+        form.add(new BookmarkablePageLink<DataAccessRule>("cancel", DataSecurityPage.class));
         saveLink=saveLink();
         form.add(saveLink);
 

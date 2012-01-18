@@ -19,6 +19,15 @@ public class PasswordPolicyConfig extends BaseSecurityNamedServiceConfig {
         maxLength=-1;
     }
 
+    public PasswordPolicyConfig(PasswordPolicyConfig other) {
+        super(other);
+        uppercaseRequired = other.isUppercaseRequired();
+        lowercaseRequired = other.isLowercaseRequired();
+        digitRequired = other.isDigitRequired();
+        minLength = other.getMinLength();
+        maxLength = other.getMaxLength();
+    }
+
     /**
      * Is an upper case letter required {@link Character#isUpperCase(char)}
      *

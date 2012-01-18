@@ -44,8 +44,12 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
     
     protected GeoServerRoleService createRoleService(String serviceName, String xmlFileName) throws Exception {
          
-        XMLRoleServiceConfig gaConfig = new XMLRoleServiceConfig();                 
-        gaConfig.setName(serviceName);
+        XMLRoleServiceConfig gaConfig = 
+            (XMLRoleServiceConfig) getSecurityManager().loadRoleServiceConfig(serviceName);
+        if (gaConfig == null) {
+            gaConfig = new XMLRoleServiceConfig();
+            gaConfig.setName(serviceName);
+        }
         gaConfig.setClassName(XMLRoleService.class.getName());
         gaConfig.setCheckInterval(1000);   
         gaConfig.setFileName(xmlFileName);
@@ -82,7 +86,7 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
 
     public void testDefault() {
         try {
-            GeoServerRoleService service = createRoleService("default");
+            GeoServerRoleService service = getSecurityManager().loadRoleService("default");
             
             assertEquals(1, service.getRoles().size());
             GeoServerRole admin_role= service.getRoleByName(
@@ -95,6 +99,7 @@ public class XMLRoleServiceTest extends AbstractRoleServiceTest {
             
             
         } catch (Exception ex) {
+            ex.printStackTrace();
             Assert.fail(ex.getMessage());
         }                
     }

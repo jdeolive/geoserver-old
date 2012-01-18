@@ -31,7 +31,7 @@
 	select propname,propvalue from  user_props where username = ?
   </entry>
   <entry key="userprops.userPropsForGroup">
-		select p.username,p.propname,propvalue from  userprops p, group_members m where m.groupname= ? and m.username = p.username
+		select p.username,p.propname,propvalue from  user_props p, group_members m where m.groupname= ? and m.username = p.username
   </entry>  
   <entry key="userprops.deleteForUser">
 	delete from user_props where username=?

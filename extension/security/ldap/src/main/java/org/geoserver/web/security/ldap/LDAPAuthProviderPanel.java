@@ -118,7 +118,7 @@ public class LDAPAuthProviderPanel extends AuthenticationProviderPanel<LDAPSecur
             super(id, new Model(new HashMap()));
 
             add(new TextField("username", new MapModel(getModel(), "username")));
-            add(new PasswordTextField("password", new MapModel(getModel(), "password")));
+            add(new PasswordTextField("password", new MapModel(getModel(), "password")).setRequired(false));
             add(new AjaxSubmitLink("test") {
 
                 @Override
