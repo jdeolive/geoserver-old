@@ -10,17 +10,14 @@ import org.geoserver.security.jdbc.JDBCRoleService;
 public class JDBCRoleServiceConfig extends JDBCSecurityServiceConfig
         implements SecurityRoleServiceConfig {
 
-    public JDBCRoleServiceConfig() {
-        super();
-        setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
-        setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);        
-    }
-    
     private static final long serialVersionUID = 1L;
 
     protected String adminRoleName;
 
     public JDBCRoleServiceConfig() {
+        super();
+        setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
+        setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
     }
 
     public JDBCRoleServiceConfig(JDBCRoleServiceConfig other) {

@@ -155,13 +155,13 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
                 
         config.setPropertyFileNameDDL(null);
         try {
-            getSecurityManager().saveRoleService(config, true);
+            getSecurityManager().saveRoleService(config);
         } catch (SecurityConfigException ex) {
             throw new IOException(ex);
         }
         config.setPropertyFileNameDML(null);
         try {            
-            getSecurityManager().saveRoleService(config, false);                         
+            getSecurityManager().saveRoleService(config);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_212,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -174,12 +174,12 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
         
         // run only if a temp dir is availbale
-        if (new JdbcSecurityConfigValidator().getTempDir()!=null) {
+        if (new JdbcSecurityConfigValidator(getSecurityManager()).getTempDir()!=null) {
             String invalidPath="abc"+File.separator+"def.properties";
             config.setPropertyFileNameDDL(invalidPath);
             fail=false;
             try {
-                getSecurityManager().saveRoleService(config, false);
+                getSecurityManager().saveRoleService(config);
             } catch (SecurityConfigException ex) {
                 assertEquals(SEC_ERR_211, ex.getErrorId());
                 assertEquals(invalidPath, ex.getArgs()[0]);
@@ -192,12 +192,12 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
  
         // run only if a temp dir is availbale
-        if (new JdbcSecurityConfigValidator().getTempDir()!=null) {
+        if (new JdbcSecurityConfigValidator(getSecurityManager()).getTempDir()!=null) {
             String invalidPath="abc"+File.separator+"def.properties";
             config.setPropertyFileNameDML(invalidPath);
             fail=false;
             try {
-                getSecurityManager().saveRoleService(config, false);
+                getSecurityManager().saveRoleService(config);
             } catch (SecurityConfigException ex) {
                 assertEquals(SEC_ERR_213, ex.getErrorId());
                 assertEquals(invalidPath, ex.getArgs()[0]);
@@ -314,13 +314,13 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         
         config.setPropertyFileNameDDL(null);
         try {
-            getSecurityManager().saveUserGroupService(config, true);
+            getSecurityManager().saveUserGroupService(config);
         } catch (SecurityConfigException ex) {
             throw new IOException(ex);
         }
         config.setPropertyFileNameDML(null);
         try {            
-            getSecurityManager().saveUserGroupService(config, false);                         
+            getSecurityManager().saveUserGroupService(config);
         } catch (SecurityConfigException ex) {
             assertEquals( SEC_ERR_212,ex.getErrorId());
             assertEquals(0,ex.getArgs().length);
@@ -333,12 +333,12 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
         
         // run only if a temp dir is availbale
-        if (new JdbcSecurityConfigValidator().getTempDir()!=null) {
+        if (new JdbcSecurityConfigValidator(getSecurityManager()).getTempDir()!=null) {
             String invalidPath="abc"+File.separator+"def.properties";
             config.setPropertyFileNameDDL(invalidPath);
             fail=false;
             try {
-                getSecurityManager().saveUserGroupService(config, false);
+                getSecurityManager().saveUserGroupService(config);
             } catch (SecurityConfigException ex) {
                 assertEquals(SEC_ERR_211, ex.getErrorId());
                 assertEquals(invalidPath, ex.getArgs()[0]);
@@ -351,12 +351,12 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
  
         // run only if a temp dir is availbale
-        if (new JdbcSecurityConfigValidator().getTempDir()!=null) {
+        if (new JdbcSecurityConfigValidator(getSecurityManager()).getTempDir()!=null) {
             String invalidPath="abc"+File.separator+"def.properties";
             config.setPropertyFileNameDML(invalidPath);
             fail=false;
             try {
-                getSecurityManager().saveUserGroupService(config, false);
+                getSecurityManager().saveUserGroupService(config);
             } catch (SecurityConfigException ex) {
                 assertEquals(SEC_ERR_213, ex.getErrorId());
                 assertEquals(invalidPath, ex.getArgs()[0]);
