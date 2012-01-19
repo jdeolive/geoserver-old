@@ -19,7 +19,7 @@ public class JDBCUserGroupServiceConfig extends JDBCSecurityServiceConfig
     public JDBCUserGroupServiceConfig() {
         super();
         setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
-        setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
+        setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);     
     }
     
     public String getPasswordPolicyName() {

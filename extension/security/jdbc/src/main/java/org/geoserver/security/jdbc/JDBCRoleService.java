@@ -95,6 +95,7 @@ public  class JDBCRoleService extends AbstractJDBCService implements GeoServerRo
             if (fileNameDDL!=null && fileNameDDL.length()> 0 ) {
                 file = checkORCreateJDBCPropertyFile(fileNameDDL, getConfigRoot(), DEFAULT_DDL_FILE);
                 ddlProps = Util.loadUniversal(new FileInputStream(file));
+                createTablesIfRequired((JDBCSecurityServiceConfig)config);
             }
         }
         if (((SecurityRoleServiceConfig)config).getAdminRoleName()!=null) {

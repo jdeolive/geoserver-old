@@ -66,11 +66,15 @@ public abstract class JDBCUserGroupServiceTest extends AbstractUserGroupServiceT
         try {                        
             JDBCUserGroupStore jdbcStore = 
                 (JDBCUserGroupStore) store;            
+            assertTrue(jdbcStore.tablesAlreadyCreated());
             jdbcStore.checkDDLStatements();
             jdbcStore.checkDMLStatements();
             jdbcStore.clear();
             jdbcStore.dropTables();
             jdbcStore.store();
+            assertFalse(jdbcStore.tablesAlreadyCreated());
+            jdbcStore.load();
+
         } catch (IOException ex) {
             Assert.fail(ex.getMessage());
         }

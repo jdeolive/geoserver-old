@@ -28,6 +28,7 @@ import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.impl.RoleCalculator;
 import org.geoserver.security.impl.Util;
+import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
 import org.geoserver.security.jdbc.config.JDBCUserGroupServiceConfig;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.KeyStoreProvider;
@@ -105,6 +106,7 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements GeoSer
             if (fileNameDDL!=null && fileNameDDL.length()> 0 ) {
                 file = checkORCreateJDBCPropertyFile(fileNameDDL, getConfigRoot(), DEFAULT_DDL_FILE);
                 ddlProps = Util.loadUniversal(new FileInputStream(file));
+                createTablesIfRequired((JDBCSecurityServiceConfig)config);
             }
             
             GeoServerPasswordEncoder enc = getSecurityManager().loadPasswordEncoder(passwordEncoderName);

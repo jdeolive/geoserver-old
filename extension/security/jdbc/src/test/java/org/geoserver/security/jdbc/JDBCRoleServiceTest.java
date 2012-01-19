@@ -69,11 +69,14 @@ public abstract class JDBCRoleServiceTest extends AbstractRoleServiceTest {
         try {        
             JDBCRoleStore jdbcStore =  
                 (JDBCRoleStore) store;
+            assertTrue(jdbcStore.tablesAlreadyCreated());
             jdbcStore.checkDDLStatements();
             jdbcStore.checkDMLStatements();
             jdbcStore.clear();
-            jdbcStore.dropTables();
+            jdbcStore.dropTables();            
             jdbcStore.store();
+            assertFalse(jdbcStore.tablesAlreadyCreated());
+            jdbcStore.load();
         } catch (IOException ex) {
             Assert.fail(ex.getMessage());
         }

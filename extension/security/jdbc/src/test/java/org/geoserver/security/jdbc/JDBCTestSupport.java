@@ -78,6 +78,7 @@ public class JDBCTestSupport {
         config.setClassName(JDBCUserGroupService.class.getName());
         config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
+        config.setCreatingTables(false);
         config.setPasswordEncoderName(
             securityManager.loadPasswordEncoder(GeoServerDigestPasswordEncoder.class).getName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
@@ -101,6 +102,7 @@ public class JDBCTestSupport {
         config.setClassName(JDBCRoleService.class.getName());
         config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
+        config.setCreatingTables(false);
         config.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
         securityManager.saveRoleService(config,
                 !(securityManager.listRoleServices().contains(serviceName)));
@@ -122,7 +124,8 @@ public class JDBCTestSupport {
         config.setUserName(props.getProperty("user") == null ? props.getProperty("username") : props.getProperty("user"));
         config.setPassword(props.getProperty("password"));            
         config.setClassName(JDBCRoleService.class.getName());
-        config.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());        
+        config.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
+        config.setCreatingTables(false);
         if ("mysql".equals(fixtureId)) {
             config.setPropertyFileNameDDL("rolesddl.mysql.xml");            
         } else {
@@ -149,6 +152,7 @@ public class JDBCTestSupport {
         config.setUserName(props.getProperty("user")== null ? props.getProperty("username"): props.getProperty("user"));
         config.setPassword(props.getProperty("password"));                       
         config.setClassName(JDBCUserGroupService.class.getName());
+        config.setCreatingTables(false);
         config.setPasswordEncoderName(
             securityManager.loadPasswordEncoder(GeoServerDigestPasswordEncoder.class).getName());
         config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
