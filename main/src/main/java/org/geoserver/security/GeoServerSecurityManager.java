@@ -572,11 +572,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 
         if (isNew)
             validator.validateAddRoleService(config);
-        else
+        else 
             validator.validateModifiedRoleService(config,
                     roleServiceHelper.loadConfig(config.getName()));
 
         roleServiceHelper.saveConfig(config);
+        // remove from cache
+        roleServices.remove(config.getName());
+
     }
     
     /**
@@ -699,6 +702,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                     userGroupServiceHelper.loadConfig(config.getName()));
 
         userGroupServiceHelper.saveConfig(config);
+        // remove from cache
+        userGroupServices.remove(config.getName());
+
     }
 
     /**

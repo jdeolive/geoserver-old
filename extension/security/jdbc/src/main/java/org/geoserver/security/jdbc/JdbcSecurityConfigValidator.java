@@ -24,6 +24,7 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
         JDBCSecurityServiceConfig jdbcConfig = (JDBCSecurityServiceConfig) config;
         
         validateFileNames(jdbcConfig,JDBCRoleService.DEFAULT_DDL_FILE,JDBCRoleService.DEFAULT_DML_FILE);
+        checkAutomaticTableCreation(jdbcConfig);
         
         if (jdbcConfig.isJndi())
             validateJNDI(jdbcConfig);
@@ -39,11 +40,19 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
         JDBCSecurityServiceConfig jdbcConfig = (JDBCSecurityServiceConfig) config;
         
         validateFileNames(jdbcConfig,JDBCUserGroupService.DEFAULT_DDL_FILE,JDBCUserGroupService.DEFAULT_DML_FILE);
+        checkAutomaticTableCreation(jdbcConfig);
         
         if (jdbcConfig.isJndi())
             validateJNDI(jdbcConfig);
         else
             validateJDBC(jdbcConfig);
+    }
+    
+   protected void checkAutomaticTableCreation (JDBCSecurityServiceConfig config) throws SecurityConfigException {
+        if (config.isCreatingTables()) {
+            if (isNotEmpty(config.getPropertyFileNameDDL())==false)
+                throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_204);
+        }
     }
     
     protected void validateFileNames(JDBCSecurityServiceConfig config, String defaultDDL, String defaultDML) throws SecurityConfigException    

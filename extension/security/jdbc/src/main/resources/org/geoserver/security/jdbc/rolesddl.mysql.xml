@@ -2,6 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
   <comment>DDL statements for role database</comment>
+  <entry key="check.table">roleprops</entry>
   <entry key="roles.create">
 	create table roles(name varchar(64) not null,parent varchar(64),  primary key(name)) ENGINE=InnoDB
   </entry>

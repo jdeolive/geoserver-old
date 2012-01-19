@@ -4,6 +4,7 @@
  */
 package org.geoserver.web.security.config.details;
 
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
@@ -22,6 +23,7 @@ public class JDBCRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     JDBCConnectFormComponent comp;
     TextField<String> propertyFileNameDDLComponent;
     TextField<String> propertyFileNameDMLComponent;
+    CheckBox creatingTablesComponent;
 
     
     public JDBCRoleConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
@@ -46,10 +48,14 @@ public class JDBCRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
         }        
         addOrReplace(comp);        
         
+        add(creatingTablesComponent=new CheckBox("config.creatingTables"));
+        
         propertyFileNameDDLComponent = new TextField<String>("config.propertyFileNameDDL");
         add(propertyFileNameDDLComponent);
         propertyFileNameDMLComponent = new TextField<String>("config.propertyFileNameDML");
-        add(propertyFileNameDMLComponent);        
+        add(propertyFileNameDMLComponent);
+        
+        
     };
         
     
@@ -62,6 +68,7 @@ public class JDBCRoleConfigDetailsPanel extends AbstractRoleDetailsPanel{
     public void updateModel() {
         super.updateModel();
         comp.updateModel();
+        creatingTablesComponent.updateModel();
         propertyFileNameDDLComponent.updateModel();
         propertyFileNameDMLComponent.updateModel();
 

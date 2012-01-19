@@ -4,6 +4,7 @@ import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_201;
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_202;
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_203;
+import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_204;
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_210;
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_211;
 import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_212;
@@ -38,6 +39,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setClassName(aClass.getName());
         config.setPasswordEncoderName(encoder);
         config.setPasswordPolicyName(policyName);
+        config.setCreatingTables(false);
         return config;
     }
     
@@ -47,6 +49,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setName(name);
         config.setClassName(aClass.getName());
         config.setAdminRoleName(adminRole);
+        config.setCreatingTables(false);
         return config;
     }
     
@@ -202,7 +205,21 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
             }
             assertTrue(fail);
         }
+
+        config.setPropertyFileNameDDL(null);
+        config.setCreatingTables(true);
+        config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
         
+        try {
+            getSecurityManager().saveRoleService(config, false);
+        } catch (SecurityConfigException ex) {
+            assertEquals(SEC_ERR_204, ex.getErrorId());
+            assertEquals(0, ex.getArgs().length);
+            fail=true;
+        }
+        assertTrue(fail);
+
+
     }
 
     @Override
@@ -347,7 +364,20 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
             }
             assertTrue(fail);
         }
-                
+
+        
+        config.setPropertyFileNameDDL(null);
+        config.setCreatingTables(true);
+        config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
+        
+        try {
+            getSecurityManager().saveUserGroupService(config, false);
+        } catch (SecurityConfigException ex) {
+            assertEquals(SEC_ERR_204, ex.getErrorId());
+            assertEquals(0, ex.getArgs().length);
+            fail=true;
+        }
+        assertTrue(fail);        
     }
 
     @Override

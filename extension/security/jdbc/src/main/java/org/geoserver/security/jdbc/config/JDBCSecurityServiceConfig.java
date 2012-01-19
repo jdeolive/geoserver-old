@@ -25,6 +25,7 @@ public class JDBCSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
     private String connectURL;
     private String userName;
     private String password;
+    private boolean creatingTables;
 
     /**
      * Flag controlling whether to connect through JNDI or through creation of a direct connection. 
@@ -157,6 +158,25 @@ public class JDBCSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
      */
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    /**
+     * Indicates if the tables are created behind the scenes
+     * 
+     * @return
+     */
+    public boolean isCreatingTables() {
+        return creatingTables;
+    }
+
+    
+    /**
+     * set table creation flag
+     * 
+     * @param creatingTables
+     */
+    public void setCreatingTables(boolean creatingTables) {
+        this.creatingTables = creatingTables;
     }
 
 }

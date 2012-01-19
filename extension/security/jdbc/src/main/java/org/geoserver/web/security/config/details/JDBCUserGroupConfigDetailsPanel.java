@@ -4,6 +4,7 @@
  */
 package org.geoserver.web.security.config.details;
 
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
@@ -22,6 +23,7 @@ public class JDBCUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPan
     JDBCConnectFormComponent comp;
     TextField<String> propertyFileNameDDLComponent;
     TextField<String> propertyFileNameDMLComponent;
+    CheckBox creatingTablesComponent;
 
     
     public JDBCUserGroupConfigDetailsPanel(String id, CompoundPropertyModel<SecurityNamedConfigModelHelper> model) {
@@ -42,6 +44,7 @@ public class JDBCUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPan
        }
         addOrReplace(comp);
 
+        add(creatingTablesComponent=new CheckBox("config.creatingTables"));
         propertyFileNameDDLComponent = new TextField<String>("config.propertyFileNameDDL");
         add(propertyFileNameDDLComponent);
         propertyFileNameDMLComponent = new TextField<String>("config.propertyFileNameDML");
@@ -60,6 +63,7 @@ public class JDBCUserGroupConfigDetailsPanel extends AbstractUserGroupDetailsPan
     public void updateModel() {
         super.updateModel();
         comp.updateModel();
+        creatingTablesComponent.updateModel();
         propertyFileNameDDLComponent.updateModel();
         propertyFileNameDMLComponent.updateModel();
         JDBCSecurityServiceConfig config = (JDBCSecurityServiceConfig) configHelper.getConfig();

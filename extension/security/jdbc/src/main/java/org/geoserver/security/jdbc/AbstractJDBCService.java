@@ -8,12 +8,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.naming.Context;
@@ -230,6 +232,33 @@ public abstract class AbstractJDBCService extends AbstractGeoServerSecurityServi
      */
     protected abstract String[] getOrderedNamesForDrop();
     
+    
+    public void createTablesIfRequired(JDBCSecurityServiceConfig config) throws IOException{
+        
+        if (this.canCreateStore()==false) return;
+        if (config.isCreatingTables()==false) return;
+        if (tablesAlreadyCreated()) return;
+        
+        Connection con = null;
+        PreparedStatement ps = null;
+        try {
+            con = datasource.getConnection();            
+            if (con.getAutoCommit()==true)
+                con.setAutoCommit(false);
+            con = getConnection();
+            for (String stmt : getOrderedNamesForCreate()) {
+                ps= getDDLStatement(stmt, con);
+                ps.execute();
+                ps.close();
+            }
+            con.commit();
+        } catch (SQLException ex) {
+            throw new IOException(ex);
+        } finally {
+            closeFinally(con, ps, null);
+        }        
+    }
+    
   
     /**
      * create tables and indexes, statement order
@@ -325,6 +354,60 @@ public abstract class AbstractJDBCService extends AbstractGeoServerSecurityServi
         return checkSQLStatements(ddlProps);
     }
 
+    /**
+     * Checks if the tables are already created
+     * 
+     * @param con
+     * @return
+     * @throws IOException
+     */
+    public boolean tablesAlreadyCreated() throws IOException {
+        ResultSet rs=null;
+        Connection con=null;
+        try  {
+            con=getConnection();
+            DatabaseMetaData md = con.getMetaData();            
+            String schemaName=null;
+            String tableName = ddlProps.getProperty("check.table");
+            if (tableName.contains(".")) {
+                StringTokenizer tok = new StringTokenizer(tableName,".");
+                schemaName=tok.nextToken();
+                tableName=tok.nextToken();
+            }
+            // try exact match
+            rs = md.getTables(null, schemaName, tableName, null);
+            if (rs.next()) return true;
+            
+            // try with upper case letters
+            rs.close();
+            schemaName = schemaName==null ? null : schemaName.toUpperCase();
+            tableName = tableName.toUpperCase();
+            rs = md.getTables(null, schemaName, tableName, null);
+            if (rs.next()) return true;
+            
+            // try with lower case letters
+            rs.close();
+            schemaName = schemaName==null ? null : schemaName.toLowerCase();
+            tableName = tableName.toLowerCase();
+            rs = md.getTables(null, schemaName, tableName, null);
+            if (rs.next()) return true;
+            
+            return false;
+
+        } catch (SQLException ex) {
+            throw new IOException(ex);
+        } finally {
+            try {
+                if (rs!=null)
+                    rs.close();
+                if (con!=null)
+                    closeConnection(con);
+            } catch (SQLException e) {
+                // do nothing
+            }
+        }        
+    }
+    
     /**
      * Checks if the sql statements contained in props
      * can be prepared against the db

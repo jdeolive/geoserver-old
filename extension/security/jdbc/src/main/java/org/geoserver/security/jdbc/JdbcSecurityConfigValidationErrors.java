@@ -15,10 +15,12 @@ public class JdbcSecurityConfigValidationErrors extends SecurityConfigValidation
     public final static String SEC_ERR_201 = "SEC_ERR_201";
     public final static String SEC_ERR_202 = "SEC_ERR_202";
     public final static String SEC_ERR_203 = "SEC_ERR_203";
+    public final static String SEC_ERR_204 = "SEC_ERR_204";
     public final static String SEC_ERR_210 = "SEC_ERR_210";
     public final static String SEC_ERR_211 = "SEC_ERR_211";
     public final static String SEC_ERR_212 = "SEC_ERR_212";
     public final static String SEC_ERR_213 = "SEC_ERR_213";
+    
     
     @Override
     public String formatErrorMsg(String id, Object... args) {
@@ -30,7 +32,9 @@ public class JdbcSecurityConfigValidationErrors extends SecurityConfigValidation
         if (SEC_ERR_202.equals(id))
             return MessageFormat.format("Jdbc connect url is mandatory",args);        
         if (SEC_ERR_203.equals(id))
-            return MessageFormat.format("Driver named {0} is not in class path",args);        
+            return MessageFormat.format("Driver named {0} is not in class path",args);
+        if (SEC_ERR_204.equals(id))
+            return MessageFormat.format("Cannot create tables without a DDL property file",args);                
         if (SEC_ERR_210.equals(id))
             return MessageFormat.format("JNDI name is mandatory",args);
         if (SEC_ERR_211.equals(id))
