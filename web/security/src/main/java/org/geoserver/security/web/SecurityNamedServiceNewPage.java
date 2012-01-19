@@ -79,7 +79,7 @@ public class SecurityNamedServiceNewPage
         add(new WebMarkupContainer("servicesContainer").add(serviceLinks).setOutputMarkupId(true));
 
         add(form = new Form<T>("form"));
-        
+
         //add a container for the actual panel, since we will dynamically update it
         form.add(panelContainer = new WebMarkupContainer("panel"));
         panelContainer.setOutputMarkupId(true);
@@ -88,7 +88,6 @@ public class SecurityNamedServiceNewPage
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 handleSubmit(target, form);
-                
             }
         });
         form.add(new AjaxLink("cancel") {

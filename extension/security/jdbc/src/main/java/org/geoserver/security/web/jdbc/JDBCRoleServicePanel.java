@@ -4,6 +4,7 @@
  */
 package org.geoserver.security.web.jdbc;
 
+import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 import org.geoserver.security.jdbc.JDBCRoleService;
 import org.geoserver.security.jdbc.config.JDBCRoleServiceConfig;
@@ -20,5 +21,7 @@ public class JDBCRoleServicePanel extends RoleServicePanel<JDBCRoleServiceConfig
         super(id, model);
 
         add(new JDBCConnectionPanel("cx", model).setFeedbackPanel(feedbackPanel));
+        add(new TextField("propertyFileNameDDL").setRequired(true));
+        add(new TextField("propertyFileNameDML").setRequired(true));
     }
 }
