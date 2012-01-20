@@ -36,9 +36,8 @@ import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
  */
 public  class JDBCRoleService extends AbstractJDBCService implements GeoServerRoleService {
     
-    public final static String DEFAULT_DML_FILE="rolesdml.xml";
-    public final static String DEFAULT_DDL_FILE="rolesddl.xml";
-    
+    final static String DEFAULT_DML_FILE="rolesdml.xml";
+    final static String DEFAULT_DDL_FILE="rolesddl.xml";
     
     /** logger */
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.jdbc");
@@ -98,7 +97,6 @@ public  class JDBCRoleService extends AbstractJDBCService implements GeoServerRo
                 createTablesIfRequired((JDBCSecurityServiceConfig)config);
             }
 
-            createTablesSafe();
         }
         if (((SecurityRoleServiceConfig)config).getAdminRoleName()!=null) {
             adminRole = createRoleObject(GeoServerRole.ADMIN_ROLE.getAuthority());

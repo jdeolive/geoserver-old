@@ -4,16 +4,24 @@
 	xmlns:wicket="http://wicket.apache.org/">
 <body>
 <wicket:panel>
-	<table>
-        <tr><td><a class="add-link" href="#" wicket:id="addNew"><wicket:message key="addNew" /></a></td></tr>
-        <tr><td><a class="remove-link" href="#" wicket:id="removeSelected"><wicket:message key="removeSelected" /></a></td></tr>
-        <tr><td><a class="remove-link" href="#" wicket:id="removeSelectedWithRoles"><wicket:message key="removeSelectedWithRoles" /></a></td></tr>                
-    </table>          	
- 	<br />
-    
-	<div wicket:id="table"></div>
-	<!-- the cascade delete confirmation dialog -->
-  	<div wicket:id="dialog"></div>
+ <form>
+  <ul>
+    <li>
+      <span wicket:id="message"></span>
+    </li>
+    <li>
+      <ul>
+        <li><a class="add-link" href="#" wicket:id="addNew"><wicket:message key="addNew" /></a></li>
+        <li><a class="remove-link" href="#" wicket:id="removeSelected"><wicket:message key="removeSelected" /></a></li>
+        <li><a class="remove-link" href="#" wicket:id="removeSelectedWithRoles"><wicket:message key="removeSelectedWithRoles" /></a></li>
+      </ul>
+    </li>
+    <li>
+      <div wicket:id="table"></div>
+    </li>
+  </ul>
+ </form>
+ <div wicket:id="dialog"></div>
 </wicket:panel>
 </body>
 </html>

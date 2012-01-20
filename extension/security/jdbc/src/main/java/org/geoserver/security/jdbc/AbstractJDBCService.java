@@ -286,37 +286,6 @@ public abstract class AbstractJDBCService extends AbstractGeoServerSecurityServi
     }
 
     /**
-     * Creates tables and index, not failing during an error executing a statement.
-     * <p>
-     * THis method is meant to initialize the tables, not failing when they already exist.
-     * </p>
-     */
-    public List<SQLException> createTablesSafe() throws IOException {
-        List<SQLException> errors = new ArrayList();
-        Connection cx = null;
-        try {
-            cx = getConnection();
-            for (String key : getOrderedNamesForCreate()) {
-                try {
-                    PreparedStatement ps = getDDLStatement(key, cx);
-                    ps.execute();
-                    ps.close();
-                }
-                catch(SQLException e) {
-                    errors.add(e);
-                }
-            }
-        }
-        catch(Exception e) {
-            throw new IOException("Unable to create tables", e);
-        }
-        finally {
-            closeFinally(cx, null, null);
-        }
-        return errors;
-    }
-
-    /**
      * drops tables, statement oder defined by
      * {@link #getOrderedNamesForDrop()}
      * 

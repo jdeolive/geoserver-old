@@ -5,5 +5,21 @@
 	
 	<bean id="memoryDetailsPanelProvider" class="org.geoserver.web.security.config.details.MemoryConfigDetailsPanelProvider">
 	</bean>
-	
+
+    <!-- user group service panel info -->
+    <bean id="readOnlyUserGroupServicePanelInfo" class="org.geoserver.security.web.usergroup.ReadOnlyUserGroupServicePanelInfo">
+        <property name="id" value="security.readOnlyUserGroupService" />
+        <property name="shortTitleKey" value="ReadOnlyUserGroupServicePanel.short"/>
+        <property name="titleKey" value="ReadOnlyUserGroupServicePanel.title"/>
+        <property name="descriptionKey" value="ReadOnlyUserGroupServicePanel.description"/>
+    </bean>
+    
+    <!-- role service panel info -->
+    <bean id="readOnlyRoleServicePanelInfo" class="org.geoserver.security.web.role.ReadOnlyRoleServicePanelInfo">
+        <property name="id" value="security.readOnlyRoleService" />
+        <property name="shortTitleKey" value="ReadOnlyRoleServicePanel.short"/>
+        <property name="titleKey" value="ReadOnlyRoleServicePanel.title"/>
+        <property name="descriptionKey" value="ReadOnlyRoleServicePanel.description"/>
+    </bean>
+
 </beans> 

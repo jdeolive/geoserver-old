@@ -11,6 +11,7 @@ import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.ResourceModel;
+import org.geoserver.security.password.GeoServerNullPasswordEncoder;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.web.GeoServerApplication;
 
@@ -50,6 +51,10 @@ public class PasswordEncoderChoice extends DropDownChoice<String> {
         PasswordEncoderNamesModel(List<GeoServerPasswordEncoder> encoders) {
             encoderNames = new ArrayList<String>();
             for (GeoServerPasswordEncoder pe : encoders) {
+                //skip the null encoder
+                if (pe instanceof GeoServerNullPasswordEncoder) {
+                    continue;
+                }
                 encoderNames.add(pe.getName());
             }
         }

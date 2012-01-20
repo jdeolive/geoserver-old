@@ -64,4 +64,11 @@ public class BaseSecurityNamedServiceConfig implements SecurityNamedServiceConfi
     public void setClassName(String className) {
         this.className = className;
     }
+
+    /**
+     * Does nothing, subclasses may override.
+     */
+    @Override
+    public void initBeforeSave() {
+    }
 }

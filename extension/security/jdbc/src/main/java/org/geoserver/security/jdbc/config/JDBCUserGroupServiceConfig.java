@@ -6,7 +6,6 @@
 package org.geoserver.security.jdbc.config;
 
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.jdbc.JDBCUserGroupService;
 
 public class JDBCUserGroupServiceConfig extends JDBCSecurityServiceConfig 
     implements SecurityUserGroupServiceConfig {
@@ -17,8 +16,6 @@ public class JDBCUserGroupServiceConfig extends JDBCSecurityServiceConfig
 
     public JDBCUserGroupServiceConfig() {
         super();
-        setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
-        setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);     
     }
     
     public JDBCUserGroupServiceConfig(JDBCUserGroupServiceConfig other) {
@@ -45,4 +42,23 @@ public class JDBCUserGroupServiceConfig extends JDBCSecurityServiceConfig
         passwordEncoderName=name;
     }
 
+    @Override
+    protected String defaultDDLFilename() {
+        return "usersddl.xml";
+    }
+
+    @Override
+    protected String defaultDDLFilenameMySQL() {
+        return "usersddl.mysql.xml";
+    }
+
+    @Override
+    protected String defaultDMLFilename() {
+        return "usersdml.xml";
+    }
+
+    @Override
+    protected String defaultDMLFilenameMySQL() {
+        return defaultDMLFilename();
+    }
 }

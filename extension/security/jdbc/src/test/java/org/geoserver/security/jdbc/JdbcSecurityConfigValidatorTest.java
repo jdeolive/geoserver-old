@@ -211,7 +211,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
         
         try {
-            getSecurityManager().saveRoleService(config, false);
+            getSecurityManager().saveRoleService(config);
         } catch (SecurityConfigException ex) {
             assertEquals(SEC_ERR_204, ex.getErrorId());
             assertEquals(0, ex.getArgs().length);
@@ -371,7 +371,7 @@ public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest
         config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
         
         try {
-            getSecurityManager().saveUserGroupService(config, false);
+            getSecurityManager().saveUserGroupService(config);
         } catch (SecurityConfigException ex) {
             assertEquals(SEC_ERR_204, ex.getErrorId());
             assertEquals(0, ex.getArgs().length);

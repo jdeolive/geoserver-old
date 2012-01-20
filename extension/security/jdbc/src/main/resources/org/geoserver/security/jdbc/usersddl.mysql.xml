@@ -2,7 +2,7 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
   <comment>DDL statements for user database</comment>
-  <entry key="check.table">userprops</entry>
+  <entry key="check.table">user_props</entry>
   <entry key="users.create">
 	create table users(name varchar(128) not null,password varchar(64), enabled char(1) not null, primary key(name))   ENGINE=InnoDB
   </entry>

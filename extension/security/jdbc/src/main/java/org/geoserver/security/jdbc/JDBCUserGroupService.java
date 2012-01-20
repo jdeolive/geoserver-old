@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.geoserver.security.GeoServerUserGroupService;
@@ -47,8 +46,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
  */
 public  class JDBCUserGroupService extends AbstractJDBCService implements GeoServerUserGroupService {
     
-    public final static String DEFAULT_DML_FILE="usersdml.xml";
-    public final static String DEFAULT_DDL_FILE="usersddl.xml";
+    final static String DEFAULT_DML_FILE="usersdml.xml";
+    final static String DEFAULT_DDL_FILE="usersddl.xml";
 
     /** logger */
     static Logger LOGGER = org.geotools.util.logging.Logging.getLogger("org.geoserver.security.jdbc");
@@ -122,8 +121,6 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements GeoSer
             enc.initializeFor(this);
             passwordValidatorName=jdbcConfig.getPasswordPolicyName();
 
-            //create underlying tables if necessary
-            createTablesSafe();
         }
     }
 

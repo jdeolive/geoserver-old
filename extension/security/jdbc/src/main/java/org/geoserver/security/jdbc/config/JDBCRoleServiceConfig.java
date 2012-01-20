@@ -5,7 +5,6 @@
 package org.geoserver.security.jdbc.config;
 
 import org.geoserver.security.config.SecurityRoleServiceConfig;
-import org.geoserver.security.jdbc.JDBCRoleService;
 
 public class JDBCRoleServiceConfig extends JDBCSecurityServiceConfig
         implements SecurityRoleServiceConfig {
@@ -16,8 +15,6 @@ public class JDBCRoleServiceConfig extends JDBCSecurityServiceConfig
 
     public JDBCRoleServiceConfig() {
         super();
-        setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
-        setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
     }
 
     public JDBCRoleServiceConfig(JDBCRoleServiceConfig other) {
@@ -33,6 +30,26 @@ public class JDBCRoleServiceConfig extends JDBCSecurityServiceConfig
     @Override
     public void setAdminRoleName(String name) {
         adminRoleName=name;
+    }
+
+    @Override
+    protected String defaultDDLFilename() {
+        return "rolesddl.xml";
+    }
+
+    @Override
+    protected String defaultDDLFilenameMySQL() {
+        return "rolesddl.mysql.xml";
+    }
+
+    @Override
+    protected String defaultDMLFilename() {
+        return "rolesdml.xml";
+    }
+
+    @Override
+    protected String defaultDMLFilenameMySQL() {
+        return defaultDMLFilename();
     }
 
 }

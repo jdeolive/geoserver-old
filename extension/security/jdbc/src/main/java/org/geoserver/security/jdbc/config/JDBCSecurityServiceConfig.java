@@ -13,7 +13,7 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
  *
  * @author christian
  */
-public class JDBCSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
+public abstract class JDBCSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
 
     private static final long serialVersionUID = 1L;
 
@@ -194,4 +194,43 @@ public class JDBCSecurityServiceConfig extends BaseSecurityNamedServiceConfig {
         this.creatingTables = creatingTables;
     }
 
+    /**
+     * Helper method to determine if the backing database is mysql. 
+     */
+    protected boolean isMySQL() {
+        return "com.mysql.jdbc.Driver".equals(driverClassName);
+    }
+
+    /**
+     * Initializes the DDL and DML property files based on the database type. 
+     */
+    public void initBeforeSave() {
+        if (propertyFileNameDDL == null) {
+            propertyFileNameDDL = isMySQL() ? defaultDDLFilenameMySQL() : defaultDDLFilename();
+        }
+
+        if (propertyFileNameDML == null) {
+            propertyFileNameDML = isMySQL() ? defaultDMLFilenameMySQL() : defaultDDLFilename();
+        }
+    }
+
+    /**
+     * return the default filename for the DDL file.
+     */
+    protected abstract String defaultDDLFilename();
+
+    /**
+     * return the default filename for the DDL file on MySQL.
+     */
+    protected abstract String defaultDDLFilenameMySQL();
+
+    /**
+     * return the default filename for the DML file.
+     */
+    protected abstract String defaultDMLFilename();
+
+    /**
+     * return the default filename for the DML file on MySQL.
+     */
+    protected abstract String defaultDMLFilenameMySQL();
 }

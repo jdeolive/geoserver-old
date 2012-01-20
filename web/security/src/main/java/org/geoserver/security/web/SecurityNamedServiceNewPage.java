@@ -89,6 +89,10 @@ public class SecurityNamedServiceNewPage
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
                 handleSubmit(target, form);
             }
+            @Override
+            protected void onError(AjaxRequestTarget target, Form<?> form) {
+                target.addComponent(feedbackPanel);
+            }
         });
         form.add(new AjaxLink("cancel") {
             @Override

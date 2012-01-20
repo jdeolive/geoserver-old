@@ -45,4 +45,13 @@ public interface SecurityNamedServiceConfig extends SecurityConfig {
      */
     void setClassName(String className);
 
+    /**
+     * Method for the config object to initialize any properties before being saved for the first
+     * time.
+     * <p>
+     * This method would typically be used to initialize properties not explicitly set by the 
+     * user, but that can be set based on other user initialized properties.
+     * </p>
+     */
+    void initBeforeSave();
 }

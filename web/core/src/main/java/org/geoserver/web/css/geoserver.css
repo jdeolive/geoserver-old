@@ -146,6 +146,9 @@ margin-right: 0;
 list-style-type: none;
 }
 
+.displayNone {
+display:none;
+}
 /*-----------------------
 Feedback Message Styles
 -----------------------*/

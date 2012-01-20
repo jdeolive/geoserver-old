@@ -624,11 +624,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                         GeoServerRoleService.class,
                         config.getClassName());
 
-        if (config.getId() == null)
+        if (config.getId() == null) {
+            config.initBeforeSave();
             validator.validateAddRoleService(config);
-        else 
+        }
+        else {
             validator.validateModifiedRoleService(config,
                     roleServiceHelper.loadConfig(config.getName()));
+        }
 
         roleServiceHelper.saveConfig(config);
         // remove from cache
@@ -646,12 +649,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                         PasswordValidator.class,
                         config.getClassName());
 
-        if (config.getId() == null)
+        if (config.getId() == null) {
+            config.initBeforeSave();
             validator.validateAddPasswordPolicy(config);
-        else 
+        }
+        else {
             validator.validateModifiedPasswordPolicy(config,
                     passwordValidatorHelper.loadConfig(config.getName()));
-        
+        }
         
         passwordValidatorHelper.saveConfig(config);
     }
@@ -750,11 +755,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                         GeoServerUserGroupService.class,
                         config.getClassName());
 
-        if (config.getId() == null)
+        if (config.getId() == null) {
+            config.initBeforeSave();
             validator.validateAddUserGroupService(config);
-        else 
+        }
+        else { 
             validator.validateModifiedUserGroupService(config,
                     userGroupServiceHelper.loadConfig(config.getName()));
+        }
 
         userGroupServiceHelper.saveConfig(config);
         // remove from cache
@@ -813,11 +821,14 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
                 SecurityConfigValidator.getConfigurationValiator(GeoServerAuthenticationProvider.class,
                         config.getClassName());
 
-        if (config.getId() == null)
+        if (config.getId() == null) {
+            config.initBeforeSave();
             validator.validateAddAuthProvider(config);
-        else 
+        }
+        else { 
             validator.validateModifiedAuthProvider(config,
                     authProviderHelper.loadConfig(config.getName()));
+        }
         authProviderHelper.saveConfig(config);
     }
 
@@ -861,6 +872,9 @@ public class GeoServerSecurityManager extends ProviderManager implements Applica
 //            validator.validateModifiedFilter(config,
 //                    filterHelper.loadConfig(config.getName()));
 
+        if (config.getId() == null) {
+            config.initBeforeSave();
+        }
         filterHelper.saveConfig(config);
     }
     
