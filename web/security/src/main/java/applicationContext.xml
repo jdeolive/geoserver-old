@@ -12,9 +12,6 @@
 		<property name="order" value="200" />
 	</bean>
 	
-	<bean id="defaultDetailsPanelProvider" class="org.geoserver.web.security.config.details.NamedConfigDetailsPanelProviderImpl">
-	</bean>
-	
 	<bean id="securitySettingsPage" class="org.geoserver.web.MenuPageInfo">
         <property name="id" value="security.settings" />
         <property name="titleKey" value="security.settings.title" />
@@ -25,16 +22,6 @@
         <property name="order" value="90" />
     </bean>
 
-	<bean id="globalSecurityPage" class="org.geoserver.web.MenuPageInfo">
-		<property name="id" value="security.global" />
-		<property name="titleKey" value="security.global.title" />
-		<property name="descriptionKey" value="security.global.description" />
-		<property name="componentClass" value="org.geoserver.web.security.config.GlobalTabbedPage" />
-		<property name="icon" value="../../img/icons/silk/server.png" />
-		<property name="category" ref="securityCategory" />
-		<property name="order" value="900" />
-	</bean>
-	
 	<bean id="authPage" class="org.geoserver.web.MenuPageInfo">
         <property name="id" value="security.auth" />
         <property name="titleKey" value="security.auth.title" />
@@ -55,17 +42,6 @@
         <property name="order" value="110" />
     </bean>
     
-    <bean id="securityServicesTabbedPage" class="org.geoserver.web.MenuPageInfo">
-		<property name="id" value="security.ugservices" />
-		<property name="titleKey" value="security.ugservices.title" />
-		<property name="descriptionKey" value="security.ugservices.description" />
-		<property name="componentClass" value="org.geoserver.web.security.config.SecurityServicesTabbedPage" />
-		<property name="icon" value="../../img/icons/silk/group.png" />
-		<property name="category" ref="securityCategory"/>
-		<property name="order" value="910" />
-	</bean>
-	
-	
 	<!--
 	The data list page 
 	 -->
@@ -126,4 +102,7 @@
         <property name="titleKey" value="XMLRoleServicePanel.title"/>
         <property name="descriptionKey" value="XMLRoleServicePanel.description"/>
     </bean>
+    
+    <!-- uncomment to enable old ui -->
+    <!--import resource="applicationContext-old.xml"/-->
 </beans> 

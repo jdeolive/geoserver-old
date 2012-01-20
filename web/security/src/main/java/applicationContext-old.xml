@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+
+<beans>
+	<bean id="defaultDetailsPanelProvider" class="org.geoserver.web.security.config.details.NamedConfigDetailsPanelProviderImpl">
+	</bean>
+	
+	<bean id="globalSecurityPage" class="org.geoserver.web.MenuPageInfo">
+        <property name="id" value="security.global" />
+        <property name="titleKey" value="security.global.title" />
+        <property name="descriptionKey" value="security.global.description" />
+        <property name="componentClass" value="org.geoserver.web.security.config.GlobalTabbedPage" />
+        <property name="icon" value="../../img/icons/silk/server.png" />
+        <property name="category" ref="securityCategory" />
+        <property name="order" value="900" />
+    </bean>
+
+    <bean id="securityServicesTabbedPage" class="org.geoserver.web.MenuPageInfo">
+		<property name="id" value="security.ugservices" />
+		<property name="titleKey" value="security.ugservices.title" />
+		<property name="descriptionKey" value="security.ugservices.description" />
+		<property name="componentClass" value="org.geoserver.web.security.config.SecurityServicesTabbedPage" />
+		<property name="icon" value="../../img/icons/silk/group.png" />
+		<property name="category" ref="securityCategory"/>
+		<property name="order" value="910" />
+	</bean>
+</beans> 
