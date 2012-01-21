@@ -81,5 +81,9 @@ public class PasswordEncoderChoice extends DropDownChoice<String> {
             //do a resource lookup
             return new ResourceModel(object, object).getObject();
         }
+        @Override
+        public String getIdValue(String object, int index) {
+            return object;
+        }
     }
 }

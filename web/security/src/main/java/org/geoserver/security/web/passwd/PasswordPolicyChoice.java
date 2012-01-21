@@ -23,7 +23,7 @@ import org.geoserver.web.GeoServerApplication;
 public class PasswordPolicyChoice extends DropDownChoice<String> {
 
     public PasswordPolicyChoice(String id) {
-        super(id, new PasswordPolicyNamesModel());
+        super(id, new PasswordPolicyNamesModel(), new PasswordPolicyChoiceRenderer());
     }
 
     static class PasswordPolicyNamesModel implements IModel<List<String>> {

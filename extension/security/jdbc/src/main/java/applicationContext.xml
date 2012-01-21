@@ -5,9 +5,6 @@
   <!-- jdbc backend provider -->
   <bean id="jdbcSecurityProvider" class="org.geoserver.security.jdbc.JDBCSecurityProvider"/>
   
-  <bean id="jdbcDetailsPanelProvider" 
-  	class="org.geoserver.web.security.config.details.JDBCNamedConfigDetailsPanelProvider"/>
-  
   <!-- ui user group service panel info-->
   <bean id="jdbcUserGroupPanelInfo" class="org.geoserver.security.web.jdbc.JDBCUserGroupServicePanelInfo">
     <property name="id" value="security.jdbcUserGroupService" />
@@ -31,4 +28,6 @@
     <property name="titleKey" value="JDBCAuthProviderPanel.title"/>
     <property name="descriptionKey" value="JDBCAuthProviderPanel.description"/>
   </bean>
+  
+  <!--import resource="applicationContext-old.xml"/-->
 </beans>

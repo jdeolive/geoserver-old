@@ -25,8 +25,6 @@ import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.web.SecurityNamedServiceProvider.ResourceBeanProperty;
 import org.geoserver.web.GeoServerApplication;
-import org.geoserver.web.security.AbstractConfirmRemovalPanel;
-import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.GeoServerDataProvider.Property;
 import org.geoserver.web.wicket.GeoServerDialog;
 import org.geoserver.web.wicket.GeoServerTablePanel;

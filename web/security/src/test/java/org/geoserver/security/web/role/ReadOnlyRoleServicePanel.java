@@ -16,7 +16,7 @@ import org.geoserver.security.config.impl.MemoryRoleServiceConfigImpl;
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public class ReadOnlyRoleServicePanel extends RoleServicePanel<MemoryRoleServiceConfigImpl> {
+public class ReadOnlyRoleServicePanel extends MemoryRoleServicePanel {
 
     public ReadOnlyRoleServicePanel(String id,
             IModel<MemoryRoleServiceConfigImpl> model) {

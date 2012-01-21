@@ -6,7 +6,6 @@ package org.geoserver.security.web;
 
 import org.geoserver.security.web.role.RoleServicesPanel;
 import org.geoserver.security.web.usergroup.UserGroupServicesPanel;
-import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.HelpLink;
 
 /**

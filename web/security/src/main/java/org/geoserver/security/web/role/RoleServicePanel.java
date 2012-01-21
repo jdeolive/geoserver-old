@@ -15,7 +15,6 @@ import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.web.SecurityNamedServicePanel;
 import org.geoserver.security.web.SecurityNamedServiceTabbedPanel;
-import org.geoserver.web.security.role.RolePanel;
 
 /**
  * Base class for role service panels.

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.apache.wicket.markup.html.form.ChoiceRenderer;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.model.IModel;
 
@@ -18,7 +19,7 @@ import org.apache.wicket.model.IModel;
 public class JDBCDriverChoice extends DropDownChoice<String> {
 
     public JDBCDriverChoice(String id) {
-        super(id, new JDBCDriverClassNamesModel());
+        super(id, new JDBCDriverClassNamesModel(), new JDBCDriverRenderer());
     }
 
     static class JDBCDriverClassNamesModel implements IModel<List<String>> {
@@ -41,6 +42,17 @@ public class JDBCDriverChoice extends DropDownChoice<String> {
         @Override
         public void setObject(List<String> object) {
             throw new UnsupportedOperationException();
+        }
+    }
+
+    static class JDBCDriverRenderer extends ChoiceRenderer<String> {
+        @Override
+        public Object getDisplayValue(String object) {
+            return object;
+        }
+        @Override
+        public String getIdValue(String object, int index) {
+            return object;
         }
     }
 }

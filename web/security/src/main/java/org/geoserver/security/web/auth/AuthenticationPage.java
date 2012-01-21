@@ -4,16 +4,15 @@
  */
 package org.geoserver.security.web.auth;
 
-import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
+import org.apache.wicket.markup.html.form.SubmitLink;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.geoserver.security.config.SecurityManagerConfig;
-import org.geoserver.web.security.AbstractSecurityPage;
+import org.geoserver.security.web.AbstractSecurityPage;
 import org.geoserver.web.wicket.HelpLink;
 
 /**
@@ -38,21 +37,21 @@ public class AuthenticationPage extends AbstractSecurityPage {
         form.add(new AuthenticationChainPanel("authChain", form));
         form.add(new HelpLink("authChainHelp").setDialog(dialog));
 
-        form.add(new AjaxSubmitLink("save") {
+        form.add(new SubmitLink("save", form) {
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
+            public void onSubmit() {
                 try {
                     getSecurityManager()
-                        .saveSecurityConfig((SecurityManagerConfig) form.getModelObject());
+                        .saveSecurityConfig((SecurityManagerConfig) getForm().getModelObject());
                     doReturn();
                 } catch (Exception e) {
                     error(e);
                 }
             }
         });
-        form.add(new AjaxLink("cancel") {
+        form.add(new Link("cancel") {
             @Override
-            public void onClick(AjaxRequestTarget target) {
+            public void onClick() {
                 doReturn();
             }
         });

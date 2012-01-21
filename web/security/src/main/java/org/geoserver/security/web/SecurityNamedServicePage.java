@@ -1,3 +1,7 @@
+/* Copyright (c) 2001 - 2011 TOPP - www.openplans.org. All rights reserved.
+ * This code is licensed under the GPL 2.0 license, available at the root
+ * application directory.
+ */
 package org.geoserver.security.web;
 
 import java.util.logging.Level;
@@ -10,7 +14,6 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
-import org.geoserver.web.security.AbstractSecurityPage;
 import org.geotools.util.logging.Logging;
 
 /**
@@ -57,7 +60,7 @@ public class SecurityNamedServicePage<T extends SecurityNamedServiceConfig>
         }
     }
 
-    protected void handleSubmit(AjaxRequestTarget target, Form<?> form) {
+    protected void handleSubmit(Form<?> form) {
         T config = (T) form.getModelObject();
         try {
             panel.doSave(config);
@@ -65,7 +68,6 @@ public class SecurityNamedServicePage<T extends SecurityNamedServiceConfig>
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Error saving config", e);
             feedbackPanel.error(e);
-            target.addComponent(feedbackPanel);
         }
     }
 }

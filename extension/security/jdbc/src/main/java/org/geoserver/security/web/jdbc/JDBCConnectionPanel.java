@@ -36,16 +36,16 @@ import org.geotools.util.logging.Logging;
  * @author Justin Deoliveira, OpenGeo
  *
  */
-public class JDBCConnectionPanel<T extends JDBCSecurityServiceConfig> extends FormComponentPanel {
+public class JDBCConnectionPanel<T extends JDBCSecurityServiceConfig> extends FormComponentPanel<T> {
 
     private static final long serialVersionUID = 1L;
 
     static Logger LOGGER = Logging.getLogger("org.geoserver.security");
 
     FeedbackPanel feedbackPanel;
-
+    
     public JDBCConnectionPanel(String id, IModel<T> model) {
-        super(id, new Model());
+        super(id, model);
 
         add(new AjaxCheckBox("jndi") {
             @Override
@@ -83,11 +83,9 @@ public class JDBCConnectionPanel<T extends JDBCSecurityServiceConfig> extends Fo
                 }
             }
         }.setDefaultFormProcessing(false));
-    }
 
-    public JDBCConnectionPanel<T> setFeedbackPanel(FeedbackPanel feedbackPanel) {
-        this.feedbackPanel = feedbackPanel;
-        return this;
+        add(feedbackPanel = new FeedbackPanel("feedback"));
+        feedbackPanel.setOutputMarkupId(true);
     }
 
     ConnectionPanel createCxPanel(String id, boolean useJNDI) {

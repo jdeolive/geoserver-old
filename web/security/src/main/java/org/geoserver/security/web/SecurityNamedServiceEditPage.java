@@ -10,13 +10,14 @@ import java.util.List;
 
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.extensions.markup.html.tabs.AbstractTab;
 import org.apache.wicket.extensions.markup.html.tabs.ITab;
 import org.apache.wicket.extensions.markup.html.tabs.TabbedPanel;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.markup.html.form.TextArea;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
@@ -70,15 +71,15 @@ public class SecurityNamedServiceEditPage<T extends SecurityNamedServiceConfig>
             add(form);
             form.add(createPanel("panel", panelInfo, config));
             
-            form.add(new AjaxSubmitLink("save") {
+            form.add(new SubmitLink("save", form) {
                 @Override
-                protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                    handleSubmit(target, form);
+                public void onSubmit() {
+                    handleSubmit(getForm());
                 }
             });
-            form.add(new AjaxLink("cancel") {
+            form.add(new Link("cancel") {
                 @Override
-                public void onClick(AjaxRequestTarget target) {
+                public void onClick() {
                     doReturn();
                 }
             });

@@ -6,26 +6,17 @@ package org.geoserver.security.web;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
-import jj2000.j2k.entropy.encoder.EBCOTRateAllocator;
-
-import org.apache.wicket.Page;
 import org.apache.wicket.WicketRuntimeException;
-import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
-import org.apache.wicket.ajax.form.AjaxFormComponentUpdatingBehavior;
-import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
-import org.apache.wicket.ajax.markup.html.form.AjaxSubmitLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Form;
-import org.apache.wicket.markup.html.form.Radio;
-import org.apache.wicket.markup.html.form.RadioGroup;
+import org.apache.wicket.markup.html.form.SubmitLink;
+import org.apache.wicket.markup.html.link.Link;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -84,23 +75,19 @@ public class SecurityNamedServiceNewPage
         form.add(panelContainer = new WebMarkupContainer("panel"));
         panelContainer.setOutputMarkupId(true);
 
-        form.add(new AjaxSubmitLink("save") {
+        form.add(new SubmitLink("save", form) {
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                handleSubmit(target, form);
-            }
-            @Override
-            protected void onError(AjaxRequestTarget target, Form<?> form) {
-                target.addComponent(feedbackPanel);
+            public void onSubmit() {
+                handleSubmit(getForm());
             }
         });
-        form.add(new AjaxLink("cancel") {
+        form.add(new Link("cancel") {
             @Override
-            public void onClick(AjaxRequestTarget target) {
+            public void onClick() {
                 doReturn();
             }
         });
-        
+
         updatePanel(panelInfos.get(0), null);
     }
     

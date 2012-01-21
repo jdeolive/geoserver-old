@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import org.apache.wicket.markup.html.form.FormComponentPanel;
 import org.apache.wicket.markup.html.form.TextField;
-import org.apache.wicket.markup.html.panel.FeedbackPanel;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.geoserver.security.GeoServerSecurityManager;
@@ -31,11 +30,6 @@ public abstract class SecurityNamedServicePanel<T extends SecurityNamedServiceCo
     protected static Logger LOGGER = Logging.getLogger("org.geoserver.web.security");
 
     /**
-     * feedback panel for info and error messages 
-     */
-    protected FeedbackPanel feedbackPanel;
-
-    /**
      * model for underlying config
      */
     protected IModel<T> configModel;
@@ -46,8 +40,6 @@ public abstract class SecurityNamedServicePanel<T extends SecurityNamedServiceCo
 
         setOutputMarkupId(true);
         add(new TextField("name").setRequired(true).setEnabled(model.getObject().getId() == null));
-
-        add(feedbackPanel = (FeedbackPanel) new FeedbackPanel("feedback").setOutputMarkupId(true));
     }
 
     protected GeoServerSecurityManager getSecurityManager() {

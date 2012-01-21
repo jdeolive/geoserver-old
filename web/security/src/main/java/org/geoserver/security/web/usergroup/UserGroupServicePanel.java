@@ -17,10 +17,10 @@ import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.web.SecurityNamedServicePanel;
 import org.geoserver.security.web.SecurityNamedServiceTabbedPanel;
+import org.geoserver.security.web.group.GroupPanel;
+import org.geoserver.security.web.user.UserPanel;
 import org.geoserver.security.web.passwd.PasswordEncoderChoice;
 import org.geoserver.security.web.passwd.PasswordPolicyChoice;
-import org.geoserver.web.security.group.GroupPanel;
-import org.geoserver.web.security.user.UserPanel;
 
 /**
  * Base class for user group service panels.

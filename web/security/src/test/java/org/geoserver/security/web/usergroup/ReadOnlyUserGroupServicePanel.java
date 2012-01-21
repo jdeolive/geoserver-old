@@ -17,7 +17,7 @@ import org.geoserver.security.impl.ReadOnlyUGService;
  * 
  * @author Justin Deoliveira, OpenGeo
  */
-public class ReadOnlyUserGroupServicePanel extends UserGroupServicePanel<MemoryUserGroupServiceConfigImpl> {
+public class ReadOnlyUserGroupServicePanel extends MemoryUserGroupServicePanel {
 
     public ReadOnlyUserGroupServicePanel(String id,
             IModel<MemoryUserGroupServiceConfigImpl> model) {

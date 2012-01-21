@@ -12,6 +12,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.FormComponentPanel;
+import org.apache.wicket.markup.html.form.SubmitLink;
 import org.apache.wicket.model.CompoundPropertyModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.ResourceModel;
@@ -21,7 +22,6 @@ import org.geoserver.security.web.passwd.PasswordEncoderChoice;
 import org.geoserver.security.web.passwd.PasswordPoliciesPanel;
 import org.geoserver.security.web.role.RoleServiceChoice;
 import org.geoserver.web.GeoServerHomePage;
-import org.geoserver.web.security.AbstractSecurityPage;
 import org.geoserver.web.wicket.HelpLink;
 
 /**
@@ -46,16 +46,16 @@ public class SecuritySettingsPage extends AbstractSecurityPage {
 
         form.add(new EncryptionPanel("encryption"));
         form.add(new HelpLink("encryptionHelp").setDialog(dialog));
-        form.add(new AjaxSubmitLink("save") {
+        form.add(new SubmitLink("save", form) {
             @Override
-            protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                SecurityManagerConfig config = (SecurityManagerConfig) form.getModelObject();
-                try {
-                    getSecurityManager().saveSecurityConfig(config);
-                    setResponsePage(GeoServerHomePage.class);
-                } catch (Exception e) {
-                    error(e);
-                }
+            public void onSubmit() {
+                SecurityManagerConfig config = (SecurityManagerConfig) getForm().getModelObject();
+              try {
+                  getSecurityManager().saveSecurityConfig(config);
+                  setResponsePage(GeoServerHomePage.class);
+              } catch (Exception e) {
+                  error(e);
+              }
             }
         });
         form.add(new AjaxLink("cancel") {

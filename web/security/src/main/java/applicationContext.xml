@@ -3,8 +3,7 @@
 
 <beans>
 
-
-	<!-- 
+  <!-- 
    Menu category for security work
    -->
 	<bean id="securityCategory" class="org.geoserver.web.Category">
@@ -17,7 +16,7 @@
         <property name="titleKey" value="security.settings.title" />
         <property name="descriptionKey" value="security.settings.description" />
         <property name="componentClass" value="org.geoserver.security.web.SecuritySettingsPage" />
-        <property name="icon" value="../../web/img/icons/silk/wrench.png" />
+        <!--property name="icon" value="../web/img/icons/silk/wrench.png" /-->
         <property name="category" ref="securityCategory" />
         <property name="order" value="90" />
     </bean>
@@ -27,7 +26,7 @@
         <property name="titleKey" value="security.auth.title" />
         <property name="descriptionKey" value="security.auth.description" />
         <property name="componentClass" value="org.geoserver.security.web.auth.AuthenticationPage" />
-        <property name="icon" value="../../../web/img/icons/silk/lock.png" />
+        <property name="icon" value="../img/icons/silk/lock.png" />
         <property name="category" ref="securityCategory" />
         <property name="order" value="100" />
 	</bean>
@@ -37,7 +36,7 @@
         <property name="titleKey" value="security.userGroupRole.title" />
         <property name="descriptionKey" value="security.userGroupRole.description" />
         <property name="componentClass" value="org.geoserver.security.web.UserGroupRoleServicesPage" />
-        <property name="icon" value="../../web/img/icons/silk/group.png" />
+        <property name="icon" value="img/icons/silk/group.png" />
         <property name="category" ref="securityCategory"/>
         <property name="order" value="110" />
     </bean>
@@ -50,8 +49,8 @@
 		<property name="titleKey" value="security.data.title" />
 		<property name="descriptionKey" value="security.data.description" />
 		<property name="componentClass"
-			value="org.geoserver.web.security.data.DataSecurityPage" />
-		<property name="icon" value="../../img/icons/silk/database_key.png" />
+			value="org.geoserver.security.web.data.DataSecurityPage" />
+		<property name="icon" value="../img/icons/silk/database_key.png" />
 		<property name="category" ref="securityCategory" />
 		<property name="order" value="200" />
 	</bean>
@@ -65,8 +64,8 @@
 		<property name="titleKey" value="security.service.title" />
 		<property name="descriptionKey" value="security.service.description" />
 		<property name="componentClass"
-			value="org.geoserver.web.security.service.ServiceAccessRulePage" />
-		<property name="icon" value="../../img/icons/silk/shape_square_key.png" />
+			value="org.geoserver.security.web.service.ServiceAccessRulePage" />
+		<property name="icon" value="../img/icons/silk/shape_square_key.png" />
 		<property name="category" ref="securityCategory" />
 		<property name="order" value="300" />
 	</bean>
