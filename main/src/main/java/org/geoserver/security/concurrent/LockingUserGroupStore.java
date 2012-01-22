@@ -11,7 +11,6 @@ import org.geoserver.security.GeoServerUserGroupService;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.GeoServerUserGroup;
-import org.geoserver.security.validation.PasswordValidationException;
 
 /**
  * This is a wrapper class for a {@link GeoServerUserGroupStore}

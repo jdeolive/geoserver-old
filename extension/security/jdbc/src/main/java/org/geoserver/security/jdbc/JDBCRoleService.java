@@ -468,7 +468,30 @@ public  class JDBCRoleService extends AbstractJDBCService implements GeoServerRo
             closeFinally(con, ps, rs);
         }
         return Collections.unmodifiableSortedSet(result);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.geoserver.security.GeoServerRoleService#getRoleCount()
+     */
+    public int getRoleCount() throws IOException{
+        Connection con=null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        int count;
+        try {
+            con = getConnection();
+            ps = getDMLStatement("roles.count",con);
+            rs = ps.executeQuery();
+            rs.next();               
+            count=rs.getInt(1);
+        } catch (SQLException ex) {
+            throw new IOException(ex);
+        } finally {
+            closeFinally(con, ps, rs);
+        }
+        return count;
     }    
+
 
     /**
      * @see org.geoserver.security.GeoServerRoleService#personalizeRoleParams(java.lang.String, java.util.Properties, java.lang.String, java.util.Properties)

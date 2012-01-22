@@ -74,6 +74,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
 
         store.addRole(store.createRoleObject("role1"));
         assertEquals(1, store.getRoles().size());
+        assertEquals(1, store.getRoleCount());
         GeoServerRole role1 = store.getRoleByName("role1");
 
         failed = false;

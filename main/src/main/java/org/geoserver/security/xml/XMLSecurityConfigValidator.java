@@ -86,7 +86,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
                         new File(manager.getRoleRoot(),config.getName()).getCanonicalPath()+File.separator)==false)
                 return;
             // file in security sub dir, check if roles exists
-            if (manager.loadRoleService(config.getName()).getRoles().size()>0) {
+            if (manager.loadRoleService(config.getName()).getRoleCount()>0) {
                 throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_102, config.getName());
             }
             
@@ -117,7 +117,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
                 return;
             // file in security sub dir, check if roles exists
             GeoServerUserGroupService service = manager.loadUserGroupService(config.getName()); 
-            if (service.getUserGroups().size()>0 || service.getUsers().size()>0) {
+            if (service.getGroupCount()>0 || service.getUserCount()>0) {
                 throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_103, config.getName());
             }
             

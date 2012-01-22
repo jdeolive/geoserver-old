@@ -403,4 +403,8 @@ public abstract  class AbstractRoleStore  implements GeoServerRoleStore {
         return service.personalizeRoleParams(roleName, roleParams, userName, userProps);
     }
 
+    public int getRoleCount() throws IOException {
+        return helper.getRoleCount();
+    }
+
 }

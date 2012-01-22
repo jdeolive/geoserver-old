@@ -3,6 +3,10 @@
 <properties>
   <comment>DML statements for user database</comment>
 
+  <entry key="users.count">
+	select count(*) from users 
+  </entry>
+
   <entry key="users.all">
 	select name,password,enabled from users 
   </entry>
@@ -43,7 +47,9 @@
 	delete from user_props 
   </entry>
   
-
+  <entry key="groups.count">
+	select count(*) from groups
+  </entry>
   <entry key="groups.all">
 	select name,enabled from groups
   </entry>

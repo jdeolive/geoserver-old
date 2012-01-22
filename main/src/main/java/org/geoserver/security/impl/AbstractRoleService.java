@@ -214,4 +214,8 @@ public abstract class AbstractRoleService extends AbstractGeoServerSecurityServi
     public File getConfigRoot() throws IOException {
         return new File(getSecurityManager().getRoleRoot(), getName());
     }
+    
+    public int getRoleCount() throws IOException {
+        return helper.getRoleCount();
+    }
 }

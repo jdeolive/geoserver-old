@@ -438,4 +438,12 @@ public abstract class AbstractUserGroupStore  implements GeoServerUserGroupStore
             throw new IOException("Group: " +  group.getGroupname()+ " does not exist");
     }
 
+    public int getUserCount() throws IOException {
+        return helper.getUserCount();
+    }
+
+    public int getGroupCount() throws IOException {
+        return helper.getGroupCount();
+    }
+
 }

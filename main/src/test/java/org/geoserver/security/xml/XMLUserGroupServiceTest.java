@@ -102,7 +102,9 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
                     getSecurityManager().loadUserGroupService(XMLUserGroupService.DEFAULT_NAME);
                         
             assertEquals(1, service.getUsers().size());
+            assertEquals(1, service.getUserCount());
             assertEquals(0, service.getUserGroups().size());
+            assertEquals(0, service.getGroupCount());
                         
             GeoServerUser admin= service.getUserByUsername(GeoServerUser.AdminName);
             assertNotNull(admin);
@@ -267,6 +269,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
         store1.addGroup(group);
         store1.store();
         assertTrue(service1.getUserGroups().size()==1);
+        assertTrue(service1.getGroupCount()==1);
         
      // increment lastmodified adding a second manually, the test is too fast
         xmlFile.setLastModified(xmlFile.lastModified()+2000);  
@@ -279,7 +282,7 @@ public class XMLUserGroupServiceTest extends AbstractUserGroupServiceTest {
         
         // here comes the magic !!!
         assertTrue(service2.getUserGroups().size()==1);
-
+        assertTrue(service2.getGroupCount()==1);
     }
 
 }

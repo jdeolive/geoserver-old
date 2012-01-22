@@ -261,5 +261,30 @@ public class LockingUserGroupService extends AbstractLockingService implements
         return getService().getPasswordValidatorName();
     }
 
+    /** 
+     * READ_LOCK
+     * @see org.geoserver.security.GeoServerUserGroupService#getUserCount()
+     */
+    public int getUserCount() throws IOException{
+        readLock();
+        try {
+            return getService().getUserCount();
+        } finally {
+            readUnLock();
+        }            
+    }
+
+    /**
+     * READ_LOCK
+     * @see org.geoserver.security.GeoServerUserGroupService#getGroupCount()
+     */
+    public int getGroupCount() throws IOException{
+        readLock();
+        try {
+            return getService().getGroupCount();
+        } finally {
+            readUnLock();
+        }            
+    }
 
 }

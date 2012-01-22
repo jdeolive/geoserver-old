@@ -228,8 +228,13 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
     }
 
 
+    public int getUserCount() throws IOException {
+        return service.getUserCount();
+    }
 
-    
+    public int getGroupCount() throws IOException {
+        return service.getGroupCount();
+    }
         
     @Override
     protected AbstractSecurityValidationErrors getSecurityErrors() {

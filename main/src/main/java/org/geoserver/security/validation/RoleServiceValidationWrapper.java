@@ -296,6 +296,9 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
         return service.getAdminRole();
     }
 
+    public int getRoleCount() throws IOException {
+        return service.getRoleCount();
+    }
 
     
     

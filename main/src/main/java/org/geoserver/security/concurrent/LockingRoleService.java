@@ -267,5 +267,19 @@ public class LockingRoleService extends AbstractLockingService implements
     public GeoServerRole getAdminRole() {
         return getService().getAdminRole();
     }
+    
+    /**
+     * READ_LOCK
+     * @see org.geoserver.security.GeoServerRoleService#getRoleCount()
+     */
+    public int getRoleCount() throws IOException{
+        readLock();
+        try {
+            return getService().getRoleCount();
+        } finally {
+            readUnLock();
+        }            
+    }
+
 
 }

@@ -176,5 +176,10 @@ public interface GeoServerRoleService extends GeoServerSecurityService {
      * {@link GeoserverRole#ADMIN_ROLE#getAuthority()}
      */
     GeoServerRole getAdminRole();
+    
+    /**
+     * @return the number of roles
+     */
+    int getRoleCount() throws IOException;
 
 }

@@ -94,5 +94,9 @@ public class RoleStoreHelper{
        }
        return Collections.unmodifiableSortedSet(result);        
    }
+   
+   public int getRoleCount() throws IOException{
+       return roleMap.size();
+   }
 
 }

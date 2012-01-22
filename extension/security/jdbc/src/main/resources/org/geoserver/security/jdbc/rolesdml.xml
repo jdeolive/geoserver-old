@@ -3,6 +3,9 @@
 <properties>
   <comment>DML statements for role database</comment>
 
+  <entry key="roles.count">
+	select count(*)  from roles
+  </entry>
   <entry key="roles.all">
 	select name,parent from roles
   </entry>

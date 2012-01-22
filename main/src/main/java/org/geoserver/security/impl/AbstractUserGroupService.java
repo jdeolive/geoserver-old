@@ -205,4 +205,14 @@ public abstract class AbstractUserGroupService extends AbstractGeoServerSecurity
         return "User  "+username + 
                 " not found in usergroupservice: "+getName();
     }
+    
+    public int getUserCount() throws IOException {
+        return helper.getUserCount();        
+    }
+    
+    public int getGroupCount() throws IOException {
+        return helper.getGroupCount();
+    }
+
+
 }

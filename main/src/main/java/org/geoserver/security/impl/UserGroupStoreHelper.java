@@ -74,6 +74,13 @@ public class UserGroupStoreHelper{
         group_userMap.clear();
     }
 
+    public int getUserCount() throws IOException{
+        return userMap.size();
+    }
+
+    public int getGroupCount() throws IOException{
+        return groupMap.size();
+    }
 
 
 }

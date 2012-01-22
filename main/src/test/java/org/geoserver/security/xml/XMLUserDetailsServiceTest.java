@@ -73,7 +73,9 @@ public class XMLUserDetailsServiceTest extends AbstractUserDetailsServiceTest {
         GeoServerRoleService roleService =getSecurityManager().loadRoleService(XMLRoleService.DEFAULT_NAME);
         
         assertEquals(3,userService.getUsers().size());
+        assertEquals(3,userService.getUserCount());
         assertEquals(0,userService.getUserGroups().size());
+        assertEquals(0,userService.getGroupCount());
         
         assertEquals(8,roleService.getRoles().size());
         

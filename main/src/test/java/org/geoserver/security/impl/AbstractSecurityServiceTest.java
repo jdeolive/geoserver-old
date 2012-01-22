@@ -57,6 +57,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     }
     protected void checkEmpty(GeoServerRoleService roleService) throws IOException {
         assertEquals(0, roleService.getRoles().size());
+        assertEquals(0,roleService.getRoleCount());
     }
     public void insertValues(GeoServerRoleStore roleStore) throws IOException {
         
@@ -123,6 +124,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         GeoServerRole role_wms = roleService.getRoleByName("ROLE_WMS");
     
         assertEquals(2, roleService.getRoles().size());
+        assertEquals(2, roleService.getRoleCount());
         assertTrue(roleService.getRoles().contains(role_admin));        
         assertTrue(roleService.getRoles().contains(role_wms));
         
@@ -187,6 +189,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     
         
         assertEquals(4, roleService.getRoles().size());
+        assertEquals(4, roleService.getRoleCount());
         assertTrue(roleService.getRoles().contains(role_admin));
         assertTrue(roleService.getRoles().contains(role_auth));
         assertTrue(roleService.getRoles().contains(role_wfs));
@@ -279,9 +282,13 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
     protected void checkEmpty(GeoServerUserGroupService userService) throws IOException {
         assertEquals(0, userService.getUsers().size());
         assertEquals(0, userService.getUserGroups().size());
+        assertEquals(0, userService.getUserCount());
+        assertEquals(0, userService.getGroupCount());
+
     }
     protected void checkValuesInserted(GeoServerUserGroupService userGroupService) throws IOException {
         assertEquals(4, userGroupService.getUsers().size());
+        assertEquals(4, userGroupService.getUserCount());
         
         GeoServerUser admin = (GeoServerUser) userGroupService.getUserByUsername(GeoServerUser.AdminName);
         GeoServerUser user1 = (GeoServerUser) userGroupService.getUserByUsername("user1");
@@ -325,6 +332,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         assertEquals(user2.getProperties().getProperty("tel"),"12-34-38");
     
         assertEquals(3, userGroupService.getUserGroups().size());
+        assertEquals(3, userGroupService.getGroupCount());
         GeoServerUserGroup admins = userGroupService.getGroupByGroupname("admins");
         GeoServerUserGroup group1 = userGroupService.getGroupByGroupname("group1");
         GeoServerUserGroup disabledgroup = userGroupService.getGroupByGroupname("disabledgroup");
@@ -402,6 +410,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         GeoServerUser disableduser = (GeoServerUser) userGroupService.getUserByUsername("disableduser");
     
         assertEquals(3, userGroupService.getUsers().size());
+        assertEquals(3, userGroupService.getUserCount());
         assertTrue(userGroupService.getUsers().contains(admin));
         assertTrue(userGroupService.getUsers().contains(user1));
         assertTrue(userGroupService.getUsers().contains(disableduser));
@@ -409,6 +418,7 @@ public abstract class AbstractSecurityServiceTest extends GeoServerAbstractTestS
         GeoServerUserGroup admins = userGroupService.getGroupByGroupname("admins");
         GeoServerUserGroup group1 = userGroupService.getGroupByGroupname("group1");
         assertEquals(2, userGroupService.getUserGroups().size());
+        assertEquals(2, userGroupService.getGroupCount());
         assertTrue(userGroupService.getUserGroups().contains(admins));
         assertTrue(userGroupService.getUserGroups().contains(group1));
     

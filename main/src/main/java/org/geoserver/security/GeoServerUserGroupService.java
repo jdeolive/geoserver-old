@@ -148,5 +148,16 @@ public interface GeoServerUserGroupService extends GeoServerSecurityService,User
      * 
      */
     String getPasswordValidatorName();
+    
+    /**
+     * @return the number of users
+     */
+    int getUserCount() throws IOException;
+
+    /**
+     * @return the number of groups
+     */
+    int getGroupCount() throws IOException;
+
 
 }

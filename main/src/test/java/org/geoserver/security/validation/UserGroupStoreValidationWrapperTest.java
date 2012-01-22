@@ -62,7 +62,9 @@ public class UserGroupStoreValidationWrapperTest extends GeoServerSecurityTestSu
         store.addUser(store.createUserObject("user1", "abc", true));
         store.addGroup(store.createGroupObject("group1", true));
         assertEquals(1, store.getUsers().size());
+        assertEquals(1, store.getUserCount());
         assertEquals(1, store.getUserGroups().size());
+        assertEquals(1, store.getGroupCount());
 
         failed=false;
         try { 

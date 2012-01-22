@@ -400,7 +400,44 @@ public  class JDBCUserGroupService extends AbstractJDBCService implements GeoSer
         return Collections.unmodifiableSortedSet(users);
     }
 
+    public int getUserCount() throws IOException{
+        Connection con=null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        int count;
+        try {
+            con = getConnection();
+            ps = getDMLStatement("users.count",con);
+            rs = ps.executeQuery();
+            rs.next();               
+            count=rs.getInt(1);
+        } catch (SQLException ex) {
+            throw new IOException(ex);
+        } finally {
+            closeFinally(con, ps, rs);
+        }
+        return count;
+    }    
 
+    public int getGroupCount() throws IOException{
+        Connection con=null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        int count;
+        try {
+            con = getConnection();
+            ps = getDMLStatement("groups.count",con);
+            rs = ps.executeQuery();
+            rs.next();               
+            count=rs.getInt(1);
+        } catch (SQLException ex) {
+            throw new IOException(ex);
+        } finally {
+            closeFinally(con, ps, rs);
+        }
+        return count;
+    }    
+    
     /**
      * @see org.geoserver.security.GeoServerUserGroupService#load()
      */
