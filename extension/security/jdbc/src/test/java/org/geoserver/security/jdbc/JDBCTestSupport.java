@@ -87,6 +87,25 @@ public class JDBCTestSupport {
 
         return securityManager.loadUserGroupService(serviceName);
     }
+    
+    protected static GeoServerUserGroupService createH2UserGroupServiceFromJNDI(String serviceName, 
+            GeoServerSecurityManager securityManager) throws Exception {
+            
+            JDBCUserGroupServiceConfig config = new JDBCUserGroupServiceConfig();           
+            config.setName(serviceName);
+            config.setJndi(true);
+            config.setJndiName("ds.h2");
+            config.setClassName(JDBCUserGroupService.class.getName());
+            config.setPropertyFileNameDDL(JDBCUserGroupService.DEFAULT_DDL_FILE);
+            config.setPropertyFileNameDML(JDBCUserGroupService.DEFAULT_DML_FILE);
+            config.setCreatingTables(false);
+            config.setPasswordEncoderName(
+                securityManager.loadPasswordEncoder(GeoServerDigestPasswordEncoder.class).getName());
+            config.setPasswordPolicyName(PasswordValidator.DEFAULT_NAME);
+            securityManager.saveUserGroupService(config);
+            return securityManager.loadUserGroupService(serviceName);
+        }
+
 
     protected static GeoServerRoleService createH2RoleService(
         String serviceName, GeoServerSecurityManager securityManager) throws Exception {
@@ -106,6 +125,24 @@ public class JDBCTestSupport {
         securityManager.saveRoleService(config);
         return securityManager.loadRoleService(serviceName);
     }
+    
+    protected static GeoServerRoleService createH2RoleServiceFromJNDI(
+            String serviceName, GeoServerSecurityManager securityManager) throws Exception {
+            
+            JDBCRoleServiceConfig config = new JDBCRoleServiceConfig();
+            
+            config.setName(serviceName);
+            config.setJndi(true);
+            config.setJndiName("ds.h2");
+            config.setClassName(JDBCRoleService.class.getName());
+            config.setPropertyFileNameDDL(JDBCRoleService.DEFAULT_DDL_FILE);
+            config.setPropertyFileNameDML(JDBCRoleService.DEFAULT_DML_FILE);
+            config.setCreatingTables(false);
+            config.setAdminRoleName(GeoServerRole.ADMIN_ROLE.getAuthority());
+            securityManager.saveRoleService(config);
+            return securityManager.loadRoleService(serviceName);
+        }
+
 
     static  protected GeoServerRoleService createRoleService(
         String fixtureId, LiveDbmsDataSecurity data, GeoServerSecurityManager securityManager) 

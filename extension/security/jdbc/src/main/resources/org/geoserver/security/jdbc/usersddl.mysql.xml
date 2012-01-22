@@ -4,7 +4,7 @@
   <comment>DDL statements for user database</comment>
   <entry key="check.table">user_props</entry>
   <entry key="users.create">
-	create table users(name varchar(128) not null,password varchar(64), enabled char(1) not null, primary key(name))   ENGINE=InnoDB
+	create table users(name varchar(128) not null,password varchar(254), enabled char(1) not null, primary key(name))   ENGINE=InnoDB
   </entry>
   <entry key="userprops.create">
 	create table user_props(username varchar(128) not null,propname varchar(64) not null, propvalue varchar(2048),primary key (username,propname)) ENGINE=InnoDB
