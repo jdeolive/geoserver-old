@@ -6,6 +6,8 @@
 
 package org.geoserver.security.validation;
 
+import org.geoserver.platform.exception.GeoServerException;
+
 /**
  * Base class for exceptions used for validation errors 
  * 
@@ -13,12 +15,8 @@ package org.geoserver.security.validation;
  * @author christian
  *
  */
-public class AbstractSecurityException extends Exception {
+public class AbstractSecurityException extends GeoServerException {
     private static final long serialVersionUID = 1L;
-    private String errorId;
-    private Object args[];
-    
-
 
     /**
      * errorid is a unique identifier, message is a 
@@ -31,22 +29,18 @@ public class AbstractSecurityException extends Exception {
      */
     public AbstractSecurityException(String errorId ,String message, Object... args) {        
         super(message);
-        this.errorId=errorId;
-        this.args=args;        
+        setId(errorId);
+        setArgs(args);
     }
-        
+
+    public AbstractSecurityException(String errorId , Object... args) {
+        this(errorId, errorId, args);
+    }
+
+    /**
+     * @deprecated use {@link #getId()}
+     */
     public String getErrorId() {
-        return errorId;
+        return getId();
     }
-
-    public Object[] getArgs() {
-        return args;
-    }
-
-
-
-
-    
-    
-    
 }

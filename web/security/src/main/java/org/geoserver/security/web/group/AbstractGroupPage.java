@@ -83,14 +83,11 @@ public abstract class AbstractGroupPage extends AbstractSecurityPage {
                     setResponsePage(responsePage);
                 } catch (IOException e) {
                     if (e.getCause() instanceof AbstractSecurityException) {
-                        AbstractSecurityException secEx = 
-                                (AbstractSecurityException)e.getCause();
-                        error(new ParamResourceModel("security."+secEx.getErrorId(), 
-                                null, secEx.getArgs()).getObject());
-                    } else {                    
-                        LOGGER.log(Level.SEVERE, "Error occurred while saving group", e);
+                        error(e.getCause());
+                    } else {
                         error(new ParamResourceModel("saveError", getPage(), e.getMessage()).getObject());
                     }
+                    LOGGER.log(Level.SEVERE, "Error occurred while saving group", e);
                 }
 
             }

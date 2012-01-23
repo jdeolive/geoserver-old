@@ -5,7 +5,7 @@
 
 package org.geoserver.security.validation;
 
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.*;
+import static org.geoserver.security.validation.SecurityConfigException.*;
 
 
 import java.io.IOException;
@@ -24,8 +24,6 @@ import org.geoserver.security.config.SecurityManagerConfig;
 import org.geoserver.security.config.SecurityNamedServiceConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
-import org.geoserver.security.password.AbstractGeoserverPasswordEncoder;
-import org.geoserver.security.password.GeoServerNullPasswordEncoder;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -156,7 +154,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
         checkServiceName(extensionPoint, config.getName());
         SortedSet<String> names= getNamesFor(extensionPoint);
         if (names.contains(config.getName()))
-            throw createSecurityException(prepareForExtPoint(extensionPoint, "SEC_ERR_23"), config.getName());
+            throw createSecurityException(alreadyExistsErrorCode(extensionPoint), config.getName());
         
     }
     
@@ -165,7 +163,7 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
         checkServiceName(extensionPoint, config.getName());
         SortedSet<String> names= getNamesFor(extensionPoint);
         if (names.contains(config.getName())==false)
-            throw createSecurityException(prepareForExtPoint(extensionPoint, "SEC_ERR_24"),config.getName());
+            throw createSecurityException(notFoundErrorCode(extensionPoint),config.getName());
         
     }
 
@@ -336,38 +334,39 @@ public class SecurityConfigValidator extends AbstractSecurityValidator{
         }
     }
 
-    protected String prepareForExtPoint(Class<?> extPoint, String id) {
+    protected String alreadyExistsErrorCode(Class<?> extPoint) {
         if (GeoServerAuthenticationProvider.class==extPoint)
-            return id+"a";
+            return AUTH_PROVIDER_ALREADY_EXISTS_$1;
         if (PasswordValidator.class==extPoint)
-            return id+"b";
+            return PASSWD_POLICY_ALREADY_EXISTS_$1;
         if (GeoServerRoleService.class==extPoint)
-            return id+"c";
+            return ROLE_SERVICE_ALREADY_EXISTS_$1;
         if (GeoServerUserGroupService.class==extPoint)
-            return id+"d";
+            return USERGROUP_SERVICE_ALREADY_EXISTS_$1;
         if (GeoServerAuthenticationProcessingFilter.class==extPoint)
-            return id+"e";
+            return AUTH_FILTER_ALREADY_EXISTS_$1;
         throw new RuntimeException("Unkonw extension point: "+extPoint.getName());
     }
 
-
-    @Override
-    protected AbstractSecurityValidationErrors getSecurityErrors() {
-        return new SecurityConfigValidationErrors();
+    protected String notFoundErrorCode(Class<?> extPoint) {
+        if (GeoServerAuthenticationProvider.class==extPoint)
+            return AUTH_PROVIDER_NOT_FOUND_$1;
+        if (PasswordValidator.class==extPoint)
+            return PASSWD_POLICY_NOT_FOUND_$1;
+        if (GeoServerRoleService.class==extPoint)
+            return ROLE_SERVICE_NOT_FOUND_$1;
+        if (GeoServerUserGroupService.class==extPoint)
+            return USERGROUP_SERVICE_NOT_FOUND_$1;
+        if (GeoServerAuthenticationProcessingFilter.class==extPoint)
+            return AUTH_FILTER_NOT_FOUND_$1;
+        throw new RuntimeException("Unkonw extension point: "+extPoint.getName());
     }
-
 
     /**
      * Helper method for creating a proper
      * {@link SecurityConfigException} object
-     * 
-     * @param errorid
-     * @param args
-     * @return
      */
     protected SecurityConfigException createSecurityException (String errorid, Object ...args) {
-        String message = getSecurityErrors().formatErrorMsg(errorid, args);
-        return new SecurityConfigException(errorid,message,args);
+        return new SecurityConfigException(errorid,args);
     }
-        
 }

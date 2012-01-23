@@ -19,6 +19,8 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
+import static org.geoserver.security.validation.UserGroupServiceException.*;
+
 /**
  * 
  * This class is a validation wrapper for {@link GeoServerUserGroupService}
@@ -61,37 +63,37 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
     
     protected void checkUserName(String userName) throws IOException{
         if (isNotEmpty(userName)==false)
-            throw createSecurityException(UserGroupServiceValidationErrors.UG_ERR_01);        
+            throw createSecurityException(UG_ERR_01);        
     }
     
     protected void checkGroupName(String groupName) throws IOException{
         if (isNotEmpty(groupName)==false)
-            throw createSecurityException(UserGroupServiceValidationErrors.UG_ERR_02);        
+            throw createSecurityException(UG_ERR_02);        
     }
 
         
     protected void checkExistingUserName(String userName) throws IOException{
         checkUserName(userName);
         if (service.getUserByUsername(userName)==null)
-            throw createSecurityException(UserGroupServiceValidationErrors.UG_ERR_03,userName);
+            throw createSecurityException(UG_ERR_03,userName);
     }
     
     protected void checkExistingGroupName(String groupName) throws IOException{
         checkGroupName(groupName);
         if (service.getGroupByGroupname(groupName)==null)
-            throw createSecurityException(UserGroupServiceValidationErrors.UG_ERR_04,groupName);
+            throw createSecurityException(UG_ERR_04,groupName);
     }
     
     protected void checkNotExistingUserName(String userName) throws IOException{
         checkUserName(userName);
         if (service.getUserByUsername(userName)!=null)
-            throw createSecurityException(UserGroupServiceValidationErrors.UG_ERR_05,userName);
+            throw createSecurityException(UG_ERR_05,userName);
     }
     
     protected void checkNotExistingGroupName(String groupName) throws IOException{
         checkGroupName(groupName);
         if (service.getGroupByGroupname(groupName)!=null)
-            throw createSecurityException(UserGroupServiceValidationErrors.UG_ERR_06,groupName);
+            throw createSecurityException(UG_ERR_06,groupName);
     }
 
     
@@ -227,7 +229,6 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
         return service.getPasswordValidatorName();
     }
 
-
     public int getUserCount() throws IOException {
         return service.getUserCount();
     }
@@ -236,12 +237,6 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
         return service.getGroupCount();
     }
         
-    @Override
-    protected AbstractSecurityValidationErrors getSecurityErrors() {
-        return new UserGroupServiceValidationErrors();
-    }
-
-    
     /**
      * Helper method for creating a proper
      * {@link SecurityConfigException} object
@@ -251,9 +246,7 @@ public class UserGroupServiceValidationWrapper extends AbstractSecurityValidator
      * @return
      */
     protected IOException createSecurityException (String errorid, Object ...args) {
-        String message = getSecurityErrors().formatErrorMsg(errorid, args);
-        UserGroupServiceException ex =  new UserGroupServiceException(errorid,message,args);
+        UserGroupServiceException ex =  new UserGroupServiceException(errorid,args);
         return new IOException("Details are in the nested excetpion",ex);
     }
-        
 }

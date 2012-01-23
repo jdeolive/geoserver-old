@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
@@ -47,7 +48,7 @@ public class SelectionServiceRemovalLink extends AjaxLink {
                 // show a confirmation panel for all the objects we have to remove
                 return removePanel=new ConfirmRemovalServicePanel(id, selection) {
                     @Override
-                    protected StringResourceModel canRemove(ServiceAccessRule service) {
+                    protected IModel<String> canRemove(ServiceAccessRule service) {
                         return SelectionServiceRemovalLink.this.canRemove(service);
                     }
                 };

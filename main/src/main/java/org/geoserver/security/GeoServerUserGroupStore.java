@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.GeoServerUserGroup;
-import org.geoserver.security.validation.PasswordValidationException;
+import org.geoserver.security.validation.PasswordPolicyException;
 
 /**
  * A class implementing this interface implements a backend for
@@ -45,7 +45,7 @@ public interface GeoServerUserGroupStore extends GeoServerUserGroupService {
      * #getPasswordEncoderName() to
      * encode the password.
      * 
-     * The {@link PasswordValidationException} is nested into
+     * The {@link PasswordPolicyException} is nested into
      * the IOException
      * 
      * @param user
@@ -65,7 +65,7 @@ public interface GeoServerUserGroupStore extends GeoServerUserGroupService {
      * #getPasswordEncoderName() to
      * 
      * encode the password.
-     * The {@link PasswordValidationException} is nested into
+     * The {@link PasswordPolicyException} is nested into
      * the IOException
      *  
      * @param user

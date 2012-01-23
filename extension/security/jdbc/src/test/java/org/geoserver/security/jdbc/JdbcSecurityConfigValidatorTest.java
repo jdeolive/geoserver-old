@@ -1,15 +1,5 @@
 package org.geoserver.security.jdbc;
 
-import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_200;
-import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_201;
-import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_202;
-import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_203;
-import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_204;
-import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_210;
-import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_211;
-import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_212;
-import static org.geoserver.security.jdbc.JdbcSecurityConfigValidationErrors.SEC_ERR_213;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -25,6 +15,8 @@ import org.geoserver.security.password.PasswordValidator;
 import org.geoserver.security.validation.SecurityConfigException;
 import org.geoserver.security.validation.SecurityConfigValidatorTest;
 import org.geotools.util.logging.Logging;
+
+import static org.geoserver.security.jdbc.JDBCSecurityConfigException.*;
 
 public class JdbcSecurityConfigValidatorTest extends SecurityConfigValidatorTest  {
 

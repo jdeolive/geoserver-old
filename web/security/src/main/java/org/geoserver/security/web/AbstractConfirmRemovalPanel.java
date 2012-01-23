@@ -14,15 +14,15 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
-import org.apache.wicket.model.StringResourceModel;
 
 public abstract class AbstractConfirmRemovalPanel<T> extends Panel {
 
     private static final long serialVersionUID = 1L;
     
     List<T> roots;
-    List<StringResourceModel> problems;
+    List<IModel<String>> problems;
 
     public AbstractConfirmRemovalPanel(String id, T... roots) {
         this(id, null,Arrays.asList(roots));
@@ -84,9 +84,9 @@ public abstract class AbstractConfirmRemovalPanel<T> extends Panel {
 
     void setRootObjectsAndProblems(List<T> rootObjects) {
         roots = new ArrayList<T>();
-        problems= new ArrayList<StringResourceModel>();
+        problems= new ArrayList<IModel<String>>();
         for (T obj : rootObjects) {
-            StringResourceModel model = canRemove(obj);
+            IModel<String> model = canRemove(obj);
             if (model==null)
                 roots.add(obj);
             else    
@@ -95,9 +95,9 @@ public abstract class AbstractConfirmRemovalPanel<T> extends Panel {
                 
     }
 
-    List<String> problems(List<StringResourceModel> objects) {
+    List<String> problems(List<IModel<String>> objects) {
         List<String> l = new ArrayList<String>();
-        for (StringResourceModel m : objects) {
+        for (IModel<String> m : objects) {
             l.add(m.getObject());
         }
         return l;
@@ -122,7 +122,7 @@ public abstract class AbstractConfirmRemovalPanel<T> extends Panel {
         }
     }
 
-    protected StringResourceModel canRemove(T data) {
+    protected IModel<String> canRemove(T data) {
         return null;
     }
     

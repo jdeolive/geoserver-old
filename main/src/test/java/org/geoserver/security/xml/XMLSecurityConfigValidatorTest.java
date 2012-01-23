@@ -1,6 +1,6 @@
 package org.geoserver.security.xml;
 
-import static org.geoserver.security.xml.XMLSecurityConfigValidationErrors.*;
+import static org.geoserver.security.xml.XMLSecurityConfigException.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import junit.framework.Assert;
 
-import org.geoserver.security.GeoServerAuthenticationProvider;
 import org.geoserver.security.GeoServerRoleStore;
 import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.UsernamePasswordAuthenticationProvider;

@@ -104,14 +104,11 @@ public abstract class AbstractRolePage extends AbstractSecurityPage {
                     setResponsePage(responsePage);
                 } catch (IOException e) {
                     if (e.getCause() instanceof AbstractSecurityException) {
-                        AbstractSecurityException secEx = 
-                                (AbstractSecurityException)e.getCause();
-                        error(new ParamResourceModel("security."+secEx.getErrorId(), 
-                                null, secEx.getArgs()).getObject());
+                        error(e.getCause());
                     } else {                    
-                        LOGGER.log(Level.SEVERE, "Error occurred while saving role", e);
                         error(new ParamResourceModel("saveError", getPage(), e.getMessage()).getObject());
                     }
+                    LOGGER.log(Level.SEVERE, "Error occurred while saving role", e);
                 }
 
             }

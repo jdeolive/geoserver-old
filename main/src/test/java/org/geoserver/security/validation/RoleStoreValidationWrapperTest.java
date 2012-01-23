@@ -19,8 +19,8 @@ import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.impl.MemoryRoleService;
 import org.geoserver.security.impl.MemoryUserGroupService;
 import org.geoserver.security.password.PasswordValidator;
-import org.geoserver.test.GeoServerTestSupport;
 import org.geotools.util.logging.Logging;
+import static org.geoserver.security.validation.RoleServiceException.*;
 
 public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport {
 
@@ -67,7 +67,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.addRole(store.createRoleObject(""));
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_01);
+            assertSecurityException(ex, ROLE_ERR_01);
             failed = true;
         }
         assertTrue(failed);
@@ -81,7 +81,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.addRole(role1);
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_03, "role1");
+            assertSecurityException(ex, ROLE_ERR_03, "role1");
             failed = true;
         }
         assertTrue(failed);
@@ -90,7 +90,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.updateRole(store.createRoleObject("xxx"));
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_02, "xxx");
+            assertSecurityException(ex, ROLE_ERR_02, "xxx");
             failed = true;
         }
         assertTrue(failed);
@@ -102,7 +102,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.setParentRole(role1, store.createRoleObject("xxx"));
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_02, "xxx");
+            assertSecurityException(ex, ROLE_ERR_02, "xxx");
             failed = true;
         }
         assertTrue(failed);
@@ -114,7 +114,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.associateRoleToGroup(role1, "");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_05);
+            assertSecurityException(ex, ROLE_ERR_05);
             failed = true;
         }
         assertTrue(failed);
@@ -123,7 +123,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.disAssociateRoleFromGroup(role1, "");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_05);
+            assertSecurityException(ex, ROLE_ERR_05);
             failed = true;
         }
         assertTrue(failed);
@@ -132,7 +132,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.associateRoleToUser(role1, "");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_04);
+            assertSecurityException(ex, ROLE_ERR_04);
             failed = true;
         }
         assertTrue(failed);
@@ -141,7 +141,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.disAssociateRoleFromUser(role1, "");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_04);
+            assertSecurityException(ex, ROLE_ERR_04);
             failed = true;
         }
         assertTrue(failed);
@@ -153,7 +153,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.getRolesForUser(null);
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_04);
+            assertSecurityException(ex, ROLE_ERR_04);
             failed = true;
         }
         assertTrue(failed);
@@ -162,7 +162,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.getRolesForGroup(null);
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_05);
+            assertSecurityException(ex, ROLE_ERR_05);
             failed = true;
         }
         assertTrue(failed);
@@ -190,7 +190,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
             store2.removeRole(parent1);
             store2.removeRole(role1);
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_09,
+            assertSecurityException(ex, ROLE_ERR_09,
                     role1.getAuthority(),newRule.getKey());
             failed = true;
         }
@@ -204,7 +204,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.removeRole(GeoServerRole.ADMIN_ROLE);
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_08,
+            assertSecurityException(ex, ROLE_ERR_08,
                     GeoServerRole.ADMIN_ROLE.getAuthority());
             failed = true;
         }
@@ -235,7 +235,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.associateRoleToGroup(role1, "group3");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_07, "group3");
+            assertSecurityException(ex, ROLE_ERR_07, "group3");
             failed = true;
         }
         assertTrue(failed);
@@ -246,7 +246,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.associateRoleToUser(role1, "user3");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_06, "user3");
+            assertSecurityException(ex, ROLE_ERR_06, "user3");
             failed = true;
         }
         assertTrue(failed);
@@ -258,7 +258,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.getRolesForGroup("group3");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_07, "group3");
+            assertSecurityException(ex, ROLE_ERR_07, "group3");
             failed = true;
         }
         assertTrue(failed);
@@ -267,7 +267,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.getRolesForUser("user3");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_06, "user3");
+            assertSecurityException(ex, ROLE_ERR_06, "user3");
             failed = true;
         }
         assertTrue(failed);
@@ -278,7 +278,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.disAssociateRoleFromGroup(role1, "group3");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_07, "group3");
+            assertSecurityException(ex, ROLE_ERR_07, "group3");
             failed = true;
         }
         assertTrue(failed);
@@ -289,7 +289,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.disAssociateRoleFromUser(role1, "user3");
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_06, "user3");
+            assertSecurityException(ex, ROLE_ERR_06, "user3");
             failed = true;
         }
         assertTrue(failed);
@@ -298,7 +298,7 @@ public class RoleStoreValidationWrapperTest extends GeoServerSecurityTestSupport
         try {
             store.removeRole(role1);
         } catch (IOException ex) {
-            assertSecurityException(ex, RoleServiceValidationErrors.ROLE_ERR_08,
+            assertSecurityException(ex, ROLE_ERR_08,
                     "role1");
             failed = true;
         }

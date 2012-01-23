@@ -16,6 +16,7 @@ import org.geoserver.security.config.PasswordPolicyConfig;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
 import org.geoserver.security.password.PasswordValidator;
 
+import static org.geoserver.security.validation.PasswordPolicyException.*;
 
 /**
  * Implementation of the password {@link PasswordValidator} interface
@@ -53,33 +54,33 @@ public class PasswordValidatorImpl extends AbstractSecurityValidator implements 
     @Override
     public void validatePassword(String password) throws IOException {
         if (password==null)
-            throw createSecurityException(PasswordValidationErrors.PW_IS_NULL); 
+            throw createSecurityException(PW_IS_NULL); 
             
         
         if (password.length() < config.getMinLength())
-            throw createSecurityException(PasswordValidationErrors.PW_MIN_LENGTH, config.getMinLength());
+            throw createSecurityException(PW_MIN_LENGTH, config.getMinLength());
         
         if (config.getMaxLength() >=0 &&  password.length() >config.getMaxLength())
-            throw createSecurityException(PasswordValidationErrors.PW_MAX_LENGTH,config.getMaxLength());
+            throw createSecurityException(PW_MAX_LENGTH,config.getMaxLength());
 
         char[] charArray = password.toCharArray();
         
         if (config.isDigitRequired()) {
             if (checkUsingMethod("isDigit", charArray)==false)
-                throw createSecurityException(PasswordValidationErrors.PW_NO_DIGIT);
+                throw createSecurityException(PW_NO_DIGIT);
         }
         if (config.isUppercaseRequired()) {
             if (checkUsingMethod("isUpperCase", charArray)==false)
-                throw createSecurityException(PasswordValidationErrors.PW_NO_UPPERCASE);
+                throw createSecurityException(PW_NO_UPPERCASE);
         }
         if (config.isLowercaseRequired()) {
             if (checkUsingMethod("isLowerCase", charArray)==false)
-                throw createSecurityException(PasswordValidationErrors.PW_NO_LOWERCASE);
+                throw createSecurityException(PW_NO_LOWERCASE);
         }    
         
         for (String prefix: notAllowedPrefixes) {
             if (password.startsWith(prefix))
-                throw createSecurityException(PasswordValidationErrors.PW_RESERVED_PREFIX,prefix);
+                throw createSecurityException(PW_RESERVED_PREFIX,prefix);
         }
     }
     
@@ -115,25 +116,12 @@ public class PasswordValidatorImpl extends AbstractSecurityValidator implements 
         return Character.isLowerCase(c);
     }
 
-    
-    @Override
-    protected AbstractSecurityValidationErrors getSecurityErrors() {
-        return new PasswordValidationErrors();
-    }
-
-    
     /**
-     * Helper method for creating a proper
-     * {@link SecurityConfigException} object
-     * 
-     * @param errorid
-     * @param args
-     * @return
+     * Helper method for creating a proper {@link SecurityConfigException} object
      */
     protected IOException createSecurityException (String errorid, Object ...args) {
-        String message = getSecurityErrors().formatErrorMsg(errorid, args);
-        PasswordValidationException ex =  new PasswordValidationException(errorid,message,args);
-        return new IOException("Details are in the nested excetpion",ex);
+        PasswordPolicyException ex =  new PasswordPolicyException(errorid,args);
+        return new IOException("Details are in the nested exception",ex);
     }
 
 }

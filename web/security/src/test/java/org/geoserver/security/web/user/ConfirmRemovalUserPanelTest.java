@@ -11,6 +11,7 @@ package org.geoserver.security.web.user;
 import java.util.List;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.impl.GeoServerRole;
@@ -32,7 +33,7 @@ public class ConfirmRemovalUserPanelTest extends AbstractConfirmRemovalPanelTest
                 Model<Boolean> model = new Model<Boolean>(disassociateRoles);
                 return new ConfirmRemovalUserPanel(id, model,roots.toArray(new GeoServerUser[roots.size()])) {
                     @Override
-                    protected StringResourceModel canRemove(GeoServerUser data) {
+                    protected IModel<String> canRemove(GeoServerUser data) {
                         SelectionUserRemovalLink link = new SelectionUserRemovalLink(getUserGroupServiceName(),"XXX",null,null,disassociateRoles);
                         return link.canRemove(data);
                     }

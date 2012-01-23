@@ -15,7 +15,7 @@ import org.geoserver.security.GeoServerUserGroupStore;
 import org.geoserver.security.impl.GeoServerUser;
 import org.geoserver.security.impl.GeoServerUserGroup;
 import org.geoserver.security.password.GeoServerPasswordEncoder;
-import org.geoserver.security.validation.PasswordValidationException;
+import org.geoserver.security.validation.PasswordPolicyException;
 
 /**
  * JDBC Implementation of {@link GeoServerUserGroupStore}
@@ -141,7 +141,7 @@ public class JDBCUserGroupStore extends JDBCUserGroupService implements GeoServe
      * 
      * @param user
      * @throws IOException
-     * @throws PasswordValidationException
+     * @throws PasswordPolicyException
      */
     protected void preparePassword(GeoServerUser user) throws IOException {
 

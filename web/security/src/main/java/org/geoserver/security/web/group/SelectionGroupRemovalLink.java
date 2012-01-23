@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.GeoServerRoleStore;
@@ -61,7 +62,7 @@ public class SelectionGroupRemovalLink extends AjaxLink<Object> {
                 Model<Boolean> model = new Model<Boolean>(SelectionGroupRemovalLink.this.disassociateRoles); 
                 return removePanel=new ConfirmRemovalGroupPanel(id,model,  selection) {
                     @Override
-                    protected StringResourceModel canRemove(GeoServerUserGroup group) {
+                    protected IModel<String> canRemove(GeoServerUserGroup group) {
                         return SelectionGroupRemovalLink.this.canRemove(group);
                     }
                 };

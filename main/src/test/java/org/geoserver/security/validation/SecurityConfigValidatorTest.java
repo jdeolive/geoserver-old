@@ -1,33 +1,6 @@
 package org.geoserver.security.validation;
 
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_01;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_02;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_03;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_04;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_05;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_06;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_07;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_20;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_21;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_22;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_23a;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_23b;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_23c;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_23d;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_24a;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_24b;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_24c;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_24d;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_25;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_30;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_31;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_32;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_33;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_34;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_35;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_40;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_41;
-import static org.geoserver.security.validation.SecurityConfigValidationErrors.SEC_ERR_42;
+import static org.geoserver.security.validation.SecurityConfigException.*;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -217,7 +190,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
             validator.validateAddPasswordPolicy(
                 getPolicyConfig(PasswordValidator.DEFAULT_NAME, PasswordValidatorImpl.class, 1,10));
         } catch (SecurityConfigException ex) {
-            assertEquals(ex.getErrorId(), SEC_ERR_23b);
+            assertEquals(SEC_ERR_23b, ex.getErrorId());
             assertEquals(ex.getArgs()[0],PasswordValidator.DEFAULT_NAME);
             LOGGER.info(ex.getMessage());
             fail=true;
@@ -229,7 +202,7 @@ public class SecurityConfigValidatorTest extends GeoServerSecurityTestSupport {
         try {
             validator.validateModifiedPasswordPolicy(pwConfig,pwConfig);
         } catch (SecurityConfigException ex) {
-            assertEquals(ex.getErrorId(), SEC_ERR_24b);
+            assertEquals(SEC_ERR_24b, ex.getErrorId());
             assertEquals(ex.getArgs()[0],"default2");
             LOGGER.info(ex.getMessage());
             fail=true;

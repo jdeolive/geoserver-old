@@ -14,9 +14,8 @@ import org.geoserver.security.config.SecurityAuthProviderConfig;
 import org.geoserver.security.config.SecurityRoleServiceConfig;
 import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.validation.SecurityConfigException;
-import org.geoserver.security.validation.SecurityConfigValidationErrors;
 import org.geoserver.security.validation.SecurityConfigValidator;
-
+import static org.geoserver.security.xml.XMLSecurityConfigException.*;
 
 /**
  * Validator for the XML implementation
@@ -51,20 +50,15 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     
     protected void validateFileName(String fileName) throws SecurityConfigException {
         if (isNotEmpty(fileName)==false)
-            throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_104);
+            throw createSecurityException(SEC_ERR_104);
     }
     
     protected void validateCheckIntervall(long msecs) throws SecurityConfigException {
         if (msecs !=0 && msecs < 1000)
-            throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_100);
+            throw createSecurityException(SEC_ERR_100);
     }
     
 
-    @Override
-    protected SecurityConfigValidationErrors getSecurityErrors() {
-        return new XMLSecurityConfigValidationErrors();
-    }
-    
     /**
      * Additional Validation. Removing this configuration may also remove the file
      * where the roles are contained. (the file may be stored within the configuration
@@ -87,7 +81,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
                 return;
             // file in security sub dir, check if roles exists
             if (manager.loadRoleService(config.getName()).getRoleCount()>0) {
-                throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_102, config.getName());
+                throw createSecurityException(SEC_ERR_102, config.getName());
             }
             
         } catch (IOException e) {
@@ -118,7 +112,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
             // file in security sub dir, check if roles exists
             GeoServerUserGroupService service = manager.loadUserGroupService(config.getName()); 
             if (service.getGroupCount()>0 || service.getUserCount()>0) {
-                throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_103, config.getName());
+                throw createSecurityException(SEC_ERR_103, config.getName());
             }
             
         } catch (IOException e) {
@@ -137,7 +131,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
         XMLRoleServiceConfig xmlConfig = (XMLRoleServiceConfig) config;
         File file  = new File(xmlConfig.getFileName());
         if (checkFile(file)==false)
-            throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_101,
+            throw createSecurityException(SEC_ERR_101,
                 file.getPath());
 
     }
@@ -154,7 +148,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
                 (XMLUserGroupServiceConfig) config;
         File file  = new File(xmlConfig.getFileName());
         if (checkFile(file)==false)
-            throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_101,
+            throw createSecurityException(SEC_ERR_101,
                     file.getPath());
 
     }
@@ -168,7 +162,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
         
         if (old.getFileName().equals(
                 modified.getFileName()) == false) 
-                throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_105,
+                throw createSecurityException(SEC_ERR_105,
                         old.getFileName(),modified.getFileName());
     }
     @Override
@@ -180,7 +174,7 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
         
         if (old.getFileName().equals(
                 modified.getFileName()) == false) 
-                throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_105,
+                throw createSecurityException(SEC_ERR_105,
                         old.getFileName(),modified.getFileName());
 
     }
@@ -189,8 +183,14 @@ public class XMLSecurityConfigValidator extends SecurityConfigValidator {
     public void validate(SecurityAuthProviderConfig config) throws SecurityConfigException{
         
         if (isNotEmpty(config.getUserGroupServiceName())==false) {
-            throw createSecurityException(XMLSecurityConfigValidationErrors.SEC_ERR_106);
+            throw createSecurityException(SEC_ERR_106);
         }
         super.validate(config);
+    }
+
+    @Override
+    protected SecurityConfigException createSecurityException(String errorid,
+            Object... args) {
+        return new XMLSecurityConfigException(errorid, args);
     }
 }

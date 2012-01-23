@@ -8,7 +8,7 @@ package org.geoserver.security.password;
 import java.io.IOException;
 
 import org.geoserver.security.config.PasswordPolicyConfig;
-import org.geoserver.security.validation.PasswordValidationException;
+import org.geoserver.security.validation.PasswordPolicyException;
 import org.geoserver.security.validation.PasswordValidatorImpl;
 
 /**
@@ -58,7 +58,7 @@ public interface PasswordValidator {
      * if the password is not valid
      * 
      * @param password
-     * @throws PasswordValidationException
+     * @throws PasswordPolicyException
      */
     public void validatePassword(String password) throws IOException;
 
