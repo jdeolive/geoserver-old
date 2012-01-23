@@ -14,8 +14,9 @@ import org.geoserver.security.config.SecurityUserGroupServiceConfig;
 import org.geoserver.security.jdbc.config.JDBCConnectAuthProviderConfig;
 import org.geoserver.security.jdbc.config.JDBCSecurityServiceConfig;
 import org.geoserver.security.validation.SecurityConfigException;
-import org.geoserver.security.validation.SecurityConfigValidationErrors;
 import org.geoserver.security.validation.SecurityConfigValidator;
+
+import static org.geoserver.security.jdbc.JDBCSecurityConfigException.*;
 
 public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
 
@@ -56,7 +57,7 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
    protected void checkAutomaticTableCreation (JDBCSecurityServiceConfig config) throws SecurityConfigException {
         if (config.isCreatingTables()) {
             if (isNotEmpty(config.getPropertyFileNameDDL())==false)
-                throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_204);
+                throw createSecurityException(SEC_ERR_204);
         }
     }
     
@@ -70,7 +71,7 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
                 // not the default property file
                 File file = new File(fileName);
                 if (checkFile(file)==false) {
-                    throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_211, fileName);
+                    throw createSecurityException(SEC_ERR_211, fileName);
                 }
             }
         }
@@ -78,35 +79,35 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
         fileName = config.getPropertyFileNameDML();
         if (isNotEmpty(fileName)==false) {
             // dml file is required
-            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_212);
+            throw createSecurityException(SEC_ERR_212);
         }
         
         if (defaultDML.equals(fileName)==false) {
             // not the default property file
             File file = new File(fileName);
             if (checkFile(file)==false) {
-                throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_213, fileName);
+                throw createSecurityException(SEC_ERR_213, fileName);
             }
         }
     }
     
     protected void validateJNDI(JDBCSecurityServiceConfig config) throws SecurityConfigException {
         if (isNotEmpty(config.getJndiName())==false)
-            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_210);
+            throw createSecurityException(SEC_ERR_210);
     }
     
     protected void validateJDBC(JDBCSecurityServiceConfig config) throws SecurityConfigException {
         if (isNotEmpty(config.getDriverClassName())==false)
-            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_200);
+            throw createSecurityException(SEC_ERR_200);
         if (isNotEmpty(config.getUserName())==false)
-            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_201);
+            throw createSecurityException(SEC_ERR_201);
         if (isNotEmpty(config.getConnectURL())==false)
-            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_202);
+            throw createSecurityException(SEC_ERR_202);
 
         try {
             Class.forName(config.getDriverClassName());
         } catch (ClassNotFoundException e) {
-            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_203,
+            throw createSecurityException(SEC_ERR_203,
                     config.getDriverClassName());
         }
 
@@ -117,25 +118,17 @@ public class JdbcSecurityConfigValidator extends SecurityConfigValidator {
         super.validate(config);
         JDBCConnectAuthProviderConfig jdbcConfig = (JDBCConnectAuthProviderConfig) config;
         if (isNotEmpty(jdbcConfig.getDriverClassName())==false)
-            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_200);
+            throw createSecurityException(SEC_ERR_200);
         if (isNotEmpty(jdbcConfig.getConnectURL())==false)
-            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_202);
+            throw createSecurityException(SEC_ERR_202);
 
         try {
             Class.forName(jdbcConfig.getDriverClassName());
         } catch (ClassNotFoundException e) {
-            throw createSecurityException(JdbcSecurityConfigValidationErrors.SEC_ERR_203,
+            throw createSecurityException(SEC_ERR_203,
                     jdbcConfig.getDriverClassName());
         }
 
         
     }
-
-    
-    @Override
-    protected SecurityConfigValidationErrors getSecurityErrors() {
-        return new JdbcSecurityConfigValidationErrors();
-    }
-
-
 }

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.impl.GeoServerRole;
 import org.geoserver.security.web.AbstractConfirmRemovalPanelTest;
@@ -25,7 +26,7 @@ public class ConfirmRemovalRolePanelTest extends AbstractConfirmRemovalPanelTest
             public Component buildComponent(String id) {
                 return new ConfirmRemovalRolePanel(id, roots.toArray(new GeoServerRole[roots.size()])) {
                     @Override
-                    protected StringResourceModel canRemove(GeoServerRole data) {
+                    protected IModel<String> canRemove(GeoServerRole data) {
                         SelectionRoleRemovalLink link = new SelectionRoleRemovalLink(getRoleServiceName(),"XXX",null,null);
                         return link.canRemove(data);
                     }

@@ -7,9 +7,7 @@ package org.geoserver.security.validation;
 import java.io.File;
 import java.io.IOException;
 
-import org.geoserver.platform.GeoServerExtensions;
 import org.geoserver.security.GeoServerSecurityManager;
-import org.geoserver.security.xml.XMLSecurityConfigValidationErrors;
 
 public abstract class AbstractSecurityValidator {
 
@@ -22,13 +20,6 @@ public abstract class AbstractSecurityValidator {
     protected boolean isNotEmpty(String aString) {
         return aString !=null && aString.length()> 0;
     }
-
-    /**
-     * Subclasses must override  
-     * 
-     * @return
-     */
-    protected abstract AbstractSecurityValidationErrors getSecurityErrors();
 
     /**
      * Gets the temp directory, null if not found or not

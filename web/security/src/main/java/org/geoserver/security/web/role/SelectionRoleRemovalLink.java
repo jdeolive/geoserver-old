@@ -6,6 +6,8 @@ import java.util.List;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.model.IModel;
+import org.apache.wicket.model.Model;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.GeoServerRoleService;
 import org.geoserver.security.GeoServerRoleStore;
@@ -57,7 +59,7 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
                     private static final long serialVersionUID = 1L;
 
                     @Override
-                    protected StringResourceModel canRemove(GeoServerRole role) {
+                    protected IModel<String> canRemove(GeoServerRole role) {
                         return SelectionRoleRemovalLink.this.canRemove(role);
                     }
                 };
@@ -100,7 +102,7 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
         
     }
 
-    protected StringResourceModel canRemove(GeoServerRole role) {
+    protected IModel<String> canRemove(GeoServerRole role) {
         
         GeoServerRoleService gaService=null;
         try {
@@ -112,9 +114,7 @@ public class SelectionRoleRemovalLink extends AjaxLink<Object> {
             valService.checkRoleIsUsed(role);
         } catch (IOException e) {
             if (e.getCause() instanceof AbstractSecurityException) {
-                AbstractSecurityException secEx = 
-                        (AbstractSecurityException)e.getCause();
-                return new StringResourceModel("security."+secEx.getErrorId(),null,secEx.getArgs());
+                return new Model(e.getCause().getMessage());
             } else {
                 throw new RuntimeException(e);
             }            

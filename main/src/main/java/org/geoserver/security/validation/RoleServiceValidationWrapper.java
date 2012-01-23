@@ -25,7 +25,7 @@ import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
 import org.springframework.util.StringUtils;
 
-
+import static org.geoserver.security.validation.RoleServiceException.*;
 
 /**
  * 
@@ -96,14 +96,14 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
      */
     protected void checkValidUserName(String userName) throws IOException{
         if (isNotEmpty(userName)==false)
-            throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_04);
+            throw createSecurityException(ROLE_ERR_04);
         
         if (services.length==0) return;
         for (GeoServerUserGroupService service : services) {
             if (service.getUserByUsername(userName)!=null)
                 return;
         }
-        throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_06,userName);
+        throw createSecurityException(ROLE_ERR_06,userName);
     }
     
     /**
@@ -116,7 +116,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
         if (getAdminRole()==null)
             return;
         if (role.getAuthority().equals(getAdminRole().getAuthority()))
-            throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_08,role.getAuthority());
+            throw createSecurityException(ROLE_ERR_08,role.getAuthority());
     }
     
     
@@ -141,7 +141,7 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
         
         if (keys.size()>0) {
             String ruleString = StringUtils.collectionToCommaDelimitedString(keys);    
-            throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_09, role.getAuthority(),ruleString);
+            throw createSecurityException(ROLE_ERR_09, role.getAuthority(),ruleString);
         }
     }
     
@@ -156,31 +156,31 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
      */
     protected void checkValidGroupName(String groupName) throws  IOException{
         if (isNotEmpty(groupName)==false)
-            throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_05);
+            throw createSecurityException(ROLE_ERR_05);
         
         if (services.length==0) return;
         for (GeoServerUserGroupService service : services) {
             if (service.getGroupByGroupname(groupName)!=null)
                 return;
         }
-        throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_07,groupName);
+        throw createSecurityException(ROLE_ERR_07,groupName);
     }
 
     protected void checkRoleName(String roleName) throws IOException{
         if (isNotEmpty(roleName)==false)
-            throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_01);        
+            throw createSecurityException(ROLE_ERR_01);        
     }
     
     protected void checkExistingRoleName(String roleName) throws IOException{
         checkRoleName(roleName);
         if (service.getRoleByName(roleName)==null)
-            throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_02,roleName);
+            throw createSecurityException(ROLE_ERR_02,roleName);
     }
     
     protected void checkNotExistingRoleName(String roleName) throws IOException{
         checkRoleName(roleName);
         if (service.getRoleByName(roleName)!=null)
-            throw createSecurityException(RoleServiceValidationErrors.ROLE_ERR_03,roleName);
+            throw createSecurityException(ROLE_ERR_03,roleName);
     }
     
     // start wrapper methods
@@ -295,16 +295,6 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
     public GeoServerRole getAdminRole() {
         return service.getAdminRole();
     }
-
-
-    
-    
-    @Override
-    protected AbstractSecurityValidationErrors getSecurityErrors() {
-        return new RoleServiceValidationErrors();
-    }
-
-
     
     /**
      * Helper method for creating a proper
@@ -315,9 +305,8 @@ public class RoleServiceValidationWrapper extends AbstractSecurityValidator impl
      * @return
      */
     protected IOException createSecurityException (String errorid, Object ...args) {
-        String message = getSecurityErrors().formatErrorMsg(errorid, args);
-        RoleServiceException ex =  new RoleServiceException(errorid,message,args);
-        return new IOException("Details are in the nested excetpion",ex);
+        RoleServiceException ex =  new RoleServiceException(errorid,args);
+        return new IOException("Details are in the nested exception",ex);
     }
         
 }

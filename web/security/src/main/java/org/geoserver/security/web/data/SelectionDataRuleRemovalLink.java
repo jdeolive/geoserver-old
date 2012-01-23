@@ -10,6 +10,7 @@ import java.util.List;
 import org.apache.wicket.Component;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.markup.html.AjaxLink;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.catalog.CascadeDeleteVisitor;
 import org.geoserver.catalog.Catalog;
@@ -48,7 +49,7 @@ public class SelectionDataRuleRemovalLink extends AjaxLink {
                 // show a confirmation panel for all the objects we have to remove
                 return removePanel=new ConfirmRemovalDataAccessRulePanel(id, selection) {
                     @Override
-                    protected StringResourceModel canRemove(DataAccessRule data) {
+                    protected IModel<String> canRemove(DataAccessRule data) {
                         return SelectionDataRuleRemovalLink.this.canRemove(data);
                     }
                 };

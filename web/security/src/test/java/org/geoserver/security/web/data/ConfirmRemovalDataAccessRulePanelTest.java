@@ -3,6 +3,7 @@ package org.geoserver.security.web.data;
 import java.util.List;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.data.test.MockData;
 import org.geoserver.security.impl.DataAccessRule;
@@ -26,7 +27,7 @@ public class ConfirmRemovalDataAccessRulePanelTest extends AbstractConfirmRemova
             public Component buildComponent(String id) {                
                 return new ConfirmRemovalDataAccessRulePanel(id, roots) {
                     @Override
-                    protected StringResourceModel canRemove(DataAccessRule data) {
+                    protected IModel<String> canRemove(DataAccessRule data) {
                         SelectionDataRuleRemovalLink link = new SelectionDataRuleRemovalLink("XXX",null,null);
                         return link.canRemove(data);
                     }

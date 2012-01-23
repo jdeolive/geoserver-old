@@ -3,6 +3,7 @@ package org.geoserver.security.web.service;
 import java.util.List;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.StringResourceModel;
 import org.geoserver.security.impl.ServiceAccessRule;
 import org.geoserver.security.impl.ServiceAccessRuleDAO;
@@ -26,7 +27,7 @@ public class ConfirmRemovalServicePanelTest extends AbstractConfirmRemovalPanelT
             public Component buildComponent(String id) {                
                 return new ConfirmRemovalServicePanel(id, roots) {
                     @Override
-                    protected StringResourceModel canRemove(ServiceAccessRule data) {
+                    protected IModel<String> canRemove(ServiceAccessRule data) {
                         SelectionServiceRemovalLink link = new SelectionServiceRemovalLink("XXX",null,null);
                         return link.canRemove(data);
                     }

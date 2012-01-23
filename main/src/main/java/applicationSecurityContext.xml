@@ -337,6 +337,27 @@
 
   <bean id="xmlSecurityProvider" class="org.geoserver.security.xml.XMLSecurityProvider"/>  	
   
+  <bean id="securityConfigExceptionResourceBundleLoader"
+    class="org.geoserver.platform.exception.ClassResourceBundleLoader">
+    <constructor-arg value="org.geoserver.security.validation.SecurityConfigException"/>
+  </bean>
+  <bean id="userGroupExceptionResourceBundleLoader"
+    class="org.geoserver.platform.exception.ClassResourceBundleLoader">
+    <constructor-arg value="org.geoserver.security.validation.UserGroupServiceException"/>
+  </bean>
+  <bean id="roleExceptionResourceBundleLoader"
+    class="org.geoserver.platform.exception.ClassResourceBundleLoader">
+    <constructor-arg value="org.geoserver.security.validation.RoleServiceException"/>
+  </bean>
+  <bean id="passwdPolicyExceptionResourceBundleLoader"
+    class="org.geoserver.platform.exception.ClassResourceBundleLoader">
+    <constructor-arg value="org.geoserver.security.validation.PasswordPolicyException"/>
+  </bean>
+  <bean id="xmlSecurityConfigExceptionResourceBundleLoader"
+    class="org.geoserver.platform.exception.ClassResourceBundleLoader">
+    <constructor-arg value="org.geoserver.security.xml.XMLSecurityConfigException"/>
+  </bean> 
+
   <!-- The dao used to deal with layer level security -->
   <bean id="accessRulesDao" class="org.geoserver.security.impl.DataAccessRuleDAO">
   	<constructor-arg ref="dataDirectory"/>

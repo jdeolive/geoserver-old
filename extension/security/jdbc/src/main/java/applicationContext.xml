@@ -5,6 +5,12 @@
   <!-- jdbc backend provider -->
   <bean id="jdbcSecurityProvider" class="org.geoserver.security.jdbc.JDBCSecurityProvider"/>
   
+  <!-- localized exception message bundle -->
+  <bean id="jdbcSecurityConfigExceptionResourceBundleLoader"
+    class="org.geoserver.platform.exception.ClassResourceBundleLoader">
+    <constructor-arg value="org.geoserver.security.jdbc.JDBCSecurityConfigException"/>
+  </bean>
+  
   <!-- ui user group service panel info-->
   <bean id="jdbcUserGroupPanelInfo" class="org.geoserver.security.web.jdbc.JDBCUserGroupServicePanelInfo">
     <property name="id" value="security.jdbcUserGroupService" />
