@@ -30,14 +30,13 @@
       <groupId>postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <scope>test</scope>
-      <!--<version>8.4-701.jdbc3</version>-->
-      <version>9.1-901.jdbc4</version>
+      <version>8.4-701.jdbc3</version>
     </dependency>
     <dependency>
-      <groupId>mysql</groupId>
-      <artifactId>mysql-connector-java</artifactId>
+      <groupId>org.geoserver.extension</groupId>
+      <artifactId>mysql</artifactId>
       <scope>test</scope>
-      <version>5.1.18</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>simple-jndi</groupId>
