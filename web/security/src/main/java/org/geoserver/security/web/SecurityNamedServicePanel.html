@@ -6,11 +6,19 @@
 <wicket:panel>
   <ul>
     <li>
-      <label for="name"><wicket:message key="name"></wicket:message></label>
-      <input type="text" wicket:id="name" class="text"/>
+      <fieldset class="noTitle">
+        <ul>
+          <li>
+            <label for="name"><wicket:message key="name"></wicket:message></label>
+            <input type="text" wicket:id="name" class="text"/>
+          </li>
+        </ul>
+      </fieldset>
     </li>
     <li>
-      <wicket:child></wicket:child>
+      <fieldset class="noTitle">
+        <wicket:child></wicket:child>
+      </fieldset>
     </li>
   </ul>
 </wicket:panel>

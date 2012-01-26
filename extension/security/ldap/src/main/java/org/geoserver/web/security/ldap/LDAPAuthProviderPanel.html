@@ -6,19 +6,28 @@
 <wicket:extend>
     <ul class="leftwise">
       <li>
-        <label for="serverURL"><wicket:message key="serverURL"></wicket:message></label>
-        <input id="serverURL" wicket:id="serverURL" type="text" class="text"></input>
+        <fieldset>
+          <legend>
+            <span><wicket:message key="ldapSettings"></wicket:message></span>
+          </legend>
+          <ul>
+            <li>
+              <label for="serverURL"><wicket:message key="serverURL"></wicket:message></label>
+              <input id="serverURL" wicket:id="serverURL" type="text" class="text"></input>
+            </li>
+            <li>
+              <input id="useTLS" wicket:id="useTLS" type="checkbox" class="field checkbox"></input>
+              <label for="useTLS" class="choice"><wicket:message key="useTLS"></wicket:message></label>
+            </li>
+            <li>
+              <label for="userDnPattern"><wicket:message key="userDnPattern"></wicket:message></label>
+              <input id="userDnPattern" wicket:id="userDnPattern" type="text" class="text"></input>
+            </li>
+          </ul>
+        </fieldset>
       </li>
       <li>
-        <input id="useTLS" wicket:id="useTLS" type="checkbox" class="field checkbox"></input>
-        <label for="useTLS" class="choice"><wicket:message key="useTLS"></wicket:message></label>
-      </li>
-      <li>
-        <label for="userDnPattern"><wicket:message key="userDnPattern"></wicket:message></label>
-        <input id="userDnPattern" wicket:id="userDnPattern" type="text" class="text"></input>
-      </li>
-      <li>
-         <fieldset style="margin-top: 3em;">
+         <fieldset>
           <legend>
             <span><wicket:message key="authorization"></wicket:message></span>
           </legend>
@@ -39,7 +48,7 @@
          </fieldset>
       </li>
     </ul>
-    <div wicket:id="testCx" class="rightwise" style="padding-right: 5%; padding-top: 1em;">
+    <div wicket:id="testCx" class="rightwise" style="padding-right: 25%;">
     </div>
 </wicket:extend>
 </body>

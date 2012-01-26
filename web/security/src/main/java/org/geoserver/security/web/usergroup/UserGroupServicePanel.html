@@ -6,15 +6,27 @@
 <wicket:extend>
     <ul>
       <li>
-        <label for="passwordEncoderName"><wicket:message key="passwordEncryption"></wicket:message></label>
-        <select wicket:id="passwordEncoderName"/>
+        <fieldset>
+          <legend>
+            <span><wicket:message key="passwords"></wicket:message></span>
+          </legend>
+          <ul>
+           <li>
+             <label for="passwordEncoderName"><wicket:message key="passwordEncryption"></wicket:message></label>
+             <select wicket:id="passwordEncoderName"/>
+           </li>
+           <li>
+             <label for="passwordPolicyName"><wicket:message key="passwordPolicy"></wicket:message></label>
+             <select wicket:id="passwordPolicyName"/>
+           </li>
+          </ul>
+        </fieldset>
       </li>
       <li>
-        <label for="passwordPolicyName"><wicket:message key="passwordPolicy"></wicket:message></label>
-        <select wicket:id="passwordPolicyName"/>
+        <wicket:child></wicket:child>
       </li>
     </ul>
-    <wicket:child></wicket:child>
+    
 </wicket:extend>
 </body>
 </html>

@@ -315,6 +315,10 @@ border-width: 1px 0 0;
 position: relative;
 }
 
+fieldset.noTitle {
+border: 0;
+}
+
 legend {
 border: 0 none transparent;
 }

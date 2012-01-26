@@ -3,23 +3,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:wicket="http://wicket.apache.org/">
 <wicket:head>
-  <style type="text/css">
-       fieldset > ul {
-         padding-top: 1em;
-       }
-       form li {
-         padding: 0;
-       }
-   </style>
 </wicket:head>
 <body>
 <wicket:extend>
   <h1><wicket:message key="new"><span wicket:id="title1"></span></wicket:message></h1>
   <p><wicket:message key="create"><span wicket:id="title2"></span></wicket:message></p>
-  <form style="padding-bottom: 1em;">
+  <form>
   <div wicket:id="servicesContainer">
   <ul>
-    <li wicket:id="services">
+    <li wicket:id="services" style="padding: 0;">
       <a wicket:id="link"><span wicket:id="title"></span></a> - <span wicket:id="description"></span>
     </li>
   </ul>

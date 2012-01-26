@@ -3,26 +3,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:wicket="http://wicket.apache.org/">
 <wicket:head>
-  <style type="text/css">
-       fieldset > div {
-         padding-top: 1em;
-         padding-bottom: 1em;
-       }
-       #encryption {
-         padding-top: 1em;
-       }
-   </style>
 </wicket:head>
 <body>
 <wicket:extend>
   <form id="form" wicket:id="form">
     <ul>
      <li>
-       <label for="activeRoleService"><wicket:message key="activeRoleService"></wicket:message></label>
-       <select wicket:id="roleServiceName"></select>
+       <fieldset class="noTitle">
+         <label for="activeRoleService"><wicket:message key="activeRoleService"></wicket:message></label>
+         <select wicket:id="roleServiceName"></select>
+       </fieldset>
      </li>
      <li>
-      <fieldset style="margin-top: 2em;">
+      <fieldset>
         <legend>
           <span><wicket:message key="passwordPolicies"></wicket:message></span>
           <a href="#" wicket:id="passwordPoliciesHelp" class="help-link"></a>

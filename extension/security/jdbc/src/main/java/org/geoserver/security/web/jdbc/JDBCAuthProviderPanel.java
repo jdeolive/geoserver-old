@@ -15,9 +15,9 @@ public class JDBCAuthProviderPanel extends AuthenticationProviderPanel<JDBCConne
     public JDBCAuthProviderPanel(String id, IModel<JDBCConnectAuthProviderConfig> model) {
         super(id, model);
 
+        add(new UserGroupServiceChoice("userGroupServiceName"));
         add(new JDBCDriverChoice("driverClassName"));
         add(new TextField("connectURL"));
-        add(new UserGroupServiceChoice("userGroupServiceName"));
     }
 
 }

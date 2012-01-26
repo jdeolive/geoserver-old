@@ -6,16 +6,25 @@
 <wicket:extend>
     <ul>
       <li>
-        <label for="fileName"><wicket:message key="fileName"></wicket:message></label>
-        <input wicket:id="fileName" type="text" class="field text"></input>
-      </li>
-      <li>
-        <input wicket:id="validating" type="checkbox" class="field checkbox" ></input>
-        <label for="validating" class="choice"><wicket:message key="validating"></wicket:message></label>
-      </li>
-      <li>
-        <label for="checkInterval"><wicket:message key="checkInterval"></wicket:message></label>
-        <input wicket:id="checkInterval" type="text" class="field text"></input>
+        <fieldset>
+         <legend>
+            <span><wicket:message key="settings"></wicket:message></span>
+         </legend>
+         <ul>
+          <li>
+            <label for="fileName"><wicket:message key="fileName"></wicket:message></label>
+            <input wicket:id="fileName" type="text" class="field text"></input>
+          </li>
+          <li>
+            <input wicket:id="validating" type="checkbox" class="field checkbox" ></input>
+            <label for="validating" class="choice"><wicket:message key="validating"></wicket:message></label>
+          </li>
+          <li>
+            <label for="checkInterval"><wicket:message key="checkInterval"></wicket:message></label>
+            <input wicket:id="checkInterval" type="text" class="field text"></input>
+          </li>
+         </ul>
+        </fieldset>
       </li>
     </ul>
 </wicket:extend>

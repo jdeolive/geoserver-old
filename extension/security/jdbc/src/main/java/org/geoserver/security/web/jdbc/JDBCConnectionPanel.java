@@ -45,7 +45,7 @@ public class JDBCConnectionPanel<T extends JDBCSecurityServiceConfig> extends Fo
     FeedbackPanel feedbackPanel;
     
     public JDBCConnectionPanel(String id, IModel<T> model) {
-        super(id, model);
+        super(id, new Model());
 
         add(new AjaxCheckBox("jndi") {
             @Override

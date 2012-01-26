@@ -3,26 +3,19 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     xmlns:wicket="http://wicket.apache.org/">
 <wicket:head>
-  <style type="text/css">
-    fieldset > div {
-      padding-top: 1em;
-      padding-bottom: 1em;
-    }
-  </style>
 </wicket:head>
 <body>
 <wicket:extend>
-  <form>
+  <form style="padding-top: 2em;">
     <ul>
      <li>
-       <fieldset style="margin-top: 2em;">
+       <fieldset>
         <legend>
           <span><wicket:message key="userGroupServices"></wicket:message></span>
           <a href="#" wicket:id="userGroupServicesHelp" class="help-link"></a>
         </legend>
-       <div wicket:id="userGroupServices">
-       </div>
-      </fieldset>
+        <div wicket:id="userGroupServices"></div>
+       </fieldset>
      </li>
      <li>
        <fieldset>
@@ -30,16 +23,10 @@
           <span><wicket:message key="roleServices"></wicket:message></span>
           <a href="#" wicket:id="roleServicesHelp" class="help-link"></a>
         </legend>
-       <div wicket:id="roleServices">
-       </div>
+        <div wicket:id="roleServices"></div>
       </fieldset>
      </li>
     </ul>
-    <!--div class="button-group selfclear">
-      <a href="#" wicket:id="save"><wicket:message key="save"></wicket:message></a>
-      <a href="#" wicket:id="cancel"><wicket:message key="cancel"></wicket:message></a>
-
-    </div-->
   </form>
 </wicket:extend>
 </body>

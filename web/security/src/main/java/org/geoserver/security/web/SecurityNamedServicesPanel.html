@@ -5,15 +5,20 @@
   </div>
   <ul>
     <li>
-      <a class="add-link" wicket:id="add"><wicket:message key="addNew"></wicket:message></a>
+     <ul>
+        <li>
+          <a class="add-link" wicket:id="add"><wicket:message key="addNew"></wicket:message></a>
+        </li>
+        <li>
+          <a class="remove-link" wicket:id="remove"><wicket:message key="removeSelected"></wicket:message></a>
+        </li>
+     </ul>
     </li>
     <li>
-      <a class="remove-link" wicket:id="remove"><wicket:message key="removeSelected"></wicket:message></a>
+     <div wicket:id="table"></div>
     </li>
-    <div wicket:id="table">
-    </div>
-    <div wicket:id="dialog"></div>
   </ul>
+  <div wicket:id="dialog"></div>
 </wicket:panel>
 </body>
 </html>
